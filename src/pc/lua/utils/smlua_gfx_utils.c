@@ -175,3 +175,13 @@ void gfx_set_texture_image(Gfx* gfx, u32 format, u32 size, u32 width, u8* textur
     if (!gfx) { return; }
     gDPSetTextureImage(gfx, format, size, width, texture);
 }
+
+void gfx_set_command_string(Gfx *gfx, const char *command) {
+    if (!gfx || !command) { return; }
+    char errorMsg[0x400] = {0};
+    extern bool parse_gfx_command(Gfx *gfx, const char *command, char *errorMsg, u32 errorLength);
+    if (!parse_gfx_command(gfx, command, errorMsg, 0x400)) {
+        LOG_LUA_LINE("gfx_set_command_string: Command \"%s\": %s", command, errorMsg);
+        return;
+    }
+}

@@ -1,8 +1,21 @@
 #include "dynos.cpp.h"
+#include <map>
 extern "C" {
 #include <assert.h>
 #include "sm64.h"
 #include "include/textures.h"
+}
+
+static char *sGfxParseCommandErrorMsg = NULL;
+static u32 sGfxParseCommandErrorSize = 0;
+
+#define PrintDataErrorGfx(...) { \
+    if (sGfxParseCommandErrorMsg) { \
+        snprintf(sGfxParseCommandErrorMsg, sGfxParseCommandErrorSize, __VA_ARGS__); \
+        aGfxData->mErrorCount++; \
+    } else { \
+        PrintDataError(__VA_ARGS__); \
+    } \
 }
 
 #pragma GCC diagnostic push
@@ -525,11 +538,11 @@ static s64 ParseGfxSymbolArg(GfxData* aGfxData, DataNode<Gfx>* aNode, u64* pToke
     bool rdSuccess = false;
     s64 rdValue = DynOS_RecursiveDescent_Parse(_Arg.begin(), &rdSuccess, DynOS_Gfx_ParseGfxConstants);
     if (rdSuccess) {
-        return (LevelScript)rdValue;
+        return rdValue;
     }
 
     // Unknown
-    PrintDataError("  ERROR: Unknown gfx arg: %s", _Arg.begin());
+    PrintDataErrorGfx("  ERROR: Unknown gfx arg: %s", _Arg.begin());
     return 0;
 }
 
@@ -722,7 +735,7 @@ static String ConvertSetCombineModeArgToString(GfxData *aGfxData, const String& 
     gfx_set_combine_mode_arg(G_CC_HILITERGBA2);
     gfx_set_combine_mode_arg(G_CC_HILITERGBDECALA2);
     gfx_set_combine_mode_arg(G_CC_HILITERGBPASSA2);
-    PrintDataError("  ERROR: Unknown gfx gsDPSetCombineMode arg: %s", _Arg.begin());
+    PrintDataErrorGfx("  ERROR: Unknown gfx gsDPSetCombineMode arg: %s", _Arg.begin());
     return "";
 }
 
@@ -742,7 +755,7 @@ static Array<s64> ParseGfxSetCombineMode(GfxData* aGfxData, DataNode<Gfx>* aNode
         }
     }
     if (_Args.Count() < 8) {
-        PrintDataError("  ERROR: gsDPSetCombineMode %s: Not enough arguments", _Buffer.begin());
+        PrintDataErrorGfx("  ERROR: gsDPSetCombineMode %s: Not enough arguments", _Buffer.begin());
     }
     return _Args;
 }
@@ -1029,7 +1042,7 @@ static void ParseGfxSymbol(GfxData* aGfxData, DataNode<Gfx>* aNode, Gfx*& aHead,
     }
 
     // Unknown
-    PrintDataError("  ERROR: Unknown gfx symbol: %s", _Symbol.begin());
+    PrintDataErrorGfx("  ERROR: Unknown gfx symbol: %s", _Symbol.begin());
 }
 
 DataNode<Gfx>* DynOS_Gfx_Parse(GfxData* aGfxData, DataNode<Gfx>* aNode) {
@@ -1047,6 +1060,101 @@ DataNode<Gfx>* DynOS_Gfx_Parse(GfxData* aGfxData, DataNode<Gfx>* aNode) {
 }
 
 #pragma GCC diagnostic pop
+
+static Array<String> TokenizeGfxCommand(const char *command) {
+    Array<String> tokens;
+    String token;
+    for (u32 scope = 0; *command; command++) {
+        char c = *command;
+        if (c > ' ') {
+            if (c == '(') {
+
+                // End of the command name, beginning of the arguments
+                if (scope == 0) {
+                    if (!token.Empty()) {
+                        tokens.Add(token);
+                        token.Clear();
+                    }
+                }
+
+                // That's an argument
+                else {
+                    token.Add(c);
+                }
+
+                scope++;
+            }
+
+            else if (c == ')') {
+                scope--;
+
+                // End of the command
+                if (scope == 0) {
+                    break;
+                }
+
+                // That's an argument
+                else {
+                    token.Add(c);
+                }
+            }
+
+            // End of an argument
+            else if (c == ',') {
+                if (!token.Empty()) {
+                    tokens.Add(token);
+                    token.Clear();
+                }
+            }
+
+            else {
+                token.Add(c);
+            }
+        }
+    }
+    if (!token.Empty()) {
+        tokens.Add(token);
+    }
+    return tokens;
+}
+
+extern "C" {
+
+bool parse_gfx_command(Gfx *gfx, const char *command, char *errorMsg, u32 errorSize) {
+
+    // Already parsed commands
+    static std::map<std::string, std::pair<Gfx *, u32>> sGfxParsedCommands;
+    const auto &it = sGfxParsedCommands.find(command);
+    if (it != sGfxParsedCommands.end()) {
+        memcpy(gfx, it->second.first, it->second.second * sizeof(Gfx));
+        return true;
+    }
+
+    // Tokenize command and parse
+    GfxData aGfxData;
+    DataNode<Gfx> aNode;
+    aNode.mTokens = TokenizeGfxCommand(command);
+    u64 aTokenIndex = 0;
+    Gfx *gfxStart = gfx;
+    sGfxParseCommandErrorMsg = errorMsg;
+    sGfxParseCommandErrorSize = errorSize;
+    ParseGfxSymbol(&aGfxData, &aNode, gfx, aTokenIndex);
+    sGfxParseCommandErrorMsg = NULL;
+    sGfxParseCommandErrorSize = 0;
+    if (strlen(errorMsg) != 0) {
+        return false;
+    }
+
+    // Cache parsed command
+    u32 commandLength = (u32) (gfx - gfxStart);
+    Gfx *cached = (Gfx *) calloc(commandLength, sizeof(Gfx));
+    memcpy(cached, gfxStart, commandLength * sizeof(Gfx));
+    sGfxParsedCommands[command] = { cached, commandLength };
+
+    return true;
+}
+
+}
 
   /////////////
  // Writing //

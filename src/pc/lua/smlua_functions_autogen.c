@@ -28949,6 +28949,25 @@ int smlua_func_gfx_set_combine_lerp(lua_State* L) {
     return 1;
 }
 
+int smlua_func_gfx_set_command_string(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_set_command_string", 2, top);
+        return 0;
+    }
+
+    Gfx * gfx = (Gfx *)smlua_to_cobject(L, 1, LOT_GFX);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_set_command_string"); return 0; }
+    const char* command = smlua_to_string(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_set_command_string"); return 0; }
+
+    gfx_set_command_string(gfx, command);
+
+    return 1;
+}
+
 int smlua_func_gfx_set_texture_image(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -34310,6 +34329,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_get_vtx", smlua_func_gfx_get_vtx);
     smlua_bind_function(L, "gfx_parse", smlua_func_gfx_parse);
     smlua_bind_function(L, "gfx_set_combine_lerp", smlua_func_gfx_set_combine_lerp);
+    smlua_bind_function(L, "gfx_set_command_string", smlua_func_gfx_set_command_string);
     smlua_bind_function(L, "gfx_set_texture_image", smlua_func_gfx_set_texture_image);
     smlua_bind_function(L, "set_fog_color", smlua_func_set_fog_color);
     smlua_bind_function(L, "set_fog_intensity", smlua_func_set_fog_intensity);

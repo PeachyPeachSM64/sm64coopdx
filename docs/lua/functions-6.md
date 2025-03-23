@@ -278,6 +278,27 @@ Sets the display list combine mode. you can fill this function with G_CCMUX_* an
 
 <br />
 
+## [gfx_set_command_string](#gfx_set_command_string)
+
+### Lua Example
+`gfx_set_command_string(gfx, command)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| gfx | `Pointer` <`Gfx`> |
+| command | `string` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_set_command_string(Gfx *gfx, const char *command);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_set_texture_image](#gfx_set_texture_image)
 
 ### Description

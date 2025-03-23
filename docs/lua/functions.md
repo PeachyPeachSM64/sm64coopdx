@@ -1739,6 +1739,7 @@
    - [gfx_get_vtx](functions-6.md#gfx_get_vtx)
    - [gfx_parse](functions-6.md#gfx_parse)
    - [gfx_set_combine_lerp](functions-6.md#gfx_set_combine_lerp)
+   - [gfx_set_command_string](functions-6.md#gfx_set_command_string)
    - [gfx_set_texture_image](functions-6.md#gfx_set_texture_image)
    - [set_fog_color](functions-6.md#set_fog_color)
    - [set_fog_intensity](functions-6.md#set_fog_intensity)

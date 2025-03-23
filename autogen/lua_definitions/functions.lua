@@ -9441,6 +9441,12 @@ function gfx_set_combine_lerp(gfx, a0, b0, c0, d0, Aa0, Ab0, Ac0, Ad0, a1, b1, c
 end
 
 --- @param gfx Pointer_Gfx
+--- @param command string
+function gfx_set_command_string(gfx, command)
+    -- ...
+end
+
+--- @param gfx Pointer_Gfx
 --- @param format integer
 --- @param size integer
 --- @param width integer
