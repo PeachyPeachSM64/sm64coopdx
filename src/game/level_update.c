@@ -46,6 +46,7 @@
 #include "pc/djui/djui_hud_utils.h"
 // used for getting gMainMenuSounds
 #include "pc/djui/djui_panel_menu_options.h"
+#include "pc/djui/djui_panel_pause.h"
 #include "pc/lua/smlua_hooks.h"
 #include "pc/mods/mods.h"
 #include "pc/nametags.h"
@@ -211,6 +212,14 @@ u8 unused4[2];
 u32 gControlTimerStartNat = 0;
 u32 gControlTimerStopNat = 0;
 
+static u32 level_control_timer_now(void) {
+    if (gNetworkType == NT_NONE) {
+        if (gCurrentArea == NULL) { return 0; }
+        return gCurrentArea->localAreaTimer;
+    }
+    return gNetworkAreaTimer;
+}
+
 u8 level_control_timer_running(void) {
     return sTimerRunning;
 }
@@ -228,14 +237,14 @@ u16 level_control_timer(s32 timerOp) {
         case TIMER_CONTROL_START:
             if (!sTimerRunning) {
                 sTimerRunning = TRUE;
-                gControlTimerStartNat = gNetworkAreaTimer;
+                gControlTimerStartNat = level_control_timer_now();
             }
             break;
 
         case TIMER_CONTROL_STOP:
             if (sTimerRunning) {
                 sTimerRunning = FALSE;
-                gControlTimerStopNat = gNetworkAreaTimer;
+                gControlTimerStopNat = level_control_timer_now();
             }
             break;
 
@@ -1310,7 +1319,7 @@ s32 play_mode_normal(void) {
     check_instant_warp();
 
     if (sTimerRunning) {
-        gHudDisplay.timer = gNetworkAreaTimer - gControlTimerStartNat;
+        gHudDisplay.timer = level_control_timer_now() - gControlTimerStartNat;
         if (gHudDisplay.timer >= 17999) {
             gHudDisplay.timer = 17999;
         }
@@ -1362,6 +1371,9 @@ s32 play_mode_normal(void) {
 s32 play_mode_paused(void) {
     if (gPauseScreenMode == 0) {
         set_menu_mode(RENDER_PAUSE_SCREEN);
+        if (!gDjuiPanelPauseCreated && !gDjuiInPlayerMenu && (gPlayer1Controller->buttonPressed & R_TRIG)) {
+            djui_panel_pause_create(NULL);
+        }
     } else if (gPauseScreenMode == 1) {
         raise_background_noise(1);
         gCameraMovementFlags &= ~CAM_MOVE_PAUSE_SCREEN;
@@ -1726,7 +1738,7 @@ s32 update_level(void) {
         return changeLevel;
     }
 
-    if (gCurrentArea != NULL) {
+    if (sCurrPlayMode != PLAY_MODE_PAUSED && gCurrentArea != NULL) {
         gCurrentArea->localAreaTimer++;
     }
 
@@ -1735,13 +1747,7 @@ s32 update_level(void) {
             changeLevel = play_mode_normal();
             break;
         case PLAY_MODE_PAUSED:
-            if (!network_check_singleplayer_pause()) {
-                changeLevel = play_mode_normal();
-            }
-
-            if (sCurrPlayMode == PLAY_MODE_PAUSED) {
-                changeLevel = play_mode_paused();
-            }
+            changeLevel = play_mode_paused();
             break;
         case PLAY_MODE_CHANGE_AREA:
             changeLevel = play_mode_change_area();
@@ -1815,7 +1821,7 @@ s32 init_level(void) {
                 set_mario_action(gMarioState, ACT_IDLE, 0);
             } else if (!gDebugLevelSelect) {
                 if (gMarioState && gMarioState->action != ACT_UNINITIALIZED) {
-                    bool skipIntro = (gNetworkType == NT_NONE || gServerSettings.skipIntro != 0);
+                    bool skipIntro = (gNetworkType == NT_NONE) ? (configSkipIntro != 0) : (gServerSettings.skipIntro != 0);
                     if (gDjuiInMainMenu && gNetworkType == NT_NONE) {
                         // pick random main menu level
                         if (configMenuRandom) {
@@ -1926,7 +1932,6 @@ s32 lvl_init_from_save_file(UNUSED s16 arg0, s16 levelNum) {
     sWarpDest.type = WARP_TYPE_NOT_WARPING;
     sDelayedWarpOp = WARP_OP_NONE;
     gNeverEnteredCastle = !save_file_exists(gCurrSaveFileNum - 1) && (gServerSettings.skipIntro == 0);
-    if (gNetworkType == NT_NONE) { gNeverEnteredCastle = true; }
 
     gCurrLevelNum = levelNum;
     gCurrCourseNum = COURSE_NONE;
@@ -2019,7 +2024,6 @@ void fake_lvl_init_from_save_file(void) {
     sWarpDest.type = WARP_TYPE_NOT_WARPING;
     sDelayedWarpOp = WARP_OP_NONE;
     gNeverEnteredCastle = !save_file_exists(gCurrSaveFileNum - 1) && (gServerSettings.skipIntro == 0);
-    if (gNetworkType == NT_NONE) { gNeverEnteredCastle = true; }
 
     gCurrCreditsEntry = NULL;
     gMarioStates[0].specialTripleJump = false;
