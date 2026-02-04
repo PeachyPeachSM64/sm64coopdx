@@ -222,7 +222,6 @@ void clear_areas(void) {
     if (np != NULL) {
         np->currAreaSyncValid = false;
         np->currLevelSyncValid = false;
-        network_send_level_area_inform();
     }
 
     gCurrentArea = NULL;
@@ -300,7 +299,6 @@ void unload_area(void) {
     struct NetworkPlayer* np = gNetworkPlayerLocal;
     if (np != NULL) {
         np->currAreaSyncValid = false;
-        network_send_level_area_inform();
     }
 
     sync_objects_clear();

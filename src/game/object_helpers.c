@@ -1412,11 +1412,6 @@ void cur_obj_get_thrown_or_placed(f32 forwardVel, f32 velY, s32 thrownAction) {
         o->oAction = thrownAction;
         cur_obj_move_after_thrown_or_dropped(forwardVel, velY);
     }
-
-    struct SyncObject* so = sync_object_get(o->oSyncID);
-    if (so && so->owned) {
-        network_send_object(o);
-    }
 }
 
 void cur_obj_get_dropped(void) {
@@ -1426,11 +1421,6 @@ void cur_obj_get_dropped(void) {
 
     o->oHeldState = HELD_FREE;
     cur_obj_move_after_thrown_or_dropped(0.0f, 0.0f);
-
-    struct SyncObject* so = sync_object_get(o->oSyncID);
-    if (so && so->owned) {
-        network_send_object(o);
-    }
 }
 
 void cur_obj_set_model(s32 modelID) {
