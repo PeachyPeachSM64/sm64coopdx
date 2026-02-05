@@ -743,8 +743,6 @@ void smlua_cobject_init_globals(void) {
 
     EXPOSE_GLOBAL_ARRAY(LOT_MARIOSTATE, gMarioStates, MAX_PLAYERS);
 
-    EXPOSE_GLOBAL_ARRAY(LOT_NETWORKPLAYER, gNetworkPlayers, MAX_PLAYERS);
-
     {
         lua_newtable(L);
         int t = lua_gettop(gLuaState);
@@ -781,10 +779,6 @@ void smlua_cobject_init_globals(void) {
     EXPOSE_GLOBAL(LOT_FIRSTPERSONCAMERA, gFirstPersonCamera);
 
     EXPOSE_GLOBAL(LOT_LAKITUSTATE, gLakituState);
-
-    EXPOSE_GLOBAL(LOT_SERVERSETTINGS, gServerSettings);
-
-    EXPOSE_GLOBAL(LOT_NAMETAGSSETTINGS, gNametagsSettings);
 }
 
 void smlua_cobject_init_per_file_globals(const char* path) {

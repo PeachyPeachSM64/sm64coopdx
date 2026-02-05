@@ -1,5 +1,4 @@
 #include "pc/nametags.h"
-#include "pc/network/network_player.h"
 #include "game/object_helpers.h"
 #include "behavior_data.h"
 #include "pc/djui/djui_hud_utils.h"
@@ -43,6 +42,7 @@ void djui_hud_print_outlined_text_interpolated(const char* text, f32 prevX, f32 
 void nametags_render(void) {
     return;
 
+#if 0
     djui_hud_set_resolution(RESOLUTION_N64);
     djui_hud_set_font(FONT_SPECIAL);
 
@@ -185,6 +185,7 @@ void nametags_render(void) {
         vec3f_copy(e->prevPos, nametag->pos);
         e->prevScale = nametag->scale;
     }
+#endif
 }
 
 void nametags_reset(void) {
