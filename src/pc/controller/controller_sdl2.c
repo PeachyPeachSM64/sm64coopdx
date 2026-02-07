@@ -198,7 +198,7 @@ static void controller_sdl_read(OSContPad *pad) {
     u32 mouse = mouse_buttons;
 
     u32 buttons_down = 0;
-    if (!gInteractableOverridePad) {
+    if (!gInteractableOverridePad && !gDjuiInMainMenu) {
         for (u32 i = 0; i < num_mouse_binds; ++i)
             if (mouse & SDL_BUTTON(mouse_binds[i][0]))
                 buttons_down |= mouse_binds[i][1];
