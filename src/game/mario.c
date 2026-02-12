@@ -1039,6 +1039,29 @@ static u32 set_mario_action_airborne(struct MarioState *m, u32 action, u32 actio
         case ACT_JUMP_KICK:
             m->vel[1] = 20.0f;
             break;
+
+        // Set forward vel to a predefined value for non-player knockbacks
+        case ACT_BACKWARD_AIR_KB:
+        case ACT_HARD_BACKWARD_AIR_KB:
+            if (!(actionArg & PVP_ATTACK_KNOCKBACK_ACTION_ARG)) {
+                mario_set_forward_vel(m, -16.0f);
+            }
+            break;
+
+        case ACT_FORWARD_AIR_KB:
+        case ACT_HARD_FORWARD_AIR_KB:
+            if (!(actionArg & PVP_ATTACK_KNOCKBACK_ACTION_ARG)) {
+                mario_set_forward_vel(m, 16.0f);
+            }
+            break;
+
+        case ACT_THROWN_BACKWARD:
+        case ACT_THROWN_FORWARD:
+        case ACT_SOFT_BONK:
+            if (!(actionArg & PVP_ATTACK_KNOCKBACK_ACTION_ARG)) {
+                mario_set_forward_vel(m, m->forwardVel); // needed to update velocities
+            }
+            break;
     }
 
     m->peakHeight = m->pos[1];
@@ -2188,6 +2211,7 @@ void init_single_mario(struct MarioState* m) {
 
     m->heldObj = NULL;
     m->heldByObj = NULL;
+    m->interactObj = NULL;
     m->riddenObj = NULL;
     m->usedObj = NULL;
     m->bubbleObj = NULL;
