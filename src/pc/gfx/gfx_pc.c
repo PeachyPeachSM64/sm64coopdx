@@ -59,6 +59,10 @@ static struct RSP {
     ALIGNED16 Mat4 modelview_matrix_stack[MAX_MATRIX_STACK_SIZE];
     uint32_t modelview_matrix_stack_size;
 
+    ALIGNED16 Mat4 current_modelview_matrix;
+
+    float loaded_view_pos[MAX_VERTICES][3];
+
     uint32_t geometry_mode;
     int16_t fog_mul, fog_offset;
     int16_t fresnel_scale, fresnel_offset;
@@ -675,6 +679,12 @@ static void OPTIMIZE_O3 gfx_sp_matrix(uint8_t parameters, const int32_t *addr) {
         } else {
             mtxf_mul(rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
         }
+
+        memcpy(
+            rsp.current_modelview_matrix,
+            rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1],
+            sizeof(Mat4)
+        );
         rsp.lights_changed = 1;
     }
     mtxf_mul(rsp.MP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
@@ -756,6 +766,16 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         const Vtx_t *v = &vertices[i].v;
         const Vtx_tn *vn = &vertices[i].n;
         struct GfxVertex *d = &rsp.loaded_vertices[dest_index];
+
+        float view_x = v->ob[0] * rsp.current_modelview_matrix[0][0] + v->ob[1] * rsp.current_modelview_matrix[1][0] + v->ob[2] * rsp.current_modelview_matrix[2][0] + rsp.current_modelview_matrix[3][0];
+        float view_y = v->ob[0] * rsp.current_modelview_matrix[0][1] + v->ob[1] * rsp.current_modelview_matrix[1][1] + v->ob[2] * rsp.current_modelview_matrix[2][1] + rsp.current_modelview_matrix[3][1];
+        float view_z = v->ob[0] * rsp.current_modelview_matrix[0][2] + v->ob[1] * rsp.current_modelview_matrix[1][2] + v->ob[2] * rsp.current_modelview_matrix[2][2] + rsp.current_modelview_matrix[3][2];
+
+        if (dest_index < MAX_VERTICES) {
+            rsp.loaded_view_pos[dest_index][0] = view_x;
+            rsp.loaded_view_pos[dest_index][1] = view_y;
+            rsp.loaded_view_pos[dest_index][2] = view_z;
+        }
 
 #ifdef __SSE__
         __m128 ob0 = _mm_set1_ps(v->ob[0]);
@@ -1009,6 +1029,24 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v2 = &rsp.loaded_vertices[vtx2_idx];
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
     struct GfxVertex *v_arr[3] = {v1, v2, v3};
+
+    float *p1 = rsp.loaded_view_pos[vtx1_idx];
+    float *p2 = rsp.loaded_view_pos[vtx2_idx];
+    float *p3 = rsp.loaded_view_pos[vtx3_idx];
+
+    float e1x = p2[0] - p1[0];
+    float e1y = p2[1] - p1[1];
+    float e1z = p2[2] - p1[2];
+
+    float e2x = p3[0] - p1[0];
+    float e2y = p3[1] - p1[1];
+    float e2z = p3[2] - p1[2];
+
+    float nx = e1y * e2z - e1z * e2y;
+    float ny = e1z * e2x - e1x * e2z;
+    float nz = e1x * e2y - e1y * e2x;
+
+    printf("tri normal: %f %f %f\n", nx, ny, nz);
 
     if (v1->clip_rej & v2->clip_rej & v3->clip_rej) {
         // The whole triangle lies outside the visible area
