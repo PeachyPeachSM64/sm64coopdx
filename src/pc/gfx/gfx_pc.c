@@ -1046,8 +1046,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     float ny = e1z * e2x - e1x * e2z;
     float nz = e1x * e2y - e1y * e2x;
 
-    printf("tri normal: %f %f %f\n", nx, ny, nz);
-
     if (v1->clip_rej & v2->clip_rej & v3->clip_rej) {
         // The whole triangle lies outside the visible area
         return;
