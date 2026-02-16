@@ -1,5 +1,3 @@
-#include "src/game/envfx_snow.h"
-
 const GeoLayout castle_grounds_area_1_geo[] = {
 	GEO_NODE_START(),
 	GEO_OPEN_NODE(),
@@ -26,7 +24,7 @@ const GeoLayout castle_grounds_area_1_geo[] = {
 		GEO_BILLBOARD_WITH_PARAMS_AND_DL(LAYER_TRANSPARENT, -1220, 266, 1914, castle_grounds_dl_Plane_001_mesh_layer_5),
 		GEO_BILLBOARD_WITH_PARAMS_AND_DL(LAYER_TRANSPARENT, -263, 266, 1168, castle_grounds_dl_Plane_002_mesh_layer_5),
 		GEO_DISPLAY_LIST(LAYER_TRANSPARENT, castle_grounds_dl_Sphere_001_mesh_layer_5),
-		GEO_DISPLAY_LIST(LAYER_TRANSPARENT, castle_grounds_dl_Sphere_003_mesh_layer_5_with_revert),
+		GEO_DISPLAY_LIST(LAYER_TRANSPARENT, castle_grounds_dl_Sphere_003_mesh_layer_5),
 		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, -2091, 407, 2030, 0, 0, 90, castle_grounds_dl_wallcurve_001_mesh_layer_1),
 		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, -688, 407, 2103, 0, 90, 90, castle_grounds_dl_wallcurve_002_mesh_layer_1),
 		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, -2091, 407, 1978, 0, -95, 90, castle_grounds_dl_wallcurve_003_mesh_layer_1),
@@ -60,7 +58,7 @@ const GeoLayout castle_grounds_area_1_geo[] = {
 		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, 6322, 6125, -3, 0, 0, 90, castle_grounds_dl_walls_mesh_layer_1),
 		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, 6322, 6125, -3, 0, 0, 90, castle_grounds_dl_walls_001_mesh_layer_1),
 		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, -6881, 5418, -1279, 0, 0, 90, castle_grounds_dl_walls_002_mesh_layer_1),
-		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, 6322, 6125, -3, 0, 0, 90, castle_grounds_dl_walls_003_mesh_layer_1_with_revert),
+		GEO_TRANSLATE_ROTATE_WITH_DL(LAYER_OPAQUE, 6322, 6125, -3, 0, 0, 90, castle_grounds_dl_walls_003_mesh_layer_1),
 	GEO_CLOSE_NODE(),
 	GEO_RETURN(),
 };
