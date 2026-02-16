@@ -46,6 +46,10 @@ M.DEFAULT_LEVEL_AMBIENT_R = 255
 M.DEFAULT_LEVEL_AMBIENT_G = 255
 M.DEFAULT_LEVEL_AMBIENT_B = 255
 
+M.DEFAULT_LEVEL_DIR_LIGHT_YAW_DEG = 45
+M.DEFAULT_LEVEL_DIR_LIGHT_PITCH_DEG = -35
+M.DEFAULT_LEVEL_DIR_LIGHT_INTENSITY = 0.40
+
 M.POS_EPSILON = 0.001
 
 M.AMBIENT_BY_LEVEL_AREA = {
@@ -60,15 +64,28 @@ M.AMBIENT_BY_LEVEL_AREA = {
 M.AMBIENT_BY_LEVEL = {
     [LEVEL_NONE] = { r = 255, g = 255, b = 255 },
     [LEVEL_CASTLE_GROUNDS] = { r = 225, g = 225, b = 255 },
-    [LEVEL_CASTLE] = { r = 255, g = 255, b = 255 },
+    [LEVEL_CASTLE] = { r = 255, g = 235, b = 255 },
     [LEVEL_BOB] = { r = 225, g = 225, b = 255 },
     [LEVEL_WF] = { r = 225, g = 225, b = 255 },
     [LEVEL_JRB] = { r = 175, g = 175, b = 200 },
     [LEVEL_CCM] = { r = 225, g = 225, b = 255 },
     [LEVEL_BITDW] = { r = 100, g = 155, b = 100 },
+    [LEVEL_BOWSER_1] = { r = 245, g = 125, b = 245 },
     [LEVEL_BITFS] = { r = 225, g = 155, b = 155 },
     [LEVEL_LLL] = { r = 225, g = 155, b = 155 },
     [LEVEL_HMC] = { r = 90, g = 90, b = 120 },
+}
+
+M.DIR_LIGHT_BY_LEVEL = {
+    [LEVEL_NONE] = { yawDeg = 45, pitchDeg = -35, intensity = 0.00 },
+    [LEVEL_CASTLE_GROUNDS] = { yawDeg = 45, pitchDeg = -35, intensity = 0.35 },
+    [LEVEL_CASTLE] = { yawDeg = 0.0, pitchDeg = 0.0, intensity = 0.40 },
+    [LEVEL_BOB] = { yawDeg = 45, pitchDeg = -35, intensity = 0.40 },
+    [LEVEL_WF] = { yawDeg = 135, pitchDeg = -35, intensity = 0.40 },
+    [LEVEL_CCM] = { yawDeg = 45, pitchDeg = -45, intensity = 0.45 },
+    [LEVEL_JRB] = { yawDeg = 0, pitchDeg = -25, intensity = 0.35 },
+    [LEVEL_HMC] = { yawDeg = 180, pitchDeg = -20, intensity = 0.20 },
+    [LEVEL_LLL] = { yawDeg = 90, pitchDeg = -20, intensity = 0.25 },
 }
 
 return M

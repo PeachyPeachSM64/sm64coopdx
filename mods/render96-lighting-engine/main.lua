@@ -3,6 +3,7 @@
 
 require('config')
 require('ambient')
+require('directional')
 require('stars')
 require('flames')
 require('burners')

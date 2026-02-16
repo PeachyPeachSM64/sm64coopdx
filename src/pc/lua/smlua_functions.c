@@ -40,6 +40,43 @@ bool smlua_functions_valid_param_range(lua_State* L, int min, int max) {
     return true;
 }
 
+///////////////
+// game state //
+///////////////
+
+int smlua_func_get_curr_level_num(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushinteger(L, gCurrLevelNum);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_curr_course_num(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushinteger(L, gCurrCourseNum);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_curr_area_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushinteger(L, gCurrAreaIndex);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
   ///////////
  // table //
 ///////////
@@ -911,6 +948,9 @@ void smlua_bind_functions(void) {
     // misc
     smlua_bind_function(L, "table_copy", smlua_func_table_copy);
     smlua_bind_function(L, "table_deepcopy", smlua_func_table_deepcopy);
+    smlua_bind_function(L, "get_curr_level_num", smlua_func_get_curr_level_num);
+    smlua_bind_function(L, "get_curr_course_num", smlua_func_get_curr_course_num);
+    smlua_bind_function(L, "get_curr_area_index", smlua_func_get_curr_area_index);
     smlua_bind_function(L, "init_mario_after_warp", smlua_func_init_mario_after_warp);
     smlua_bind_function(L, "reset_level", smlua_func_reset_level);
     smlua_bind_function(L, "set_exclamation_box_contents", smlua_func_set_exclamation_box_contents);
