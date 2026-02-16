@@ -22,6 +22,7 @@
 #include "pc/network/network.h"
 #include "pc/lua/smlua.h"
 #include "hardcoded.h"
+#include "wario_moves.h"
 
 /* |description|
 Checks for and handles common conditions that would cancel Mario's current idle action.
@@ -107,6 +108,10 @@ s32 check_common_hold_idle_cancels(struct MarioState *m) {
 
     if (m->input & INPUT_B_PRESSED) {
         return set_mario_action(m, ACT_THROWING, 0);
+    }
+
+    if (check_wario_spin_light_idle_cancel(m)) {
+        return TRUE;
     }
 
     if (m->input & INPUT_Z_DOWN) {
