@@ -11,15 +11,19 @@
 #include "level_update.h"
 #include "mario.h"
 #include "mario_step.h"
-#include "save_file.h"
-#include "rumble_init.h"
-#include "bettercamera.h"
+#include "mario_misc.h"
+#include "interaction.h"
+#include "memory.h"
+#include "audio/external.h"
+#include "characters.h"
 #include "behavior_table.h"
 #include "object_helpers.h"
 #include "pc/debuglog.h"
 #include "pc/configfile.h"
 #include "pc/lua/smlua.h"
 #include "hardcoded.h"
+#include "bettercamera.h"
+#include "rumble_init.h"
 
 /* |description|
 Plays a spinning sound at specific animation frames for flips (usually side flips or certain jump flips).
@@ -321,11 +325,6 @@ void update_air_without_turn(struct MarioState *m) {
     }
 }
 
-
-/* |description|
-Updates Mario's movement when in actions like lava boost or twirling in mid-air. Applies player input to adjust forward velocity
-and facing angle, but in a more restricted manner compared to standard jump movement. Used by `ACT_LAVA_BOOST` and `ACT_TWIRLING`
-|descriptionEnd| */
 void update_lava_boost_or_twirling(struct MarioState *m) {
     if (!m) { return; }
     s16 intendedDYaw;
@@ -337,7 +336,6 @@ void update_lava_boost_or_twirling(struct MarioState *m) {
 
         m->forwardVel += coss(intendedDYaw) * intendedMag;
         m->faceAngle[1] += sins(intendedDYaw) * intendedMag * 1024.0f;
-
         if (m->forwardVel < 0.0f) {
             m->faceAngle[1] += 0x8000;
             m->forwardVel *= -1.0f;
@@ -352,14 +350,9 @@ void update_lava_boost_or_twirling(struct MarioState *m) {
     m->vel[2] = m->slideVelZ = m->forwardVel * coss(m->faceAngle[1]);
 }
 
-/* |description|
-Calculates and applies a change in Mario's yaw while flying, based on horizontal stick input. Approaches a target yaw velocity
-and sets Mario's roll angle to simulate banking turns. This results in a more natural, curved flight path
-|descriptionEnd| */
 void update_flying_yaw(struct MarioState *m) {
     if (!m) { return; }
     s16 targetYawVel = -(s16)(m->controller->stickX * (m->forwardVel / 4.0f));
-
     if (targetYawVel > 0) {
         if (m->angleVel[1] < 0) {
             m->angleVel[1] += 0x40;
@@ -386,14 +379,9 @@ void update_flying_yaw(struct MarioState *m) {
     m->faceAngle[2] = 20 * -m->angleVel[1];
 }
 
-/* |description|
-Calculates and applies a change in Mario's pitch while flying, based on vertical stick input. Approaches a target pitch velocity
-and clamps the final pitch angle to a certain range, simulating a smooth flight control
-|descriptionEnd| */
 void update_flying_pitch(struct MarioState *m) {
     if (!m) { return; }
     s16 targetPitchVel = -(s16)(m->controller->stickY * (m->forwardVel / 5.0f));
-
     if (targetPitchVel > 0) {
         if (m->angleVel[0] < 0) {
             m->angleVel[0] += 0x40;
@@ -417,10 +405,6 @@ void update_flying_pitch(struct MarioState *m) {
     }
 }
 
-/* |description|
-Handles the complete flying logic for Mario (usually with the wing cap). Continuously updates pitch and yaw based on controller input,
-applies drag, and adjusts forward velocity. Also updates Mario's model angles for flight animations
-|descriptionEnd| */
 void update_flying(struct MarioState *m) {
     if (!m) { return; }
     UNUSED u32 unused;
@@ -460,11 +444,48 @@ void update_flying(struct MarioState *m) {
     m->slideVelZ = m->vel[2];
 }
 
-/* |description|
-Performs a standard step update for air actions without knockback, typically used for jumps or freefalls.
-Updates Mario's velocity (and possibly checks horizontal wind), then calls `perform_air_step` with given `stepArg`.
-Handles how Mario lands, hits walls, grabs ledges, or grabs ceilings. Optionally sets an animation
-|descriptionEnd| */
+static s32 luigi_should_scuttle_jump(struct MarioState *m) {
+    if (m == NULL) { return FALSE; }
+    if (get_character(m)->type != CT_LUIGI) { return FALSE; }
+    if (m->flags & MARIO_WING_CAP) { return FALSE; }
+    if (!(m->input & INPUT_A_DOWN)) { return FALSE; }
+    if (m->vel[1] >= 0.0f) { return FALSE; }
+
+    return (m->action == ACT_JUMP
+         || m->action == ACT_DOUBLE_JUMP
+         || m->action == ACT_FREEFALL
+         || m->action == ACT_HOLD_JUMP);
+}
+
+static s32 luigi_scuttle_run_anim(struct MarioState *m) {
+    if (m == NULL) { return CHAR_ANIM_RUNNING; }
+    if (m->action == ACT_HOLD_JUMP || m->heldObj != NULL) {
+        return CHAR_ANIM_RUN_WITH_LIGHT_OBJ;
+    }
+    return CHAR_ANIM_RUNNING;
+}
+
+static void luigi_scuttle_anim(struct MarioState *m) {
+    if (m == NULL) { return; }
+    s32 anim = luigi_scuttle_run_anim(m);
+    s32 animId = get_character_anim(m, anim);
+
+    if (m->marioObj->header.gfx.animInfo.animID != animId) {
+        set_character_anim_with_accel(m, anim, 0x00095000);
+    } else if (is_anim_at_end(m)) {
+        set_anim_to_frame(m, 0);
+    }
+}
+
+static void luigi_apply_scuttle_jump(struct MarioState *m) {
+    if (m == NULL) { return; }
+    m->vel[1] += 2.3f;
+    if (m->forwardVel > 0.0f) {
+        m->forwardVel -= 1.2f;
+        if (m->forwardVel < 0.0f) { m->forwardVel = 0.0f; }
+    }
+}
+
 u32 common_air_action_step(struct MarioState *m, u32 landAction, s32 animation, u32 stepArg) {
     if (!m) { return 0; }
     u32 stepResult;
@@ -478,7 +499,12 @@ u32 common_air_action_step(struct MarioState *m, u32 landAction, s32 animation, 
 
     switch (stepResult) {
         case AIR_STEP_NONE:
-            set_character_animation(m, animation);
+            if (luigi_should_scuttle_jump(m)) {
+                luigi_scuttle_anim(m);
+                luigi_apply_scuttle_jump(m);
+            } else {
+                set_character_animation(m, animation);
+            }
             break;
 
         case AIR_STEP_LANDED:
@@ -504,15 +530,6 @@ u32 common_air_action_step(struct MarioState *m, u32 landAction, s32 animation, 
                         m->vel[1] = 0.0f;
                     }
 
-                    //! Hands-free holding. Bonking while no wall is referenced
-                    // sets Mario's action to a non-holding action without
-                    // dropping the object, causing the hands-free holding
-                    // glitch. This can be achieved using an exposed ceiling,
-                    // out of bounds, grazing the bottom of a wall while
-                    // falling such that the final quarter step does not find a
-                    // wall collision, or by rising into the top of a wall such
-                    // that the final quarter step detects a ledge, but you are
-                    // not able to ledge grab it.
                     if (configBouncyLevelBounds == 0) {
                         if (m->forwardVel >= 38.0f) {
                             set_mario_particle_flags(m, PARTICLE_VERTICAL_STAR, FALSE);
@@ -615,6 +632,15 @@ s32 act_backflip(struct MarioState *m) {
     if (!m) { return 0; }
     if (m->input & INPUT_Z_PRESSED) {
         return set_mario_action(m, ACT_GROUND_POUND, 0);
+    }
+
+    if (get_character(m)->type == CT_LUIGI) {
+        if (m->actionTimer == 0) {
+            m->vel[1] += 1.75f;
+        }
+        if (m->marioObj->header.gfx.animInfo.animFrame > 17.5f) {
+            return set_mario_action(m, ACT_TWIRLING, 0);
+        }
     }
 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, CHAR_SOUND_YAH_WAH_HOO);

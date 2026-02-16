@@ -16,6 +16,7 @@
 #include "pc/debuglog.h"
 #include "pc/configfile.h"
 #include "pc/lua/smlua.h"
+#include "characters.h"
 
 struct LandingAction {
     s16 numFrames;
@@ -469,13 +470,22 @@ s32 apply_slope_decel(struct MarioState *m, f32 decelCoef) {
             decel = decelCoef * 0.2f;
             break;
         case SURFACE_CLASS_SLIPPERY:
-            decel = decelCoef * 0.7f;
+            if (get_character(m)->type == CT_LUIGI)
+                decel = decelCoef * 0.4f;
+            else
+                decel = decelCoef * 0.7f;
             break;
         default:
-            decel = decelCoef * 2.0f;
+            if (get_character(m)->type == CT_LUIGI)
+                decel = decelCoef * 0.7f;
+            else
+                decel = decelCoef * 2.0f;
             break;
         case SURFACE_CLASS_NOT_SLIPPERY:
-            decel = decelCoef * 3.0f;
+            if (get_character(m)->type == CT_LUIGI)
+                decel = decelCoef * 1.0f;
+            else
+                decel = decelCoef * 3.0f;
             break;
     }
 
