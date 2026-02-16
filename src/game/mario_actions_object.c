@@ -15,6 +15,7 @@
 #include "pc/network/network.h"
 #include "object_helpers.h"
 #include "pc/lua/smlua.h"
+#include "wario_moves.h"
 
 /**
  * Used by act_punching() to determine Mario's forward velocity during each
@@ -532,6 +533,11 @@ s32 mario_execute_object_action(struct MarioState *m) {
             case ACT_PICKING_UP_BOWSER:  cancel = act_picking_up_bowser(m);  break;
             case ACT_HOLDING_BOWSER:     cancel = act_holding_bowser(m);     break;
             case ACT_RELEASING_BOWSER:   cancel = act_releasing_bowser(m);   break;
+            case ACT_PICKING_UP_ENEMIES:  cancel = act_picking_up_enemies(m); break;
+            case ACT_HOLDING_ENEMIES:     cancel = act_holding_enemies(m);    break;
+            case ACT_RELEASING_ENEMIES:   cancel = act_releasing_enemies(m);  break;
+            case ACT_WARIO_PILE_DRIVER:   cancel = act_wario_pile_driver(m);  break;
+            case ACT_WARIO_PILE_DRIVER_LAND: cancel = act_wario_pile_driver_land(m); break;
             default:
                 LOG_ERROR("Attempted to execute unimplemented action '%08X'", m->action);
                 set_mario_action(m, ACT_IDLE, 0);

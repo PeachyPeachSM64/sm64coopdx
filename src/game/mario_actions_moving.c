@@ -17,6 +17,7 @@
 #include "pc/configfile.h"
 #include "pc/lua/smlua.h"
 #include "characters.h"
+#include "wario_moves.h"
 
 struct LandingAction {
     s16 numFrames;
@@ -185,6 +186,10 @@ s32 set_triple_jump_action(struct MarioState *m, UNUSED u32 action, UNUSED u32 a
     if (m->flags & MARIO_WING_CAP) {
         return set_mario_action(m, ACT_FLYING_TRIPLE_JUMP, 0);
     } else if (m->forwardVel > 20.0f) {
+        if (get_character(m)->type == CT_WARIO) {
+            return set_mario_action(m, ACT_WARIO_TRIPLE_JUMP, 0);
+        }
+
         return set_mario_action(m, ACT_TRIPLE_JUMP, 0);
     } else {
         return set_mario_action(m, ACT_JUMP, 0);
@@ -593,6 +598,10 @@ s32 check_ground_dive_or_punch(struct MarioState *m) {
     if (m->input & INPUT_B_PRESSED) {
         //! Speed kick (shoutouts to SimpleFlips)
         if (m->forwardVel >= 29.0f && m->controller->stickMag > 48.0f) {
+            if (get_character(m)->type == CT_WARIO) {
+                return set_mario_action(m, ACT_WARIO_CHARGE, 0);
+            }
+
             m->vel[1] = 20.0f;
             return set_mario_action(m, ACT_DIVE, 1);
         }
@@ -2233,6 +2242,7 @@ s32 mario_execute_moving_action(struct MarioState *m) {
         /* clang-format off */
         switch (m->action) {
             case ACT_WALKING:                  cancel = act_walking(m);                  break;
+            case ACT_WARIO_CHARGE:             cancel = act_wario_charge(m);             break;
             case ACT_HOLD_WALKING:             cancel = act_hold_walking(m);             break;
             case ACT_HOLD_HEAVY_WALKING:       cancel = act_hold_heavy_walking(m);       break;
             case ACT_TURNING_AROUND:           cancel = act_turning_around(m);           break;

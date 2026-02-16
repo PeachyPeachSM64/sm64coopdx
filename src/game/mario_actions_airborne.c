@@ -24,6 +24,7 @@
 #include "hardcoded.h"
 #include "bettercamera.h"
 #include "rumble_init.h"
+#include "wario_moves.h"
 
 /* |description|
 Plays a spinning sound at specific animation frames for flips (usually side flips or certain jump flips).
@@ -570,10 +571,14 @@ s32 act_jump(struct MarioState *m) {
         return TRUE;
     }
 
+    if (check_wario_pile_driver_jump_cancel(m)) {
+        return TRUE;
+    }
+ 
     if (m->input & INPUT_Z_PRESSED) {
         return set_mario_action(m, ACT_GROUND_POUND, 0);
     }
-
+ 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, 0);
     common_air_action_step(m, ACT_JUMP_LAND, CHAR_ANIM_SINGLE_JUMP,
                            AIR_STEP_CHECK_LEDGE_GRAB | AIR_STEP_CHECK_HANG);
@@ -590,10 +595,14 @@ s32 act_double_jump(struct MarioState *m) {
         return TRUE;
     }
 
+    if (check_wario_pile_driver_jump_cancel(m)) {
+        return TRUE;
+    }
+ 
     if (m->input & INPUT_Z_PRESSED) {
         return set_mario_action(m, ACT_GROUND_POUND, 0);
     }
-
+ 
     play_mario_sound(m, SOUND_ACTION_TERRAIN_JUMP, CHAR_SOUND_HOOHOO);
     common_air_action_step(m, ACT_DOUBLE_JUMP_LAND, animation,
                            AIR_STEP_CHECK_LEDGE_GRAB | AIR_STEP_CHECK_HANG);
@@ -1559,6 +1568,7 @@ s32 act_forward_rollout(struct MarioState *m) {
 
         case AIR_STEP_HIT_WALL:
             if (m->wall == NULL && configBouncyLevelBounds != 0) { break; }
+
             mario_set_forward_vel(m, 0.0f);
             break;
 
@@ -1602,6 +1612,7 @@ s32 act_backward_rollout(struct MarioState *m) {
 
         case AIR_STEP_HIT_WALL:
             if (m->wall == NULL && configBouncyLevelBounds != 0) { break; }
+
             mario_set_forward_vel(m, 0.0f);
             break;
 
@@ -1641,6 +1652,7 @@ s32 act_butt_slide_air(struct MarioState *m) {
             if (m->vel[1] > 0.0f) {
                 m->vel[1] = 0.0f;
             }
+
             set_mario_particle_flags(m, PARTICLE_VERTICAL_STAR, FALSE);
             set_mario_action(m, ACT_BACKWARD_AIR_KB, 0);
             break;
@@ -1806,7 +1818,6 @@ s32 act_slide_kick(struct MarioState *m) {
             if (m->actionState == 0 && m->vel[1] < 0.0f) {
                 m->vel[1] = -m->vel[1] / 2.0f;
                 m->actionState = 1;
-                m->actionTimer = 0;
             } else {
                 set_mario_action(m, ACT_SLIDE_KICK_SLIDE, 0);
             }
@@ -2228,6 +2239,7 @@ s32 act_flying_triple_jump(struct MarioState *m) {
             break;
     }
 
+    set_mario_particle_flags(m, PARTICLE_SPARKLES, FALSE);
     return FALSE;
 }
 
@@ -2372,6 +2384,7 @@ s32 mario_execute_airborne_action(struct MarioState *m) {
             case ACT_SIDE_FLIP:            cancel = act_side_flip(m);            break;
             case ACT_WALL_KICK_AIR:        cancel = act_wall_kick_air(m);        break;
             case ACT_TWIRLING:             cancel = act_twirling(m);             break;
+            case ACT_WARIO_TRIPLE_JUMP:     cancel = act_wario_triple_jump(m);    break;
             case ACT_WATER_JUMP:           cancel = act_water_jump(m);           break;
             case ACT_HOLD_WATER_JUMP:      cancel = act_hold_water_jump(m);      break;
             case ACT_STEEP_JUMP:           cancel = act_steep_jump(m);           break;
