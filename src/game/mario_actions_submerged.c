@@ -492,7 +492,11 @@ static void common_swimming_step(struct MarioState *m, s16 swimStrength) {
         case WATER_STEP_HIT_FLOOR:
             floorPitch = -find_floor_slope(m, -0x8000);
             if (m->faceAngle[0] < floorPitch) {
-                m->faceAngle[0] = floorPitch;
+                if (configQolSmoothPitchWhenHittingFloorUnderwater) {
+                    m->faceAngle[0] = (s16)approach_s32(m->faceAngle[0], floorPitch, 0x800, 0x800);
+                } else {
+                    m->faceAngle[0] = floorPitch;
+                }
             }
             break;
 

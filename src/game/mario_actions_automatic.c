@@ -406,15 +406,32 @@ s32 update_hang_moving(struct MarioState *m) {
     if (!m) { return 0; }
     s32 stepResult;
     Vec3f nextPos = { 0 };
-    f32 maxSpeed = 4.0f;
+
+    f32 maxSpeed = configQolBetterHanging ? (m->intendedMag / 2.0f) : 4.0f;
 
     m->forwardVel += 1.0f;
     if (m->forwardVel > maxSpeed) {
         m->forwardVel = maxSpeed;
     }
 
-    m->faceAngle[1] =
-        m->intendedYaw - approach_s32((s16)(m->intendedYaw - m->faceAngle[1]), 0, 0x800, 0x800);
+    if (configQolBetterHanging) {
+        s16 turnRange = 0x800;
+        s16 dYaw = abs_angle_diff(m->faceAngle[1], m->intendedYaw);
+        if (m->forwardVel < 0.0f) {
+            m->intendedYaw += 0x8000;
+        } else if (dYaw > 0x4000) {
+            m->forwardVel *= ((coss(dYaw) + 1.0f) / 2.0f);
+            f32 denom = MAX(m->intendedMag, 0.0001f);
+            turnRange = (s16)(turnRange * (2.0f - (ABS(m->forwardVel) / denom)));
+        }
+
+        s16 diff = (s16)(m->intendedYaw - m->faceAngle[1]);
+        diff = (s16)approach_s32(diff, 0, turnRange, turnRange);
+        m->faceAngle[1] = m->intendedYaw - diff;
+    } else {
+        m->faceAngle[1] =
+            m->intendedYaw - approach_s32((s16)(m->intendedYaw - m->faceAngle[1]), 0, 0x800, 0x800);
+    }
 
     m->slideYaw = m->faceAngle[1];
     m->slideVelX = m->forwardVel * sins(m->faceAngle[1]);
@@ -457,12 +474,22 @@ s32 act_start_hanging(struct MarioState *m) {
         queue_rumble_data_mario(m, 5, 80);
     }
 
-    if ((m->input & INPUT_NONZERO_ANALOG) && m->actionTimer >= 31) {
-        return set_mario_action(m, ACT_HANGING, 0);
-    }
+    if (configQolBetterHanging) {
+        if ((m->input & INPUT_NONZERO_ANALOG) && (m->intendedMag > 16.0f) && (m->actionTimer > 1)) {
+            return set_mario_action(m, ACT_HANGING, 0);
+        }
 
-    if (!(m->input & INPUT_A_DOWN)) {
-        return set_mario_action(m, ACT_FREEFALL, 0);
+        if (m->input & (INPUT_A_PRESSED | INPUT_B_PRESSED)) {
+            return set_mario_action(m, ACT_FREEFALL, 0);
+        }
+    } else {
+        if ((m->input & INPUT_NONZERO_ANALOG) && m->actionTimer >= 31) {
+            return set_mario_action(m, ACT_HANGING, 0);
+        }
+
+        if (!(m->input & INPUT_A_DOWN)) {
+            return set_mario_action(m, ACT_FREEFALL, 0);
+        }
     }
 
     if (m->input & INPUT_Z_PRESSED) {
@@ -490,8 +517,14 @@ s32 act_hanging(struct MarioState *m) {
         return set_mario_action(m, ACT_HANG_MOVING, m->actionArg);
     }
 
-    if (!(m->input & INPUT_A_DOWN)) {
-        return set_mario_action(m, ACT_FREEFALL, 0);
+    if (configQolBetterHanging) {
+        if (m->input & (INPUT_A_PRESSED | INPUT_B_PRESSED)) {
+            return set_mario_action(m, ACT_FREEFALL, 0);
+        }
+    } else {
+        if (!(m->input & INPUT_A_DOWN)) {
+            return set_mario_action(m, ACT_FREEFALL, 0);
+        }
     }
 
     if (m->input & INPUT_Z_PRESSED) {
@@ -515,8 +548,14 @@ s32 act_hanging(struct MarioState *m) {
 
 s32 act_hang_moving(struct MarioState *m) {
     if (!m) { return 0; }
-    if (!(m->input & INPUT_A_DOWN)) {
-        return set_mario_action(m, ACT_FREEFALL, 0);
+    if (configQolBetterHanging) {
+        if (m->input & (INPUT_A_PRESSED | INPUT_B_PRESSED)) {
+            return set_mario_action(m, ACT_FREEFALL, 0);
+        }
+    } else {
+        if (!(m->input & INPUT_A_DOWN)) {
+            return set_mario_action(m, ACT_FREEFALL, 0);
+        }
     }
 
     if (m->input & INPUT_Z_PRESSED) {
