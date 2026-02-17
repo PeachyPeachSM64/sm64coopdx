@@ -2047,6 +2047,7 @@
    - [set_override_envfx](functions-7.md#set_override_envfx)
    - [get_global_timer](functions-7.md#get_global_timer)
    - [get_dialog_response](functions-7.md#get_dialog_response)
+   - [get_time_stop_flags](functions-7.md#get_time_stop_flags)
    - [get_local_discord_id](functions-7.md#get_local_discord_id)
    - [get_volume_master](functions-7.md#get_volume_master)
    - [get_volume_level](functions-7.md#get_volume_level)
@@ -2068,6 +2069,7 @@
    - [geo_get_current_perspective](functions-7.md#geo_get_current_perspective)
    - [geo_get_current_camera](functions-7.md#geo_get_current_camera)
    - [geo_get_current_held_object](functions-7.md#geo_get_current_held_object)
+   - [geo_skip_interpolation](functions-7.md#geo_skip_interpolation)
    - [texture_to_lua_table](functions-7.md#texture_to_lua_table)
    - [get_texture_name](functions-7.md#get_texture_name)
 
@@ -2129,6 +2131,8 @@
    - [obj_set_vel](functions-7.md#obj_set_vel)
    - [obj_move_xyz](functions-7.md#obj_move_xyz)
    - [set_whirlpools](functions-7.md#set_whirlpools)
+   - [obj_skip_interpolation](functions-7.md#obj_skip_interpolation)
+   - [obj_anim_skip_interpolation](functions-7.md#obj_anim_skip_interpolation)
 
 <br />
 
