@@ -2430,9 +2430,15 @@ void mario_handle_special_floors(struct MarioState *m) {
             case SURFACE_TIMER_END:
                 pss_end_slide(m);
                 break;
+
+            case SURFACE_BURNING:
+                if (configQolFixLavaInteraction) {
+                    check_lava_boost(m);
+                }
+                break;
         }
 
-        if (!(m->action & ACT_FLAG_AIR) && !(m->action & ACT_FLAG_SWIMMING)) {
+        if (!configQolFixLavaInteraction && !(m->action & ACT_FLAG_AIR) && !(m->action & ACT_FLAG_SWIMMING)) {
             switch (floorType) {
                 case SURFACE_BURNING:
                     check_lava_boost(m);

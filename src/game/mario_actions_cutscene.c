@@ -1004,8 +1004,15 @@ s32 act_unlocking_key_door(struct MarioState *m) {
     if (m->usedObj != NULL) {
         m->faceAngle[1] = m->usedObj->oMoveAngleYaw;
 
-        m->pos[0] = m->usedObj->oPosX + coss(m->faceAngle[1]) * 75.0f;
-        m->pos[2] = m->usedObj->oPosZ + sins(m->faceAngle[1]) * 75.0f;
+        if (configQolFixDoorKeyCutscene) {
+            s16 dAngle = abs_angle_diff(m->usedObj->oFaceAngleYaw, m->faceAngle[1]);
+            f32 offset = (dAngle <= 0x4000) ? 75.0f : -75.0f;
+            m->pos[0] = m->usedObj->oPosX + coss(m->faceAngle[1]) * offset;
+            m->pos[2] = m->usedObj->oPosZ + sins(m->faceAngle[1]) * offset;
+        } else {
+            m->pos[0] = m->usedObj->oPosX + coss(m->faceAngle[1]) * 75.0f;
+            m->pos[2] = m->usedObj->oPosZ + sins(m->faceAngle[1]) * 75.0f;
+        }
     }
 
     if (m->actionArg & 2) {
@@ -1047,6 +1054,7 @@ s32 act_unlocking_key_door(struct MarioState *m) {
 s32 act_unlocking_star_door(struct MarioState *m) {
     if (!m) { return 0; }
     static u8 allowRemoteStarSpawn = TRUE;
+
     switch (m->actionState) {
         case 0:
             if (m->usedObj != NULL) {
@@ -1352,10 +1360,38 @@ s32 act_spawn_spin_landing(struct MarioState *m) {
  */
 s32 act_exit_airborne(struct MarioState *m) {
     if (!m) { return 0; }
-    if (15 < m->actionTimer++
-        && launch_mario_until_land(m, ACT_EXIT_LAND_SAVE_DIALOG, CHAR_ANIM_GENERAL_FALL, -32.0f)) {
-        // heal Mario
-        m->healCounter = 31;
+    if (configQolBetterExitAirborne) {
+        f32 scale;
+        Vec3f nextScale;
+
+        switch (m->actionState) {
+            case 0:
+                m->squishTimer = 0xFF;
+                vec3f_set(m->marioObj->header.gfx.scale, 0.0f, 0.0f, 0.0f);
+                set_character_animation(m, CHAR_ANIM_FORWARD_SPINNING);
+                m->actionState = 1;
+                break;
+            case 1:
+                scale = m->actionTimer / 15.0f;
+                vec3f_set(nextScale, scale, scale, scale);
+                approach_vec3f_asymptotic(m->marioObj->header.gfx.scale, nextScale, 2.0f, 2.0f, 2.0f);
+                if (m->actionTimer++ > 15) {
+                    m->actionState = 2;
+                }
+                break;
+            case 2:
+                if (launch_mario_until_land(m, ACT_EXIT_LAND_SAVE_DIALOG, CHAR_ANIM_GENERAL_FALL, -32.0f)) {
+                    m->healCounter = 31;
+                    m->squishTimer = 0;
+                }
+                break;
+        }
+    } else {
+        if (15 < m->actionTimer++
+            && launch_mario_until_land(m, ACT_EXIT_LAND_SAVE_DIALOG, CHAR_ANIM_GENERAL_FALL, -32.0f)) {
+            // heal Mario
+            m->healCounter = 31;
+        }
     }
     // rotate him to face away from the entrance
     m->marioObj->header.gfx.angle[1] += 0x8000;
@@ -1802,6 +1838,8 @@ s32 act_squished(struct MarioState *m) {
     s16 surfAngle;
     s32 underSteepSurf = FALSE; // seems to be responsible for setting velocity?
 
+    Vec3f nextScale;
+
     if ((spaceUnderCeil = m->ceilHeight - m->floorHeight) < 0) {
         spaceUnderCeil = 0;
     }
@@ -1824,7 +1862,12 @@ s32 act_squished(struct MarioState *m) {
             if (spaceUnderCeil >= 10.1f) {
                 // Mario becomes a pancake
                 f32 squishAmount = spaceUnderCeil / 160.0f;
-                vec3f_set(m->marioObj->header.gfx.scale, 2.0f - squishAmount, squishAmount, 2.0f - squishAmount);
+                if (configQolSmoothSquish) {
+                    vec3f_set(nextScale, (2.0f - squishAmount), squishAmount, (2.0f - squishAmount));
+                    approach_vec3f_asymptotic(m->marioObj->header.gfx.scale, nextScale, 0.5f, 0.5f, 0.5f);
+                } else {
+                    vec3f_set(m->marioObj->header.gfx.scale, 2.0f - squishAmount, squishAmount, 2.0f - squishAmount);
+                }
             } else {
                 if (!(m->flags & MARIO_METAL_CAP) && m->invincTimer == 0) {
                     // cap on: 3 units; cap off: 4.5 units
@@ -1834,7 +1877,7 @@ s32 act_squished(struct MarioState *m) {
 
                 // Both of the 1.8's are really floats, but one of them has to
                 // be written as a double for this to match on -O2.
-                vec3f_set(m->marioObj->header.gfx.scale, 1.8, 0.05f, 1.8f);
+                vec3f_set(m->marioObj->header.gfx.scale, 1.8f, 0.05f, 1.8f);
                 queue_rumble_data_mario(m, 10, 80);
                 m->actionState = 1;
             }

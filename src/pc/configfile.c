@@ -222,6 +222,39 @@ bool configBugfixPiranhaPlantStateReset = true;
 bool configBugfixPiranhaPlantSleepDamage = true;
 bool configBugfixStarBowserKey = true;
 
+// Movement QoL settings
+bool configQolFixJumpKickNotSlippery = false;
+bool configQolFixShortHitboxSlideActs = false;
+bool configQolFixHitWallAction = false;
+bool configQolFixGroundPoundWall = false;
+bool configQolFixStationaryGroundSteps = false;
+bool configQolFixLessGroundBonks = false;
+bool configQolFixInitialWalkingSpeed = false;
+bool configQolFixSlideVelUpdateSliding = false;
+bool configQolFixWaterPlungeUpwarp = false;
+bool configQolFixLedgeGrabSteepSlopes = false;
+bool configQolFixActionLandEatInput = false;
+bool configQolSpecialTripleJumpAirSteps = false;
+bool configQolHangableSurfaceAirFreely = false;
+bool configQolBetterHanging = false;
+bool configQolBetterFlying = false;
+bool configQolVelocityBasedTurnSpeed = false;
+bool configQolEasierLongJumps = false;
+bool configQolEasierJumpKicks = false;
+bool configQolLedgeGrabMoreActions = false;
+bool configQolWallKickMoreActions = false;
+bool configQolTwirlWithObject = false;
+bool configQolSlideKickSlideButton = false;
+bool configQolDiveSlideRollout = false;
+bool configQolDisableCeilingBonks = false;
+bool configQolFixDoorKeyCutscene = false;
+bool configQolFixSurfaceWindDetection = false;
+bool configQolFixLavaInteraction = false;
+bool configQolSmoothSquish = false;
+bool configQolSmoothPitchWhenHittingFloorUnderwater = false;
+bool configQolLedgeClimbProtection = false;
+bool configQolBetterExitAirborne = false;
+
 static char* configfile_get_character_preset_name(enum CharacterType c) {
     switch (c) {
         case CT_MARIO:   return configPlayerPalettePresetMario;
@@ -482,6 +515,39 @@ static const struct ConfigOption options[] = {
     {.name = "bugfix_piranha_plant_state_reset", .type = CONFIG_TYPE_BOOL, .boolValue  = &configBugfixPiranhaPlantStateReset},
     {.name = "bugfix_piranha_plant_sleep_damage", .type = CONFIG_TYPE_BOOL, .boolValue = &configBugfixPiranhaPlantSleepDamage},
     {.name = "bugfix_star_bowser_key",         .type = CONFIG_TYPE_BOOL,   .boolValue   = &configBugfixStarBowserKey},
+
+    // Movement QoL settings
+    {.name = "qol_fix_jump_kick_not_slippery",          .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixJumpKickNotSlippery},
+    {.name = "qol_fix_short_hitbox_slide_acts",         .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixShortHitboxSlideActs},
+    {.name = "qol_fix_hit_wall_action",                 .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixHitWallAction},
+    {.name = "qol_fix_ground_pound_wall",               .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixGroundPoundWall},
+    {.name = "qol_fix_stationary_ground_steps",         .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixStationaryGroundSteps},
+    {.name = "qol_fix_less_ground_bonks",               .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixLessGroundBonks},
+    {.name = "qol_fix_initial_walking_speed",           .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixInitialWalkingSpeed},
+    {.name = "qol_fix_slide_vel_update_sliding",        .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixSlideVelUpdateSliding},
+    {.name = "qol_fix_water_plunge_upwarp",             .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixWaterPlungeUpwarp},
+    {.name = "qol_fix_ledge_grab_steep_slopes",         .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixLedgeGrabSteepSlopes},
+    {.name = "qol_fix_action_land_eat_input",           .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixActionLandEatInput},
+    {.name = "qol_special_triple_jump_air_steps",       .type = CONFIG_TYPE_BOOL, .boolValue = &configQolSpecialTripleJumpAirSteps},
+    {.name = "qol_hangable_surface_air_freely",         .type = CONFIG_TYPE_BOOL, .boolValue = &configQolHangableSurfaceAirFreely},
+    {.name = "qol_better_hanging",                      .type = CONFIG_TYPE_BOOL, .boolValue = &configQolBetterHanging},
+    {.name = "qol_better_flying",                       .type = CONFIG_TYPE_BOOL, .boolValue = &configQolBetterFlying},
+    {.name = "qol_velocity_based_turn_speed",           .type = CONFIG_TYPE_BOOL, .boolValue = &configQolVelocityBasedTurnSpeed},
+    {.name = "qol_easier_long_jumps",                   .type = CONFIG_TYPE_BOOL, .boolValue = &configQolEasierLongJumps},
+    {.name = "qol_easier_jump_kicks",                   .type = CONFIG_TYPE_BOOL, .boolValue = &configQolEasierJumpKicks},
+    {.name = "qol_ledge_grab_more_actions",             .type = CONFIG_TYPE_BOOL, .boolValue = &configQolLedgeGrabMoreActions},
+    {.name = "qol_wall_kick_more_actions",              .type = CONFIG_TYPE_BOOL, .boolValue = &configQolWallKickMoreActions},
+    {.name = "qol_twirl_with_object",                   .type = CONFIG_TYPE_BOOL, .boolValue = &configQolTwirlWithObject},
+    {.name = "qol_slide_kick_slide_button",             .type = CONFIG_TYPE_BOOL, .boolValue = &configQolSlideKickSlideButton},
+    {.name = "qol_dive_slide_rollout",                  .type = CONFIG_TYPE_BOOL, .boolValue = &configQolDiveSlideRollout},
+    {.name = "qol_disable_ceiling_bonks",               .type = CONFIG_TYPE_BOOL, .boolValue = &configQolDisableCeilingBonks},
+    {.name = "qol_fix_door_key_cutscene",               .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixDoorKeyCutscene},
+    {.name = "qol_fix_surface_wind_detection",          .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixSurfaceWindDetection},
+    {.name = "qol_fix_lava_interaction",                .type = CONFIG_TYPE_BOOL, .boolValue = &configQolFixLavaInteraction},
+    {.name = "qol_smooth_squish",                       .type = CONFIG_TYPE_BOOL, .boolValue = &configQolSmoothSquish},
+    {.name = "qol_smooth_pitch_floor_underwater",       .type = CONFIG_TYPE_BOOL, .boolValue = &configQolSmoothPitchWhenHittingFloorUnderwater},
+    {.name = "qol_ledge_climb_protection",              .type = CONFIG_TYPE_BOOL, .boolValue = &configQolLedgeClimbProtection},
+    {.name = "qol_better_exit_airborne",                .type = CONFIG_TYPE_BOOL, .boolValue = &configQolBetterExitAirborne},
     // other
     {.name = "rules_version",                  .type = CONFIG_TYPE_UINT,   .uintValue   = &configRulesVersion},
     {.name = "compress_on_startup",            .type = CONFIG_TYPE_BOOL,   .boolValue   = &configCompressOnStartup},

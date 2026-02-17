@@ -771,6 +771,12 @@ s32 mario_floor_is_steep(struct MarioState *m) {
     f32 normY;
     s32 result = FALSE;
 
+    if (configQolFixJumpKickNotSlippery) {
+        if (m->floor->type == SURFACE_NOT_SLIPPERY) {
+            return FALSE;
+        }
+    }
+
     // Interestingly, this function does not check for the
     // slide terrain type. This means that steep behavior persists for
     // non-slippery and slippery surfaces.
@@ -1349,7 +1355,9 @@ s32 set_water_plunge_action(struct MarioState *m) {
     m->forwardVel = m->forwardVel / 4.0f;
     m->vel[1] = m->vel[1] / 2.0f;
 
-    m->pos[1] = m->waterLevel - 100;
+    if (!configQolFixWaterPlungeUpwarp) {
+        m->pos[1] = m->waterLevel - 100;
+    }
 
     m->faceAngle[2] = 0;
 
@@ -1898,7 +1906,11 @@ void mario_update_hitbox_and_cap_model(struct MarioState *m) {
     }
 
     // Short hitbox for crouching/crawling/etc.
-    if (m->action & ACT_FLAG_SHORT_HITBOX) {
+    u32 actionHasShortHitbox = (m->action & ACT_FLAG_SHORT_HITBOX);
+    if (configQolFixShortHitboxSlideActs) {
+        actionHasShortHitbox |= (m->action & ACT_FLAG_BUTT_OR_STOMACH_SLIDE);
+    }
+    if (actionHasShortHitbox) {
         m->marioObj->hitboxHeight = 100.0f;
     } else {
         m->marioObj->hitboxHeight = 160.0f;

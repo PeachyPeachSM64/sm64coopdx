@@ -4,6 +4,7 @@
 #include "djui_panel_qol.h"
 #include "djui_panel_qol_general.h"
 #include "djui_panel_qol_bugfixes.h"
+#include "djui_panel_qol_movement.h"
 
 void djui_panel_qol_create(struct DjuiBase* caller) {
     struct DjuiThreePanel* panel = djui_panel_menu_create("QoL", false);
@@ -11,6 +12,7 @@ void djui_panel_qol_create(struct DjuiBase* caller) {
     {
         djui_button_create(body, "General", DJUI_BUTTON_STYLE_NORMAL, djui_panel_qol_general_create);
         djui_button_create(body, "Bugfixes", DJUI_BUTTON_STYLE_NORMAL, djui_panel_qol_bugfixes_create);
+        djui_button_create(body, "Movement", DJUI_BUTTON_STYLE_NORMAL, djui_panel_qol_movement_create);
 
         djui_button_create(body, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_BACK, djui_panel_menu_back);
     }

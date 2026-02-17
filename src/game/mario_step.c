@@ -14,6 +14,8 @@
 
 static s16 sMovingSandSpeeds[] = { 12, 8, 4, 0 };
 
+ extern s32 analog_stick_held_back(struct MarioState *m);
+
 struct Surface gWaterSurfacePseudoFloor = {
     .type = SURFACE_VERY_SLIPPERY,
     .flags = 0,
@@ -286,6 +288,12 @@ s32 stationary_ground_step(struct MarioState *m) {
 
     mario_set_forward_vel(m, 0.0f);
 
+    if (configQolFixStationaryGroundSteps) {
+        mario_update_moving_sand(m);
+        mario_update_windy_ground(m);
+        return perform_ground_step(m);
+    }
+
     takeStep = mario_update_moving_sand(m);
     takeStep |= mario_update_windy_ground(m);
     if (takeStep) {
@@ -341,6 +349,20 @@ static s32 perform_ground_quarter_step(struct MarioState *m, Vec3f nextPos) {
     }
 
     if (nextPos[1] > floorHeight + 100.0f) {
+
+        if (configQolLedgeClimbProtection) {
+            // Prevent some cases of slipping off ledges
+            if ((m->input & INPUT_NONZERO_ANALOG)
+                && (m->forwardVel < 32.0f)
+                && !(m->action & ACT_FLAG_SHORT_HITBOX)
+                && !(m->action & ACT_FLAG_BUTT_OR_STOMACH_SLIDE)
+                && (m->pos[1] <= m->floorHeight)
+                && (mario_get_floor_class(m) != SURFACE_CLASS_VERY_SLIPPERY)
+                && analog_stick_held_back(m)) {
+                return GROUND_STEP_NONE;
+            }
+        }
+
         if (nextPos[1] + m->marioObj->hitboxHeight >= ceilHeight) {
             return GROUND_STEP_HIT_WALL_STOP_QSTEPS;
         }
@@ -462,6 +484,12 @@ u32 check_ledge_grab(struct MarioState *m, struct Surface *wall, Vec3f intendedP
         }
     }
 
+    if (configQolFixLedgeGrabSteepSlopes) {
+        if (ledgeFloor->normal.y < 0.90630779f) {
+            return FALSE;
+        }
+    }
+
     if (ledgePos[1] - nextPos[1] <= 100.0f) {
         return FALSE;
     }
@@ -550,8 +578,10 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
             m->vel[1] = 0.0f;
 
             //! Uses referenced ceiling instead of ceil (ceiling hang upwarp)
-            if ((stepArg & AIR_STEP_CHECK_HANG) && m->ceil != NULL
-                && m->ceil->type == SURFACE_HANGABLE) {
+            if (m->ceil != NULL && m->ceil->type == SURFACE_HANGABLE
+                && (configQolHangableSurfaceAirFreely
+                        ? (!(m->prevAction & ACT_FLAG_HANGING) && (m->action & ACT_FLAG_AIR))
+                        : (stepArg & AIR_STEP_CHECK_HANG))) {
                 return AIR_STEP_GRABBED_CEILING;
             }
 
@@ -565,6 +595,9 @@ s32 perform_air_quarter_step(struct MarioState *m, Vec3f intendedPos, u32 stepAr
         }
 
         m->pos[1] = nextPos[1];
+        if (configQolDisableCeilingBonks) {
+            return AIR_STEP_HIT_CEILING;
+        }
         return AIR_STEP_HIT_WALL;
     }
 
@@ -736,7 +769,8 @@ void apply_vertical_wind(struct MarioState *m) {
     if (m->action != ACT_GROUND_POUND) {
         offsetY = m->pos[1] - -1500.0f;
 
-        if (m->floor && m->floor->type == SURFACE_VERTICAL_WIND && -3000.0f < offsetY && offsetY < 2000.0f) {
+        if (m->floor && m->floor->type == SURFACE_VERTICAL_WIND && -3000.0f < offsetY && offsetY < 2000.0f
+            && (!configQolFixSurfaceWindDetection || !(m->action & ACT_FLAG_INTANGIBLE))) {
             bool allowHazard = true;
             smlua_call_event_hooks(HOOK_ALLOW_HAZARD_SURFACE, m, HAZARD_TYPE_VERTICAL_WIND, &allowHazard);
             if (!allowHazard) { return; }
@@ -804,6 +838,7 @@ s32 perform_air_step(struct MarioState *m, u32 stepArg) {
 
         if (quarterStepResult == AIR_STEP_LANDED || quarterStepResult == AIR_STEP_GRABBED_LEDGE
             || quarterStepResult == AIR_STEP_GRABBED_CEILING
+            || quarterStepResult == AIR_STEP_HIT_CEILING
             || quarterStepResult == AIR_STEP_HIT_LAVA_WALL) {
             break;
         }

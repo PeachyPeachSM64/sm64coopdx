@@ -163,6 +163,40 @@ extern bool         configBugfixKoopaRaceMusic;
 extern bool         configBugfixPiranhaPlantStateReset;
 extern bool         configBugfixPiranhaPlantSleepDamage;
 extern bool         configBugfixStarBowserKey;
+
+// Movement QoL settings
+extern bool         configQolFixJumpKickNotSlippery;
+extern bool         configQolFixShortHitboxSlideActs;
+extern bool         configQolFixHitWallAction;
+extern bool         configQolFixGroundPoundWall;
+extern bool         configQolFixStationaryGroundSteps;
+extern bool         configQolFixLessGroundBonks;
+extern bool         configQolFixInitialWalkingSpeed;
+extern bool         configQolFixSlideVelUpdateSliding;
+extern bool         configQolFixWaterPlungeUpwarp;
+extern bool         configQolFixLedgeGrabSteepSlopes;
+extern bool         configQolFixActionLandEatInput;
+extern bool         configQolSpecialTripleJumpAirSteps;
+extern bool         configQolHangableSurfaceAirFreely;
+extern bool         configQolBetterHanging;
+extern bool         configQolBetterFlying;
+extern bool         configQolVelocityBasedTurnSpeed;
+extern bool         configQolEasierLongJumps;
+extern bool         configQolEasierJumpKicks;
+extern bool         configQolLedgeGrabMoreActions;
+extern bool         configQolWallKickMoreActions;
+extern bool         configQolTwirlWithObject;
+extern bool         configQolSlideKickSlideButton;
+extern bool         configQolDiveSlideRollout;
+extern bool         configQolDisableCeilingBonks;
+extern bool         configQolFixDoorKeyCutscene;
+extern bool         configQolFixSurfaceWindDetection;
+extern bool         configQolFixLavaInteraction;
+extern bool         configQolSmoothSquish;
+extern bool         configQolSmoothPitchWhenHittingFloorUnderwater;
+extern bool         configQolLedgeClimbProtection;
+extern bool         configQolBetterExitAirborne;
+
 // DJUI settings
 extern unsigned int configDjuiTheme;
 extern bool         configDjuiThemeCenter;

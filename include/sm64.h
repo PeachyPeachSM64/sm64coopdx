@@ -80,6 +80,7 @@
 #define AIR_STEP_HIT_WALL        2
 #define AIR_STEP_GRABBED_LEDGE   3
 #define AIR_STEP_GRABBED_CEILING 4
+#define AIR_STEP_HIT_CEILING     5
 #define AIR_STEP_HIT_LAVA_WALL   6
 
 #define WATER_STEP_NONE        0
