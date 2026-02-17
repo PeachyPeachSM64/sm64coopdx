@@ -143,6 +143,16 @@ bool         configRomhackCameraHasCentering      = false;
 bool         configRomhackCameraDPadBehavior      = false;
 bool         configRomhackCameraSlowFall          = true;
 
+// camera qol settings
+bool         configCameraQolFastVerticalMovement        = false;
+bool         configCameraQolCorrectRotateAroundWalls    = false;
+bool         configCameraQolCorrectCollideWithWalls     = false;
+bool         configCameraQolFixBossFightPos              = false;
+bool         configCameraQolDsCamMovementCUp             = false;
+bool         configCameraQolFixCutsceneFocusDeactivate    = false;
+bool         configCameraQolSslPyramidCutscene            = false;
+bool         configCameraQolRoomObjectCameraFocus         = false;
+
 // common camera settings
 bool         configCameraInvertX                  = false;
 bool         configCameraInvertY                  = true;
@@ -364,10 +374,20 @@ static const struct ConfigOption options[] = {
     {.name = "romhackcam_centering",           .type = CONFIG_TYPE_BOOL, .boolValue = &configRomhackCameraHasCentering},
     {.name = "romhackcam_dpad",                .type = CONFIG_TYPE_BOOL, .boolValue = &configRomhackCameraDPadBehavior},
     {.name = "romhackcam_slowfall",            .type = CONFIG_TYPE_BOOL, .boolValue = &configRomhackCameraSlowFall},
+    // camera qol settings
+    {.name = "camera_qol_fast_vertical",        .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolFastVerticalMovement},
+    {.name = "camera_qol_rotate_around_walls",  .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolCorrectRotateAroundWalls},
+    {.name = "camera_qol_collide_with_walls",   .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolCorrectCollideWithWalls},
+    {.name = "camera_qol_fix_boss_fight_pos",    .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolFixBossFightPos},
+    {.name = "camera_qol_ds_movement_c_up",      .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolDsCamMovementCUp},
+    {.name = "camera_qol_fix_cutscene_focus_deactivate", .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolFixCutsceneFocusDeactivate},
+    {.name = "camera_qol_ssl_pyramid_cutscene",          .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolSslPyramidCutscene},
+    {.name = "camera_qol_room_object_camera_focus",      .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraQolRoomObjectCameraFocus},
+
     // common camera settings
-    {.name = "bettercam_invertx",              .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraInvertX},
-    {.name = "bettercam_inverty",              .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraInvertY},
-    {.name = "romhackcam_toxic_gas",           .type = CONFIG_TYPE_BOOL, .boolValue = &configCameraToxicGas},
+    {.name = "bettercam_invertx",           .type = CONFIG_TYPE_BOOL,  .boolValue = &configCameraInvertX},
+    {.name = "bettercam_inverty",           .type = CONFIG_TYPE_BOOL,  .boolValue = &configCameraInvertY},
+    {.name = "bettercam_toxic_gas",         .type = CONFIG_TYPE_BOOL,  .boolValue = &configCameraToxicGas},
     // debug
     {.name = "debug_offset",                   .type = CONFIG_TYPE_U64,  .u64Value    = &gPcDebug.bhvOffset},
     {.name = "debug_tags",                     .type = CONFIG_TYPE_U64,  .u64Value    = gPcDebug.tags},

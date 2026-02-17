@@ -103,6 +103,15 @@ extern bool         configRomhackCameraHasCollision;
 extern bool         configRomhackCameraHasCentering;
 extern bool         configRomhackCameraDPadBehavior;
 extern bool         configRomhackCameraSlowFall;
+// camera qol settings
+extern bool         configCameraQolFastVerticalMovement;
+extern bool         configCameraQolCorrectRotateAroundWalls;
+extern bool         configCameraQolCorrectCollideWithWalls;
+extern bool         configCameraQolFixBossFightPos;
+extern bool         configCameraQolDsCamMovementCUp;
+extern bool         configCameraQolFixCutsceneFocusDeactivate;
+extern bool         configCameraQolSslPyramidCutscene;
+extern bool         configCameraQolRoomObjectCameraFocus;
 // common camera settings
 extern bool         configCameraInvertX;
 extern bool         configCameraInvertY;

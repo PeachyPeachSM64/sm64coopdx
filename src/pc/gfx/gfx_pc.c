@@ -1030,22 +1030,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
     struct GfxVertex *v_arr[3] = {v1, v2, v3};
 
-    float *p1 = rsp.loaded_view_pos[vtx1_idx];
-    float *p2 = rsp.loaded_view_pos[vtx2_idx];
-    float *p3 = rsp.loaded_view_pos[vtx3_idx];
-
-    float e1x = p2[0] - p1[0];
-    float e1y = p2[1] - p1[1];
-    float e1z = p2[2] - p1[2];
-
-    float e2x = p3[0] - p1[0];
-    float e2y = p3[1] - p1[1];
-    float e2z = p3[2] - p1[2];
-
-    float nx = e1y * e2z - e1z * e2y;
-    float ny = e1z * e2x - e1x * e2z;
-    float nz = e1x * e2y - e1y * e2x;
-
     if (v1->clip_rej & v2->clip_rej & v3->clip_rej) {
         // The whole triangle lies outside the visible area
         return;

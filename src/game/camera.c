@@ -827,6 +827,8 @@ void set_camera_height(struct Camera *c, f32 goalHeight) {
         camFloorHeight = find_floor(c->pos[0], c->pos[1] + 100.f, c->pos[2], &surface) + baseOff;
         marioFloorHeight = baseOff + sMarioGeometry.currFloorHeight;
 
+        f32 approachRate = 20.0f;
+
         if (camFloorHeight < marioFloorHeight) {
             camFloorHeight = marioFloorHeight;
         }
@@ -842,7 +844,13 @@ void set_camera_height(struct Camera *c, f32 goalHeight) {
                 c->pos[1] = goalHeight;
             }
         }
-        approach_camera_height(c, goalHeight, 20.f);
+
+        if (configCameraQolFastVerticalMovement) {
+            approachRate += ABS(c->pos[1] - goalHeight) / 20;
+            approach_camera_height(c, goalHeight, approachRate);
+        } else {
+            approach_camera_height(c, goalHeight, 20.f);
+        }
         if (camCeilHeight != gLevelValues.cellHeightLimit) {
             camCeilHeight -= baseOff;
             if ((c->pos[1] > camCeilHeight && sMarioGeometry.currFloorHeight + baseOff < camCeilHeight)
@@ -1676,18 +1684,27 @@ s32 update_boss_fight_camera(struct Camera *c, Vec3f focus, Vec3f pos) {
         nz = floor->normal.z;
         oo = floor->originOffset;
         pos[1] = 300.f - (nx * pos[0] + nz * pos[2] + oo) / ny;
-        switch (gCurrLevelArea) {
-            case AREA_BOB:
-                pos[1] += 125.f;
-                //! fall through, makes the BoB boss fight camera move up twice as high as it should
-            case AREA_WF:
-                pos[1] += 125.f;
+        if (configCameraQolFixBossFightPos) {
+            pos[1] += 125.f;
+        } else {
+            switch (gCurrLevelArea) {
+                case AREA_BOB:
+                    pos[1] += 125.f;
+                    //! fall through, makes the BoB boss fight camera move up twice as high as it should
+                case AREA_WF:
+                    pos[1] += 125.f;
+            }
         }
     }
 
     //! Must be same line to match on -O2
-    // Prevent the camera from going to the ground in the outside boss fight
-    if (gCurrLevelNum == LEVEL_BBH) { pos[1] = 2047.f; }
+    if (configCameraQolFixBossFightPos) {
+        f32 lowHeight = gMarioState->floorHeight + 125.f;
+        if (pos[1] < lowHeight) { pos[1] = lowHeight; }
+    } else {
+        // Prevent the camera from going to the ground in the outside boss fight
+        if (gCurrLevelNum == LEVEL_BBH) { pos[1] = 2047.f; }
+    }
 
     // Rotate from C-Button input
     if (sCSideButtonYaw < 0) {
@@ -2769,12 +2786,36 @@ void move_mario_head_c_up(UNUSED struct Camera *c) {
         sCUpCameraPitch = -0x2000;
     }
 
-    // Bound the camera yaw to +-120 degrees
-    if (sModeOffsetYaw > 0x5555) {
-        sModeOffsetYaw = 0x5555;
-    }
-    if (sModeOffsetYaw < -0x5555) {
-        sModeOffsetYaw = -0x5555;
+    if (configCameraQolDsCamMovementCUp) {
+        s16 tempYaw;
+        // Bound the camera yaw to...
+        if (gCameraMovementFlags & CAM_MOVE_C_UP_MODE) {
+            tempYaw = 0x2000; // +-45 degrees
+        } else {
+            tempYaw = 0x4000; // +-90 degrees
+        }
+
+        if (sModeOffsetYaw > tempYaw) {
+            if (gCameraMovementFlags & CAM_MOVE_C_UP_MODE) {
+                gMarioState->faceAngle[1] += 0x200;
+            }
+            sModeOffsetYaw = tempYaw;
+        }
+
+        if (sModeOffsetYaw < -tempYaw) {
+            if (gCameraMovementFlags & CAM_MOVE_C_UP_MODE) {
+                gMarioState->faceAngle[1] -= 0x200;
+            }
+            sModeOffsetYaw = -tempYaw;
+        }
+    } else {
+        // Bound the camera yaw to +-120 degrees
+        if (sModeOffsetYaw > 0x5555) {
+            sModeOffsetYaw = 0x5555;
+        }
+        if (sModeOffsetYaw < -0x5555) {
+            sModeOffsetYaw = -0x5555;
+        }
     }
 
     // Give Mario's neck natural-looking constraints
@@ -4208,6 +4249,8 @@ s32 collide_with_walls(VEC_OUT Vec3f pos, f32 offsetY, f32 radius) {
     s32 i;
     s32 numCollisions = 0;
 
+    f32 displacement;
+
     collisionData.x = pos[0];
     collisionData.y = pos[1];
     collisionData.z = pos[2];
@@ -4217,17 +4260,28 @@ s32 collide_with_walls(VEC_OUT Vec3f pos, f32 offsetY, f32 radius) {
     if (numCollisions != 0) {
         for (i = 0; i < collisionData.numWalls; i++) {
             wall = collisionData.walls[collisionData.numWalls - 1];
-            vec3f_copy(newPos[i], pos);
             normX = wall->normal.x;
             normY = wall->normal.y;
             normZ = wall->normal.z;
             originOffset = wall->originOffset;
-            offset = normX * newPos[i][0] + normY * newPos[i][1] + normZ * newPos[i][2] + originOffset;
-            offsetAbsolute = ABS2(offset);
-            if (offsetAbsolute < radius) {
-                newPos[i][0] += normX * (radius - offset);
-                newPos[i][2] += normZ * (radius - offset);
-                vec3f_copy(pos, newPos[i]);
+
+            if (!configCameraQolCorrectCollideWithWalls) {
+                vec3f_copy(newPos[i], pos);
+                offset = normX * newPos[i][0] + normY * newPos[i][1] + normZ * newPos[i][2] + originOffset;
+                offsetAbsolute = ABS2(offset);
+                if (offsetAbsolute < radius) {
+                    newPos[i][0] += normX * (radius - offset);
+                    newPos[i][2] += normZ * (radius - offset);
+                    vec3f_copy(pos, newPos[i]);
+                }
+            } else {
+                offset = (normX * pos[0]) + (normY * pos[1]) + (normZ * pos[2]) + originOffset;
+                if (ABS2(offset) < radius) {
+                    displacement = (radius - offset);
+                    pos[0] += normX * displacement;
+                    pos[1] += normY * displacement;
+                    pos[2] += normZ * displacement;
+                }
             }
         }
     }
@@ -7140,25 +7194,53 @@ s32 rotate_camera_around_walls(struct Camera *c, Vec3f cPos, INOUT s16 *avoidYaw
     s32 step = 0;
     UNUSED s32 unused6;
 
-    vec3f_get_dist_and_angle(sMarioCamState->pos, cPos, &dummyDist, &dummyPitch, &yawFromMario);
+    Vec3f marioToCamera;
+    marioToCamera[0] = cPos[0] - sMarioCamState->pos[0];
+    marioToCamera[1] = cPos[1] - sMarioCamState->pos[1];
+    marioToCamera[2] = cPos[2] - sMarioCamState->pos[2];
+
+    if (!configCameraQolCorrectRotateAroundWalls) {
+        vec3f_get_dist_and_angle(sMarioCamState->pos, cPos, &dummyDist, &dummyPitch, &yawFromMario);
+    } else {
+        yawFromMario = atan2s(marioToCamera[2], marioToCamera[0]);
+    }
     sStatusFlags &= ~CAM_FLAG_CAM_NEAR_WALL;
     colData.offsetY = 100.0f;
     // The distance from Mario to Lakitu
     checkDist = 0.0f;
     /// The radius used to find potential walls to avoid.
     /// @bug Increases to 250.f, but the max collision radius is 200.f
-    coarseRadius = 150.0f;
-    /// This only increases when there is a wall collision found in the coarse pass
-    fineRadius = 100.0f;
+    if (!configCameraQolCorrectRotateAroundWalls) {
+        coarseRadius = 150.0f;
+        /// This only increases when there is a wall collision found in the coarse pass
+        fineRadius = 100.0f;
+    } else {
+        coarseRadius = 100.0f;
+        fineRadius = 100.0f;
+    }
 
     for (step = 0; step < 8; step++) {
         // Start at Mario, move backwards to Lakitu's position
-        colData.x = sMarioCamState->pos[0] + ((cPos[0] - sMarioCamState->pos[0]) * checkDist);
-        colData.y = sMarioCamState->pos[1] + ((cPos[1] - sMarioCamState->pos[1]) * checkDist);
-        colData.z = sMarioCamState->pos[2] + ((cPos[2] - sMarioCamState->pos[2]) * checkDist);
+        if (!configCameraQolCorrectRotateAroundWalls) {
+            colData.x = sMarioCamState->pos[0] + ((cPos[0] - sMarioCamState->pos[0]) * checkDist);
+            colData.y = sMarioCamState->pos[1] + ((cPos[1] - sMarioCamState->pos[1]) * checkDist);
+            colData.z = sMarioCamState->pos[2] + ((cPos[2] - sMarioCamState->pos[2]) * checkDist);
+        } else {
+            colData.x = sMarioCamState->pos[0] + (marioToCamera[0] * checkDist);
+            colData.y = sMarioCamState->pos[1] + (marioToCamera[1] * checkDist);
+            colData.z = sMarioCamState->pos[2] + (marioToCamera[2] * checkDist);
+        }
         colData.radius = coarseRadius;
+
         // Increase the coarse check radius
-        camera_approach_f32_symmetric_bool(&coarseRadius, 250.f, 30.f);
+        if (!configCameraQolCorrectRotateAroundWalls) {
+            camera_approach_f32_symmetric_bool(&coarseRadius, 250.f, 30.f);
+        } else {
+            coarseRadius += (100.0f / 8.0f);
+            if (coarseRadius > 200.0f) {
+                coarseRadius = 200.0f;
+            }
+        }
 
         if (find_wall_collisions(&colData) != 0) {
             wall = colData.walls[colData.numWalls - 1];
@@ -7170,36 +7252,66 @@ s32 rotate_camera_around_walls(struct Camera *c, Vec3f cPos, INOUT s16 *avoidYaw
                 if (status <= 0) {
                     status = 1;
                     wall = colData.walls[colData.numWalls - 1];
-                    // wallYaw is parallel to the wall, not perpendicular
-                    wallYaw = atan2s(wall->normal.z, wall->normal.x) + DEGREES(90);
-                    // Calculate the avoid direction. The function returns the opposite direction so add 180
-                    // degrees.
-                    *avoidYaw = calc_avoid_yaw(yawFromMario, wallYaw) + DEGREES(180);
+                    if (!configCameraQolCorrectRotateAroundWalls) {
+                        // wallYaw is parallel to the wall, not perpendicular
+                        wallYaw = atan2s(wall->normal.z, wall->normal.x) + DEGREES(90);
+                        // Calculate the avoid direction. The function returns the opposite direction so add 180
+                        // degrees.
+                        *avoidYaw = calc_avoid_yaw(yawFromMario, wallYaw) + DEGREES(180);
+                    } else {
+                        wallYaw = atan2s(wall->normal.z, wall->normal.x);
+                        *avoidYaw = calc_avoid_yaw(yawFromMario, wallYaw);
+                    }
                 }
             }
 
-            colData.x = sMarioCamState->pos[0] + ((cPos[0] - sMarioCamState->pos[0]) * checkDist);
-            colData.y = sMarioCamState->pos[1] + ((cPos[1] - sMarioCamState->pos[1]) * checkDist);
-            colData.z = sMarioCamState->pos[2] + ((cPos[2] - sMarioCamState->pos[2]) * checkDist);
-            colData.radius = fineRadius;
-            // Increase the fine check radius
-            camera_approach_f32_symmetric_bool(&fineRadius, 200.f, 20.f);
+            if (!configCameraQolCorrectRotateAroundWalls) {
+                colData.x = sMarioCamState->pos[0] + ((cPos[0] - sMarioCamState->pos[0]) * checkDist);
+                colData.y = sMarioCamState->pos[1] + ((cPos[1] - sMarioCamState->pos[1]) * checkDist);
+                colData.z = sMarioCamState->pos[2] + ((cPos[2] - sMarioCamState->pos[2]) * checkDist);
+                colData.radius = fineRadius;
+                // Increase the fine check radius
+                camera_approach_f32_symmetric_bool(&fineRadius, 200.f, 20.f);
 
-            if (find_wall_collisions(&colData) != 0) {
-                wall = colData.walls[colData.numWalls - 1];
-                horWallNorm = atan2s(wall->normal.z, wall->normal.x);
-                wallYaw = horWallNorm + DEGREES(90);
-                // If Mario would be blocked by the surface, then avoid it
-                if ((is_range_behind_surface(sMarioCamState->pos, cPos, wall, yawRange, SURFACE_WALL_MISC) == 0)
-                    && (is_mario_behind_surface(c, wall) == TRUE)
-                    // Also check if the wall is tall enough to cover Mario
-                    && (is_surf_within_bounding_box(wall, -1.f, 150.f, -1.f) == FALSE)) {
-                    // Calculate the avoid direction. The function returns the opposite direction so add 180
-                    // degrees.
-                    *avoidYaw = calc_avoid_yaw(yawFromMario, wallYaw) + DEGREES(180);
-                    camera_approach_s16_symmetric_bool(avoidYaw, horWallNorm, yawRange);
-                    status = 3;
-                    step = 8;
+                if (find_wall_collisions(&colData) != 0) {
+                    wall = colData.walls[colData.numWalls - 1];
+                    horWallNorm = atan2s(wall->normal.z, wall->normal.x);
+                    wallYaw = horWallNorm + DEGREES(90);
+                    // If Mario would be blocked by the surface, then avoid it
+                    if ((is_range_behind_surface(sMarioCamState->pos, cPos, wall, yawRange, SURFACE_WALL_MISC) == 0)
+                        && (is_mario_behind_surface(c, wall) == TRUE)
+                        // Also check if the wall is tall enough to cover Mario
+                        && (is_surf_within_bounding_box(wall, -1.f, 150.f, -1.f) == FALSE)) {
+                        // Calculate the avoid direction. The function returns the opposite direction so add 180
+                        // degrees.
+                        *avoidYaw = calc_avoid_yaw(yawFromMario, wallYaw) + DEGREES(180);
+                        camera_approach_s16_symmetric_bool(avoidYaw, horWallNorm, yawRange);
+                        status = 3;
+                        step = 8;
+                    }
+                }
+            } else {
+                colData.x = sMarioCamState->pos[0] + (marioToCamera[0] * checkDist);
+                colData.y = sMarioCamState->pos[1] + (marioToCamera[1] * checkDist);
+                colData.z = sMarioCamState->pos[2] + (marioToCamera[2] * checkDist);
+                colData.radius = fineRadius;
+                fineRadius += (100.0f / 8.0f);
+                if (fineRadius > 200.0f) {
+                    fineRadius = 200.0f;
+                }
+
+                if (find_wall_collisions(&colData) != 0) {
+                    wall = colData.walls[colData.numWalls - 1];
+                    wallYaw = atan2s(wall->normal.z, wall->normal.x);
+
+                    if (!is_range_behind_surface(sMarioCamState->pos, cPos, wall, yawRange, SURFACE_WALL_MISC)
+                        && is_mario_behind_surface(c, wall)
+                        && !is_surf_within_bounding_box(wall, -1.f, 150.f, -1.f)) {
+                        *avoidYaw = calc_avoid_yaw(yawFromMario, wallYaw);
+                        camera_approach_s16_symmetric_bool(avoidYaw, wallYaw, yawRange);
+                        status = 3;
+                        step = 8;
+                    }
                 }
             }
         }
@@ -7404,6 +7516,12 @@ static UNUSED void unused_cutscene_mario_dialog_looking_down(UNUSED struct Camer
  * Cause Mario to enter the normal dialog state.
  */
 static BAD_RETURN(s32) cutscene_mario_dialog(UNUSED struct Camera *c) {
+    if (configCameraQolSslPyramidCutscene) {
+        if (gMarioState->action & ACT_FLAG_RIDING_SHELL) {
+            gCutsceneTimer = CUTSCENE_LOOP;
+            return;
+        }
+    }
     gCutsceneTimer = cutscene_common_set_dialog_state(1);
 }
 
@@ -11753,10 +11871,20 @@ void play_cutscene(struct Camera *c) {
     sStatusFlags &= ~CAM_FLAG_SMOOTH_MOVEMENT;
     gCameraMovementFlags &= ~CAM_MOVING_INTO_MODE;
 
-    if (gCutsceneFocus != NULL) {
-        if (gCutsceneFocus->activeFlags == ACTIVE_FLAG_DEACTIVATED) {
-            gObjCutsceneDone = true;
-            gTimeStopState = 0;
+    if (configCameraQolFixCutsceneFocusDeactivate) {
+        if (gCutsceneFocus != NULL) {
+            if (gCutsceneFocus->activeFlags == ACTIVE_FLAG_DEACTIVATED) {
+                gObjCutsceneDone = true;
+                gTimeStopState = 0;
+            }
+        }
+    }
+
+    if (configCameraQolRoomObjectCameraFocus) {
+        if (gCutsceneFocus != NULL) {
+            set_room_override(gCutsceneFocus->oRoom);
+        } else {
+            set_room_override(-1);
         }
     }
 
@@ -11839,6 +11967,12 @@ void play_cutscene(struct Camera *c) {
     // The cutscene just ended
     if ((c->cutscene == 0) && (oldCutscene != 0)) {
         gRecentCutscene = oldCutscene;
+    }
+
+    if (configCameraQolRoomObjectCameraFocus) {
+        if (c->cutscene == 0) {
+            set_room_override(-1);
+        }
     }
 }
 
