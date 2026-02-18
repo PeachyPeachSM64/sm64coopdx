@@ -731,7 +731,13 @@ static void level_cmd_set_terrain_data(void) {
         u32 size;
 
         // The game modifies the terrain data and must be reset upon level reload.
-        data = segmented_to_virtual(CMD_GET(void *, 4));
+        void *terrainPtr = CMD_GET(void *, 4);
+        u32 terrainPtr32 = (u32)(uintptr_t) terrainPtr;
+        if ((terrainPtr32 >> 24) == 0) {
+            data = terrainPtr;
+        } else {
+            data = segmented_to_virtual(terrainPtr);
+        }
         size = get_area_terrain_size(data) * sizeof(Collision);
         gAreas[sCurrAreaIndex].terrainData = dynamic_pool_alloc(gLevelPool, size);
         memcpy(gAreas[sCurrAreaIndex].terrainData, data, size);
