@@ -11,6 +11,7 @@ extern "C" {
 #include "game/level_update.h"
 #include "game/sound_init.h"
 #include "game/object_list_processor.h"
+#include "pc/nametags.h"
 #include "pc/network/packets/packet.h"
 #include "pc/lua/smlua_hooks.h"
 extern s32 gWdwWaterLevelSet;
@@ -264,6 +265,15 @@ static void *DynOS_Warp_UpdateWarp(void *aCmd, bool aIsLevelInitDone) {
             if (gMarioState->flags & MARIO_WING_CAP)   play_cap_music(SEQUENCE_ARGS(4, gLevelValues.wingCapSequence));
 
             // lua hooks
+            smlua_call_event_hooks(HOOK_ON_LEVEL_INIT, sBackupWarpDest.type, sDynosWarpLevelNum, sDynosWarpAreaNum, (u8) MAX(0, sDynosWarpNodeNum), sBackupWarpDest.arg);
+
+            // clear texture 1 on level init -- can linger and corrupt textures otherwise
+            extern u8 gGfxPcResetTex1;
+            gGfxPcResetTex1 = 1;
+
+            // reset nametags
+            nametags_reset();
+
             smlua_call_event_hooks(HOOK_ON_WARP, sBackupWarpDest.type, sDynosWarpLevelNum, sDynosWarpAreaNum, sDynosWarpNodeNum, sBackupWarpDest.arg);
 
             // Reset values

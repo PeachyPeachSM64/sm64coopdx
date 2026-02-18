@@ -31,6 +31,7 @@ bool gInteractableOverridePad         = false;
 OSContPad gInteractablePad            = { 0 };
 static OSContPad sLastInteractablePad = { 0 };
 static int sLastMouseButtons          = 0;
+static u8 sSecretWarpLPressCount      = 0;
 
 static void djui_interactable_update_style(struct DjuiBase* base) {
     if (base               == NULL) { return; }
@@ -337,6 +338,22 @@ void djui_interactable_update_pad(void) {
 void djui_interactable_update(void) {
     // update pad
     djui_interactable_update_pad();
+
+    // secret warp unlock: press L trigger 3 times while in pause panel
+    if (gDjuiPanelPauseCreated && !gDjuiSecretWarpUnlocked) {
+        if ((gInteractablePad.button & L_TRIG) && !(sLastInteractablePad.button & L_TRIG)) {
+            sSecretWarpLPressCount++;
+            if (sSecretWarpLPressCount >= 3) {
+                gDjuiSecretWarpUnlocked = true;
+                sSecretWarpLPressCount = 0;
+                play_sound(SOUND_MENU_BOWSER_LAUGH, gGlobalSoundSource);
+                djui_panel_shutdown();
+                djui_panel_pause_create(NULL);
+            }
+        }
+    } else if (!gDjuiPanelPauseCreated) {
+        sSecretWarpLPressCount = 0;
+    }
 
     // prevent pressing buttons when they should be ignored
     int mouseButtons = mouse_window_buttons;
