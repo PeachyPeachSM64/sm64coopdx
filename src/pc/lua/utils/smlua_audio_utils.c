@@ -22,6 +22,7 @@
 #include "pc/debuglog.h"
 #include "pc/pc_main.h"
 #include "pc/fs/fmem.h"
+#include "audio/load.h"
 
 struct AudioOverride {
     bool enabled;
@@ -66,6 +67,8 @@ bool smlua_audio_utils_override(u8 sequenceId, s32* bankId, void** seqData) {
     if (sequenceId >= MAX_AUDIO_OVERRIDE) { return false; }
     struct AudioOverride* override = &sAudioOverrides[sequenceId];
     if (!override->enabled) { return false; }
+
+    if (gOverrideBank > -1) { override->bank = gOverrideBank; }
 
     if (override->loaded) {
         *seqData = override->buffer;
