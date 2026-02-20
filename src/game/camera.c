@@ -5,6 +5,7 @@
 #include "prevent_bss_reordering.h"
 #include "sm64.h"
 #include "camera.h"
+#include "camera_photo_mode.h"
 #include "seq_ids.h"
 #include "dialog_ids.h"
 #include "audio/external.h"
@@ -3326,6 +3327,10 @@ void update_camera(struct Camera *c) {
                     newcam_loop(c);
                     break;
 
+                case CAMERA_MODE_PHOTO_MODE:
+                    mode_photo_mode_camera();
+                    break;
+
                 default:
                     mode_mario_camera(c);
             }
@@ -3392,6 +3397,10 @@ void update_camera(struct Camera *c) {
 
                 case CAMERA_MODE_NEWCAM:
                     newcam_loop(c);
+                    break;
+
+                case CAMERA_MODE_PHOTO_MODE:
+                    mode_photo_mode_camera();
                     break;
             }
         }
@@ -3802,9 +3811,13 @@ void update_graph_node_camera(struct GraphNodeCamera *gc) {
     UNUSED u8 unused[8];
     UNUSED struct Camera *c = gc->config.camera;
 
-    gc->rollScreen = gLakituState.roll;
-    vec3f_copy(gc->pos, gLakituState.pos);
-    vec3f_copy(gc->focus, gLakituState.focus);
+    if (gCamera->mode == CAMERA_MODE_PHOTO_MODE) {
+        update_photo_mode_camera(gc);
+    } else {
+        gc->rollScreen = gLakituState.roll;
+        vec3f_copy(gc->pos, gLakituState.pos);
+        vec3f_copy(gc->focus, gLakituState.focus);
+    }
     zoom_out_if_paused_and_outside(gc);
 }
 
@@ -5175,7 +5188,9 @@ void play_sound_button_change_blocked(void) {
 }
 
 void play_sound_rbutton_changed(void) {
-    play_sound(SOUND_MENU_CLICK_CHANGE_VIEW, gGlobalSoundSource);
+    if (gCamera->mode != CAMERA_MODE_PHOTO_MODE) {
+        play_sound(SOUND_MENU_CLICK_CHANGE_VIEW, gGlobalSoundSource);
+    }
 }
 
 void play_sound_if_cam_switched_to_lakitu_or_mario(void) {
@@ -6942,6 +6957,7 @@ s16 camera_course_processing(struct Camera *c) {
     if (!c) { return 0; }
     if (!gCameraUseCourseSpecificSettings) { return 0; }
     if (c->mode == CAMERA_MODE_ROM_HACK) { return 0; }
+    if (c->mode == CAMERA_MODE_PHOTO_MODE) { return 0; }
 
     s16 level = gCurrLevelNum;
     s16 mode;

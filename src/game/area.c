@@ -18,11 +18,13 @@
 #include "area.h"
 #include "rendering_graph_node.h"
 #include "level_update.h"
-#include "engine/geo_layout.h"
+#include "object_helpers.h"
 #include "save_file.h"
-#include "level_table.h"
-#include "gfx_dimensions.h"
-#include "game/ingame_menu.h"
+#include "hardcoded.h"
+#include "debug_course.h"
+#include "segment2.h"
+#include "photo_mode.h"
+#include "ingame_menu.h"
 #include "pc/lua/smlua_hooks.h"
 #include "pc/djui/djui.h"
 #include "pc/djui/djui_panel_pause.h"
@@ -461,6 +463,11 @@ void render_game(void) {
         gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
                       SCREEN_HEIGHT - BORDER_HEIGHT);
         gPauseScreenMode = render_menus_and_dialogs();
+
+        extern s16 sCurrPlayMode;
+        if (sCurrPlayMode == PLAY_MODE_PHOTO_MODE) {
+            activate_photo_mode();
+        }
 
         if (gPauseScreenMode != 0) {
             gSaveOptSelectIndex = gPauseScreenMode;

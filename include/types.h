@@ -591,6 +591,7 @@ struct TextureInfo
 #define PLAY_MODE_CHANGE_AREA 3
 #define PLAY_MODE_CHANGE_LEVEL 4
 #define PLAY_MODE_FRAME_ADVANCE 5
+#define PLAY_MODE_PHOTO_MODE 6
 
 #define MAX_PLAYERS 16
 

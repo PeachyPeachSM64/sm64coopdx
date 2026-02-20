@@ -54,6 +54,12 @@
 
 #include "engine/level_script.h"
 
+#include "photo_mode.h"
+#include "camera_photo_mode.h"
+
+static void verify_warp(UNUSED struct MarioState *m, UNUSED bool allowInvalid) {
+}
+
 #define MENU_LEVEL_MIN 0
 #define MENU_LEVEL_MAX 17
 
@@ -629,7 +635,6 @@ void warp_credits(void) {
     if (gCurrentArea) {
         reset_camera(gCurrentArea->camera);
     }
-
     sWarpDest.type = WARP_TYPE_NOT_WARPING;
     sDelayedWarpOp = WARP_OP_NONE;
 
@@ -853,29 +858,6 @@ void initiate_painting_warp(s16 paintingIndex) {
         }
     }
 }
-
-
-void verify_warp(struct MarioState *m, bool killMario) {
-    if (area_get_warp_node(sSourceWarpNodeId) != NULL) { return; }
-
-    if (area_get_warp_node(WARP_NODE_DEATH) == NULL) {
-        dynos_warp_to_start_level();
-        return;
-    }
-
-    if (!killMario) {
-        sSourceWarpNodeId = WARP_NODE_DEATH;
-        return;
-    }
-
-    m->numLives--;
-    if (m->numLives < 0) {
-        sDelayedWarpOp = WARP_OP_GAME_OVER;
-    } else {
-        sSourceWarpNodeId = WARP_NODE_DEATH;
-    }
-}
-
 
 /**
  * If there is not already a delayed warp, schedule one. The source node is
@@ -1363,7 +1345,25 @@ s32 play_mode_normal(void) {
     return 0;
 }
 
+s32 play_mode_photo_mode(void) {
+    gHudDisplay.flags = HUD_DISPLAY_NONE;
+
+    extern s16 gMenuMode;
+    gMenuMode = -1;
+    gCameraMovementFlags &= ~CAM_MOVE_PAUSE_SCREEN;
+
+    extern u16 gDialogTextAlpha;
+    gDialogTextAlpha = 255;
+
+    switch_to_photo_mode();
+    update_camera(gCamera);
+    return 0;
+}
+
 s32 play_mode_paused(void) {
+    // Photo mode forces HUD_DISPLAY_NONE each frame; ensure it doesn't persist after returning.
+    gHudDisplay.flags = HUD_DISPLAY_DEFAULT;
+
     if (gPauseScreenMode == 0) {
         set_menu_mode(RENDER_PAUSE_SCREEN);
         if (!gDjuiPanelPauseCreated && !gDjuiInPlayerMenu && (gPlayer1Controller->buttonPressed & R_TRIG)) {
@@ -1392,12 +1392,15 @@ s32 play_mode_paused(void) {
             gSavedCourseNum = COURSE_NONE;
         }
         set_play_mode(PLAY_MODE_CHANGE_LEVEL);
-    } /* else if (gPauseScreenMode == 4) {
-        // We should only be getting "int 4" to here
-        initiate_warp(LEVEL_CASTLE, 1, 0x1F, 0);
-        fade_into_special_warp(0, 0);
-        game_exit();
-    }*/
+    } else if (gPauseScreenMode == 4) {
+        extern s16 gMenuMode;
+        gMenuMode = -1;
+        gPauseScreenMode = 0;
+        gCameraMovementFlags &= ~CAM_MOVE_PAUSE_SCREEN;
+        open_photo_mode();
+        set_play_mode(PLAY_MODE_PHOTO_MODE);
+        play_sound(SOUND_MENU_MESSAGE_APPEAR, gGlobalSoundSource);
+    }
 
     extern s16 gMenuMode;
     bool canStayPaused = ((gMenuMode != -1) || (gCameraMovementFlags & CAM_MOVE_PAUSE_SCREEN)) &&
@@ -1745,6 +1748,9 @@ s32 update_level(void) {
             break;
         case PLAY_MODE_FRAME_ADVANCE:
             changeLevel = play_mode_frame_advance();
+            break;
+        case PLAY_MODE_PHOTO_MODE:
+            changeLevel = play_mode_photo_mode();
             break;
     }
 
