@@ -146,6 +146,7 @@ extern u8 gOverrideAllowToxicGasCamera;
 #define CAMERA_MODE_SPIRAL_STAIRS     0x11
 #define CAMERA_MODE_NEWCAM            0x12
 #define CAMERA_MODE_ROM_HACK          0x13
+#define CAMERA_MODE_PHOTO_MODE        0x14
 
 #define CAM_MOVE_RETURN_TO_MIDDLE       0x0001
 #define CAM_MOVE_ZOOMED_OUT             0x0002

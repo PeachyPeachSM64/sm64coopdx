@@ -14,6 +14,7 @@
 #include "pc/lua/smlua_hooks.h"
 #include "game/object_helpers.h"
 #include "behavior_table.h"
+#include "audio/external.h"
 #include "game/camera.h"
 #include "game/ingame_menu.h"
 #include "game/sound_init.h"
@@ -23,14 +24,17 @@
 #include "game/level_info.h"
 #include "game/save_file.h"
 #include "data/dynos.c.h"
+#include "game/photo_mode.h"
 
 bool gDjuiPanelPauseCreated = false;
 bool gDjuiSecretWarpUnlocked = false;
 
 static void djui_panel_pause_quit(struct DjuiBase* caller);
+void djui_panel_pause_quit_yes(UNUSED struct DjuiBase* caller);
 static void djui_panel_pause_customize_create(struct DjuiBase* caller);
 static void djui_panel_pause_mods_root_create(struct DjuiBase* caller);
 static void djui_panel_pause_secret_warp_create(struct DjuiBase* caller);
+static void djui_panel_pause_photo_mode(UNUSED struct DjuiBase* caller);
 
 static unsigned int sSecretWarpLevelIndex = 0;
 static unsigned int sSecretWarpActIndex = 0;
@@ -287,8 +291,10 @@ static void djui_panel_pause_mods_root_create(struct DjuiBase* caller) {
     djui_panel_add(caller, panel, NULL);
 }
 
-void djui_panel_pause_quit_yes(UNUSED struct DjuiBase* caller) {
-    game_exit();
+static void djui_panel_pause_photo_mode(UNUSED struct DjuiBase* caller) {
+    extern s16 gPauseScreenMode;
+    gPauseScreenMode = 4;
+    djui_panel_shutdown();
 }
 
 static void djui_panel_pause_quit(struct DjuiBase* caller) {
@@ -298,6 +304,10 @@ static void djui_panel_pause_quit(struct DjuiBase* caller) {
                             DLANG(MAIN, QUIT_TITLE),
                             DLANG(MAIN, QUIT_CONFIRM),
                             djui_panel_pause_quit_yes);
+}
+
+void djui_panel_pause_quit_yes(UNUSED struct DjuiBase* caller) {
+    game_exit();
 }
 
 void djui_panel_pause_create(struct DjuiBase* caller) {
@@ -314,6 +324,7 @@ void djui_panel_pause_create(struct DjuiBase* caller) {
 
         struct DjuiButton* resume = djui_button_create(body, DLANG(PAUSE, RESUME), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_resume);
         defaultBase = &resume->base;
+        djui_button_create(body, "Photo Mode", DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_photo_mode);
         djui_button_create(body, DLANG(PLAYER, PLAYER), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_customize_create);
         djui_button_create(body, DLANG(PAUSE, OPTIONS), DJUI_BUTTON_STYLE_NORMAL, djui_panel_options_create);
 

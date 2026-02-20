@@ -228,7 +228,15 @@ void create_dl_identity_matrix(void) {
     guMtxIdent(matrix);
 
     gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(matrix), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
-    gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(matrix), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+}
+
+static void pause_capitalize_string_sm64(u8 *str64) {
+    if (!str64) { return; }
+    for (; *str64 != DIALOG_CHAR_TERMINATOR; str64++) {
+        if (*str64 >= 0x24 && *str64 <= 0x3D) {
+            *str64 -= 26;
+        }
+    }
 }
 
 void create_dl_translation_matrix(s8 pushOp, f32 x, f32 y, f32 z) {
@@ -293,7 +301,7 @@ void create_dl_ortho_matrix(void) {
     // Should produce G_RDPHALF_1 in Fast3D
     gSPPerspNormalize(gDisplayListHead++, 0xFFFF);
 
-    gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(matrix), G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH)
+    gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(matrix), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH)
 }
 
 #if defined(VERSION_JP) || defined(VERSION_SH)
@@ -398,8 +406,7 @@ void render_generic_char_at_pos(s16 xPos, s16 yPos, u8 c) {
     gDPPipeSync(gDisplayListHead++);
     gDPSetTextureImage(gDisplayListHead++, G_IM_FMT_IA, G_IM_SIZ_16b, 1, VIRTUAL_TO_PHYSICAL(unpackedTexture));
     gSPDisplayList(gDisplayListHead++, dl_ia_text_tex_settings);
-    gSPTextureRectangleFlip(gDisplayListHead++, xPos << 2, (yPos - 16) << 2, (xPos + 8) << 2, yPos << 2,
-                            G_TX_RENDERTILE, 8 << 6, 4 << 6, 1 << 10, 1 << 10);
+    gSPTextureRectangleFlip(gDisplayListHead++, xPos << 2, (yPos - 16) << 2, (xPos + 8) << 2, yPos << 2, G_TX_RENDERTILE, 8 << 6, 4 << 6, 1 << 10, 1 << 10);
 }
 
 void render_lowercase_diacritic(s16 *xPos, s16 *yPos, u8 letter, u8 diacritic) {
@@ -668,7 +675,8 @@ void print_hud_char_umlaut(s16 x, s16 y, u8 chr) {
     gDPPipeSync(gDisplayListHead++);
     gDPSetTextureImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, fontLUT[chr]);
     gSPDisplayList(gDisplayListHead++, dl_rgba16_load_tex_block);
-    gSPTextureRectangle(gDisplayListHead++, x << 2, y << 2, (x + 16) << 2, (y + 16) << 2, G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
+    gSPTextureRectangle(gDisplayListHead++, x << 2, y << 2, (x + 16) << 2,
+                        (y + 16) << 2, G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
 
     gDPSetTextureImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, fontLUT[GLYPH_UMLAUT]);
     gSPDisplayList(gDisplayListHead++, dl_rgba16_load_tex_block);
@@ -735,8 +743,8 @@ void print_hud_lut_string(s8 hudLUT, s16 x, s16 y, const u8 *str) {
                 }
 
                 gSPDisplayList(gDisplayListHead++, dl_rgba16_load_tex_block);
-                gSPTextureRectangle(gDisplayListHead++, curX << 2, curY << 2, (curX + 16) << 2,
-                                    (curY + 16) << 2, G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
+                gSPTextureRectangle(gDisplayListHead++, curX << 2, curY << 2,
+                                    (curX + 16) << 2, (curY + 16) << 2, G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
 
                 curX += xStride;
 #ifndef VERSION_JP
@@ -1358,11 +1366,12 @@ void render_star_count_dialog_text(s8 *xMatrix, s16 *linePos)
         linePos[0] = 1;
 #else
         if (xMatrix[0] != 1) {
-            create_dl_translation_matrix(MENU_MTX_NOPUSH, (f32)(gDialogCharWidths[DIALOG_CHAR_SPACE] * xMatrix[0]), 0, 0);
+            create_dl_translation_matrix(
+                MENU_MTX_NOPUSH, (f32)(gDialogCharWidths[DIALOG_CHAR_SPACE] * (xMatrix[0] - 1)), 0, 0);
         }
 
         render_generic_char(tensDigit);
-        create_dl_translation_matrix(MENU_MTX_NOPUSH, (f32) gDialogCharWidths[tensDigit], 0, 0);
+        create_dl_translation_matrix(MENU_MTX_NOPUSH, (f32)(gDialogCharWidths[tensDigit]), 0, 0);
         xMatrix[0] = 1;
         linePos[0]++;
 #endif
@@ -1595,14 +1604,11 @@ void handle_dialog_text_and_pages(s8 colorMode, struct DialogEntry *dialog, s8 l
                 gDialogX += gDialogCharWidths[DIALOG_CHAR_SPACE];
 #else
 #if defined(VERSION_JP) || defined(VERSION_SH)
-                if (linePos != 0) {
-#endif
-                    xMatrix++;
-#if defined(VERSION_JP) || defined(VERSION_SH)
-                }
-#endif
+                xMatrix++;
+#elif defined(VERSION_US)
+                xMatrix++;
                 linePos++;
-
+#endif
 #endif
                 break;
 #if defined(VERSION_JP) || defined(VERSION_SH)
@@ -2534,6 +2540,7 @@ void render_pause_camera_options(s16 x, s16 y, s8 *index, s16 xIndex) {
 
     gSPDisplayList(gDisplayListHead++, dl_ia_text_end);
     create_dl_translation_matrix(MENU_MTX_PUSH, ((index[0] - 1) * xIndex) + x, y + Y_VAL7, 0);
+
     gDPSetEnvColor(gDisplayListHead++, 255, 255, 255, gDialogTextAlpha);
     gSPDisplayList(gDisplayListHead++, dl_draw_triangle);
     gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
@@ -2571,7 +2578,6 @@ void render_pause_course_options(s16 x, s16 y, s8 *index, s16 yIndex) {
         { TEXT_EXIT_COURSE_FR },
         { TEXT_EXIT_COURSE_DE }
     };
-
     u8 textCameraAngleR[][24] = {
         { TEXT_CAMERA_ANGLE_R },
         { TEXT_CAMERA_ANGLE_R_FR },
@@ -2680,41 +2686,33 @@ void print_hud_pause_colorful_str(void) {
 }
 
 void render_pause_castle_course_stars(s16 x, s16 y, s16 fileNum, s16 courseNum) {
-    s16 hasStar = 0;
-
     u8 str[COURSE_STAGES_COUNT * 2];
 
     INGAME_TEXT_COPY(textStar, TEXT_STAR);
 
-    u8 starFlags = save_file_get_star_flags(fileNum, courseNum);
-    u16 starCount = save_file_get_course_star_count(fileNum, courseNum);
+    u8 starFlags;
 
-    u16 nextStar = 0;
+    starFlags = save_file_get_star_flags(fileNum, courseNum);
 
     if (starFlags & 0x40) {
-        starCount--;
-        print_generic_string(x + 89, y - 5, textStar);
+        str[0] = DIALOG_CHAR_STAR_FILLED;
+    } else {
+        str[0] = DIALOG_CHAR_STAR_OPEN;
     }
 
-    while (hasStar != starCount) {
-        if (starFlags & (1 << nextStar)) {
-            str[nextStar * 2] = DIALOG_CHAR_STAR_FILLED;
-            hasStar++;
+    str[1] = DIALOG_CHAR_SPACE;
+
+    for (s8 i = 1; i < 6; i++) {
+        if (starFlags & (1 << i)) {
+            str[i * 2] = DIALOG_CHAR_STAR_FILLED;
         } else {
-            str[nextStar * 2] = DIALOG_CHAR_STAR_OPEN;
+            str[i * 2] = DIALOG_CHAR_STAR_OPEN;
         }
 
-        str[nextStar * 2 + 1] = DIALOG_CHAR_SPACE;
-        nextStar++;
+        str[i * 2 + 1] = DIALOG_CHAR_SPACE;
     }
 
-    if (starCount == nextStar && starCount != 6) {
-        str[nextStar * 2] = DIALOG_CHAR_STAR_OPEN;
-        str[nextStar * 2 + 1] = DIALOG_CHAR_SPACE;
-        nextStar++;
-    }
-
-    str[nextStar * 2] = DIALOG_CHAR_TERMINATOR;
+    str[12] = DIALOG_CHAR_TERMINATOR;
 
     print_generic_string(x + 14, y + 13, str);
 }
@@ -2727,30 +2725,34 @@ void render_pause_castle_main_strings(s16 x, s16 y) {
     INGAME_TEXT_COPY(textCoin, TEXT_COIN_X);
 #endif
 
-    u8 strVal[8];
-    s16 starNum = gDialogLineNum;
-
+    s8 prevIndex = gDialogLineNum;
     handle_menu_scrolling(MENU_SCROLL_VERTICAL, &gDialogLineNum, -1, COURSE_STAGES_COUNT + 1);
-
-    if (gDialogLineNum == COURSE_STAGES_COUNT + 1) {
+    s8 scrollDir = (gDialogLineNum >= prevIndex ? +1 : -1);
+    if (gDialogLineNum >= (COURSE_STAGES_COUNT + 1)) {
         gDialogLineNum = 0;
-    }
-
-    if (gDialogLineNum == -1) {
+        scrollDir = +1;
+    } else if (gDialogLineNum <= -1) {
         gDialogLineNum = COURSE_STAGES_COUNT;
+        scrollDir = -1;
     }
 
-    if (gDialogLineNum != COURSE_STAGES_COUNT) {
-        while (save_file_get_course_star_count(gCurrSaveFileNum - 1, gDialogLineNum) == 0) {
-            if (gDialogLineNum >= starNum) {
+    if (gDialogLineNum < COURSE_STAGES_COUNT) {
+        // Skip courses with 0 star collected
+        s16 tries = 0;
+        while (tries++ < COURSE_STAGES_COUNT) {
+            if (save_file_get_star_flags(gCurrSaveFileNum - 1, gDialogLineNum) != 0) {
+                break;
+            }
+            if (scrollDir > 0) {
                 gDialogLineNum++;
+                if (gDialogLineNum >= COURSE_STAGES_COUNT) {
+                    gDialogLineNum = 0;
+                }
             } else {
                 gDialogLineNum--;
-            }
-
-            if (gDialogLineNum == COURSE_STAGES_COUNT || gDialogLineNum == -1) {
-                gDialogLineNum = COURSE_STAGES_COUNT;
-                break;
+                if (gDialogLineNum < 0) {
+                    gDialogLineNum = COURSE_STAGES_COUNT - 1;
+                }
             }
         }
     }
@@ -2758,14 +2760,16 @@ void render_pause_castle_main_strings(s16 x, s16 y) {
     gSPDisplayList(gDisplayListHead++, dl_ia_text_begin);
     gDPSetEnvColor(gDisplayListHead++, 255, 255, 255, gDialogTextAlpha);
 
-    u8 courseNum = gDialogLineNum + 1;
-    const u8 *courseName = (
-        gDialogLineNum == COURSE_STAGES_COUNT ?
-        ((const u8 **) get_course_name_table())[COURSE_MAX] : // Castle secret stars
-        get_level_name_sm64(courseNum, get_level_num_from_course_num(courseNum), 1, 1)
-    );
+    u8 strVal[8];
+    UNUSED u8 textSymStar[] = { GLYPH_STAR, GLYPH_SPACE };
+    UNUSED u16 unused;
+    UNUSED u8 textSymX[] = { GLYPH_MULTIPLY, GLYPH_SPACE };
 
     if (gDialogLineNum < COURSE_STAGES_COUNT) {
+        u8 courseNum = gDialogLineNum + 1;
+        const u8 *courseName = get_level_name_sm64(courseNum, get_level_num_from_course_num(courseNum), 1, 1);
+        pause_capitalize_string_sm64((u8 *) courseName);
+
         render_pause_castle_course_stars(x, y, gCurrSaveFileNum - 1, gDialogLineNum);
         print_generic_string(x + 34, y - 5, textCoin);
 #ifdef VERSION_EU
@@ -2775,20 +2779,22 @@ void render_pause_castle_main_strings(s16 x, s16 y) {
         print_generic_string(x + 54, y - 5, strVal);
 #ifdef VERSION_EU
         print_generic_string(x - 17, y + 30, courseName);
+#else
+        print_generic_string(x - 9, y + 30, courseName);
 #endif
-    } else {
+    } else if (gDialogLineNum == COURSE_STAGES_COUNT) {
+        const u8 *courseName = ((const u8 **) get_course_name_table())[COURSE_MAX]; // Castle secret stars
+
         INGAME_TEXT_COPY(textStarX, TEXT_STAR_X);
         print_generic_string(x + 40, y + 13, textStarX);
         int_to_str(save_file_get_total_star_count(gCurrSaveFileNum - 1, COURSE_BONUS_STAGES - 1, COURSE_MAX - 1), strVal);
         print_generic_string(x + 60, y + 13, strVal);
 #ifdef VERSION_EU
         print_generic_string(get_str_x_pos_from_center(x + 51, courseName, 10.0f), y + 30, courseName);
+#else
+        print_generic_string(x - 9, y + 30, courseName);
 #endif
     }
-
-#ifndef VERSION_EU
-    print_generic_string(x - 9, y + 30, courseName);
-#endif
 
     gSPDisplayList(gDisplayListHead++, dl_ia_text_end);
 }
@@ -2941,8 +2947,11 @@ void render_pause_castle_main_strings_extended(s16 x, s16 y) {
         render_pause_castle_course_name(courseName, 160, y + 30);
         render_pause_castle_course_stars_extended(x + 20, y);
         print_generic_string(x + 54, y - 5, textCoin);
+#ifdef VERSION_EU
+        print_generic_string(x + 74, y - 5, textX);
+#endif
         int_to_str(save_file_get_course_coin_score(gCurrSaveFileNum - 1, gDialogLineNum), textCoinCount);
-        print_generic_string(x + 74, y - 5, textCoinCount);
+        print_generic_string(x + 94, y - 5, textCoinCount);
     }
 
     // Secret courses (15-24)
@@ -3243,7 +3252,6 @@ void render_course_complete_lvl_info_and_hud_str(void) {
 #elif defined(VERSION_EU)
     UNUSED u8 textCatch[] = { TEXT_CATCH }; // unused in EU
     u8 textSymStar[] = { GLYPH_STAR, GLYPH_SPACE };
-#define textCourse gTextCourseArr[gInGameLanguage]
 #else
     INGAME_TEXT_COPY(textCourse, TEXT_COURSE);
     INGAME_TEXT_COPY(textCatch, TEXT_CATCH); // unused in US
@@ -3286,7 +3294,6 @@ void render_course_complete_lvl_info_and_hud_str(void) {
         print_generic_string(TXT_CLEAR_X2, 132, textClear);
 #endif
         gSPDisplayList(gDisplayListHead++, dl_ia_text_end);
-        print_hud_course_complete_string(HUD_PRINT_CONGRATULATIONS);
         print_hud_course_complete_coins(118, 111);
         play_star_fanfare_and_flash_hud(2, 0); //! 2 isn't defined, originally for key hud?
         return;
@@ -3303,12 +3310,12 @@ void render_course_complete_lvl_info_and_hud_str(void) {
     gSPDisplayList(gDisplayListHead++, dl_ia_text_begin);
     gDPSetEnvColor(gDisplayListHead++, 0, 0, 0, gDialogTextAlpha);
     print_generic_string(76, 145, name);
-#if defined(VERSION_JP) || defined(VERSION_SH)
+#if defined(VERSION_JP)
     print_generic_string(220, 145, textCatch);
 #endif
     gDPSetEnvColor(gDisplayListHead++, 255, 255, 255, gDialogTextAlpha);
     print_generic_string(74, 147, name);
-#if defined(VERSION_JP) || defined(VERSION_SH)
+#if defined(VERSION_JP)
     print_generic_string(218, 147, textCatch);
 #endif
     gSPDisplayList(gDisplayListHead++, dl_ia_text_end);
