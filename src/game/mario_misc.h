@@ -9,6 +9,14 @@
 extern struct GraphNodeObject gMirrorMario[MAX_PLAYERS];
 extern struct MarioBodyState gBodyStates[MAX_PLAYERS];
 
+void mario_set_face_switch_index(u8 playerIndex, s16 faceSwitchIndex);
+void mario_set_hair_switch_index(u8 playerIndex, s16 hairSwitchIndex);
+void mario_set_eye_switch_index(u8 playerIndex, s16 eyeSwitchIndex);
+
+s16 mario_get_face_switch_index(u8 playerIndex);
+s16 mario_get_hair_switch_index(u8 playerIndex);
+s16 mario_get_eye_switch_index(u8 playerIndex);
+
 Gfx *geo_draw_mario_head_goddard(s32 callContext, struct GraphNode *node, Mat4 *c);
 /* |description|Behavior init function for NPC Toad|descriptionEnd| */
 void bhv_toad_message_init(void);
@@ -28,6 +36,8 @@ Gfx *geo_switch_mario_eyes(s32 callContext, struct GraphNode *node, UNUSED Mat4 
 Gfx *geo_mario_tilt_torso(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
 Gfx *geo_mario_head_rotation(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
 Gfx *geo_switch_mario_hand(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
+Gfx *geo_switch_mario_face(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
+Gfx *geo_switch_mario_eye_custom(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
 Gfx *geo_mario_hand_foot_scaler(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
 Gfx *geo_switch_mario_cap_effect(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);
 Gfx *geo_switch_mario_cap_on_off(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c);

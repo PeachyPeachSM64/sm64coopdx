@@ -23,17 +23,27 @@
 #include "gfx_dimensions.h"
 #include "pc/configfile.h"
 
+#include "photo_mode_poses.h"
+#include "pc/lua/utils/smlua_anim_utils.h"
+#include "mario_misc.h"
+#include "characters.h"
+
 struct MarioState *marioState = &gMarioStates[0];
 
 static s8 sSavedAllowPartRotation = FALSE;
 static Vec3s sSavedHeadAngle;
 static s16 sSavedFovValue = 45;
 
+static s16 gInitialEyeSwitchIndex = -1;
+static s16 gInitialFaceSwitchIndex = 0;
+static int gIsInitialEyeSwitchIndexSaved = false;
+static int gIsInitialFaceSwitchIndexSaved = false;
+
 int photoModeClosed = true;
 extern int gPrecisionOn;
 
 static s8 maxSections[] = { /* Pose Options */   6, 
-                            /* Body Options */   4, 
+                            /* Body Options */   5, 
                             /* Body Rotation */  6, 
                             /* Camera Options */ 3, 
                             /* World Options */  5};
@@ -47,6 +57,7 @@ static s16 gAirPoseIndex = 0;
 static s16 gHandStateIndex = 0;
 static s16 gCapStateIndex = 0;
 static s16 gEyeStateIndex = 0;
+static s16 gMouthStateIndex = 0;
 static s16 gPowerupIndex = 0;
 static s16 gPlayerVisIndex = 0;
 static s16 gShadowVisIndex = 0;
@@ -627,16 +638,7 @@ s8 initialEyeStateIndex;
 void save_initial_eye_state(void) {
     if (!gIsInitialEyeStateSaved) {
         // Detect the current eye state and set the default option accordingly
-        if (marioState->marioBodyState->eyeState == MARIO_EYES_OPEN) {
-            gInitialEyeState = MARIO_EYES_OPEN;
-            initialEyeStateIndex = 0;
-        } else if (marioState->marioBodyState->eyeState == MARIO_EYES_HALF_CLOSED) {
-            gInitialEyeState = MARIO_EYES_HALF_CLOSED;
-            initialEyeStateIndex = 1;
-        } else if (marioState->marioBodyState->eyeState == MARIO_EYES_CLOSED) {
-            gInitialEyeState = MARIO_EYES_CLOSED;
-            initialEyeStateIndex = 2;
-        } else if (marioState->marioBodyState->eyeState == MARIO_EYES_DEAD) {
+        if (marioState->marioBodyState->eyeState == MARIO_EYES_DEAD) {
             gInitialEyeState = MARIO_EYES_DEAD;
             initialEyeStateIndex = 3;
         } else { // Normal state set to open as default
@@ -1035,14 +1037,17 @@ void pose_options(void) {
         poseOptions = 1;
     }
 
+    const s32 groundPoseCount = 43 + photo_mode_custom_pose_count(false);
+    const s32 airPoseCount = 23 + photo_mode_custom_pose_count(true);
+
     switch (gCurrentMenuSection) {
         case 1:
             if (poseOptions == 0) {
-                section_navigation(&gGroundPoseIndex, 43, true, true);
-                handle_section_navigation_sound(&gGroundPoseIndex, 0, 43);
+                section_navigation(&gGroundPoseIndex, groundPoseCount, true, true);
+                handle_section_navigation_sound(&gGroundPoseIndex, 0, groundPoseCount);
             } else {
-                section_navigation(&gAirPoseIndex, 23, true, true);
-                handle_section_navigation_sound(&gAirPoseIndex, 0, 23);
+                section_navigation(&gAirPoseIndex, airPoseCount, true, true);
+                handle_section_navigation_sound(&gAirPoseIndex, 0, airPoseCount);
             }
             break;
         case 2:
@@ -1291,6 +1296,18 @@ void pose_options(void) {
                 set_character_animation(marioState, CHAR_ANIM_STAR_DANCE);
                 force_anim_frame(62);
                 break;
+            default: {
+                const s32 customIndex = (s32) gGroundPoseIndex - 43;
+                const char* poseName = NULL;
+                if (photo_mode_custom_pose_get_name(false, customIndex, &poseName) && poseName != NULL) {
+                    static u8 sCustomPoseName[64] = { 0 };
+                    convert_string_ascii_to_sm64(sCustomPoseName, poseName, false);
+                    photo_mode_capitalize_string_sm64(sCustomPoseName);
+                    print_generic_string(centeredX(LARGE_X, sCustomPoseName), OPTION_1_Y, sCustomPoseName);
+                }
+                photo_mode_custom_pose_apply(marioState, false, customIndex);
+                break;
+            }
         }
     } else {
         switch (gAirPoseIndex) {
@@ -1408,6 +1425,18 @@ void pose_options(void) {
                 set_character_animation(marioState, CHAR_ANIM_WATER_STAR_DANCE);
                 force_anim_frame(83);
                 break;
+            default: {
+                const s32 customIndex = (s32) gAirPoseIndex - 23;
+                const char* poseName = NULL;
+                if (photo_mode_custom_pose_get_name(true, customIndex, &poseName) && poseName != NULL) {
+                    static u8 sCustomPoseName[64] = { 0 };
+                    convert_string_ascii_to_sm64(sCustomPoseName, poseName, false);
+                    photo_mode_capitalize_string_sm64(sCustomPoseName);
+                    print_generic_string(centeredX(LARGE_X, sCustomPoseName), OPTION_1_Y, sCustomPoseName);
+                }
+                photo_mode_custom_pose_apply(marioState, true, customIndex);
+                break;
+            }
         }
     }
 
@@ -1482,6 +1511,7 @@ void body_options(void) {
 
     CREATE_STRING(textCapState, "Caps");
     CREATE_STRING(textEyeState, "Eyes");
+    CREATE_STRING(textMouthState, "Mouth");
     CREATE_STRING(textPowerup, "Powerup");
     CREATE_STRING(textShadowVisibility, "Shadow Visibility");
 
@@ -1494,13 +1524,21 @@ void body_options(void) {
     CREATE_STRING(textEyeClosed, "Closed");
     CREATE_STRING(textEyeDead, "Dead");
 
+    CREATE_STRING(textMouthDefault, "Default");
+
     CREATE_STRING(textNone, "None");
     CREATE_STRING(textPowerupVanish, "Vanish");
     CREATE_STRING(textPowerupMetal, "Metal");
 
     u8 *textCapStateIndex = NULL;
     u8 *textEyeStateIndex = NULL;
+    u8 *textMouthStateIndex = NULL;
     u8 *textPowerupIndex = NULL;
+
+    struct Character* character = get_character(marioState);
+    const s32 characterType = (character != NULL) ? character->type : 0;
+    s32 customEyeCount = photo_mode_eye_state_count(characterType);
+    s32 customMouthCount = photo_mode_mouth_state_count(characterType);
 
     switch (gCurrentMenuSection) {
         case 1:
@@ -1508,14 +1546,18 @@ void body_options(void) {
             handle_section_navigation_sound(&gCapStateIndex, 0, 3);
             break;
         case 2:
-            section_navigation(&gEyeStateIndex, 4, true, true);
-            handle_section_navigation_sound(&gEyeStateIndex, 0, 4);
+            section_navigation(&gEyeStateIndex, (customEyeCount > 0) ? customEyeCount : 4, true, true);
+            handle_section_navigation_sound(&gEyeStateIndex, 0, (customEyeCount > 0) ? customEyeCount : 4);
             break;
         case 3:
+            section_navigation(&gMouthStateIndex, (customMouthCount > 0) ? customMouthCount : 1, true, true);
+            handle_section_navigation_sound(&gMouthStateIndex, 0, (customMouthCount > 0) ? customMouthCount : 1);
+            break;
+        case 4:
             section_navigation(&gPowerupIndex, 3, true, true);
             handle_section_navigation_sound(&gPowerupIndex, 0, 3);
             break;
-        case 4:
+        case 5:
             section_navigation(&gShadowVisIndex, 2, false, false);
             handle_section_navigation_sound(&gShadowVisIndex, 0, 2);
             break;
@@ -1548,28 +1590,65 @@ void body_options(void) {
     set_option_alpha(2);
     print_generic_string(OPTION_X, OPTION_2_Y, textEyeState);
 
-    switch (gEyeStateIndex) {
-        case 0:
-            textEyeStateIndex = (u8 *)&textOpen;
-            marioState->marioBodyState->eyeState = MARIO_EYES_OPEN;
-            break;
-        case 1:
-            textEyeStateIndex = (u8 *)&textEyeHalfClosed;
-            marioState->marioBodyState->eyeState = MARIO_EYES_HALF_CLOSED;
-            break;
-        case 2:
-            textEyeStateIndex = (u8 *)&textEyeClosed;
-            marioState->marioBodyState->eyeState = MARIO_EYES_CLOSED;
-            break;
-        case 3:
-            textEyeStateIndex = (u8 *)&textEyeDead;
-            marioState->marioBodyState->eyeState = MARIO_EYES_DEAD;
-            break;
+    if (customEyeCount > 0) {
+        const char* name = NULL;
+        s16 eyeValue = -1;
+        if (photo_mode_eye_state_get_name(characterType, gEyeStateIndex, &name) && name != NULL) {
+            static u8 sCustomEyeName[64] = { 0 };
+            convert_string_ascii_to_sm64(sCustomEyeName, name, false);
+            photo_mode_capitalize_string_sm64(sCustomEyeName);
+            textEyeStateIndex = sCustomEyeName;
+        }
+        if (photo_mode_eye_state_get_value(characterType, gEyeStateIndex, &eyeValue)) {
+            mario_set_eye_switch_index(0, eyeValue);
+        }
+        marioState->marioBodyState->eyeState = 0;
+    } else {
+        mario_set_eye_switch_index(0, -1);
+        switch (gEyeStateIndex) {
+            case 0:
+                textEyeStateIndex = (u8 *)&textOpen;
+                marioState->marioBodyState->eyeState = MARIO_EYES_OPEN;
+                break;
+            case 1:
+                textEyeStateIndex = (u8 *)&textEyeHalfClosed;
+                marioState->marioBodyState->eyeState = MARIO_EYES_HALF_CLOSED;
+                break;
+            case 2:
+                textEyeStateIndex = (u8 *)&textEyeClosed;
+                marioState->marioBodyState->eyeState = MARIO_EYES_CLOSED;
+                break;
+            case 3:
+                textEyeStateIndex = (u8 *)&textEyeDead;
+                marioState->marioBodyState->eyeState = MARIO_EYES_DEAD;
+                break;
+        }
     }
     print_generic_string(centeredX(LARGE_X, textEyeStateIndex), OPTION_2_Y, textEyeStateIndex);
 
     set_option_alpha(3);
-    print_generic_string(OPTION_X, OPTION_3_Y, textPowerup);
+    print_generic_string(OPTION_X, OPTION_3_Y, textMouthState);
+
+    if (customMouthCount > 0) {
+        const char* name = NULL;
+        s16 mouthValue = 0;
+        if (photo_mode_mouth_state_get_name(characterType, gMouthStateIndex, &name) && name != NULL) {
+            static u8 sCustomMouthName[64] = { 0 };
+            convert_string_ascii_to_sm64(sCustomMouthName, name, false);
+            photo_mode_capitalize_string_sm64(sCustomMouthName);
+            textMouthStateIndex = sCustomMouthName;
+        }
+        if (photo_mode_mouth_state_get_value(characterType, gMouthStateIndex, &mouthValue)) {
+            mario_set_face_switch_index(0, mouthValue);
+        }
+    } else {
+        textMouthStateIndex = (u8*)&textMouthDefault;
+        mario_set_face_switch_index(0, 0);
+    }
+    print_generic_string(centeredX(LARGE_X, textMouthStateIndex), OPTION_3_Y, textMouthStateIndex);
+
+    set_option_alpha(4);
+    print_generic_string(OPTION_X, OPTION_4_Y, textPowerup);
 
     switch (gPowerupIndex) {
         case 0:
@@ -1585,19 +1664,19 @@ void body_options(void) {
             marioState->marioBodyState->modelState = MODEL_STATE_METAL;
             break;
     }
-    print_generic_string(centeredX(LARGE_X, textPowerupIndex), OPTION_3_Y, textPowerupIndex);
+    print_generic_string(centeredX(LARGE_X, textPowerupIndex), OPTION_4_Y, textPowerupIndex);
 
-    set_option_alpha(4);
-    print_generic_string(OPTION_X, OPTION_4_Y, textShadowVisibility);
+    set_option_alpha(5);
+    print_generic_string(OPTION_X, OPTION_5_Y, textShadowVisibility);
 
     switch (gShadowVisIndex) {
         case 0:
-            print_generic_string(centeredX(SMALL_X, textOn), OPTION_4_Y, textOn);
+            print_generic_string(centeredX(SMALL_X, textOn), OPTION_5_Y, textOn);
             isPlayerShadowVisible = true;
             marioState->marioObj->header.gfx.shadowInvisible = FALSE;
             break;
         case 1:
-            print_generic_string(centeredX(SMALL_X, textOff), OPTION_4_Y, textOff);
+            print_generic_string(centeredX(SMALL_X, textOff), OPTION_5_Y, textOff);
             isPlayerShadowVisible = false;
             marioState->marioObj->header.gfx.shadowInvisible = TRUE;
             break;
@@ -1608,7 +1687,8 @@ void body_options(void) {
     draw_animated_option_arrows(OPTION_ARROW_X, OPTION_1_Y, 85, 1);
     draw_animated_option_arrows(OPTION_ARROW_X, OPTION_2_Y, 85, 2);
     draw_animated_option_arrows(OPTION_ARROW_X, OPTION_3_Y, 85, 3);
-    draw_animated_option_arrows(OPTION_ARROW_X + 40, OPTION_4_Y, 45, 6);
+    draw_animated_option_arrows(OPTION_ARROW_X, OPTION_4_Y, 85, 4);
+    draw_animated_option_arrows(OPTION_ARROW_X + 40, OPTION_5_Y, 45, 5);
 }
 
 static s16 gInitialHeadRotationX;
@@ -2123,6 +2203,9 @@ void close_photo_mode(void) {
     gIsInitialEyeStateSaved = FALSE;
     gEyeStateIndex = initialEyeStateIndex;
 
+    gEyeStateIndex = 0;
+    gMouthStateIndex = 0;
+
     restore_initial_powerup();
     gIsInitialPowerupSaved = FALSE;
     gPowerupIndex = initialPowerupIndex;
@@ -2196,6 +2279,16 @@ void close_photo_mode(void) {
     marioState->marioBodyState->allowPartRotation = sSavedAllowPartRotation;
     vec3s_copy(marioState->marioBodyState->headAngle, sSavedHeadAngle);
 
+    if (gIsInitialEyeSwitchIndexSaved) {
+        mario_set_eye_switch_index(0, gInitialEyeSwitchIndex);
+        gIsInitialEyeSwitchIndexSaved = FALSE;
+    }
+
+    if (gIsInitialFaceSwitchIndexSaved) {
+        mario_set_face_switch_index(0, gInitialFaceSwitchIndex);
+        gIsInitialFaceSwitchIndexSaved = FALSE;
+    }
+
     photoModeClosed = true;
     switch_to_photo_mode();
 
@@ -2249,6 +2342,7 @@ s32 activate_photo_mode(void) {
 
     if (gPlayer1Controller->buttonPressed & B_BUTTON) {
         close_photo_mode();
+        return 0;
     }
     
     if (isPhotoModeOptionsBoxVisible) {
@@ -2284,4 +2378,13 @@ void open_photo_mode(void) {
     sSavedAllowPartRotation = marioState->marioBodyState->allowPartRotation;
     vec3s_copy(sSavedHeadAngle, marioState->marioBodyState->headAngle);
     marioState->marioBodyState->allowPartRotation = TRUE;
+
+    if (!gIsInitialEyeSwitchIndexSaved) {
+        gInitialEyeSwitchIndex = mario_get_eye_switch_index(0);
+        gIsInitialEyeSwitchIndexSaved = TRUE;
+    }
+    if (!gIsInitialFaceSwitchIndexSaved) {
+        gInitialFaceSwitchIndex = mario_get_face_switch_index(0);
+        gIsInitialFaceSwitchIndexSaved = TRUE;
+    }
 }

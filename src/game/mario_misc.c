@@ -28,6 +28,8 @@
 #include "pc/mods/mods.h"
 #include "pc/configfile.h"
 
+extern int photoModeClosed;
+
 #define TOAD_STAR_1_REQUIREMENT gBehaviorValues.ToadStar1Requirement
 #define TOAD_STAR_2_REQUIREMENT gBehaviorValues.ToadStar2Requirement
 #define TOAD_STAR_3_REQUIREMENT gBehaviorValues.ToadStar3Requirement
@@ -80,6 +82,10 @@ static s8 gMarioAttackScaleAnimation[3 * 6] = {
 struct MarioBodyState gBodyStates[MAX_PLAYERS];
 struct GraphNodeObject gMirrorMario[MAX_PLAYERS];  // copy of Mario's geo node for drawing mirror Mario
 struct PlayerColor gNetworkPlayerColors[MAX_PLAYERS];
+
+static s16 sMarioFaceSwitchIndex[MAX_PLAYERS] = { 0 };
+static s16 sMarioHairSwitchIndex[MAX_PLAYERS] = { 0 };
+static s16 sMarioEyeSwitchIndex[MAX_PLAYERS] = { -1 };
 
 // This whole file is weirdly organized. It has to be the same file due
 // to rodata boundaries and function aligns, which means the programmer
@@ -379,6 +385,36 @@ struct MarioBodyState *geo_get_body_state(void) {
     return &gBodyStates[index];
 }
 
+void mario_set_face_switch_index(u8 playerIndex, s16 faceSwitchIndex) {
+    if (playerIndex >= MAX_PLAYERS) { return; }
+    sMarioFaceSwitchIndex[playerIndex] = faceSwitchIndex;
+}
+
+void mario_set_hair_switch_index(u8 playerIndex, s16 hairSwitchIndex) {
+    if (playerIndex >= MAX_PLAYERS) { return; }
+    sMarioHairSwitchIndex[playerIndex] = hairSwitchIndex;
+}
+
+void mario_set_eye_switch_index(u8 playerIndex, s16 eyeSwitchIndex) {
+    if (playerIndex >= MAX_PLAYERS) { return; }
+    sMarioEyeSwitchIndex[playerIndex] = eyeSwitchIndex;
+}
+
+s16 mario_get_face_switch_index(u8 playerIndex) {
+    if (playerIndex >= MAX_PLAYERS) { return 0; }
+    return sMarioFaceSwitchIndex[playerIndex];
+}
+
+s16 mario_get_hair_switch_index(u8 playerIndex) {
+    if (playerIndex >= MAX_PLAYERS) { return 0; }
+    return sMarioHairSwitchIndex[playerIndex];
+}
+
+s16 mario_get_eye_switch_index(u8 playerIndex) {
+    if (playerIndex >= MAX_PLAYERS) { return 0; }
+    return sMarioEyeSwitchIndex[playerIndex];
+}
+
 /**
  * Sets the correct blend mode and color for mirror Mario.
  */
@@ -529,6 +565,70 @@ Gfx* geo_switch_mario_hand(s32 callContext, struct GraphNode* node, UNUSED Mat4*
             else {
                 switchCase->selectedCase =
                     (bodyState->handState < 2) ? bodyState->handState : MARIO_HAND_FISTS;
+            }
+        }
+    }
+    return NULL;
+}
+
+Gfx* geo_switch_mario_face(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
+    struct GraphNodeSwitchCase* switchCase = (struct GraphNodeSwitchCase*) node;
+    u8 index = geo_get_processing_object_index();
+    struct MarioBodyState* bodyState = geo_get_body_state();
+
+    if (callContext == GEO_CONTEXT_RENDER) {
+        s16 faceSwitchIndex = sMarioFaceSwitchIndex[index];
+
+        // Render96 metal Mario face switch has fewer cases than the non-metal layout.
+        // Photo Mode mouth indices are authored against the non-metal ordering.
+        // Compensate so selections match visually when metal powerup is active.
+        if (bodyState != NULL && (bodyState->modelState & MODEL_STATE_METAL)) {
+            if (faceSwitchIndex >= 3) {
+                faceSwitchIndex -= 2;
+            }
+        }
+
+        switchCase->selectedCase = faceSwitchIndex;
+    }
+    return NULL;
+}
+
+Gfx* geo_switch_mario_eye_custom(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
+    struct GraphNodeSwitchCase* switchCase = (struct GraphNodeSwitchCase*) node;
+    u8 index = geo_get_processing_object_index();
+    struct MarioBodyState* bodyState = geo_get_body_state();
+    s16 blinkFrame;
+
+    if (callContext == GEO_CONTEXT_RENDER) {
+        s16 overrideEye = sMarioEyeSwitchIndex[index];
+
+        // When overrideEye is negative, behave exactly like geo_switch_mario_eyes.
+        if (overrideEye < 0) {
+            if (bodyState->eyeState == 0) {
+                blinkFrame = ((switchCase->parameter * 32 + (gAreaUpdateCounter + index * 32)) >> 1) & 0x1F;
+                if (blinkFrame < 7) {
+                    switchCase->selectedCase = gMarioBlinkAnimation[blinkFrame];
+                }
+                else {
+                    switchCase->selectedCase = 0;
+                }
+            }
+            else {
+                switchCase->selectedCase = bodyState->eyeState - 1;
+            }
+        }
+        // Otherwise, override to your custom eye state, but only apply blinking if not in Photo Mode.
+        else {
+            if (!photoModeClosed) {
+                switchCase->selectedCase = overrideEye;
+            } else {
+                blinkFrame = ((switchCase->parameter * 32 + (gAreaUpdateCounter + index * 32)) >> 1) & 0x1F;
+                if (blinkFrame < 7) {
+                    switchCase->selectedCase = gMarioBlinkAnimation[blinkFrame];
+                }
+                else {
+                    switchCase->selectedCase = overrideEye;
+                }
             }
         }
     }

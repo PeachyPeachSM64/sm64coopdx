@@ -22,13 +22,179 @@
 #include "game/hardcoded.h"
 #include "include/macros.h"
 
+#include "game/mario_misc.h"
+#include "game/photo_mode_poses.h"
+
 bool smlua_functions_valid_param_count(lua_State* L, int expected) {
     int top = lua_gettop(L);
     if (top != expected) {
         LOG_LUA_LINE("Improper param count: Expected %u, Received %u", expected, top);
         return false;
     }
+
     return true;
+}
+
+/////////////////////
+// photo mode poses //
+/////////////////////
+
+int smlua_func_photo_mode_pose_register_character(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 4)) { return 0; }
+
+    bool air = smlua_to_boolean(L, 1);
+    const char* name = smlua_to_string(L, 2);
+    s32 characterAnimId = smlua_to_integer(L, 3);
+    s32 frame = smlua_to_integer(L, 4);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    bool ok = photo_mode_custom_pose_register_character(air, name, characterAnimId, (s16) frame);
+    lua_pushboolean(L, ok);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+/////////////////////
+// photo mode state //
+/////////////////////
+
+int smlua_func_photo_mode_eye_state_register(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_range(L, 2, 3)) { return 0; }
+
+    s32 characterType = 0;
+    const char* name = NULL;
+    s32 eyeSwitchIndex = 0;
+    if (lua_gettop(L) == 2) {
+        characterType = 0;
+        name = smlua_to_string(L, 1);
+        eyeSwitchIndex = smlua_to_integer(L, 2);
+    } else {
+        characterType = smlua_to_integer(L, 1);
+        name = smlua_to_string(L, 2);
+        eyeSwitchIndex = smlua_to_integer(L, 3);
+    }
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    bool ok = photo_mode_eye_state_register(characterType, name, (s16) eyeSwitchIndex);
+    lua_pushboolean(L, ok);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_photo_mode_eye_state_reset(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_range(L, 0, 1)) { return 0; }
+    s32 characterType = 0;
+    if (lua_gettop(L) == 1) {
+        characterType = smlua_to_integer(L, 1);
+        if (!gSmLuaConvertSuccess) { return 0; }
+    }
+    photo_mode_eye_state_reset(characterType);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_photo_mode_mouth_state_register(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_range(L, 2, 3)) { return 0; }
+
+    s32 characterType = 0;
+    const char* name = NULL;
+    s32 faceSwitchIndex = 0;
+    if (lua_gettop(L) == 2) {
+        characterType = 0;
+        name = smlua_to_string(L, 1);
+        faceSwitchIndex = smlua_to_integer(L, 2);
+    } else {
+        characterType = smlua_to_integer(L, 1);
+        name = smlua_to_string(L, 2);
+        faceSwitchIndex = smlua_to_integer(L, 3);
+    }
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    bool ok = photo_mode_mouth_state_register(characterType, name, (s16) faceSwitchIndex);
+    lua_pushboolean(L, ok);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_photo_mode_mouth_state_reset(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_range(L, 0, 1)) { return 0; }
+    s32 characterType = 0;
+    if (lua_gettop(L) == 1) {
+        characterType = smlua_to_integer(L, 1);
+        if (!gSmLuaConvertSuccess) { return 0; }
+    }
+    photo_mode_mouth_state_reset(characterType);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_photo_mode_pose_register_mario_anim_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 4)) { return 0; }
+
+    bool air = smlua_to_boolean(L, 1);
+    const char* name = smlua_to_string(L, 2);
+    s32 marioAnimIndex = smlua_to_integer(L, 3);
+    s32 frame = smlua_to_integer(L, 4);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    bool ok = photo_mode_custom_pose_register_mario_anim_index(air, name, marioAnimIndex, (s16) frame);
+    lua_pushboolean(L, ok);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_photo_mode_pose_register_custom_anim(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 4)) { return 0; }
+
+    bool air = smlua_to_boolean(L, 1);
+    const char* name = smlua_to_string(L, 2);
+    const char* animName = smlua_to_string(L, 3);
+    s32 frame = smlua_to_integer(L, 4);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    bool ok = photo_mode_custom_pose_register_custom_anim(air, name, animName, (s16) frame);
+    lua_pushboolean(L, ok);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_photo_mode_pose_reset(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    photo_mode_custom_poses_reset();
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
 }
 
 bool smlua_functions_valid_param_range(lua_State* L, int min, int max) {
@@ -38,6 +204,103 @@ bool smlua_functions_valid_param_range(lua_State* L, int min, int max) {
         return false;
     }
     return true;
+}
+
+//////////////////////////
+// mario expression geo //
+//////////////////////////
+
+int smlua_func_mario_set_face_switch_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    s32 playerIndex = smlua_to_integer(L, 1);
+    s32 faceSwitchIndex = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    mario_set_face_switch_index((u8) playerIndex, (s16) faceSwitchIndex);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_mario_set_hair_switch_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    s32 playerIndex = smlua_to_integer(L, 1);
+    s32 hairSwitchIndex = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    mario_set_hair_switch_index((u8) playerIndex, (s16) hairSwitchIndex);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_mario_set_eye_switch_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    s32 playerIndex = smlua_to_integer(L, 1);
+    s32 eyeSwitchIndex = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    mario_set_eye_switch_index((u8) playerIndex, (s16) eyeSwitchIndex);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_mario_get_face_switch_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
+
+    s32 playerIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    lua_pushinteger(L, mario_get_face_switch_index((u8) playerIndex));
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_mario_get_hair_switch_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
+
+    s32 playerIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    lua_pushinteger(L, mario_get_hair_switch_index((u8) playerIndex));
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_mario_get_eye_switch_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
+
+    s32 playerIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    lua_pushinteger(L, mario_get_eye_switch_index((u8) playerIndex));
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
 }
 
 ///////////////
@@ -966,4 +1229,24 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "cast_graph_node", smlua_func_cast_graph_node);
     smlua_bind_function(L, "get_uncolored_string", smlua_func_get_uncolored_string);
     smlua_bind_function(L, "gfx_set_command", smlua_func_gfx_set_command);
+
+    // mario expression geo
+    smlua_bind_function(L, "mario_set_face_switch_index", smlua_func_mario_set_face_switch_index);
+    smlua_bind_function(L, "mario_set_hair_switch_index", smlua_func_mario_set_hair_switch_index);
+    smlua_bind_function(L, "mario_set_eye_switch_index", smlua_func_mario_set_eye_switch_index);
+    smlua_bind_function(L, "mario_get_face_switch_index", smlua_func_mario_get_face_switch_index);
+    smlua_bind_function(L, "mario_get_hair_switch_index", smlua_func_mario_get_hair_switch_index);
+    smlua_bind_function(L, "mario_get_eye_switch_index", smlua_func_mario_get_eye_switch_index);
+
+    // photo mode state
+    smlua_bind_function(L, "photo_mode_eye_state_register", smlua_func_photo_mode_eye_state_register);
+    smlua_bind_function(L, "photo_mode_eye_state_reset", smlua_func_photo_mode_eye_state_reset);
+    smlua_bind_function(L, "photo_mode_mouth_state_register", smlua_func_photo_mode_mouth_state_register);
+    smlua_bind_function(L, "photo_mode_mouth_state_reset", smlua_func_photo_mode_mouth_state_reset);
+
+    // photo mode
+    smlua_bind_function(L, "photo_mode_pose_register_character", smlua_func_photo_mode_pose_register_character);
+    smlua_bind_function(L, "photo_mode_pose_register_custom_anim", smlua_func_photo_mode_pose_register_custom_anim);
+    smlua_bind_function(L, "photo_mode_pose_register_mario_anim_index", smlua_func_photo_mode_pose_register_mario_anim_index);
+    smlua_bind_function(L, "photo_mode_pose_reset", smlua_func_photo_mode_pose_reset);
 }

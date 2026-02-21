@@ -1,2 +1,0 @@
--- name: Render96 Dev Test
--- description: A mod for testing features for Render96

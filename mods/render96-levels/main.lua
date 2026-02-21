@@ -1,2 +1,0 @@
--- name: Render96 Levels
--- description: A mod that imports all levels from Render96
