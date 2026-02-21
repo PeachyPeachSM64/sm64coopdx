@@ -54,6 +54,13 @@ void DynOS_Anim_Swap(void *aPtr) {
         return;
     }
 
+    // If a Lua custom animation is active, do not override it with DynOS animations.
+    // Otherwise Mario will use the previous vanilla animation index (via currentAnimAddr)
+    // and custom poses will depend on whatever animation was selected previously.
+    if (smlua_anim_util_get_current_animation_name(_Object) != NULL) {
+        return;
+    }
+
     // Swap the current animation with the one from the Gfx data
     if (!pDefaultAnimation) {
         pDefaultAnimation = _Object->header.gfx.animInfo.curAnim;

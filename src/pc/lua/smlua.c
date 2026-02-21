@@ -3,15 +3,18 @@
 #include "pc/lua/smlua_live_reload.h"
 #include "game/hardcoded.h"
 #include "pc/mods/mods.h"
-#include "pc/mods/mods_utils.h"
+#include "pc/mods/mods.h"
 #include "pc/mods/mod_storage.h"
 #include "pc/mods/mod_fs.h"
-#include "pc/crash_handler.h"
+#include "pc/network/packets/packet.h"
+
+#include "game/photo_mode_poses.h"
 #include "pc/lua/utils/smlua_text_utils.h"
 #include "pc/lua/utils/smlua_audio_utils.h"
 #include "pc/lua/utils/smlua_model_utils.h"
 #include "pc/lua/utils/smlua_level_utils.h"
 #include "pc/lua/utils/smlua_anim_utils.h"
+#include "pc/crash_handler.h"
 #include "pc/djui/djui.h"
 #include "pc/fs/fmem.h"
 #include "pc/configfile.h"
@@ -503,6 +506,7 @@ void smlua_shutdown(void) {
     smlua_model_util_clear();
     smlua_level_util_reset();
     smlua_anim_util_reset();
+    photo_mode_custom_poses_reset();
     mod_storage_shutdown();
     mod_fs_shutdown();
     lua_State* L = gLuaState;

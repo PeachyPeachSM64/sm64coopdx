@@ -2037,6 +2037,10 @@ static const DynosBuiltinFunction sDynosBuiltinFuncs[] = {
     define_builtin_function(bhv_ambient_light_update, FUNCTION_BHV),
     define_builtin_function(bhv_point_light_init, FUNCTION_BHV),
     define_builtin_function(bhv_point_light_loop, FUNCTION_BHV),
+
+    // Render96dx Specific
+    define_builtin_function(geo_switch_mario_face, FUNCTION_GEO),
+    define_builtin_function(geo_switch_mario_eye_custom, FUNCTION_GEO),
 };
 
 static const char *sDynosBuiltinFuncTypeNames[] = {
