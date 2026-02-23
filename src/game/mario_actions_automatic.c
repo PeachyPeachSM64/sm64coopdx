@@ -24,6 +24,7 @@
 #include "pc/configfile.h"
 #include "pc/network/network.h"
 #include "pc/lua/smlua.h"
+#include "pc/controller/controller_mouse.h"
 
 #define POLE_NONE          0
 #define POLE_TOUCHED_FLOOR 1
@@ -862,6 +863,12 @@ s32 act_in_cannon(struct MarioState *m) {
             case 2:
                 m->faceAngle[0] -= (s16)(m->controller->stickY * cannonSensitivity);
                 marioObj->oMarioCannonInputYaw -= (s16)(m->controller->stickX * cannonSensitivity);
+
+                if (configFreeCameraMouse && mouse_relative_enabled) {
+                    mouse_has_current_control = TRUE;
+                    m->faceAngle[0] -= (s16)(mouse_y * cannonSensitivity);
+                    marioObj->oMarioCannonInputYaw -= (s16)(mouse_x * cannonSensitivity);
+                }
 
                 if (m->faceAngle[0] > 0x38E3) {
                     m->faceAngle[0] = 0x38E3;
