@@ -33,6 +33,7 @@ s16 get_hud_camera_status(void);
 void set_hud_camera_status(s16 status);
 
 void hide_you_got_a_star(void);
+void close_you_got_a_star(void);
 void render_you_got_a_star(u32 secondFrame);
 void render_hud(void);
 

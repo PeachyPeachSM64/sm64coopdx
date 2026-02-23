@@ -110,6 +110,7 @@ void snufit_act_shoot(void) {
         o->oSnufitBullets += 1;
         cur_obj_play_sound_2(SOUND_OBJ_SNUFIT_SHOOT);
 
+        spawn_object_relative(0, 0, -20, 40, o, MODEL_BOWLING_BALL, bhvSnufitBalls);
         o->oSnufitRecoil = -30;
         o->oTimer = 0;
     }
