@@ -10863,6 +10863,26 @@ BAD_RETURN(s32) cutscene_exit_painting_end(struct Camera *c) {
     update_camera_yaw(c);
 }
 
+BAD_RETURN(s32) cutscene_star_dance_end(struct Camera *c) {
+    if (!c) { return; }
+    c->cutscene = 0;
+    gCutsceneTimer = CUTSCENE_STOP;
+
+    if (c->defMode == CAMERA_MODE_CLOSE) {
+        c->mode = CAMERA_MODE_CLOSE;
+    } else if (c->defMode == CAMERA_MODE_NEWCAM || gNewCamera.isActive) {
+        c->mode = CAMERA_MODE_NEWCAM;
+    } else {
+        c->mode = CAMERA_MODE_FREE_ROAM;
+    }
+
+    sStatusFlags |= CAM_FLAG_UNUSED_CUTSCENE_ACTIVE;
+    sStatusFlags |= CAM_FLAG_SMOOTH_MOVEMENT;
+    sStatusFlags &= ~CAM_FLAG_BLOCK_SMOOTH_MOVEMENT;
+    transition_next_state(c, 30);
+    update_camera_yaw(c);
+}
+
 /**
  * End the cutscene, starting cannon mode.
  */

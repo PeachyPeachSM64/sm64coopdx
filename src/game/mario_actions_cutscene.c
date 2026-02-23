@@ -795,7 +795,7 @@ void general_star_dance_handler(struct MarioState *m, s32 isInWater) {
         disable_time_stop();
         enable_background_sound();
         if (configStayInLevelAfterStar) {
-            hide_you_got_a_star();
+            close_you_got_a_star();
         }
         s32 dialogID = get_star_collection_dialog(m);
         if (dialogID != 0) {
@@ -806,11 +806,8 @@ void general_star_dance_handler(struct MarioState *m, s32 isInWater) {
         }
         if (configStayInLevelAfterStar) {
             if (m->statusForCamera) { m->statusForCamera->action = m->action; }
-            soft_reset_camera(m->area->camera);
             set_fov_function(CAM_FOV_DEFAULT);
-            if (isInWater) {
-                cutscene_exit_painting_end(m->area->camera);
-            }
+            cutscene_star_dance_end(m->area->camera);
         }
     }
 }

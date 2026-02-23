@@ -172,6 +172,18 @@ void hide_you_got_a_star(void) {
     sStarGetPrevGlobalTimer = 0;
 }
 
+void close_you_got_a_star(void) {
+    if (!gHudDisplay.starGet) {
+        return;
+    }
+
+    // Nudge the existing animation into its fade-out phase.
+    // render_you_got_a_star() will take care of fading and eventually calling hide_you_got_a_star().
+    if (sStarGetSpeed <= 31.0f) {
+        sStarGetSpeed = 32.0f;
+    }
+}
+
 void render_you_got_a_star(UNUSED u32 secondFrame) {
     if (!gHudDisplay.starGet) {
         return;
