@@ -4,7 +4,7 @@
 #include "pc/configfile.h"
 
 void djui_panel_controls_extra_create(struct DjuiBase* caller) {
-    f32 bindBodyHeight = 28 * 6 + 1 * 10;
+    f32 bindBodyHeight = 28 * 7 + 1 * 10;
 
     struct DjuiThreePanel* panel = djui_panel_menu_create(DLANG(CONTROLS, CONTROLS), false);
     struct DjuiBase* body = djui_three_panel_get_body(panel);
@@ -21,6 +21,7 @@ void djui_panel_controls_extra_create(struct DjuiBase* caller) {
             djui_bind_create(&bindBody->base, DLANG(CONTROLS, D_RIGHT),    configKeyDRight);
             djui_bind_create(&bindBody->base, DLANG(CONTROLS, X),          configKeyX);
             djui_bind_create(&bindBody->base, DLANG(CONTROLS, Y),          configKeyY);
+            djui_bind_create(&bindBody->base, "Photo Mode Shortcut",       configKeyPhotoMode);
         }
 
         djui_button_create(body, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_BACK, djui_panel_menu_back);
