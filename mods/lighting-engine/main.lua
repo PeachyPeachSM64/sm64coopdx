@@ -1,5 +1,5 @@
--- name: Render96 Lighting Engine
--- description: Makes all stars emit a point light using the lighting engine.
+-- name: ExcellentGamer's Lighting Engine
+-- description: A mod that utilizes the lighting engine from sm64coopdx.
 
 require('config')
 require('ambient')

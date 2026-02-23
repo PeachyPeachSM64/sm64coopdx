@@ -2354,8 +2354,14 @@ void check_death_barrier(struct MarioState *m) {
             return;
         }
 
-        if (level_trigger_warp(m, WARP_OP_WARP_FLOOR) == 20 && !(m->flags & MARIO_UNKNOWN_18)) {
-            play_character_sound(m, CHAR_SOUND_WAAAOOOW);
+        if (level_trigger_warp(m, WARP_OP_WARP_FLOOR) == 20) {
+            // Mark as a death-barrier warp so life decrement can occur at warp execution time.
+            // (Avoids decrementing too early while Mario is still falling.)
+            sDelayedWarpArg |= 0x80000000;
+
+            if (!(m->flags & MARIO_UNKNOWN_18)) {
+                play_character_sound(m, CHAR_SOUND_WAAAOOOW);
+            }
         }
     }
 }

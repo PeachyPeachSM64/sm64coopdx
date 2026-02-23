@@ -54,10 +54,49 @@
 
 #include "engine/level_script.h"
 
+#include "data/dynos.c.h"
+
 #include "photo_mode.h"
 #include "camera_photo_mode.h"
 
+static struct ObjectWarpNode* find_warp_node_any_area(u8 id) {
+    // Prefer current area.
+    if (gCurrentArea && gCurrentArea->warpNodes) {
+        for (struct ObjectWarpNode* node = gCurrentArea->warpNodes; node != NULL; node = node->next) {
+            if (node->node.id == id) { return node; }
+        }
+    }
+
+    // Fallback: search all loaded areas. This is important during transitions where gCurrentArea
+    // may be temporarily NULL even though the area's warpNodes are still populated.
+    for (s32 i = 0; i < MAX_AREAS; i++) {
+        if (gAreas[i].warpNodes == NULL) { continue; }
+        for (struct ObjectWarpNode* node = gAreas[i].warpNodes; node != NULL; node = node->next) {
+            if (node->node.id == id) { return node; }
+        }
+    }
+
+    return NULL;
+}
+
 static void verify_warp(UNUSED struct MarioState *m, UNUSED bool allowInvalid) {
+
+    // If the source warp node exists, we're good.
+    if (find_warp_node_any_area((u8)sSourceWarpNodeId) != NULL) { return; }
+
+    // Some warp types may allow invalid source nodes.
+    if (allowInvalid) { return; }
+
+    // If the level doesn't define a death warp node, fall back to the start level.
+    if (find_warp_node_any_area(WARP_NODE_DEATH) == NULL) {
+        LOG_ERROR("verify_warp: missing node=%u (op=%d), and missing WARP_NODE_DEATH; warping to start level", sSourceWarpNodeId, sDelayedWarpOp);
+        dynos_warp_to_start_level();
+        return;
+    }
+
+    // Otherwise, redirect to the death warp node.
+    LOG_ERROR("verify_warp: missing node=%u (op=%d); redirecting to WARP_NODE_DEATH", sSourceWarpNodeId, sDelayedWarpOp);
+    sSourceWarpNodeId = WARP_NODE_DEATH;
 }
 
 #define MENU_LEVEL_MIN 0
@@ -915,12 +954,15 @@ s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
                 }
                 sDelayedWarpTimer = 48;
                 sSourceWarpNodeId = WARP_NODE_DEATH;
+                verify_warp(m, false);
+                LOG_ERROR("level_trigger_warp: DEATH scheduled op=%d level=%d area=%d srcNode=%u timer=%d", sDelayedWarpOp, gCurrLevelNum, gCurrAreaIndex, sSourceWarpNodeId, sDelayedWarpTimer);
                 play_transition(WARP_TRANSITION_FADE_INTO_BOWSER, 0x30, 0x00, 0x00, 0x00);
                 play_sound(SOUND_MENU_BOWSER_LAUGH, gGlobalSoundSource);
                 break;
 
             case WARP_OP_EXIT:
                 sSourceWarpNodeId = WARP_NODE_DEATH;
+                verify_warp(m, false);
                 sDelayedWarpTimer = 20;
                 sDelayedWarpArg = WARP_ARG_EXIT_COURSE;
                 play_transition(WARP_TRANSITION_FADE_INTO_CIRCLE, 0x14, 0x00, 0x00, 0x00);
@@ -928,7 +970,18 @@ s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
 
             case WARP_OP_WARP_FLOOR:
                 sSourceWarpNodeId = WARP_NODE_WARP_FLOOR;
-                verify_warp(m, true);
+                if (find_warp_node_any_area(WARP_NODE_WARP_FLOOR) == NULL) {
+                    // Vanilla behavior (sm64ex / sm64ex-alo): if the warp floor node is missing,
+                    // fall back to the death node (or game over if out of lives).
+                    if (m->numLives <= 0) {
+                        sDelayedWarpOp = WARP_OP_GAME_OVER;
+                    } else {
+                        sSourceWarpNodeId = WARP_NODE_DEATH;
+                        verify_warp(m, false);
+                    }
+                } else {
+                    verify_warp(m, false);
+                }
                 sDelayedWarpTimer = 20;
                 play_transition(WARP_TRANSITION_FADE_INTO_CIRCLE, 0x14, 0x00, 0x00, 0x00);
                 break;
@@ -1015,6 +1068,19 @@ void initiate_delayed_warp(void) {
     if (sDelayedWarpOp != WARP_OP_NONE && --sDelayedWarpTimer == 0) {
         reset_dialog_render_state();
 
+        // Death barrier (void) warps are routed through WARP_OP_WARP_FLOOR.
+        // For vanilla-like timing, decrement lives at warp execution time (not when the barrier is crossed).
+        if (sDelayedWarpOp == WARP_OP_WARP_FLOOR && (sDelayedWarpArg & 0x80000000)) {
+            sDelayedWarpArg &= 0x7FFFFFFF;
+            struct MarioState* m = &gMarioStates[0];
+            if (m->numLives > -1) {
+                m->numLives--;
+                if (m->numLives <= -1) {
+                    sDelayedWarpOp = WARP_OP_GAME_OVER;
+                }
+            }
+        }
+
         if (gDebugLevelSelect && (sDelayedWarpOp & WARP_OP_TRIGGERS_LEVEL_SELECT)) {
             warp_special(SPECIAL_WARP_LEVEL_SELECT);
         } else if (sDelayedWarpOp == WARP_OP_DEMO_END || sDelayedWarpOp == WARP_OP_DEMO_NEXT) {
@@ -1035,9 +1101,8 @@ void initiate_delayed_warp(void) {
         } else {
             switch (sDelayedWarpOp) {
                 case WARP_OP_GAME_OVER:
-                    gChangeLevel = gLevelValues.entryLevel;
-                    gMarioStates[0].numLives = 4;
-                    gMarioStates[0].health = 0x880;
+                    save_file_reload(FALSE);
+                    warp_special(SPECIAL_WARP_GODDARD_GAMEOVER);
                     break;
 
                 case WARP_OP_CREDITS_END:
@@ -1091,8 +1156,11 @@ void initiate_delayed_warp(void) {
                     break;
 
                 default:
-                    warpNode = area_get_warp_node(sSourceWarpNodeId);
+                    warpNode = find_warp_node_any_area((u8)sSourceWarpNodeId);
                     if (warpNode != NULL) {
+                        LOG_ERROR("initiate_delayed_warp: op=%d level=%d area=%d srcNode=%u -> destLevel=%d destArea=%d destNode=%u arg=%d",
+                                  sDelayedWarpOp, gCurrLevelNum, gCurrAreaIndex, sSourceWarpNodeId,
+                                  (warpNode->node.destLevel & 0x7F), warpNode->node.destArea, warpNode->node.destNode, sDelayedWarpArg);
                         initiate_warp(warpNode->node.destLevel & 0x7F, warpNode->node.destArea,
                                         warpNode->node.destNode, sDelayedWarpArg);
 
@@ -1100,6 +1168,11 @@ void initiate_delayed_warp(void) {
                         if (sWarpDest.type != WARP_TYPE_CHANGE_LEVEL) {
                             level_set_transition(2, NULL);
                         }
+                    } else {
+                        LOG_ERROR("initiate_delayed_warp: MISSING warp node op=%d level=%d area=%d srcNode=%u; forcing warp_to_start_level",
+                                  sDelayedWarpOp, gCurrLevelNum, gCurrAreaIndex, sSourceWarpNodeId);
+                        dynos_warp_to_start_level();
+                        sDelayedWarpOp = WARP_OP_NONE;
                     }
                     break;
             }

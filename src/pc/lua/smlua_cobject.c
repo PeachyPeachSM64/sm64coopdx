@@ -14,6 +14,7 @@
 #include "pc/lua/utils/smlua_anim_utils.h"
 #include "pc/lua/utils/smlua_collision_utils.h"
 #include "pc/lua/utils/smlua_obj_utils.h"
+#include "pc/network/network_player.h"
 #include "pc/mods/mods.h"
 
 extern struct LuaObjectTable sLuaObjectTable[LOT_MAX];
@@ -743,6 +744,11 @@ void smlua_cobject_init_globals(void) {
     // Array structs
 
     EXPOSE_GLOBAL_ARRAY(LOT_MARIOSTATE, gMarioStates, MAX_PLAYERS);
+
+    EXPOSE_GLOBAL_ARRAY(LOT_NETWORKPLAYER, gNetworkPlayers, MAX_PLAYERS);
+
+    EXPOSE_GLOBAL_PTR(LOT_NETWORKPLAYER, gNetworkPlayerLocal);
+    EXPOSE_GLOBAL_PTR(LOT_NETWORKPLAYER, gNetworkPlayerServer);
 
     {
         lua_newtable(L);
