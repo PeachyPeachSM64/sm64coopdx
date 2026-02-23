@@ -22,6 +22,8 @@
 #include "object_helpers.h"
 #include "gfx_dimensions.h"
 #include "pc/configfile.h"
+#include "hud.h"
+#include "pc/djui/djui_hud_utils.h"
 
 #include "photo_mode_poses.h"
 #include "pc/lua/utils/smlua_anim_utils.h"
@@ -34,10 +36,19 @@ static s8 sSavedAllowPartRotation = FALSE;
 static Vec3s sSavedHeadAngle;
 static s16 sSavedFovValue = 45;
 
+static bool sPhotoModeOpenedViaShortcut = false;
+
+void photo_mode_set_opened_via_shortcut(bool openedViaShortcut) {
+    sPhotoModeOpenedViaShortcut = openedViaShortcut;
+}
+
 static s16 gInitialEyeSwitchIndex = -1;
 static s16 gInitialFaceSwitchIndex = 0;
 static int gIsInitialEyeSwitchIndexSaved = false;
 static int gIsInitialFaceSwitchIndexSaved = false;
+
+static u16 sSavedHudDisplayFlags = HUD_DISPLAY_DEFAULT;
+static u8 sSavedOverrideHideHud = 0;
 
 int photoModeClosed = true;
 extern int gPrecisionOn;
@@ -2190,7 +2201,7 @@ void manage_photo_mode_pages(void) {
     }
 }
 
-void close_photo_mode(void) {
+static void photo_mode_restore_state(void) {
     restore_initial_cap_state();
     gIsInitialCapStateSaved = FALSE;
     gCapStateIndex = initialCapStateIndex;
@@ -2289,14 +2300,38 @@ void close_photo_mode(void) {
         gIsInitialFaceSwitchIndexSaved = FALSE;
     }
 
+    gHudDisplay.flags = sSavedHudDisplayFlags;
+    gOverrideHideHud = sSavedOverrideHideHud;
+
     photoModeClosed = true;
     switch_to_photo_mode();
+}
 
+void close_photo_mode_to_gameplay(void) {
+    photo_mode_restore_state();
+
+    raise_background_noise(1);
+    gCameraMovementFlags &= ~CAM_MOVE_PAUSE_SCREEN;
+    set_play_mode(PLAY_MODE_NORMAL);
+    play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource);
+}
+
+void close_photo_mode_to_djui_pause_menu(void) {
+    photo_mode_restore_state();
+
+    extern s16 gMenuMode;
+    gMenuMode = -1;
     extern s16 gPauseScreenMode;
     gPauseScreenMode = 0;
-    gMenuMode = 0;
+    gCameraMovementFlags |= CAM_MOVE_PAUSE_SCREEN;
     set_play_mode(PLAY_MODE_PAUSED);
     play_sound(SOUND_MENU_MESSAGE_DISAPPEAR, gGlobalSoundSource);
+
+    // Consume the input that triggered this transition so the DJUI pause menu doesn't
+    // immediately process it and close.
+    gPlayer1Controller->buttonPressed &= ~B_BUTTON;
+    gPlayer1Controller->buttonDown &= ~B_BUTTON;
+    djui_open_pause_menu();
 }
 
 void show_photo_mode_options_box(void) {
@@ -2341,7 +2376,11 @@ s32 activate_photo_mode(void) {
     }
 
     if (gPlayer1Controller->buttonPressed & B_BUTTON) {
-        close_photo_mode();
+        if (sPhotoModeOpenedViaShortcut) {
+            close_photo_mode_to_gameplay();
+        } else {
+            close_photo_mode_to_djui_pause_menu();
+        }
         return 0;
     }
     
@@ -2358,6 +2397,9 @@ s32 activate_photo_mode(void) {
 
 void open_photo_mode(void) {
     isPhotoModeOptionsBoxVisible = true;
+
+    sSavedHudDisplayFlags = gHudDisplay.flags;
+    sSavedOverrideHideHud = gOverrideHideHud;
 
     sSavedForce4By3 = configForce4By3;
     sSavedForce21By9 = configForce21By9;

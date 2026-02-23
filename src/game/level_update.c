@@ -61,6 +61,26 @@
 #include "photo_mode.h"
 #include "camera_photo_mode.h"
 
+#include "pc/controller/controller_api.h"
+
+static bool raw_key_matches_bind(u32 key, const unsigned int bind[MAX_BINDS]) {
+    if (key == VK_INVALID) { return false; }
+    for (s32 i = 0; i < MAX_BINDS; i++) {
+        if (bind[i] == key) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool can_use_photo_mode_shortcut(void) {
+    return !gDjuiInMainMenu
+        && !gDjuiInPlayerMenu
+        && !gDjuiPanelPauseCreated
+        && !gDjuiChatBoxFocus
+        && !gDjuiConsoleFocus;
+}
+
 static struct ObjectWarpNode* find_warp_node_any_area(u8 id) {
     // Prefer current area.
     if (gCurrentArea && gCurrentArea->warpNodes) {
@@ -1399,6 +1419,22 @@ s32 play_mode_normal(void) {
     initiate_painting_warp(-1);
     initiate_delayed_warp();
 
+    // Photo mode shortcut: only during active gameplay (not paused and not in DJUI/menus).
+    // Uses raw virtual key presses so it doesn't consume any N64 controller button bits.
+    if (sCurrPlayMode == PLAY_MODE_NORMAL && can_use_photo_mode_shortcut()) {
+        u32 rawKey = controller_get_raw_key();
+        if (raw_key_matches_bind(rawKey, configKeyPhotoMode)) {
+            extern s16 gMenuMode;
+            gMenuMode = -1;
+            gPauseScreenMode = 0;
+            gCameraMovementFlags &= ~CAM_MOVE_PAUSE_SCREEN;
+            photo_mode_set_opened_via_shortcut(true);
+            open_photo_mode();
+            set_play_mode(PLAY_MODE_PHOTO_MODE);
+            play_sound(SOUND_MENU_MESSAGE_APPEAR, gGlobalSoundSource);
+        }
+    }
+
     // If either initiate_painting_warp or initiate_delayed_warp initiated a
     // warp, change play mode accordingly.
     if (sCurrPlayMode == PLAY_MODE_NORMAL || sCurrPlayMode == PLAY_MODE_PAUSED) {
@@ -1429,6 +1465,15 @@ s32 play_mode_normal(void) {
 
 s32 play_mode_photo_mode(void) {
     gHudDisplay.flags = HUD_DISPLAY_NONE;
+
+    // Allow the photo mode shortcut to exit directly back to gameplay.
+    if (can_use_photo_mode_shortcut()) {
+        u32 rawKey = controller_get_raw_key();
+        if (raw_key_matches_bind(rawKey, configKeyPhotoMode)) {
+            close_photo_mode_to_gameplay();
+            return 0;
+        }
+    }
 
     extern s16 gMenuMode;
     gMenuMode = -1;
@@ -1479,6 +1524,7 @@ s32 play_mode_paused(void) {
         gMenuMode = -1;
         gPauseScreenMode = 0;
         gCameraMovementFlags &= ~CAM_MOVE_PAUSE_SCREEN;
+        photo_mode_set_opened_via_shortcut(false);
         open_photo_mode();
         set_play_mode(PLAY_MODE_PHOTO_MODE);
         play_sound(SOUND_MENU_MESSAGE_APPEAR, gGlobalSoundSource);

@@ -78,6 +78,7 @@ extern unsigned int configKeyDUp[MAX_BINDS];
 extern unsigned int configKeyDDown[MAX_BINDS];
 extern unsigned int configKeyDLeft[MAX_BINDS];
 extern unsigned int configKeyDRight[MAX_BINDS];
+extern unsigned int configKeyPhotoMode[MAX_BINDS];
 extern unsigned int configStickDeadzone;
 extern unsigned int configRumbleStrength;
 extern unsigned int configGamepadNumber;
