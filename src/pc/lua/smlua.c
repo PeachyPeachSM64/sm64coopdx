@@ -19,6 +19,12 @@
 #include "pc/fs/fmem.h"
 #include "pc/configfile.h"
 
+// Forward declare a few autogen lua wrappers we want available in singleplayer.
+int smlua_func_network_player_get_override_palette_color_channel(lua_State* L);
+int smlua_func_network_player_set_override_palette_color(lua_State* L);
+int smlua_func_network_player_reset_override_palette(lua_State* L);
+int smlua_func_network_player_is_override_palette_same(lua_State* L);
+
 lua_State* gLuaState = NULL;
 u8 gLuaInitializingScript = 0;
 u8 gSmLuaSuppressErrors = 0;
@@ -50,6 +56,12 @@ static void smlua_nil_globals_with_prefix(lua_State* L, const char* prefix) {
         if (lua_type(L, -2) == LUA_TSTRING) {
             const char* key = lua_tostring(L, -2);
             if (smlua_starts_with(key, prefix)) {
+                if (strcmp(prefix, "network_") == 0) {
+                    if (strcmp(key, "network_player_get_override_palette_color_channel") == 0) { lua_pop(L, 1); continue; }
+                    if (strcmp(key, "network_player_set_override_palette_color") == 0) { lua_pop(L, 1); continue; }
+                    if (strcmp(key, "network_player_reset_override_palette") == 0) { lua_pop(L, 1); continue; }
+                    if (strcmp(key, "network_player_is_override_palette_same") == 0) { lua_pop(L, 1); continue; }
+                }
                 lua_pushinteger(L, removeCount++);
                 lua_pushvalue(L, -2);
                 lua_settable(L, removeIndex);
@@ -389,10 +401,6 @@ void smlua_init(void) {
         const char* nilGlobals[] = {
             "mario_exit_palette_editor",
             "network_player_get_palette_color_channel",
-            "network_player_get_override_palette_color_channel",
-            "network_player_set_override_palette_color",
-            "network_player_reset_override_palette",
-            "network_player_is_override_palette_same",
             "network_player_color_to_palette",
             "network_player_palette_to_color",
             "get_coopnet_id",
@@ -402,6 +410,13 @@ void smlua_init(void) {
             lua_setglobal(L, nilGlobals[i]);
         }
     }
+
+    // Ensure palette override helpers exist in singleplayer.
+    // These are used by mods for visual effects and are safe with the singleplayer network stubs.
+    smlua_bind_function(L, "network_player_get_override_palette_color_channel", smlua_func_network_player_get_override_palette_color_channel);
+    smlua_bind_function(L, "network_player_set_override_palette_color", smlua_func_network_player_set_override_palette_color);
+    smlua_bind_function(L, "network_player_reset_override_palette", smlua_func_network_player_reset_override_palette);
+    smlua_bind_function(L, "network_player_is_override_palette_same", smlua_func_network_player_is_override_palette_same);
 
     smlua_bind_sync_table();
     smlua_init_require_system();

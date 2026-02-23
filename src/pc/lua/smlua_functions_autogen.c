@@ -23285,7 +23285,7 @@ int smlua_func_mod_storage_clear(UNUSED lua_State* L) {
  // network_player.h //
 //////////////////////
 
-#if 0
+#if 1
 
 int smlua_func_network_player_connected_count(UNUSED lua_State* L) {
     if (L == NULL) { return 0; }
