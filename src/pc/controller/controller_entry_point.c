@@ -28,9 +28,9 @@ s32 osContInit(UNUSED OSMesgQueue *mq, u8 *controllerBits, UNUSED OSContStatus *
 
 s32 osMotorStart(UNUSED void *pfs) {
     // Since rumble stops by osMotorStop, its duration is not nessecary.
-    // Set it to 5 seconds and hope osMotorStop() is called in time.
+    // Use a short pulse so repeated osMotorStart() calls don't extend rumble indefinitely.
     if (configRumbleStrength)
-        controller_rumble_play(configRumbleStrength / 100.0f, 5.0f);
+        controller_rumble_play(configRumbleStrength / 100.0f, 0.075f);
     return 0;
 }
 

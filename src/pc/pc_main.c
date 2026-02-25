@@ -361,6 +361,10 @@ void produce_one_frame(void) {
 
     CTX_EXTENT(CTX_GAME_LOOP, game_loop_one_iteration);
 
+    if (configRumbleStrength) {
+        thread6_rumble_loop(NULL);
+    }
+
     CTX_EXTENT(CTX_SMLUA, smlua_update);
 
     // If we aren't threaded
