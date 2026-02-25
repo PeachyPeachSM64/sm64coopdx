@@ -1732,7 +1732,7 @@ static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "oCameraLakituPitchVel",                      LVT_S16,                 offsetof(struct Object, oCameraLakituPitchVel),                      false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCameraLakituSpeed",                         LVT_F32,                 offsetof(struct Object, oCameraLakituSpeed),                         false, LOT_NONE,         1,                    sizeof(f32)                   },
 #ifndef VERSION_JP
-    { "oCameraLakituUnk104",                        LVT_S32,                 offsetof(struct Object, oCameraLakituUnk104),                        false, LOT_NONE,         1,                    sizeof(s32)                   },
+    { "oCameraLakituPlayedMusic",                        LVT_S32,                 offsetof(struct Object, oCameraLakituPlayedMusic),                        false, LOT_NONE,         1,                    sizeof(s32)                   },
 #endif
     { "oCameraLakituYawVel",                        LVT_S16,                 offsetof(struct Object, oCameraLakituYawVel),                        false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCannonBarrelBubblesUnkF4",                  LVT_F32,                 offsetof(struct Object, oCannonBarrelBubblesUnkF4),                  false, LOT_NONE,         1,                    sizeof(f32)                   },

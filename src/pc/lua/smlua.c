@@ -3,7 +3,7 @@
 #include "pc/lua/smlua_live_reload.h"
 #include "game/hardcoded.h"
 #include "pc/mods/mods.h"
-#include "pc/mods/mods.h"
+#include "pc/mods/mods_utils.h"
 #include "pc/mods/mod_storage.h"
 #include "pc/mods/mod_fs.h"
 #include "pc/network/packets/packet.h"

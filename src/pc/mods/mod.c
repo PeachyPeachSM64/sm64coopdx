@@ -386,8 +386,14 @@ static bool mod_load_files(struct Mod* mod, char* fullPath) {
 
     // deal with sound directory
     {
-        const char* fileTypes[] = { ".m64", ".mp3", ".aiff", ".ogg", NULL };
+        const char* fileTypes[] = { ".m64", ".mp3", ".aiff", ".ogg", ".wav", NULL };
         if (!mod_load_files_dir(mod, fullPath, "sound", fileTypes, false)) { return false; }
+    }
+
+    // deal with audio directory (for mods that want to bundle streamed audio with custom layout)
+    {
+        const char* fileTypes[] = { ".mp3", ".aiff", ".ogg", ".wav", NULL };
+        if (!mod_load_files_dir(mod, fullPath, "audio", fileTypes, true)) { return false; }
     }
 
     return true;

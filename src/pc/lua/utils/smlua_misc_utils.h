@@ -139,6 +139,8 @@ bool act_select_hud_is_hidden(enum ActSelectHudPart part);
 
 /* |description|Checks if the game is paused|descriptionEnd| */
 bool is_game_paused(void);
+/* |description|Gets the current menu mode (`gMenuMode`), useful for distinguishing pause menus from course-complete menus|descriptionEnd| */
+s16 get_menu_mode(void);
 /* |description|Gets if the pause menu elements are hidden, useful for creating custom pause menus|descriptionEnd| */
 bool is_pause_menu_hidden(void);
 /* |description|Sets if the pause menu elements are hidden, useful for creating custom pause menus|descriptionEnd| */

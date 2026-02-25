@@ -291,6 +291,10 @@ bool is_game_paused(void) {
     return gMenuMode != -1;
 }
 
+s16 get_menu_mode(void) {
+    return gMenuMode;
+}
+
 bool is_pause_menu_hidden(void) {
     return gPauseMenuHidden;
 }

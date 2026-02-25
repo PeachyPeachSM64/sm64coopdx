@@ -2487,7 +2487,22 @@ void play_dialog_sound(s32 dialogID) {
 #endif
 }
 
+static bool sSequencePlayerVolumeOverrideEnabled[SEQUENCE_PLAYERS] = { 0 };
+static f32 sSequencePlayerVolumeOverride[SEQUENCE_PLAYERS] = { 0 };
+
+void set_sequence_player_volume_override(s32 player, bool enabled, f32 volume) {
+    if (player < 0 || player >= SEQUENCE_PLAYERS) { return; }
+    sSequencePlayerVolumeOverrideEnabled[player] = enabled;
+    sSequencePlayerVolumeOverride[player] = volume;
+}
+
 void set_sequence_player_volume(s32 player, f32 volume) {
+    if (player < 0 || player >= SEQUENCE_PLAYERS) { return; }
+
+    if (sSequencePlayerVolumeOverrideEnabled[player]) {
+        volume = sSequencePlayerVolumeOverride[player];
+    }
+
     gSequencePlayers[player].volumeScale = volume;
 
     // Rom-hacks audio fix
@@ -2688,6 +2703,10 @@ u8 get_current_background_music_max_target_volume(void) {
 
 u8 is_current_background_music_volume_lowered(void) {
     return sLowerBackgroundMusicVolume;
+}
+
+u8 get_current_music_dynamic(void) {
+    return sCurrentMusicDynamic;
 }
 
 /**

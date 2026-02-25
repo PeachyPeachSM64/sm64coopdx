@@ -9,6 +9,8 @@
 #include "game/mario_step.h"
 #include "game/mario_actions_stationary.h"
 #include "audio/external.h"
+#include "audio/load.h"
+#include "game/camera.h"
 #include "object_fields.h"
 #include "level_commands.h"
 #include "engine/math_util.h"
@@ -25,14 +27,195 @@
 #include "game/mario_misc.h"
 #include "game/photo_mode_poses.h"
 
+extern bool gFileSelectActive;
+extern bool gDjuiInPlayerMenu;
+
 bool smlua_functions_valid_param_count(lua_State* L, int expected) {
     int top = lua_gettop(L);
     if (top != expected) {
         LOG_LUA_LINE("Improper param count: Expected %u, Received %u", expected, top);
         return false;
     }
-
     return true;
+}
+
+int smlua_func_is_file_select_active(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushboolean(L, gFileSelectActive);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_current_music_dynamic(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushinteger(L, get_current_music_dynamic());
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_fade_out_sequence_player(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+    s32 player = smlua_to_integer(L, 1);
+    u16 fadeTimer = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    seq_player_fade_out(player, fadeTimer);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_is_camera_photo_mode(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushboolean(L, gLakituState.mode == CAMERA_MODE_PHOTO_MODE);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_current_secondary_music_seq_id(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    if (sCurrentSecondaryMusicSeqId != 0) {
+        lua_pushinteger(L, sCurrentSecondaryMusicSeqId & SEQ_BASE_ID);
+    } else {
+        lua_pushnil(L);
+    }
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_current_secondary_music_volume(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushinteger(L, sCurrentSecondaryMusicVolume);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_set_sequence_player_volume(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+    s32 player = smlua_to_integer(L, 1);
+    f32 volume = smlua_to_number(L, 2);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    set_sequence_player_volume(player, volume);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_set_sequence_player_volume_override(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 0);
+
+    if (!smlua_functions_valid_param_count(L, 3)) { return 0; }
+    s32 player = smlua_to_integer(L, 1);
+    bool enabled = smlua_to_boolean(L, 2);
+    f32 volume = smlua_to_number(L, 3);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    set_sequence_player_volume_override(player, enabled, volume);
+
+    LUA_STACK_CHECK_END(L);
+    return 0;
+}
+
+int smlua_func_is_sequence_player_enabled(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
+    s32 player = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    if (player < 0 || player >= SEQUENCE_PLAYERS) {
+        lua_pushboolean(L, 0);
+    } else {
+        lua_pushboolean(L, gSequencePlayers[player].enabled != 0);
+    }
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_sequence_player_fade_volume(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
+    s32 player = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { return 0; }
+
+    if (player < 0 || player >= SEQUENCE_PLAYERS) {
+        lua_pushnumber(L, 0.0);
+    } else {
+        lua_pushnumber(L, gSequencePlayers[player].fadeVolume);
+    }
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_is_play_mode_photo_mode(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushboolean(L, (sCurrPlayMode == PLAY_MODE_PHOTO_MODE));
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_get_env_sequence_id(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+
+    if (gSequencePlayers[SEQ_PLAYER_ENV].enabled) {
+        lua_pushinteger(L, gSequencePlayers[SEQ_PLAYER_ENV].seqId & SEQ_BASE_ID);
+    } else {
+        lua_pushnil(L);
+    }
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
+}
+
+int smlua_func_is_djui_player_menu_open(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 1);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+    lua_pushboolean(L, gDjuiInPlayerMenu);
+
+    LUA_STACK_CHECK_END(L);
+    return 1;
 }
 
 /////////////////////
@@ -1218,6 +1401,19 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "table_deepcopy", smlua_func_table_deepcopy);
     smlua_bind_function(L, "get_curr_level_num", smlua_func_get_curr_level_num);
     smlua_bind_function(L, "get_curr_course_num", smlua_func_get_curr_course_num);
+    smlua_bind_function(L, "is_file_select_active", smlua_func_is_file_select_active);
+    smlua_bind_function(L, "is_djui_player_menu_open", smlua_func_is_djui_player_menu_open);
+    smlua_bind_function(L, "is_play_mode_photo_mode", smlua_func_is_play_mode_photo_mode);
+    smlua_bind_function(L, "get_env_sequence_id", smlua_func_get_env_sequence_id);
+    smlua_bind_function(L, "set_sequence_player_volume", smlua_func_set_sequence_player_volume);
+    smlua_bind_function(L, "set_sequence_player_volume_override", smlua_func_set_sequence_player_volume_override);
+    smlua_bind_function(L, "is_sequence_player_enabled", smlua_func_is_sequence_player_enabled);
+    smlua_bind_function(L, "get_sequence_player_fade_volume", smlua_func_get_sequence_player_fade_volume);
+    smlua_bind_function(L, "get_current_secondary_music_seq_id", smlua_func_get_current_secondary_music_seq_id);
+    smlua_bind_function(L, "get_current_secondary_music_volume", smlua_func_get_current_secondary_music_volume);
+    smlua_bind_function(L, "is_camera_photo_mode", smlua_func_is_camera_photo_mode);
+    smlua_bind_function(L, "fade_out_sequence_player", smlua_func_fade_out_sequence_player);
+    smlua_bind_function(L, "get_current_music_dynamic", smlua_func_get_current_music_dynamic);
     smlua_bind_function(L, "get_curr_area_index", smlua_func_get_curr_area_index);
     smlua_bind_function(L, "init_mario_after_warp", smlua_func_init_mario_after_warp);
     smlua_bind_function(L, "reset_level", smlua_func_reset_level);
