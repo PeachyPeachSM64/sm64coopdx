@@ -4,6 +4,7 @@
 #include "engine/math_util.h"
 #include "engine/lighting_engine.h"
 #include "data/dynos_cmap.cpp.h"
+#include "camera.h"
 #include "game_init.h"
 #include "gfx_dimensions.h"
 #include "main.h"
@@ -22,6 +23,8 @@
 #include "skybox.h"
 #include "mario.h"
 #include "hardcoded.h"
+
+extern s16 gCutsceneTimer;
 
 /**
  * This file contains the code that processes the scene graph for rendering.
@@ -346,8 +349,13 @@ void patch_mtx_interpolated(f32 delta) {
 
         // use camera node's stored information to calculate interpolated camera transform
         Vec3f posInterp, focusInterp;
-        delta_interpolate_vec3f(posInterp, sCameraNode->prevPos, sCameraNode->pos, delta);
-        delta_interpolate_vec3f(focusInterp, sCameraNode->prevFocus, sCameraNode->focus, delta);
+        if (gGlobalTimer == gLakituState.skipCameraInterpolationTimestamp || gCamSkipInterp) {
+            vec3f_copy(posInterp, sCameraNode->pos);
+            vec3f_copy(focusInterp, sCameraNode->focus);
+        } else {
+            delta_interpolate_vec3f(posInterp, sCameraNode->prevPos, sCameraNode->pos, delta);
+            delta_interpolate_vec3f(focusInterp, sCameraNode->prevFocus, sCameraNode->focus, delta);
+        }
         mtxf_lookat(camInterp.m, posInterp, focusInterp, sCameraNode->roll);
         mtxf_to_mtx(&camInterp, camInterp.m);
     }
@@ -678,9 +686,35 @@ static void geo_process_camera(struct GraphNodeCamera *node) {
 
     vec3f_copy(node->prevPos, node->pos);
     vec3f_copy(node->prevFocus, node->focus);
+    s16 prevRollScreen = node->rollScreen;
 
     if (node->fnNode.func != NULL) {
         node->fnNode.func(GEO_CONTEXT_RENDER, &node->fnNode.node, gMatStack[gMatStackIndex]);
+    }
+
+    {
+        bool introCutscene = (gCamera != NULL && gCamera->cutscene == CUTSCENE_INTRO_PEACH);
+        bool introCameraSwitchWindow = introCutscene && (gCutsceneTimer >= 780) && (gCutsceneTimer <= 840);
+        const f32 teleportDist = introCameraSwitchWindow ? 350.0f : (introCutscene ? 800.0f : 4000.0f);
+        const f32 teleportDistSq = teleportDist * teleportDist;
+        const s16 teleportRollThreshold = introCameraSwitchWindow ? 0x400 : (introCutscene ? 0xC00 : 0x4000);
+
+        f32 dx = node->pos[0] - node->prevPos[0];
+        f32 dy = node->pos[1] - node->prevPos[1];
+        f32 dz = node->pos[2] - node->prevPos[2];
+        f32 posDistSq = dx * dx + dy * dy + dz * dz;
+
+        dx = node->focus[0] - node->prevFocus[0];
+        dy = node->focus[1] - node->prevFocus[1];
+        dz = node->focus[2] - node->prevFocus[2];
+        f32 focusDistSq = dx * dx + dy * dy + dz * dz;
+
+        s16 rollDelta = (s16) (node->rollScreen - prevRollScreen);
+        if (rollDelta < 0) { rollDelta = -rollDelta; }
+
+        if (posDistSq > teleportDistSq || focusDistSq > teleportDistSq || rollDelta > teleportRollThreshold) {
+            skip_camera_interpolation();
+        }
     }
     mtxf_rotate_xy(rollMtx->m, node->rollScreen);
 

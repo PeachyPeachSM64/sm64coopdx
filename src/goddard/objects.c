@@ -757,13 +757,9 @@ struct ObjGroup *make_group(s32 count, ...) {
     UNUSED u32 sp5C;
     struct GdObj *curObj;
     UNUSED u32 sp54;
-    UNUSED u32 sp50;
-    UNUSED u32 sp4C;
     struct ObjGroup *newGroup;
     struct ObjGroup *oldGroupListHead;
     struct GdObj *vargObj;
-    char idStrBuf[0x20];
-    struct ListNode *curLink;
 
     newGroup = (struct ObjGroup *) make_object(OBJ_TYPE_GROUPS);
     newGroup->id = ++gGdGroupCount;
@@ -784,7 +780,6 @@ struct ObjGroup *make_group(s32 count, ...) {
     }
 
     va_start(args, count);
-    curLink = NULL;
 
     for (i = 0; i < count; i++) {
         // get the next pointer in the struct.
@@ -799,16 +794,6 @@ struct ObjGroup *make_group(s32 count, ...) {
         addto_group(newGroup, vargObj);
     }
     va_end(args);
-
-    curLink = newGroup->firstMember;
-    //printf("Made group no.%d from: ", newGroup->id);
-    while (curLink != NULL) {
-        curObj = curLink->obj;
-        format_object_id(idStrBuf, curObj);
-        printf("%s", idStrBuf);
-        printf("\n");
-        curLink = curLink->next;
-    }
 
     return newGroup;
 }
