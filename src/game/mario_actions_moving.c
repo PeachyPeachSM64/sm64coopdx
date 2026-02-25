@@ -18,6 +18,7 @@
 #include "pc/lua/smlua.h"
 #include "characters.h"
 #include "wario_moves.h"
+#include "object_helpers.h"
 
 struct LandingAction {
     s16 numFrames;
