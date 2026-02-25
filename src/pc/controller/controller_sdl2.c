@@ -154,10 +154,19 @@ static void controller_sdl_init(void) {
     mouse_init_ok = true;
 }
 
-static SDL_Haptic *controller_sdl_init_haptics(const int joy) {
+static SDL_Haptic *controller_sdl_init_haptics(SDL_GameController *cntrl, const int joy) {
     if (!haptics_enabled) return NULL;
 
-    SDL_Haptic *hap = SDL_HapticOpen(joy);
+    SDL_Haptic *hap = NULL;
+    if (cntrl != NULL) {
+        SDL_Joystick *js = SDL_GameControllerGetJoystick(cntrl);
+        if (js != NULL) {
+            hap = SDL_HapticOpenFromJoystick(js);
+        }
+    }
+    if (hap == NULL) {
+        hap = SDL_HapticOpen(joy);
+    }
     if (!hap) return NULL;
 
     if (SDL_HapticRumbleSupported(hap) != SDL_TRUE) {
@@ -242,7 +251,7 @@ static void controller_sdl_read(OSContPad *pad) {
         if (SDL_IsGameController(configGamepadNumber)) {
             sdl_cntrl = SDL_GameControllerOpen(configGamepadNumber);
             if (sdl_cntrl != NULL) {
-                sdl_haptic = controller_sdl_init_haptics(configGamepadNumber);
+                sdl_haptic = controller_sdl_init_haptics(sdl_cntrl, configGamepadNumber);
             }
         } else {
             sdl_joystick = SDL_JoystickOpen(configGamepadNumber);
@@ -342,27 +351,31 @@ static void controller_sdl_read(OSContPad *pad) {
 }
 
 static void controller_sdl_rumble_play(f32 strength, f32 length) {
+    if (strength < 0.0f) { strength = 0.0f; }
+    if (strength > 1.0f) { strength = 1.0f; }
+
+#if SDL_VERSION_ATLEAST(2,0,18)
+    if (sdl_cntrl != NULL && SDL_GameControllerHasRumble(sdl_cntrl) == SDL_TRUE) {
+        uint16_t scaled_strength = (uint16_t) (strength * 65535.0f);
+        SDL_GameControllerRumble(sdl_cntrl, scaled_strength, scaled_strength, (u32)(length * 1000.0f));
+        return;
+    }
+#endif
+
     if (sdl_haptic) {
         SDL_HapticRumblePlay(sdl_haptic, strength, (u32)(length * 1000.0f));
-    } else {
-#if SDL_VERSION_ATLEAST(2,0,18)
-        uint16_t scaled_strength = strength * pow(2, 16) - 1;
-        if (SDL_GameControllerHasRumble(sdl_cntrl) == SDL_TRUE) {
-            SDL_GameControllerRumble(sdl_cntrl, scaled_strength, scaled_strength, (u32)(length * 1000.0f));
-        }
-#endif
     }
 }
 
 static void controller_sdl_rumble_stop(void) {
+#if SDL_VERSION_ATLEAST(2,0,18)
+    if (sdl_cntrl != NULL && SDL_GameControllerHasRumble(sdl_cntrl) == SDL_TRUE) {
+        SDL_GameControllerRumble(sdl_cntrl, 0, 0, 0);
+    }
+#endif
+
     if (sdl_haptic) {
         SDL_HapticRumbleStop(sdl_haptic);
-    } else {
-#if SDL_VERSION_ATLEAST(2,0,18)
-        if (SDL_GameControllerHasRumble(sdl_cntrl) == SDL_TRUE) {
-            SDL_GameControllerRumble(sdl_cntrl, 0, 0, 0);
-        }
-#endif
     }
 }
 
