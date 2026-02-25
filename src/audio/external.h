@@ -5,6 +5,7 @@
 
 #include "types.h"
 #include "dialog_ids.h"
+#include "audio/internal.h"
 
 #define MAX_AUDIO_OVERRIDE 128
 
@@ -42,6 +43,15 @@ enum DialogSound {
 #else
 #define DS_DIFF DS_TUXIE
 #endif
+
+extern u16 gSequenceCount;
+extern struct SoundBankEntry* gSoundBanks[6];
+extern struct SequencePlayer gSequencePlayers[SEQUENCE_PLAYERS];
+extern struct SequenceChannel gSequenceChannels[SEQUENCE_CHANNELS];
+extern struct SequenceChannelLayer gSequenceLayers[SEQUENCE_LAYERS];
+
+extern u8 sCurrentSecondaryMusicSeqId;
+extern u8 sCurrentSecondaryMusicVolume;
 
 extern s32 gAudioErrorFlags;
 extern f32 gGlobalSoundSource[3];
@@ -91,6 +101,8 @@ void set_sound_moving_speed(u8 bank, u8 speed);
 void play_dialog_sound(s32 dialogID);
 /* |description|Sets the `volume` of `player`|descriptionEnd| */
 void set_sequence_player_volume(s32 player, f32 volume);
+/* |description|Overrides the volumeScale of `player`. When enabled, calls to set_sequence_player_volume will be clamped to `volume`.|descriptionEnd| */
+void set_sequence_player_volume_override(s32 player, bool enabled, f32 volume);
 /* |description|Plays fading in music (`seqArgs`) on `player` over `fadeTimer`|descriptionEnd| */
 void play_music(u8 player, u16 seqArgs, u16 fadeTimer);
 /* |description|Stops background music `seqId`|descriptionEnd| */
@@ -109,6 +121,8 @@ u8 get_current_background_music_target_volume(void);
 u8 get_current_background_music_max_target_volume(void);
 /* |description|Checks if the current background music is lowered|descriptionEnd| */
 u8 is_current_background_music_volume_lowered(void);
+/* |description|Gets the current level music dynamic index (used for water/spooky/underground phase mixing)|descriptionEnd| */
+u8 get_current_music_dynamic(void);
 /* |description|Plays fading in secondary music `seqId` at `volume` over `fadeTimer` and sets the current background music's volume to `bgMusicVolume`|descriptionEnd| */
 void play_secondary_music(u8 seqId, u8 bgMusicVolume, u8 volume, u16 fadeTimer);
 /* |description|Fades out secondary music over `fadeTimer`|descriptionEnd| */

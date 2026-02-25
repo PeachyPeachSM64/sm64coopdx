@@ -156,9 +156,9 @@ static void camera_lakitu_intro_act_show_dialog(void) {
                 approach_f32_ptr(&o->oCameraLakituCircleRadius, 200.0f, 50.0f);
                 if (distanceToPlayer < 1000.0f) {
 #ifndef VERSION_JP
-                    if (!o->oCameraLakituUnk104) {
+                    if (!o->oCameraLakituPlayedMusic) {
                         play_music(SEQ_PLAYER_LEVEL, SEQUENCE_ARGS(15, SEQ_EVENT_CUTSCENE_LAKITU), 0);
-                        o->oCameraLakituUnk104 = TRUE;
+                        o->oCameraLakituPlayedMusic = TRUE;
                     }
 #endif
 

@@ -195,7 +195,7 @@ static struct ModAudio* find_mod_audio(const char *filepath) {
     while (node) {
         struct DynamicPoolNode* prev = node->prev;
         struct ModAudio* audio = node->ptr;
-        if (strcmp(filepath, audio->filepath) == 0) { return audio; }
+        if (audio->loaded && audio->filepath && strcmp(filepath, audio->filepath) == 0) { return audio; }
         node = prev;
     }
     return NULL;
@@ -203,15 +203,19 @@ static struct ModAudio* find_mod_audio(const char *filepath) {
 
 static bool audio_sanity_check(struct ModAudio* audio, bool isStream, const char* action) {
     if (!audio || !audio->loaded) {
-        LOG_LUA_LINE("Tried to %s unloaded audio %s", action, audio ? (audio->isStream ? "stream" : "sample") : "(NULL)");
+        // These functions are commonly called from per-frame Lua logic.
+        // Streams may be destroyed on the same frame they are referenced.
+        // Avoid spamming the console with "unloaded audio stream" messages.
+        if (!isStream) {
+            LOG_LUA_LINE("Tried to %s unloaded audio %s", action, audio ? (audio->isStream ? "stream" : "sample") : "(NULL)");
+        }
         return false;
     }
-    if (isStream && !audio->isStream) {
-        LOG_LUA_LINE("Tried to %s a sample as a stream", action);
-        return false;
-    }
-    if (!isStream && audio->isStream) {
-        LOG_LUA_LINE("Tried to %s a stream as a sample", action);
+
+    if (audio->isStream != isStream) {
+        LOG_LUA_LINE("Tried to %s audio %s that is a %s", action,
+            isStream ? "stream" : "sample",
+            audio->isStream ? "stream" : "sample");
         return false;
     }
     return true;
@@ -222,7 +226,7 @@ struct ModAudio* audio_load_internal(const char* filename, bool isStream) {
 
     // check file type
     bool validFileType = false;
-    const char* fileTypes[] = { ".mp3", ".aiff", ".ogg", NULL };
+    const char* fileTypes[] = { ".mp3", ".aiff", ".ogg", ".wav", NULL };
     const char** ft = fileTypes;
     while (*ft != NULL) {
         if (path_ends_with(filename, *ft)) {
@@ -285,6 +289,9 @@ struct ModAudio* audio_load_internal(const char* filename, bool isStream) {
             return NULL;
         }
     }
+
+    audio->paused = false;
+    audio->pausedCursor = 0;
 
     // remember file
     audio->filepath = strdup(filepath);
@@ -368,6 +375,21 @@ void audio_stream_destroy(struct ModAudio* audio) {
     if (!audio_sanity_check(audio, true, "destroy")) { return; }
 
     ma_sound_uninit(&audio->sound);
+    ma_decoder_uninit(&audio->decoder);
+
+    if (audio->buffer) {
+        free(audio->buffer);
+        audio->buffer = NULL;
+    }
+
+    if (audio->filepath) {
+        free((void*)audio->filepath);
+        audio->filepath = NULL;
+    }
+
+    audio->bufferSize = 0;
+    audio->paused = false;
+    audio->pausedCursor = 0;
     audio->loaded = false;
 }
 
@@ -381,13 +403,28 @@ void audio_stream_play(struct ModAudio* audio, bool restart, f32 volume) {
         ma_sound_set_volume(&audio->sound, gMasterVolume * musicVolume * volume);
     }
     audio->baseVolume = volume;
-    if (restart || !ma_sound_is_playing(&audio->sound)) { ma_sound_seek_to_pcm_frame(&audio->sound, 0); }
+
+    if (restart) {
+        ma_sound_seek_to_pcm_frame(&audio->sound, 0);
+        audio->paused = false;
+    } else if (audio->paused) {
+        ma_sound_seek_to_pcm_frame(&audio->sound, audio->pausedCursor);
+        audio->paused = false;
+    } else if (!ma_sound_is_playing(&audio->sound)) {
+        ma_sound_seek_to_pcm_frame(&audio->sound, 0);
+    }
+
     ma_sound_start(&audio->sound);
 }
 
 void audio_stream_pause(struct ModAudio* audio) {
     if (!audio_sanity_check(audio, true, "pause")) { return; }
-    
+
+    u64 cursor = 0;
+    ma_data_source_get_cursor_in_pcm_frames(&audio->decoder, &cursor);
+    audio->pausedCursor = cursor;
+    audio->paused = true;
+
     ma_sound_stop(&audio->sound);
 }
 
@@ -396,6 +433,8 @@ void audio_stream_stop(struct ModAudio* audio) {
     
     ma_sound_stop(&audio->sound);
     ma_sound_seek_to_pcm_frame(&audio->sound, 0);
+    audio->paused = false;
+    audio->pausedCursor = 0;
 }
 
 f32 audio_stream_get_position(struct ModAudio* audio) {

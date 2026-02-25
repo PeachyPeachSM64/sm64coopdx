@@ -31,6 +31,8 @@
 
 #include "eu_translation.h"
 
+bool gFileSelectActive = false;
+
 #ifdef VERSION_EU
 #undef LANGUAGE_FUNCTION
 #define LANGUAGE_FUNCTION sLanguageMode
@@ -2898,6 +2900,7 @@ s32 lvl_init_menu_values_and_cursor_pos(UNUSED s32 arg, UNUSED s32 unused) {
 #ifdef VERSION_EU
     s8 fileNum;
 #endif
+    gFileSelectActive = true;
     sSelectedButtonID = MENU_BUTTON_NONE;
     sCurrentMenuLevel = MENU_LAYER_MAIN;
     sTextBaseAlpha = 0;
@@ -2963,5 +2966,8 @@ s32 lvl_init_menu_values_and_cursor_pos(UNUSED s32 arg, UNUSED s32 unused) {
  */
 s32 lvl_update_obj_and_load_file_selected(UNUSED s32 arg, UNUSED s32 unused) {
     area_update_objects();
+    if (sSelectedFileNum != 0) {
+        gFileSelectActive = false;
+    }
     return sSelectedFileNum;
 }

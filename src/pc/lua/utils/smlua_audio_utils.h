@@ -30,6 +30,8 @@ struct ModAudio {
     struct ModAudioSampleCopies* sampleCopiesTail;
     bool isStream;
     f32 baseVolume;
+    bool paused;
+    u64 pausedCursor;
     bool loaded;
 };
 

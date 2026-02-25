@@ -2336,7 +2336,7 @@
 | oCameraLakituSpeed | `number` |  |
 | oCameraLakituCircleRadius | `number` |  |
 | oCameraLakituFinishedDialog | `integer` |  |
-| oCameraLakituUnk104 | `integer` |  |
+| oCameraLakituPlayedMusic | `integer` |  |
 | oCameraLakituPitchVel | `integer` |  |
 | oCameraLakituYawVel | `integer` |  |
 | oEnemyLakituNumSpinies | `integer` |  |

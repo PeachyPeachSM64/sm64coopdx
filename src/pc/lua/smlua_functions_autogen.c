@@ -33948,6 +33948,20 @@ int smlua_func_is_game_paused(UNUSED lua_State* L) {
     return 1;
 }
 
+int smlua_func_get_menu_mode(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "get_menu_mode", 0, top);
+        return 0;
+    }
+
+    lua_pushinteger(L, get_menu_mode());
+
+    return 1;
+}
+
 int smlua_func_is_pause_menu_hidden(UNUSED lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -38907,6 +38921,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "act_select_hud_show", smlua_func_act_select_hud_show);
     smlua_bind_function(L, "act_select_hud_is_hidden", smlua_func_act_select_hud_is_hidden);
     smlua_bind_function(L, "is_game_paused", smlua_func_is_game_paused);
+    smlua_bind_function(L, "get_menu_mode", smlua_func_get_menu_mode);
     smlua_bind_function(L, "is_pause_menu_hidden", smlua_func_is_pause_menu_hidden);
     smlua_bind_function(L, "set_pause_menu_hidden", smlua_func_set_pause_menu_hidden);
     smlua_bind_function(L, "game_pause", smlua_func_game_pause);
