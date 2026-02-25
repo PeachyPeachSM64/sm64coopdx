@@ -188,6 +188,7 @@ Gfx *geo_switch_anim_state(s32 callContext, struct GraphNode *node) {
 }
 
 s16 gRoomOverride = -1;
+s16 gPrevNonZeroMarioRoom = 0;
 
 /* |description|Overrides the current room Mario is in. Set to -1 to reset override|descriptionEnd| */
 void set_room_override(s16 room) {
@@ -216,10 +217,14 @@ Gfx *geo_switch_area(s32 callContext, struct GraphNode *node) {
 
             find_floor(gMarioObject->oPosX, gMarioObject->oPosY, gMarioObject->oPosZ, &sp20);
             if (sp20) {
-                gMarioCurrentRoom = sp20->room;
+                if (sp20->room != 0) {
+                    gPrevNonZeroMarioRoom = sp20->room;
+                }
+
+                gMarioCurrentRoom = (sp20->room != 0) ? sp20->room : gPrevNonZeroMarioRoom;
                 gMarioStates[0].currentRoom = gMarioCurrentRoom;
-                sp26 = sp20->room - 1;
-                print_debug_top_down_objectinfo("areainfo %d", sp20->room);
+                sp26 = gMarioCurrentRoom - 1;
+                print_debug_top_down_objectinfo("areainfo %d", gMarioCurrentRoom);
 
                 if (sp26 >= 0) {
                     switchCase->selectedCase = sp26;

@@ -1175,7 +1175,6 @@ create_shape_gddl(struct ObjShape *s) {
 void create_gddl_for_shapes(struct ObjGroup *grp) {
     UNUSED s32 shapedls =
         apply_to_obj_types_in_group(OBJ_TYPE_SHAPES, (applyproc_t) create_shape_gddl, grp);
-    printf("made %d display lists\n", shapedls);
 }
 
 /**

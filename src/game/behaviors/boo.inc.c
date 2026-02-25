@@ -817,6 +817,8 @@ void bhv_merry_go_round_boo_manager_loop(void) {
                 if (player == gMarioObjects[0] && o->oMerryGoRoundBooManagerNumBoosKilled < 5) {
                     if (o->oMerryGoRoundBooManagerNumBoosSpawned < 5) {
                         if (o->oMerryGoRoundBooManagerNumBoosSpawned - o->oMerryGoRoundBooManagerNumBoosKilled < 2) {
+                            struct Object *boo = spawn_object(o, MODEL_BOO, bhvMerryGoRoundBoo);
+                            (void)boo;
                             o->oMerryGoRoundBooManagerNumBoosSpawned++;
                         }
                     }
@@ -824,7 +826,7 @@ void bhv_merry_go_round_boo_manager_loop(void) {
                     o->oAction++;
                 }
 
-                if (o->oMerryGoRoundBooManagerNumBoosKilled > 4) {
+                if (o->oMerryGoRoundBooManagerNumBoosKilled >= 5) {
                     if (player == gMarioObjects[0]) {
                         struct Object* boo = spawn_object(o, MODEL_BOO, bhvMerryGoRoundBigBoo);
                         if (boo != NULL) {

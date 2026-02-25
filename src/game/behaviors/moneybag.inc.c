@@ -230,6 +230,15 @@ void bhv_moneybag_hidden_loop(void) {
             break;
 
         case FAKE_MONEYBAG_COIN_ACT_TRANSFORM:
+            if (o->oTimer == 0) {
+                struct Object *moneybag = spawn_object(o, MODEL_MONEYBAG, bhvMoneybag);
+                if (moneybag != NULL) {
+                    moneybag->oAction = MONEYBAG_ACT_APPEAR;
+                    moneybag->oOpacity = 0;
+                    moneybag->oMoneybagJumpState = MONEYBAG_JUMP_LANDING;
+                }
+                o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
+            }
             break;
     }
 

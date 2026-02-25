@@ -39,6 +39,12 @@ local state = {
         currentVolume = 0.0,
         noSeqGraceFrames = 0,
         oneShotDebounceFrames = 0,
+        savedSecondarySeqId = nil,
+        savedSecondaryPath = nil,
+        savedSecondaryPos = nil,
+        wasInOverlay = false,
+        overlayHoldFrames = 0,
+        overlayHoldSeqId = nil,
     },
     seq = {
         noSeqGraceFrames = 0,
@@ -60,6 +66,7 @@ local state = {
         forceFadeOut = false,
         silentFrames = 0,
         isPausedForFade = false,
+        duckBgForEnvOverlay = false,
     },
     mutedSeqIds = {},
     frameCounter = 0,
@@ -469,6 +476,9 @@ local function update_stream_volume()
     if state.flags.forceFadeOut then
         desired = 0.0
     end
+    if state.flags.duckBgForEnvOverlay then
+        desired = desired * 0.35
+    end
     -- Let vanilla define fade timing; don't add additional smoothing here.
     state.bg.currentVolume = desired
     local bgVol = state.bg.currentVolume
@@ -700,22 +710,111 @@ local function on_update()
     end
 
     if secondarySeqId ~= nil then
-        local envTrack = get_track_for_seq_id(secondarySeqId)
-        if envTrack ~= nil then
-            ensure_env_stream(secondarySeqId, envTrack)
-            -- Vanilla uses 0-127 volumes for secondary music.
-            local v = (secondaryVol / 127.0)
-            if v < 0 then v = 0 end
-            if v > 1 then v = 1 end
-            local desiredEnv = state.env.baseVolume * v
-            state.env.currentVolume = state.env.currentVolume + (desiredEnv - state.env.currentVolume) * 0.12
+        -- When secondary music is active (e.g. BBH merry-go-round), vanilla will still
+        -- play short overlay jingles on the ENV sequence player.
+        -- If we always force secondarySeqId here, those jingles will never be heard.
+        local overlayEnvSeqId = nil
+        if type(get_env_sequence_id) == 'function' then
+            overlayEnvSeqId = get_env_sequence_id()
+        end
+        if overlayEnvSeqId == 0 then overlayEnvSeqId = nil end
+        if overlayEnvSeqId ~= nil and bit32 ~= nil and bit32.band ~= nil then
+            overlayEnvSeqId = bit32.band(overlayEnvSeqId, 0x7F)
+        end
 
-            -- Always mute vanilla ENV when secondary music is active and mapped.
+        local function overlay_hold_duration(seqId)
+            if seqId == SEQ_EVENT_SOLVE_PUZZLE then
+                return 90
+            end
+            if seqId == SEQ_EVENT_CUTSCENE_STAR_SPAWN then
+                return 150
+            end
+            if seqId == SEQ_EVENT_CUTSCENE_COLLECT_STAR then
+                return 240
+            end
+            if seqId == SEQ_EVENT_HIGH_SCORE then
+                return 210
+            end
+            if seqId == SEQ_EVENT_CUTSCENE_COLLECT_KEY then
+                return 240
+            end
+            return 120
+        end
+
+        local overlayJustDetected = (overlayEnvSeqId ~= nil and is_non_restart_overlay_seq(overlayEnvSeqId))
+        if overlayJustDetected then
+            state.env.overlayHoldSeqId = overlayEnvSeqId
+            state.env.overlayHoldFrames = overlay_hold_duration(overlayEnvSeqId)
+        elseif state.env.overlayHoldFrames > 0 then
+            state.env.overlayHoldFrames = state.env.overlayHoldFrames - 1
+            if state.env.overlayHoldFrames <= 0 then
+                state.env.overlayHoldFrames = 0
+                state.env.overlayHoldSeqId = nil
+            end
+        end
+
+        local shouldUseOverlay = overlayJustDetected or (state.env.overlayHoldFrames > 0 and state.env.overlayHoldSeqId ~= nil)
+        state.flags.duckBgForEnvOverlay = shouldUseOverlay
+
+        -- If we are about to switch away from the secondary track to an overlay jingle,
+        -- save the current secondary stream position so we can resume without restarting.
+        if shouldUseOverlay then
+            if not state.env.wasInOverlay and state.env.stream ~= nil and state.env.seqId == secondarySeqId then
+                local secondaryTrack = get_track_for_seq_id(secondarySeqId)
+                if secondaryTrack ~= nil and secondaryTrack.file ~= nil then
+                    state.env.savedSecondarySeqId = secondarySeqId
+                    state.env.savedSecondaryPath = secondaryTrack.file
+                    if type(audio_stream_get_position) == 'function' then
+                        state.env.savedSecondaryPos = audio_stream_get_position(state.env.stream)
+                    else
+                        state.env.savedSecondaryPos = nil
+                    end
+                end
+            end
+            state.env.wasInOverlay = true
+        else
+            -- Overlay ended; resume secondary music from saved position.
+            if state.env.wasInOverlay and state.env.savedSecondarySeqId == secondarySeqId then
+                local secondaryTrack = get_track_for_seq_id(secondarySeqId)
+                if secondaryTrack ~= nil and secondaryTrack.file ~= nil then
+                    ensure_env_stream(secondarySeqId, secondaryTrack)
+                    if state.env.stream ~= nil and state.env.savedSecondaryPos ~= nil and type(audio_stream_set_position) == 'function' then
+                        audio_stream_set_position(state.env.stream, state.env.savedSecondaryPos)
+                    end
+                end
+            end
+            state.env.wasInOverlay = false
+        end
+
+        local chosenOverlaySeqId = overlayJustDetected and overlayEnvSeqId or state.env.overlayHoldSeqId
+        local chosenSeqId = shouldUseOverlay and chosenOverlaySeqId or secondarySeqId
+
+        local envTrack = get_track_for_seq_id(chosenSeqId)
+        if envTrack ~= nil then
+            ensure_env_stream(chosenSeqId, envTrack)
+
+            local v = 1.0
+            if shouldUseOverlay then
+                -- Overlay jingles don't have a secondary-volume scalar.
+                v = 1.0
+            else
+                -- Vanilla uses 0-127 volumes for secondary music.
+                v = (secondaryVol / 127.0)
+                if v < 0 then v = 0 end
+                if v > 1 then v = 1 end
+            end
+
+            local desiredEnv = state.env.baseVolume * v
+            if shouldUseOverlay then
+                state.env.currentVolume = desiredEnv
+            else
+                state.env.currentVolume = state.env.currentVolume + (desiredEnv - state.env.currentVolume) * 0.12
+            end
+
+            -- Always mute vanilla ENV when secondary music/overlays are active and mapped.
             if type(set_sequence_player_volume) == 'function' then
                 set_sequence_player_volume(SEQ_PLAYER_ENV, 0.0)
             end
-
-            -- Some custom sequences ignore volumeScale; fade out the ENV player directly.
             if type(fade_out_sequence_player) == 'function' then
                 fade_out_sequence_player(SEQ_PLAYER_ENV, 0)
             end
@@ -731,6 +830,7 @@ local function on_update()
             end
         end
     else
+        state.flags.duckBgForEnvOverlay = false
         -- Not all SEQ_PLAYER_ENV sequences go through play_secondary_music().
         -- Star spawn / course-clear fanfare are started directly on the ENV player,
         -- so fall back to reading the ENV player's active seq id.
