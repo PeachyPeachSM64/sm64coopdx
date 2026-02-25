@@ -51,6 +51,7 @@
 #include "src/audio/seqplayer.h"
 #include "src/engine/lighting_engine.h"
 #include "pc/network/sync_object.h"
+#include "pc/network/network_player.h"
 
 
   ///////////////
