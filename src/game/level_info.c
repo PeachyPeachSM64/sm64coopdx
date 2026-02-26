@@ -148,7 +148,7 @@ static const char *ascii_to_sm64_char(u8 *str64, const char *strAscii, bool menu
         if (menu && !ch->menu) {
             continue;
         }
-        if (memcmp(strAscii, ch->str, ch->len) == 0) {
+        if (strncmp(strAscii, ch->str, ch->len) == 0) {
             *str64 = ch->c;
             return strAscii + ch->len;
         }
