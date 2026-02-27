@@ -274,6 +274,12 @@ local function resolve_path(characterType, filename)
         return filename
     end
 
+    local filenameLower = filename:lower()
+    local filenameWav = filename
+    if filenameLower:sub(-4) ~= '.wav' then
+        return nil
+    end
+
     local dir = mappings.CHARACTER_SOUND_DIR[characterType]
     local legacy = 'sound/' .. filename
     local legacy2 = 'audio/' .. filename
@@ -285,9 +291,7 @@ local function resolve_path(characterType, filename)
     local p = 'audio/' .. dir .. '/' .. filename
 
     if type(mod_file_exists) == 'function' then
-        if mod_file_exists(p) then
-            return p
-        end
+        if mod_file_exists(p) then return p end
         if mod_file_exists(legacy) then
             return legacy
         end
