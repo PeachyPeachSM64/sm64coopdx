@@ -31,6 +31,9 @@ TARGET_RPI ?= 0
 # Build and optimize for RK3588 processor
 TARGET_RK3588 ?= 0
 
+# Build for Wii U (devkitPPC + wut)
+TARGET_WII_U ?= 0
+
 # Makeflag to enable OSX fixes
 OSX_BUILD ?= 0
 
@@ -70,6 +73,7 @@ ifeq ($(shell arch),arm64)
 else
   MIN_MACOS_VERSION ?= 10.15
 endif
+
 # Make some small adjustments for handheld devices
 HANDHELD ?= 0
 
@@ -140,6 +144,38 @@ ifeq ($(HOST_OS),Linux)
     #Rasberry Pi zero, 2, 3, etc
     TARGET_RPI = 1
   endif
+endif
+
+ifeq ($(TARGET_WII_U),1)
+  DISCORD_SDK := 0
+  COOPNET := 0
+  HEADLESS := 0
+
+  ifeq ($(strip $(DEVKITPRO)),)
+    $(error Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>/devkitpro)
+  endif
+  ifeq ($(strip $(DEVKITPPC)),)
+    $(error Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>/devkitPro/devkitPPC)
+  endif
+
+  include $(DEVKITPPC)/base_tools
+
+  PORTLIBS := $(PORTLIBS_PATH)/wiiu $(PORTLIBS_PATH)/ppc
+  export PATH := $(PORTLIBS_PATH)/wiiu/bin:$(PORTLIBS_PATH)/ppc/bin:$(PATH)
+
+  WUT_ROOT ?= $(DEVKITPRO)/wut
+  RPXSPECS := -specs=$(WUT_ROOT)/share/wut.specs
+
+  MACHDEP := -DESPRESSO -mcpu=750 -meabi -mhard-float
+  LIBDIRS := $(PORTLIBS) $(WUT_ROOT)
+  WIIU_INCLUDE := $(foreach dir,$(LIBDIRS),-I$(dir)/include)
+  WIIU_LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
+
+  # Default backends for Wii U
+  RENDER_API := WHB
+  WINDOW_API := WIIU
+  AUDIO_API := SDL2
+  CONTROLLER_API := SDL2
 endif
 
 # MXE overrides
@@ -488,8 +524,14 @@ BUILD_DIR_BASE := build
 # BUILD_DIR is the location where all build artifacts are placed
 BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)_pc
 
+ifeq ($(TARGET_WII_U),1)
+  BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)_wiiu
+endif
+
 ifeq ($(WINDOWS_BUILD),1)
 	EXE := $(BUILD_DIR)/render96dx.exe
+else ifeq ($(TARGET_WII_U),1)
+	EXE := $(BUILD_DIR)/$(TARGET).elf
 else # Linux builds/binary namer
 	ifeq ($(TARGET_RPI),1)
 		EXE := $(BUILD_DIR)/render96dx.arm
@@ -682,6 +724,10 @@ ifeq ($(OSX_BUILD),1)
   AS := i686-w64-mingw32-as
 endif
 
+ifeq ($(TARGET_WII_U),1)
+  AS := powerpc-eabi-as
+endif
+
 ifeq ($(WINDOWS_AUTO_BUILDER),1)
   CC      := cc
   CXX     := g++
@@ -696,7 +742,6 @@ else ifeq ($(COMPILER),gcc)
 else ifeq ($(COMPILER),clang)
   CC      := clang
   CXX     := clang++
-  CPP     := clang++
   EXTRA_CFLAGS += -Wno-unused-function -Wno-unused-variable -Wno-unknown-warning-option -Wno-self-assign -Wno-unknown-pragmas -Wno-unused-result
 else
   ifeq ($(USE_QEMU_IRIX),1)
@@ -710,6 +755,11 @@ else
     ACPP    := $(IDO_ROOT)/acpp
     COPT    := $(IDO_ROOT)/copt
   endif
+endif
+
+ifeq ($(TARGET_WII_U),1)
+  CC      := powerpc-eabi-gcc
+  CXX     := powerpc-eabi-g++
 endif
 
 ifeq ($(WINDOWS_BUILD),1) # fixes compilation in MXE on Linux and WSL
@@ -740,6 +790,12 @@ else
   OBJCOPY := $(CROSS)objcopy
 endif
 
+ifeq ($(TARGET_WII_U),1)
+  CPP := powerpc-eabi-cpp -P
+  OBJDUMP := powerpc-eabi-objdump
+  OBJCOPY := powerpc-eabi-objcopy
+endif
+
 # thank you apple very cool
 ifeq ($(HOST_OS),Darwin)
   CP := gcp
@@ -761,6 +817,10 @@ else
   LD := $(CXX)
 endif
 
+ifeq ($(TARGET_WII_U),1)
+  LD := $(CXX)
+endif
+
 AR        := $(CROSS)ar
 
 ifeq ($(TARGET_N64),1)
@@ -770,7 +830,6 @@ else
   TARGET_CFLAGS := -D_LANGUAGE_C
   TARGET_CFLAGS += $(EXTRA_CFLAGS)
 endif
-
 
 INCLUDE_DIRS := include $(BUILD_DIR) $(BUILD_DIR)/include src .
 ifeq ($(TARGET_N64),1)
@@ -911,6 +970,12 @@ else # C compiler options for N64
   endif
 endif
 
+ifeq ($(TARGET_WII_U),1)
+  CC_CHECK_CFLAGS += -DTARGET_WII_U -DLUA_32BITS -DMA_NO_THREADING -DMA_NO_RUNTIME_LINKING -ffunction-sections $(MACHDEP) -D__WIIU__ -D__WUT__ $(WIIU_INCLUDE)
+  CFLAGS += -DTARGET_WII_U -DLUA_32BITS -DMA_NO_THREADING -DMA_NO_RUNTIME_LINKING -ffunction-sections $(MACHDEP) -D__WIIU__ -D__WUT__ $(WIIU_INCLUDE)
+  BACKEND_LDFLAGS += -lSDL2 -lwut
+endif
+
 ifeq ($(TARGET_N64),1)
   ASFLAGS     := -march=vr4300 -mabi=32 $(foreach i,$(INCLUDE_DIRS),-I$(i)) $(foreach d,$(DEFINES),--defsym $(d))
   RSPASMFLAGS := $(foreach d,$(DEFINES),-definelabel $(subst =, ,$(d)))
@@ -938,6 +1003,8 @@ ifeq ($(WINDOWS_BUILD),1)
     LDFLAGS += -no-pie
   endif
   LDFLAGS += -T windows.ld
+else ifeq ($(TARGET_WII_U),1)
+  LDFLAGS := $(OPT_FLAGS) -lm -no-pie -g $(MACHDEP) $(RPXSPECS) $(WIIU_LIBPATHS) $(BACKEND_LDFLAGS)
 else ifeq ($(TARGET_RPI),1)
   LDFLAGS := $(OPT_FLAGS) -lm $(BACKEND_LDFLAGS) -no-pie
 else ifeq ($(TARGET_RK3588),1)
@@ -950,7 +1017,9 @@ endif
 
 # used by crash handler and loading screen on linux
 ifeq ($(WINDOWS_BUILD),0)
+  ifeq ($(TARGET_WII_U),0)
   LDFLAGS += -rdynamic -ldl -pthread
+  endif
 endif
 
 # icon
@@ -989,7 +1058,9 @@ LDFLAGS += -lz
 ifeq ($(WINDOWS_BUILD),1)
   LDFLAGS += -lwininet
 else
-  LDFLAGS += -lcurl
+  ifeq ($(TARGET_WII_U),0)
+    LDFLAGS += -lcurl
+  endif
 endif
 
 # Lua
@@ -1005,6 +1076,8 @@ else ifeq ($(OSX_BUILD),1)
   else
     LDFLAGS += -L./lib/lua/mac_intel/ -l lua53
   endif
+else ifeq ($(TARGET_WII_U),1)
+  LDFLAGS += -Llib/lua/wiiu -llua
 else ifeq ($(TARGET_RPI),1)
 	ifneq (,$(findstring aarch64,$(machine)))
     LDFLAGS += -Llib/lua/linux -l:liblua53-arm64.a
@@ -1082,7 +1155,9 @@ CFLAGS += -fPIE
 export LANG := C
 
 ifeq ($(OSX_BUILD),0)
-  LDFLAGS += -latomic
+  ifeq ($(TARGET_WII_U),0)
+    LDFLAGS += -latomic
+  endif
 endif
 
 #==============================================================================#
@@ -1137,6 +1212,12 @@ endif
 ifeq ($(TARGET_RK3588),1)
   CC_CHECK_CFLAGS += -DTARGET_RK3588
   CFLAGS += -DTARGET_RK3588
+endif
+
+# Check for Wii U option
+ifeq ($(TARGET_WII_U),1)
+  CC_CHECK_CFLAGS += -DTARGET_WII_U
+  CFLAGS += -DTARGET_WII_U
 endif
 
 # Check for texture fix option

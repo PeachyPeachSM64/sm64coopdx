@@ -1,8 +1,12 @@
+#ifndef TARGET_WII_U
+
 #define MINIAUDIO_IMPLEMENTATION // required by miniaudio
 
 // enable Vorbis decoding (provides ogg audio decoding support) for miniaudio
 #define STB_VORBIS_HEADER_ONLY
 #include "pc/utils/stb_vorbis.c"
+
+#endif
 
 #include "types.h"
 #include "seq_ids.h"
@@ -169,6 +173,35 @@ void smlua_audio_utils_replace_sequence(u8 sequenceId, u8 bankId, u8 defaultVolu
 
     LOG_LUA_LINE("Could not find m64 at path: %s", m64path);
 }
+
+#ifdef TARGET_WII_U
+
+struct ModAudio* audio_stream_load(UNUSED const char* filename) { return NULL; }
+void audio_stream_destroy(UNUSED struct ModAudio* audio) { }
+void audio_stream_play(UNUSED struct ModAudio* audio, UNUSED bool restart, UNUSED f32 volume) { }
+void audio_stream_pause(UNUSED struct ModAudio* audio) { }
+void audio_stream_stop(UNUSED struct ModAudio* audio) { }
+f32 audio_stream_get_position(UNUSED struct ModAudio* audio) { return 0.0f; }
+void audio_stream_set_position(UNUSED struct ModAudio* audio, UNUSED f32 pos) { }
+bool audio_stream_get_looping(UNUSED struct ModAudio* audio) { return false; }
+void audio_stream_set_looping(UNUSED struct ModAudio* audio, UNUSED bool looping) { }
+void audio_stream_set_loop_points(UNUSED struct ModAudio* audio, UNUSED s64 loopStart, UNUSED s64 loopEnd) { }
+f32 audio_stream_get_frequency(UNUSED struct ModAudio* audio) { return 0.0f; }
+void audio_stream_set_frequency(UNUSED struct ModAudio* audio, UNUSED f32 freq) { }
+f32 audio_stream_get_volume(UNUSED struct ModAudio* audio) { return 0.0f; }
+void audio_stream_set_volume(UNUSED struct ModAudio* audio, UNUSED f32 volume) { }
+
+void audio_sample_destroy_pending_copies(void) { }
+struct ModAudio* audio_sample_load(UNUSED const char* filename) { return NULL; }
+void audio_sample_destroy(UNUSED struct ModAudio* audio) { }
+void audio_sample_stop(UNUSED struct ModAudio* audio) { }
+void audio_sample_play(UNUSED struct ModAudio* audio, UNUSED Vec3f position, UNUSED f32 volume) { }
+
+void audio_custom_update_volume(void) { }
+void audio_custom_shutdown(void) { }
+void smlua_audio_custom_deinit(void) { }
+
+#else
 
   ///////////////
  // mod audio //
@@ -701,3 +734,5 @@ void smlua_audio_custom_deinit(void) {
         sModAudioPool = NULL;
     }
 }
+
+#endif

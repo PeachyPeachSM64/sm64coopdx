@@ -1,7 +1,15 @@
 #ifndef THREADING_H
 #define THREADING_H
 
+#if defined(TARGET_WII_U)
+#ifndef _POSIX_THREADS
+#define _POSIX_THREADS 1
+#endif
+#include <time.h>
+#include <sys/_pthreadtypes.h>
+#else
 #include <pthread.h>
+#endif
 
 #include "cliopts.h"
 #include "types.h"
@@ -26,7 +34,7 @@ struct ThreadHandle {
 // Functions
 //// Thread Handle
 int init_thread_handle(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size);
-void cleanup_thread_handle(struct ThreadHandle *handle);
+void free_thread_handle(struct ThreadHandle *handle);
 
 //// Thread
 int init_thread(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size);
