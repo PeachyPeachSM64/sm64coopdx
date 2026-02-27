@@ -5,6 +5,16 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef TARGET_WII_U
+#include <SDL2/SDL.h>
+
+#include <whb/log_cafe.h>
+#include <whb/log_udp.h>
+#include <whb/log.h>
+#include <whb/proc.h>
+#include <whb/crash.h>
+#endif
+
 #include "sm64.h"
 
 #include "pc/lua/smlua.h"
@@ -28,7 +38,9 @@
 #include "configfile.h"
 #include "thread.h"
 #include "controller/controller_api.h"
+#ifndef TARGET_WII_U
 #include "controller/controller_keyboard.h"
+#endif
 #include "controller/controller_mouse.h"
 #include "fs/fs.h"
 
@@ -492,6 +504,14 @@ int main(int argc, char *argv[]) {
     // handle terminal arguments
     if (!parse_cli_opts(argc, argv)) { return 0; }
 
+#ifdef TARGET_WII_U
+    WHBLogCafeInit();
+    WHBLogUdpInit();
+    WHBLogPrint("Logging initialized.");
+    WHBInitCrashHandler();
+    WHBLogPrint("Exception handler initialized.");
+#endif
+
 #if defined(RAPI_DUMMY) || defined(WAPI_DUMMY)
     gCLIOpts.headless = true;
 #endif
@@ -533,8 +553,10 @@ int main(int argc, char *argv[]) {
     // create the window almost straight away
     if (!gGfxInited) {
         gfx_init(&WAPI, &RAPI, TITLE);
+#ifndef TARGET_WII_U
         WAPI.set_keyboard_callbacks(keyboard_on_key_down, keyboard_on_key_up, keyboard_on_all_keys_up,
             keyboard_on_text_input, keyboard_on_text_editing);
+#endif
         WAPI.set_scroll_callback(mouse_on_scroll);
     }
 
@@ -596,7 +618,13 @@ int main(int argc, char *argv[]) {
     network_init(NT_NONE, false);
 
     // main loop
-    while (true) {
+    while (
+#ifdef TARGET_WII_U
+        WHBProcIsRunning()
+#else
+        true
+#endif
+    ) {
         debug_context_reset();
         CTX_BEGIN(CTX_TOTAL);
         WAPI.main_loop(produce_one_frame);
@@ -615,6 +643,13 @@ int main(int argc, char *argv[]) {
 #endif
         djui_lua_profiler_update();
     }
+
+#ifdef TARGET_WII_U
+    game_deinit();
+    WHBLogPrint("Quitting.");
+    WHBLogCafeDeinit();
+    WHBLogUdpDeinit();
+#endif
 
     return 0;
 }

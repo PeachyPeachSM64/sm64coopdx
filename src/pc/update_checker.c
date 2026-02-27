@@ -1,9 +1,20 @@
 #include <stdio.h>
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #include <wininet.h>
 #else
+#if defined(__has_include)
+#if __has_include(<curl/curl.h>)
+#define UPDATE_CHECKER_HAS_CURL 1
 #include <curl/curl.h>
+#else
+#define UPDATE_CHECKER_HAS_CURL 0
+#endif
+#else
+#define UPDATE_CHECKER_HAS_CURL 1
+#include <curl/curl.h>
+#endif
 #endif
 
 #include "update_checker.h"
@@ -32,6 +43,7 @@ void show_update_popup(void) {
 }
 
 #if !(defined(_WIN32) || defined(_WIN64))
+#if UPDATE_CHECKER_HAS_CURL
 typedef struct { char *str; size_t size; } Buffer;
 size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
     size_t realsize = size * nmemb;
@@ -48,6 +60,7 @@ size_t write_callback(char *ptr, size_t size, size_t nmemb, void *userdata) {
 
     return realsize;
 }
+#endif
 #endif
 
 void parse_version(const char *data) {
@@ -105,6 +118,10 @@ void get_version_remote(void) {
     // close handles
     InternetCloseHandle(hUrl);
     InternetCloseHandle(hInternet);
+    parse_version(buffer);
+#else
+#if !UPDATE_CHECKER_HAS_CURL
+    return;
 #else
     Buffer data = { .str = NULL, .size = 0 };
 
@@ -133,10 +150,10 @@ void get_version_remote(void) {
 
     // Clean up
     curl_easy_cleanup(curl);
-#endif
+
     parse_version(buffer);
-#if !(defined(_WIN32) || defined(_WIN64))
     free(buffer);
+#endif
 #endif
 }
 

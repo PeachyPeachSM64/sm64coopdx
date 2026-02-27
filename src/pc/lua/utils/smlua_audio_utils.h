@@ -1,7 +1,9 @@
 #ifndef SMLUA_AUDIO_UTILS_H
 #define SMLUA_AUDIO_UTILS_H
 
+#if !defined(TARGET_WII_U)
 #include "pc/utils/miniaudio.h"
+#endif
 
 /* |description|Resets all custom sequences back to vanilla|descriptionEnd| */
 void smlua_audio_utils_reset_all(void);
@@ -15,6 +17,14 @@ u8 smlua_audio_utils_allocate_sequence(void);
  // mod sounds //
 ////////////////
 
+#if defined(TARGET_WII_U)
+struct ModAudio {
+    const char *filepath;
+    bool isStream;
+    bool loaded;
+    f32 baseVolume;
+};
+#else
 struct ModAudioSampleCopies {
     ma_sound sound;
     ma_decoder decoder;
@@ -36,6 +46,7 @@ struct ModAudio {
     u64 pausedCursor;
     bool loaded;
 };
+#endif
 
 /* |description|Loads an `audio` stream by `filename` (with extension)|descriptionEnd| */
 struct ModAudio* audio_stream_load(const char* filename);

@@ -1,3 +1,5 @@
+#ifndef TARGET_WII_U
+
 #include <stdbool.h>
 #include <ultra64.h>
 #include <time.h>
@@ -141,3 +143,5 @@ struct ControllerAPI controller_keyboard = {
     keyboard_bindkeys,
     keyboard_shutdown
 };
+
+#endif

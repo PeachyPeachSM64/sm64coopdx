@@ -12,10 +12,13 @@ extern "C" {
 
 #include "gfx/gfx_dxgi.h"
 #include "gfx/gfx_sdl.h"
+#include "gfx/gfx_wiiu.h"
 #include "gfx/gfx_dummy.h"
 
 #if defined(WAPI_SDL1) || defined(WAPI_SDL2)
 # define WAPI gfx_sdl
+#elif defined(WAPI_WIIU)
+# define WAPI gfx_wiiu
 #elif defined(WAPI_DXGI)
 # define WAPI gfx_dxgi
 #elif defined(WAPI_DUMMY)
@@ -34,6 +37,10 @@ extern "C" {
 # else
 #  define RAPI_NAME "OpenGL"
 # endif
+#elif defined(RAPI_WHB)
+# include "gfx/gfx_whb.h"
+# define RAPI gfx_whb_api
+# define RAPI_NAME "WHB"
 #elif defined(RAPI_DUMMY)
 # define RAPI gfx_dummy_renderer_api
 # define RAPI_NAME "Dummy"

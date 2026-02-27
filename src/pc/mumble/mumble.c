@@ -13,6 +13,23 @@
 
 #include <stdbool.h>
 
+#ifdef TARGET_WII_U
+
+void mumble_init(void) {
+}
+
+void mumble_update(void) {
+}
+
+void mumble_update_menu(void) {
+}
+
+bool should_update_context(void) {
+    return false;
+}
+
+#else
+
 #ifdef _WIN32
 	#include <windows.h>
 #else
@@ -196,3 +213,5 @@ bool should_update_context() {
 
 	return true;
 }
+
+#endif

@@ -1,7 +1,82 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "thread.h"
 
 #include <assert.h>
 #include <string.h>
+
+#if defined(TARGET_WII_U)
+
+int init_thread_handle(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size) {
+    (void)entry;
+    (void)arg;
+    (void)sp;
+    (void)sp_size;
+    assert(handle != NULL);
+    handle->state = INVALID;
+    return 0;
+}
+
+void free_thread_handle(struct ThreadHandle *handle) {
+    assert(handle != NULL);
+    memset((void *)handle, 0, sizeof(struct ThreadHandle));
+}
+
+int init_thread(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size) {
+    (void)handle;
+    (void)entry;
+    (void)arg;
+    (void)sp;
+    (void)sp_size;
+    return 0;
+}
+
+int join_thread(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+int detach_thread(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+void exit_thread() {
+}
+
+int stop_thread(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+int init_mutex(struct ThreadHandle *handle) {
+    assert(handle != NULL);
+    return 0;
+}
+
+int destroy_mutex(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+int lock_mutex(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+int trylock_mutex(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+int unlock_mutex(struct ThreadHandle *handle) {
+    (void)handle;
+    return 0;
+}
+
+#else
 
 int init_thread_handle(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size) {
     int err1 = init_mutex(handle);
@@ -134,3 +209,5 @@ int unlock_mutex(struct ThreadHandle *handle) {
 
     return pthread_mutex_unlock(&handle->mutex);
 }
+
+#endif

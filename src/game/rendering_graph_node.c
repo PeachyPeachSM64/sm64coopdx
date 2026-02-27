@@ -5,11 +5,14 @@
 #include "engine/lighting_engine.h"
 #include "data/dynos_cmap.cpp.h"
 #include "camera.h"
-#include "game_init.h"
+#include <ultra64.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+
 #include "gfx_dimensions.h"
-#include "main.h"
-#include "memory.h"
-#include "print.h"
 #include "rendering_graph_node.h"
 #include "shadow.h"
 #include "sm64.h"
@@ -405,23 +408,23 @@ struct GraphNodeInterpData *geo_get_interp_data(void *node, struct GraphNodeObje
     }
 
     // Map for objects
-    void *nodeInterpData = hmap_get(sGraphNodeInterpDataMap, (int64_t) node);
+    void *nodeInterpData = hmap_get(sGraphNodeInterpDataMap, (int64_t)(uintptr_t) node);
     if (!nodeInterpData) {
         nodeInterpData = hmap_create(true);
         if (!nodeInterpData) {
             return NULL;
         }
-        hmap_put(sGraphNodeInterpDataMap, (int64_t) node, nodeInterpData);
+        hmap_put(sGraphNodeInterpDataMap, (int64_t)(uintptr_t) node, nodeInterpData);
     }
 
     // Node/object interp data
-    struct GraphNodeInterpData *interp = hmap_get(nodeInterpData, (int64_t) obj);
+    struct GraphNodeInterpData *interp = hmap_get(nodeInterpData, (int64_t)(uintptr_t) obj);
     if (!interp) {
         interp = calloc(1, sizeof(struct GraphNodeInterpData));
         if (!interp) {
             return NULL;
         }
-        hmap_put(nodeInterpData, (int64_t) obj, interp);
+        hmap_put(nodeInterpData, (int64_t)(uintptr_t) obj, interp);
     }
 
     return interp;
