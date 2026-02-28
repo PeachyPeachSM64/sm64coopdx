@@ -4,7 +4,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <gx2/display.h>
+#include <gx2/draw.h>
+#include <gx2/state.h>
+#include <gx2/swap.h>
+#include <whb/gfx.h>
+
 #include "gfx_rendering_api.h"
+
+static uint32_t frame_count;
+static int s_current_height;
+
+void GX2SetViewport(float x, float y, float width, float height, float nearZ, float farZ);
+void GX2SetScissor(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+void GX2DrawDone(void);
 
 static bool gfx_whb_z_is_from_0_to_1(void) {
     return false;
@@ -68,17 +81,11 @@ static void gfx_whb_set_zmode_decal(bool zmode_decal) {
 }
 
 static void gfx_whb_set_viewport(int x, int y, int width, int height) {
-    (void)x;
-    (void)y;
-    (void)width;
-    (void)height;
+    GX2SetViewport(x, s_current_height - y - height, width, height, 0.0f, 1.0f);
 }
 
 static void gfx_whb_set_scissor(int x, int y, int width, int height) {
-    (void)x;
-    (void)y;
-    (void)width;
-    (void)height;
+    GX2SetScissor(x, s_current_height - y - height, width, height);
 }
 
 static void gfx_whb_set_use_alpha(bool use_alpha) {
@@ -92,21 +99,37 @@ static void gfx_whb_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t b
 }
 
 static void gfx_whb_init(void) {
+    frame_count = 0;
+    s_current_height = 0;
+    WHBGfxInit();
 }
 
 static void gfx_whb_on_resize(void) {
 }
 
 static void gfx_whb_start_frame(void) {
+    frame_count++;
+
+    if (WHBGfxGetTVColourBuffer() != NULL) {
+        s_current_height = (int)WHBGfxGetTVColourBuffer()->surface.height;
+    }
+
+    WHBGfxBeginRenderTV();
+    WHBGfxClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 static void gfx_whb_end_frame(void) {
+    GX2Flush();
+    GX2DrawDone();
+    WHBGfxFinishRenderTV();
+    GX2CopyColorBufferToScanBuffer(WHBGfxGetTVColourBuffer(), GX2_SCAN_TARGET_DRC);
 }
 
 static void gfx_whb_finish_render(void) {
 }
 
 static void gfx_whb_shutdown(void) {
+    WHBGfxShutdown();
 }
 
 struct GfxRenderingAPI gfx_whb_api = {

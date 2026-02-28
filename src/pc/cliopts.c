@@ -89,8 +89,6 @@ bool parse_cli_opts(int argc, char* argv[]) {
             if ((i + 1) < argc && argv[i + 1][0] != '-') {
                 i++;
             }
-        } else if (!strcmp(argv[i], "--coopnet") && (i + 1) < argc) {
-            i++;
         } else if (!strcmp(argv[i], "--skip-update-check")) {
             gCLIOpts.skipUpdateCheck = true;
         } else if (!strcmp(argv[i], "--no-discord")) {

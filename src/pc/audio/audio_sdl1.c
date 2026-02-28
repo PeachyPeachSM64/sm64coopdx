@@ -164,8 +164,15 @@ static int audio_sdl_get_desired_buffered(void) {
 static void audio_sdl_play(const uint8_t *buf, size_t len) {
     SDL_LockAudio();
     // Don't fill the audio buffer too much in case this happens
-    if (queued / 4 < 6000)
+    if (queued / 4 < 6000) {
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+        uint16_t *buf_16 = (uint16_t *)buf;
+        for (uint32_t i = 0; i < (len / 2); i++) { // handle AUDIO_S16 format on big endian devices
+            buf_16[i] = buf[i * 2] | ((uint16_t)(buf[i * 2 + 1]) << 8);
+        }
+#endif // SDL_BYTEORDER
         sndqueue_push(buf, len);
+    }
     SDL_UnlockAudio();
 }
 

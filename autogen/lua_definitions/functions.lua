@@ -11522,13 +11522,6 @@ function get_local_discord_id()
     -- ...
 end
 
---- @param localIndex integer
---- @return string
---- Gets the CoopNet ID of a player with `localIndex` if CoopNet is being used and the player is connected, otherwise "-1" is returned
-function get_coopnet_id(localIndex)
-    -- ...
-end
-
 --- @return number
 --- Gets the master volume level
 function get_volume_master()

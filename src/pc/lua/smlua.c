@@ -403,7 +403,6 @@ void smlua_init(void) {
             "network_player_get_palette_color_channel",
             "network_player_color_to_palette",
             "network_player_palette_to_color",
-            "get_coopnet_id",
         };
         for (size_t i = 0; i < (sizeof(nilGlobals) / sizeof(nilGlobals[0])); i++) {
             lua_pushnil(L);
@@ -429,7 +428,6 @@ void smlua_init(void) {
         const char* nilConstants[] = {
             "CUTSCENE_PALETTE_EDITOR",
             "ACT_PALETTE_EDITOR_CAP",
-            "NS_COOPNET",
             "NS_MAX",
         };
         for (size_t i = 0; i < (sizeof(nilConstants) / sizeof(nilConstants[0])); i++) {

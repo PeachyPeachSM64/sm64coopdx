@@ -2048,7 +2048,6 @@
    - [get_global_timer](functions-7.md#get_global_timer)
    - [get_dialog_response](functions-7.md#get_dialog_response)
    - [get_local_discord_id](functions-7.md#get_local_discord_id)
-   - [get_coopnet_id](functions-7.md#get_coopnet_id)
    - [get_volume_master](functions-7.md#get_volume_master)
    - [get_volume_level](functions-7.md#get_volume_level)
    - [get_volume_sfx](functions-7.md#get_volume_sfx)

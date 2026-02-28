@@ -254,7 +254,12 @@ static void controller_sdl_read(OSContPad *pad) {
         ltrig = SDL_GameControllerGetAxis(sdl_cntrl, SDL_CONTROLLER_AXIS_TRIGGERLEFT);
         rtrig = SDL_GameControllerGetAxis(sdl_cntrl, SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
         for (u32 i = 0; i < SDL_CONTROLLER_BUTTON_MAX; ++i) {
-            const bool new = SDL_GameControllerGetButton(sdl_cntrl, i);
+            const bool new = SDL_GameControllerGetButton(sdl_cntrl,
+#ifdef TARGET_WII_U
+                (i == SDL_CONTROLLER_BUTTON_A) ? SDL_CONTROLLER_BUTTON_B :
+                (i == SDL_CONTROLLER_BUTTON_B) ? SDL_CONTROLLER_BUTTON_A :
+#endif
+                i);
             update_button(i, new);
         }
     } else if (sdl_joystick) {
@@ -302,6 +307,13 @@ static void controller_sdl_read(OSContPad *pad) {
             buttons_down |= joy_binds[i][1];
 
     pad->button |= buttons_down;
+
+#ifdef TARGET_WII_U
+    if (joy_buttons[SDL_CONTROLLER_BUTTON_DPAD_LEFT]) pad->stick_x = -128;
+    if (joy_buttons[SDL_CONTROLLER_BUTTON_DPAD_RIGHT]) pad->stick_x = 127;
+    if (joy_buttons[SDL_CONTROLLER_BUTTON_DPAD_DOWN]) pad->stick_y = -128;
+    if (joy_buttons[SDL_CONTROLLER_BUTTON_DPAD_UP]) pad->stick_y = 127;
+#endif
 
     const u32 xstick = buttons_down & STICK_XMASK;
     const u32 ystick = buttons_down & STICK_YMASK;
