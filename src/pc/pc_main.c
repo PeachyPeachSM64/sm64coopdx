@@ -8,11 +8,17 @@
 #ifdef TARGET_WII_U
 #include <SDL2/SDL.h>
 
+#include <coreinit/debug.h>
 #include <whb/log_cafe.h>
 #include <whb/log_udp.h>
 #include <whb/log.h>
 #include <whb/proc.h>
 #include <whb/crash.h>
+
+static void wiiu_boot_log(const char* msg) {
+    OSReport("%s\n", msg);
+    WHBLogPrint(msg);
+}
 #endif
 
 #include "sm64.h"
@@ -464,6 +470,9 @@ void game_exit(void) {
 }
 
 void* main_game_init(UNUSED void* dummy) {
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_game_init: start");
+#endif
     // load language
     if (!djui_language_init(configLanguage)) { snprintf(configLanguage, MAX_CONFIG_STRING, "%s", ""); }
 
@@ -471,6 +480,10 @@ void* main_game_init(UNUSED void* dummy) {
     dynos_gfx_init();
     enable_queued_dynos_packs();
     sync_objects_init_system();
+
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_game_init: dynos/mod sync init done");
+#endif
 
     if (!gCLIOpts.skipUpdateCheck) {
         check_for_updates();
@@ -480,12 +493,20 @@ void* main_game_init(UNUSED void* dummy) {
     rom_assets_load();
     smlua_text_utils_init();
 
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_game_init: rom assets loaded");
+#endif
+
     mods_init();
     enable_queued_mods();
 
     // Activate enabled mods and initialize Lua (loads and executes mod scripts)
     mods_activate(&gLocalMods);
     smlua_init();
+
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_game_init: lua init done");
+#endif
     LOADING_SCREEN_MUTEX(
         gCurrLoadingSegment.percentage = 0;
         loading_screen_set_segment_text("Starting Game");
@@ -493,8 +514,15 @@ void* main_game_init(UNUSED void* dummy) {
 
     audio_init();
     sound_init();
+
+#ifndef TARGET_WII_U
     network_player_init();
     mumble_init();
+#endif
+
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_game_init: audio init done");
+#endif
 
     gGameInited = true;
     return NULL;
@@ -506,10 +534,12 @@ int main(int argc, char *argv[]) {
 
 #ifdef TARGET_WII_U
     WHBLogCafeInit();
-    WHBLogUdpInit();
-    WHBLogPrint("Logging initialized.");
+    wiiu_boot_log("Logging initialized.");
     WHBInitCrashHandler();
-    WHBLogPrint("Exception handler initialized.");
+    wiiu_boot_log("Exception handler initialized.");
+
+    WHBProcInit();
+    wiiu_boot_log("WHBProcInit done");
 #endif
 
 #if defined(RAPI_DUMMY) || defined(WAPI_DUMMY)
@@ -538,6 +568,10 @@ int main(int argc, char *argv[]) {
     fs_init(gCLIOpts.savePath[0] ? gCLIOpts.savePath : sys_user_path());
 #endif
 
+#ifdef TARGET_WII_U
+    wiiu_boot_log("fs_init done");
+#endif
+
 #if !defined(RAPI_DUMMY) && !defined(WAPI_DUMMY)
     if (gCLIOpts.headless) {
         memcpy(&WAPI, &gfx_dummy_wm_api, sizeof(struct GfxWindowManagerAPI));
@@ -546,13 +580,23 @@ int main(int argc, char *argv[]) {
 #endif
 
     configfile_load();
+#ifdef TARGET_WII_U
+    configfile_save(configfile_name());
+    wiiu_boot_log("configfile_load/save done");
+#endif
     configfile_init_player_palettes();
 
     legacy_folder_handler();
 
     // create the window almost straight away
     if (!gGfxInited) {
+#ifdef TARGET_WII_U
+        wiiu_boot_log("gfx_init begin");
+#endif
         gfx_init(&WAPI, &RAPI, TITLE);
+#ifdef TARGET_WII_U
+        wiiu_boot_log("gfx_init end");
+#endif
 #ifndef TARGET_WII_U
         WAPI.set_keyboard_callbacks(keyboard_on_key_down, keyboard_on_key_up, keyboard_on_all_keys_up,
             keyboard_on_text_input, keyboard_on_text_editing);
@@ -561,6 +605,9 @@ int main(int argc, char *argv[]) {
     }
 
     // render the rom setup screen
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_rom_handler begin");
+#endif
     if (!main_rom_handler()) {
 #ifdef LOADING_SCREEN_SUPPORTED
         if (!gCLIOpts.hideLoadingScreen) {
@@ -572,6 +619,10 @@ int main(int argc, char *argv[]) {
             return 0;
         }
     }
+
+#ifdef TARGET_WII_U
+    wiiu_boot_log("main_rom_handler end");
+#endif
 
     // start the thread for setting up the game
 #ifdef LOADING_SCREEN_SUPPORTED
@@ -589,8 +640,16 @@ int main(int argc, char *argv[]) {
         main_game_init(NULL); // failsafe incase threading doesn't work
     }
 
+#ifdef TARGET_WII_U
+    wiiu_boot_log("thread/game init done");
+#endif
+
     // initialize sm64 data and controllers
     thread5_game_loop(NULL);
+
+#ifdef TARGET_WII_U
+    wiiu_boot_log("thread5_game_loop done");
+#endif
 
     // initialize sound outside threads
     if (gCLIOpts.headless) audio_api = &audio_null;
@@ -615,9 +674,14 @@ int main(int argc, char *argv[]) {
     show_update_popup();
 
     // initialize network
+#ifndef TARGET_WII_U
     network_init(NT_NONE, false);
+#endif
 
     // main loop
+#ifdef TARGET_WII_U
+    wiiu_boot_log("entering main loop");
+#endif
     while (
 #ifdef TARGET_WII_U
         WHBProcIsRunning()
@@ -631,7 +695,9 @@ int main(int argc, char *argv[]) {
 #ifdef DISCORD_SDK
         discord_update();
 #endif
+#ifndef TARGET_WII_U
         mumble_update();
+#endif
 #ifdef DEBUG
         fflush(stdout);
         fflush(stderr);
@@ -646,9 +712,9 @@ int main(int argc, char *argv[]) {
 
 #ifdef TARGET_WII_U
     game_deinit();
-    WHBLogPrint("Quitting.");
+    wiiu_boot_log("Quitting.");
+    WHBProcShutdown();
     WHBLogCafeDeinit();
-    WHBLogUdpDeinit();
 #endif
 
     return 0;

@@ -4,8 +4,12 @@
 
 #include "../configfile.h"
 
+#ifdef TARGET_WII_U
+#include "controller_wiiu.h"
+#else
 #include "controller_keyboard.h"
 #include "controller_sdl.h"
+#endif
 
 // Analog camera movement by Pathétique (github.com/vrmiguel), y0shin and Mors
 // Contribute or communicate bugs at github.com/vrmiguel/sm64-analog-camera
@@ -13,7 +17,9 @@
 // moved these from sdl controller implementations
 
 static struct ControllerAPI *controller_implementations[] = {
-#if defined(CAPI_SDL2) || defined(CAPI_SDL1)
+#ifdef TARGET_WII_U
+    &controller_wiiu,
+#elif defined(CAPI_SDL2) || defined(CAPI_SDL1)
     &controller_sdl,
 #endif
 #ifndef TARGET_WII_U

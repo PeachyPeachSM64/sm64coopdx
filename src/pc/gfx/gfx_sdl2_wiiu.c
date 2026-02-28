@@ -3,57 +3,62 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <SDL2/SDL.h>
+#include <coreinit/foreground.h>
+#include <gx2/event.h>
+#include <gx2/swap.h>
+#include <macros.h>
+#include <proc_ui/procui.h>
+#include <whb/gfx.h>
 
 #include "gfx_window_manager_api.h"
 #include "gfx_screen_config.h"
 
-static SDL_Window *sWindow;
 static uint32_t sWindowWidth = DESIRED_SCREEN_WIDTH;
 static uint32_t sWindowHeight = DESIRED_SCREEN_HEIGHT;
+static bool sIsRunning;
 
-static kb_callback_t sKbKeyDown;
-static kb_callback_t sKbKeyUp;
-static void (*sKbAllKeysUp)(void);
-static void (*sKbTextInput)(char*);
-static void (*sKbTextEditing)(char*, int);
-static void (*sScrollCallback)(float, float);
+static void gfx_wiiu_proc_ui_save_callback(void) {
+    OSSavesDone_ReadyToRelease();
+}
+
+static uint32_t gfx_wiiu_proc_ui_exit_callback(UNUSED void* data) {
+    sIsRunning = false;
+    return 0;
+}
 
 static void gfx_wiiu_init(const char *window_title) {
-    SDL_Init(SDL_INIT_VIDEO);
+    (void)window_title;
 
-    sWindow = SDL_CreateWindow(
-        window_title,
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        0, 0,
-        SDL_WINDOW_FULLSCREEN_DESKTOP
-    );
+    ProcUIInit(&gfx_wiiu_proc_ui_save_callback);
+    ProcUIRegisterCallback(PROCUI_CALLBACK_EXIT, &gfx_wiiu_proc_ui_exit_callback, NULL, 0);
+    sIsRunning = true;
 
-    if (sWindow) {
-        SDL_DisplayMode mode;
-        if (SDL_GetDesktopDisplayMode(0, &mode) == 0) {
-            sWindowWidth = (uint32_t)mode.w;
-            sWindowHeight = (uint32_t)mode.h;
-        }
-    }
+    GX2SetSwapInterval(2);
 }
 
 static void gfx_wiiu_set_keyboard_callbacks(kb_callback_t on_key_down, kb_callback_t on_key_up,
                                            void (*on_all_keys_up)(void), void (*on_text_input)(char*),
                                            void (*on_text_editing)(char*, int)) {
-    sKbKeyDown = on_key_down;
-    sKbKeyUp = on_key_up;
-    sKbAllKeysUp = on_all_keys_up;
-    sKbTextInput = on_text_input;
-    sKbTextEditing = on_text_editing;
+    (void)on_key_down;
+    (void)on_key_up;
+    (void)on_all_keys_up;
+    (void)on_text_input;
+    (void)on_text_editing;
 }
 
 static void gfx_wiiu_set_scroll_callback(void (*on_scroll)(float, float)) {
-    sScrollCallback = on_scroll;
+    (void)on_scroll;
 }
 
 static void gfx_wiiu_main_loop(void (*run_one_game_iter)(void)) {
+    // Ensure we run at 30FPS
+    // Fool-proof unless the Wii U is able to
+    // execute `run_one_game_iter()` so fast
+    // that it doesn't even stall for enough time for
+    // the second `GX2WaitForVsync()` to register
+    GX2WaitForVsync();
     run_one_game_iter();
+    GX2WaitForVsync();
 }
 
 static void gfx_wiiu_get_dimensions(uint32_t *width, uint32_t *height) {
@@ -62,55 +67,35 @@ static void gfx_wiiu_get_dimensions(uint32_t *width, uint32_t *height) {
 }
 
 static void gfx_wiiu_handle_events(void) {
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        switch (event.type) {
-            case SDL_QUIT:
-                if (sWindow) {
-                    SDL_DestroyWindow(sWindow);
-                    sWindow = NULL;
-                }
-                break;
-            case SDL_KEYDOWN:
-                if (sKbKeyDown) {
-                    sKbKeyDown((int)event.key.keysym.scancode);
-                }
-                break;
-            case SDL_KEYUP:
-                if (sKbKeyUp) {
-                    sKbKeyUp((int)event.key.keysym.scancode);
-                }
-                break;
-            case SDL_TEXTINPUT:
-                if (sKbTextInput) {
-                    sKbTextInput(event.text.text);
-                }
-                break;
-            case SDL_TEXTEDITING:
-                if (sKbTextEditing) {
-                    sKbTextEditing(event.edit.text, event.edit.start);
-                }
-                break;
-            case SDL_MOUSEWHEEL:
-                if (sScrollCallback) {
-                    sScrollCallback((float)event.wheel.x, (float)event.wheel.y);
-                }
-                break;
-            default:
-                break;
-        }
+    if (!sIsRunning) {
+        return;
     }
 
-    if (sKbAllKeysUp) {
-        sKbAllKeysUp();
+    ProcUIStatus status = ProcUIProcessMessages(true);
+    switch (status) {
+        case PROCUI_STATUS_EXITING:
+            ProcUIShutdown();
+            sIsRunning = false;
+            break;
+        case PROCUI_STATUS_RELEASE_FOREGROUND:
+            ProcUIDrawDoneRelease();
+            break;
+        case PROCUI_STATUS_IN_BACKGROUND:
+        case PROCUI_STATUS_IN_FOREGROUND:
+            break;
     }
 }
 
 static bool gfx_wiiu_start_frame(void) {
+    if (!sIsRunning) {
+        return false;
+    }
+    GX2WaitForFlip();
     return true;
 }
 
 static void gfx_wiiu_swap_buffers_begin(void) {
+    WHBGfxFinishRender();
 }
 
 static void gfx_wiiu_swap_buffers_end(void) {
@@ -121,35 +106,32 @@ static double gfx_wiiu_get_time(void) {
 }
 
 static void gfx_wiiu_shutdown(void) {
-    if (sWindow) {
-        SDL_DestroyWindow(sWindow);
-        sWindow = NULL;
+    if (sIsRunning) {
+        ProcUIShutdown();
     }
-    SDL_Quit();
+    sIsRunning = false;
 }
 
 static void gfx_wiiu_start_text_input(void) {
-    SDL_StartTextInput();
 }
 
 static void gfx_wiiu_stop_text_input(void) {
-    SDL_StopTextInput();
 }
 
 static char* gfx_wiiu_get_clipboard_text(void) {
-    return SDL_GetClipboardText();
+    return NULL;
 }
 
 static void gfx_wiiu_set_clipboard_text(const char* text) {
-    SDL_SetClipboardText(text);
+    (void)text;
 }
 
 static void gfx_wiiu_set_cursor_visible(bool visible) {
-    SDL_ShowCursor(visible ? SDL_ENABLE : SDL_DISABLE);
+    (void)visible;
 }
 
 static void gfx_wiiu_delay(unsigned int ms) {
-    SDL_Delay((Uint32)ms);
+    (void)ms;
 }
 
 static int gfx_wiiu_get_max_msaa(void) {
@@ -157,9 +139,7 @@ static int gfx_wiiu_get_max_msaa(void) {
 }
 
 static void gfx_wiiu_set_window_title(const char* title) {
-    if (sWindow) {
-        SDL_SetWindowTitle(sWindow, title);
-    }
+    (void)title;
 }
 
 static void gfx_wiiu_reset_window_title(void) {

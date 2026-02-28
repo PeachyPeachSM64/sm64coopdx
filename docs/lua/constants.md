@@ -2208,8 +2208,7 @@
 | Identifier | Value |
 | :--------- | :---- |
 | NS_SOCKET | 0 |
-| NS_COOPNET | 1 |
-| NS_MAX | 2 |
+| NS_MAX | 1 |
 
 ### [enum PlayerInteractions](#PlayerInteractions)
 | Identifier | Value |

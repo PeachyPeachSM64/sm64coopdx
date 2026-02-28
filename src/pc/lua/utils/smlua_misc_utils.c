@@ -504,10 +504,6 @@ const char* get_local_discord_id(void) {
 #endif
 }
 
-const char* get_coopnet_id(UNUSED s8 localIndex) {
-    return "-1";
-}
-
 f32 get_volume_master(void) {
     return gLuaVolumeMaster;
 }

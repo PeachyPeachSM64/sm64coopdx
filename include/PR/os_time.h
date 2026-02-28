@@ -3,6 +3,9 @@
 
 #include <PR/ultratypes.h>
 #include <PR/os_message.h>
+#ifdef TARGET_WII_U
+#include <coreinit/time.h>
+#endif
 
 /* Types */
 
@@ -16,7 +19,9 @@ typedef struct OSTimer_str
     OSMesg *msg;
 } OSTimer;
 
+#ifndef TARGET_WII_U
 typedef u64 OSTime;
+#endif
 
 /* Functions */
 

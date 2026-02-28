@@ -47,8 +47,6 @@ TEXTURE_FIX ?= 0
 ENHANCE_LEVEL_TEXTURES ?= 1
 # Enable Discord Game SDK (used for Discord invites)
 DISCORD_SDK ?= 1
-# Enable CoopNet SDK (used for CoopNet server hosting)
-COOPNET ?= 1
 # Enable docker build workarounds
 DOCKERBUILD ?= 0
 # Sets your optimization level for building.
@@ -148,7 +146,6 @@ endif
 
 ifeq ($(TARGET_WII_U),1)
   DISCORD_SDK := 0
-  COOPNET := 0
   HEADLESS := 0
 
   ifeq ($(strip $(DEVKITPRO)),)
@@ -166,7 +163,7 @@ ifeq ($(TARGET_WII_U),1)
   WUT_ROOT ?= $(DEVKITPRO)/wut
   RPXSPECS := -specs=$(WUT_ROOT)/share/wut.specs
 
-  MACHDEP := -DESPRESSO -mcpu=750 -meabi -mhard-float
+  MACHDEP := -DESPRESSO -mcpu=750 -meabi -mhard-float -mlongcall
   LIBDIRS := $(PORTLIBS) $(WUT_ROOT)
   WIIU_INCLUDE := $(foreach dir,$(LIBDIRS),-I$(dir)/include)
   WIIU_LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
@@ -357,7 +354,6 @@ endif
 ifeq ($(TARGET_RK3588),1)
   $(info Compiling for RK3588)
   DISCORD_SDK := 0
-  COOPNET := 0
   machine = $(shell sh -c 'uname -m 2>/dev/null || echo unknown')
 
   # RK3588 in ARM64 (aarch64) mode
@@ -367,8 +363,6 @@ endif
 
 # Set BITS (32/64) to compile for
 OPT_FLAGS += $(BITS)
-
-TARGET := sm64.$(VERSION)
 
 # GRUCODE - selects which RSP microcode to use.
 #   f3d_old - default for JP and US versions
@@ -521,17 +515,18 @@ _ := $(shell $(PYTHON) $(TOOLS_DIR)/copy_extended_sounds.py)
 #==============================================================================#
 
 BUILD_DIR_BASE := build
-# BUILD_DIR is the location where all build artifacts are placed
-BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)_pc
 
+# BUILD_DIR is the location where all build artifacts are placed
 ifeq ($(TARGET_WII_U),1)
   BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)_wiiu
+else
+  BUILD_DIR := $(BUILD_DIR_BASE)/$(VERSION)_pc
 endif
 
 ifeq ($(WINDOWS_BUILD),1)
 	EXE := $(BUILD_DIR)/render96dx.exe
 else ifeq ($(TARGET_WII_U),1)
-	EXE := $(BUILD_DIR)/$(TARGET).elf
+	EXE := $(BUILD_DIR)/render96dx.rpx
 else # Linux builds/binary namer
 	ifeq ($(TARGET_RPI),1)
 		EXE := $(BUILD_DIR)/render96dx.arm
@@ -544,7 +539,7 @@ ifeq ($(TARGET_RK3588),1)
   EXE := $(BUILD_DIR)/render96dx.arm
 endif
 
-ELF            := $(BUILD_DIR)/$(TARGET).elf
+ELF            := $(BUILD_DIR)/render96dx.elf
 LIBULTRA       := $(BUILD_DIR)/libultra.a
 LD_SCRIPT      := sm64.ld
 MIO0_DIR       := $(BUILD_DIR)/bin
@@ -835,7 +830,7 @@ INCLUDE_DIRS := include $(BUILD_DIR) $(BUILD_DIR)/include src .
 ifeq ($(TARGET_N64),1)
   INCLUDE_DIRS += include/libc
 else
-  INCLUDE_DIRS += sound lib/lua/include lib/coopnet/include $(EXTRA_INCLUDES)
+  INCLUDE_DIRS += sound lib/lua/include $(EXTRA_INCLUDES)
 endif
 
 # Connfigure backend flags
@@ -971,8 +966,8 @@ else # C compiler options for N64
 endif
 
 ifeq ($(TARGET_WII_U),1)
-  CC_CHECK_CFLAGS += -DTARGET_WII_U -DLUA_32BITS -DMA_NO_THREADING -DMA_NO_RUNTIME_LINKING -ffunction-sections $(MACHDEP) -D__WIIU__ -D__WUT__ $(WIIU_INCLUDE)
-  CFLAGS += -DTARGET_WII_U -DLUA_32BITS -DMA_NO_THREADING -DMA_NO_RUNTIME_LINKING -ffunction-sections $(MACHDEP) -D__WIIU__ -D__WUT__ $(WIIU_INCLUDE)
+  CC_CHECK_CFLAGS += -DTARGET_WII_U -DLUA_32BITS -DMA_NO_THREADING -DMA_NO_RUNTIME_LINKING -ffunction-sections -fno-pic -fno-pie $(MACHDEP) -D__WIIU__ -D__WUT__ $(WIIU_INCLUDE)
+  CFLAGS += -DTARGET_WII_U -DLUA_32BITS -DMA_NO_THREADING -DMA_NO_RUNTIME_LINKING -ffunction-sections -fno-pic -fno-pie $(MACHDEP) -D__WIIU__ -D__WUT__ $(WIIU_INCLUDE)
   BACKEND_LDFLAGS += -lSDL2 -lwut
 endif
 
@@ -1090,38 +1085,6 @@ else
   LDFLAGS += -Llib/lua/linux -l:liblua53.a -ldl
 endif
 
-# CoopNet
-COOPNET_LIBS :=
-ifeq ($(COOPNET),1)
-  ifeq ($(WINDOWS_BUILD),1)
-    ifeq ($(TARGET_BITS), 32)
-      LDFLAGS += -Llib/coopnet/win32 -l:libcoopnet.a -l:libjuice.a -lbcrypt -liphlpapi
-    else
-      LDFLAGS += -Llib/coopnet/win64 -l:libcoopnet.a -l:libjuice.a -lbcrypt -liphlpapi
-    endif
-  else ifeq ($(OSX_BUILD),1)
-    ifeq ($(shell uname -m),arm64)
-      LDFLAGS += -Wl,-rpath,@loader_path -L./lib/coopnet/mac_arm/ -l coopnet
-      COOPNET_LIBS += ./lib/coopnet/mac_arm/libcoopnet.dylib
-      COOPNET_LIBS += ./lib/coopnet/mac_arm/libjuice.1.6.2.dylib
-    else
-      LDFLAGS += -Wl,-rpath,@loader_path -L./lib/coopnet/mac_intel/ -l coopnet
-      COOPNET_LIBS += ./lib/coopnet/mac_intel/libcoopnet.dylib
-      COOPNET_LIBS += ./lib/coopnet/mac_intel/libjuice.1.6.2.dylib
-    endif
-  else ifeq ($(TARGET_RPI),1)
-    ifneq (,$(findstring aarch64,$(machine)))
-      LDFLAGS += -Llib/coopnet/linux -l:libcoopnet-arm64.a -l:libjuice-arm64.a
-    else
-      LDFLAGS += -Llib/coopnet/linux -l:libcoopnet-arm.a -l:libjuice-arm.a
-    endif
-  else ifeq ($(TARGET_RK3588),1)
-    LDFLAGS += -Llib/coopnet/linux -l:libcoopnet-arm64.a -l:libjuice.a
-  else
-    LDFLAGS += -Llib/coopnet/linux -l:libcoopnet.a -l:libjuice.a
-  endif
-endif
-
 # Network/Discord (ugh, needs cleanup)
 ifeq ($(WINDOWS_BUILD),1)
   LDFLAGS += -lws2_32 -lwsock32
@@ -1140,16 +1103,12 @@ ifeq ($(IS_DEV_OR_DEBUG),0)
   ifeq ($(OSX_BUILD),0)
     LDFLAGS += -Wl,--build-id=none
   endif
-else
-  # Stuff for showing the git hash and build time in dev builds
-  # Originally from https://stackoverflow.com/questions/44038428/include-git-commit-hash-and-or-branch-name-in-c-c-source
-  GIT_HASH=$(shell git rev-parse --short HEAD)
-  COMPILE_TIME=$(shell date -u +'%Y-%m-%d %H:%M:%S UTC')
-  C_DEFINES += -DGIT_HASH="\"$(GIT_HASH)\"" -DCOMPILE_TIME="\"$(COMPILE_TIME)\""
 endif
 
 # Enable ASLR
-CFLAGS += -fPIE
+ifeq ($(TARGET_WII_U),0)
+  CFLAGS += -fPIE
+endif
 
 # Prevent a crash with -sopt
 export LANG := C
@@ -1188,12 +1147,6 @@ endif
 ifeq ($(DISCORD_SDK),1)
   CC_CHECK_CFLAGS += -DDISCORD_SDK
   CFLAGS += -DDISCORD_SDK
-endif
-
-# Check for COOPNET option
-ifeq ($(COOPNET),1)
-  CC_CHECK_CFLAGS += -DCOOPNET
-  CFLAGS += -DCOOPNET
 endif
 
 # Check for development option
@@ -1346,9 +1299,6 @@ $(BUILD_DIR)/$(RPC_LIBS):
 
 $(BUILD_DIR)/$(DISCORD_SDK_LIBS):
 	@$(CP) -f $(DISCORD_SDK_LIBS) $(BUILD_DIR)
-
-$(BUILD_DIR)/$(COOPNET_LIBS):
-	@$(CP) -f $(COOPNET_LIBS) $(BUILD_DIR)
 
 $(BUILD_DIR)/$(LANG_DIR):
 	@$(CP) -f -r $(LANG_DIR) $(BUILD_DIR)
@@ -1699,12 +1649,23 @@ ifeq ($(TARGET_N64),1)
 	$(V)$(OBJCOPY) --pad-to=0x800000 --gap-fill=0xFF $< $(@:.z64=.bin) -O binary
 	$(V)$(N64CKSUM) $(@:.z64=.bin) $@
 
-  $(BUILD_DIR)/$(TARGET).objdump: $(ELF)
+  $(BUILD_DIR)/render96dx.objdump: $(ELF)
 	$(OBJDUMP) -D $< > $@
 else
-  $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(COOPNET_LIBS) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
+
+  ifeq ($(TARGET_WII_U),1)
+  $(ELF): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
+	@$(PRINT) "$(GREEN)Linking ELF file:  $(BLUE)$@ $(NO_COL)\n"
+	$(V)$(LD) $(PROF_FLAGS) -L $(BUILD_DIR) -o $@ $(O_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
+
+  $(EXE): $(ELF)
+	$(V)elf2rpl $< $@
+	@echo built ... $(notdir $@)
+  else
+  $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
 	@$(PRINT) "$(GREEN)Linking executable: $(BLUE)$@ $(NO_COL)\n"
 	$(V)$(LD) $(PROF_FLAGS) -L $(BUILD_DIR) -o $@ $(O_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
+  endif
 endif
 
 .PHONY: all clean distclean default diff test load libultra res
@@ -1738,7 +1699,6 @@ all:
     cp -r build/us_pc/palettes $(APP_RESOURCES_DIR); \
 		cp build/us_pc/discord_game_sdk.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libdiscord_game_sdk.dylib $(APP_MACOS_DIR); \
-    cp build/us_pc/libcoopnet.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libjuice.1.6.2.dylib $(APP_MACOS_DIR); \
     cp $(SDL2_LIB) $(APP_MACOS_DIR)/libSDL2.dylib; \
     install_name_tool -change $(BREW_PREFIX)/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2.dylib $(APP_MACOS_DIR)/render96dx > /dev/null 2>&1; \

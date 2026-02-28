@@ -125,6 +125,9 @@ bool         configBackgroundGamepad              = true;
 bool         configExtendedReports                = false;
 bool         configDisableGamepads                = false;
 bool         configSmoothScrolling                = false;
+#ifdef TARGET_WII_U
+bool         configN64FaceButtons                 = false;
+#endif
 // free camera settings
 bool         configEnableFreeCamera               = false;
 bool         configFreeCameraAnalog               = false;
@@ -355,6 +358,9 @@ static const struct ConfigOption options[] = {
     {.name = "env_volume",                     .type = CONFIG_TYPE_UINT, .uintValue = &configEnvVolume},
     {.name = "fade_distant_sounds",            .type = CONFIG_TYPE_BOOL, .boolValue = &configFadeoutDistantSounds},
     {.name = "mute_focus_loss",                .type = CONFIG_TYPE_BOOL, .boolValue = &configMuteFocusLoss},
+#ifdef TARGET_WII_U
+    {.name = "n64_face_buttons",               .type = CONFIG_TYPE_BOOL, .boolValue = &configN64FaceButtons},
+#else
     // control binds
     {.name = "key_a",                          .type = CONFIG_TYPE_BIND, .uintValue = configKeyA},
     {.name = "key_b",                          .type = CONFIG_TYPE_BIND, .uintValue = configKeyB},
@@ -386,6 +392,7 @@ static const struct ConfigOption options[] = {
     {.name = "disable_gamepads",               .type = CONFIG_TYPE_BOOL, .boolValue = &configDisableGamepads},
 #endif
     {.name = "smooth_scrolling",               .type = CONFIG_TYPE_BOOL, .boolValue = &configSmoothScrolling},
+#endif
     {.name = "stick_rotate_left",              .type = CONFIG_TYPE_BOOL, .boolValue = &configStick.rotateLeft},
     {.name = "stick_invert_left_x",            .type = CONFIG_TYPE_BOOL, .boolValue = &configStick.invertLeftX},
     {.name = "stick_invert_left_y",            .type = CONFIG_TYPE_BOOL, .boolValue = &configStick.invertLeftY},
@@ -644,18 +651,6 @@ static bool configfile_read_legacy_multiplayer_option(char** tokens, int numToke
     }
     if (strcmp(tokens[0], "coop_bouncy_bounds") == 0) {
         sscanf(tokens[1], "%u", &configBouncyLevelBounds);
-        return true;
-    }
-    if (strcmp(tokens[0], "coopnet_ip") == 0) {
-        return true;
-    }
-    if (strcmp(tokens[0], "coopnet_port") == 0) {
-        return true;
-    }
-    if (strcmp(tokens[0], "coopnet_password") == 0) {
-        return true;
-    }
-    if (strcmp(tokens[0], "coopnet_dest") == 0) {
         return true;
     }
 

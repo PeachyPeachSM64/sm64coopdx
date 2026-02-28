@@ -54,7 +54,25 @@ bool fs_init(const char *writepath) {
 
     // we shall not progress any further if the path is inaccessible
     if (('\0' == fs_writepath[0]) || !fs_sys_dir_exists(fs_writepath)) {
+#ifdef TARGET_WII_U
+        if ('\0' == fs_writepath[0]) {
+            strncpy(fs_writepath, ".", sizeof(fs_writepath));
+            fs_writepath[sizeof(fs_writepath) - 1] = 0;
+        } else {
+            fs_sys_mkdir(fs_writepath);
+        }
+
+        if (!fs_sys_dir_exists(fs_writepath)) {
+            strncpy(fs_writepath, ".", sizeof(fs_writepath));
+            fs_writepath[sizeof(fs_writepath) - 1] = 0;
+        }
+
+        if (!fs_sys_dir_exists(fs_writepath)) {
+            sys_fatal("Could not access the User Preferences directory.");
+        }
+#else
         sys_fatal("Could not access the User Preferences directory.");
+#endif
     }
 
     fs_mount(fs_writepath);
