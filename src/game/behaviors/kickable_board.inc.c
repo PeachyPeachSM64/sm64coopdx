@@ -27,7 +27,6 @@ void init_kickable_board_rock(void) {
 
 void bhv_kickable_board_loop(void) {
     struct MarioState* marioState = nearest_mario_state_to_object(o);
-
     s32 sp24;
     switch (o->oAction) {
         case 0:

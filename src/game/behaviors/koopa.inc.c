@@ -94,7 +94,6 @@ void bhv_koopa_init(void) {
             obj_mark_for_deletion(o);
             return;
         }
-
         o->areaTimerType = AREA_TIMER_TYPE_MAXIMUM;
         o->areaTimer = 0;
         o->areaTimerDuration = 60;
