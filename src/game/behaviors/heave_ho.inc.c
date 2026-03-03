@@ -132,6 +132,13 @@ u8 bhv_heave_ho_ignore_if_true(void) {
 
 void bhv_heave_ho_loop(void) {
     cur_obj_scale(2.0f);
+
+    // Wario can grab and throw Heave-Hos
+    struct MarioState *nearestMario = nearest_mario_state_to_object(o);
+    if (nearestMario && get_character(nearestMario)->type == CT_WARIO) {
+        o->oInteractionSubtype |= INT_SUBTYPE_GRABS_MARIO;
+    }
+
     switch (o->oHeldState) {
         case HELD_FREE:
             heave_ho_move();
