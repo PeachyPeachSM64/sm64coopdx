@@ -1079,7 +1079,7 @@ void get_3DG1_shape(struct ObjShape *shape) {
         func_8019807C(vtxPtrArr[vtxCount]);
         vtxCount++;
 
-        if (vtxCount >= 4000) {
+        if (vtxCount >= 100000) {
             fatal_printf("Too many vertices in shape data");
         }
 
@@ -1105,7 +1105,7 @@ void get_3DG1_shape(struct ObjShape *shape) {
 
         facePtrArr[faceCount] = newFace;
         faceCount++;
-        if (faceCount >= 4000) {
+        if (faceCount >= 100000) {
             fatal_printf("Too many faces in shape data");
         }
 
@@ -1159,8 +1159,8 @@ void get_OBJ_shape(struct ObjShape *shape) {
     s32 faceVtxIndex;
     struct GdVec3f tempVec;
     struct ObjFace *newFace;
-    struct ObjVertex *vtxArr[4000] = { 0 };
-    struct ObjFace *faceArr[4000] = { 0 };
+    struct ObjVertex **vtxArr = gd_malloc_perm(100000 * sizeof(struct ObjVertex *));
+    struct ObjFace **faceArr = gd_malloc_perm(100000 * sizeof(struct ObjFace *));
     s32 faceCount = 0;
     s32 vtxCount = 0;
 
@@ -1181,7 +1181,7 @@ void get_OBJ_shape(struct ObjShape *shape) {
                 func_8019807C(vtxArr[vtxCount]);
                 vtxCount++;
 
-                if (vtxCount >= 4000) {
+                if (vtxCount >= 100000) {
                     fatal_printf("Too many vertices in shape data");
                 }
 
@@ -1193,7 +1193,7 @@ void get_OBJ_shape(struct ObjShape *shape) {
                 faceArr[faceCount] = newFace;
                 faceCount++;
 
-                if (faceCount >= 4000) {
+                if (faceCount >= 100000) {
                     fatal_printf("Too many faces in shape data");
                 }
 
