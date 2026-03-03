@@ -1,7 +1,6 @@
 #include "smlua.h"
 #include "pc/lua/smlua_require.h"
 #include "pc/lua/smlua_live_reload.h"
-#include "pc/lua/smlua_lighting.h"
 #include "game/hardcoded.h"
 #include "pc/mods/mods.h"
 #include "pc/mods/mods_utils.h"
@@ -393,7 +392,6 @@ void smlua_init(void) {
     smlua_bind_cobject();
     smlua_bind_functions();
     smlua_bind_functions_autogen();
-    smlua_bind_lighting_functions(L);
 
     smlua_nil_globals_with_prefix(L, "network_");
     smlua_nil_globals_with_prefix(L, "get_network_player");
