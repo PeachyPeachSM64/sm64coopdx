@@ -131,6 +131,8 @@ extern bool         configCtxProfiler;
 #endif
 // player settings
 extern unsigned int configPlayerModel;
+extern unsigned int configLastSaveFileNum;
+extern unsigned int configLastCharacter;
 extern struct PlayerPalette configPlayerPalette;
 extern struct PlayerPalette configPlayerPalettes[5];
 extern bool configPlayerPaletteCustomEnabled[5];

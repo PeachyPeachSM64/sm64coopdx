@@ -16,6 +16,8 @@
 #include "sm64.h"
 #include "pc/lua/utils/smlua_level_utils.h"
 #include "menu/intro_geo.h"
+#include "game/characters.h"
+#include "pc/configfile.h"
 
 #define STUB_LEVEL(textname, _1, _2, _3, _4, _5, _6, _7, _8) textname,
 #define DEFINE_LEVEL(textname, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10) textname,
@@ -176,10 +178,13 @@ s32 intro_default(void) {
 
 #ifndef VERSION_JP
     if (D_U_801A7C34 == 1) {
+        // Use character-specific sounds based on last played character
+        u8 charIndex = (configPlayerModel > 0 && configPlayerModel < CT_MAX) ? configPlayerModel : 
+                       (configLastCharacter > 0 && configLastCharacter < CT_MAX) ? configLastCharacter : CT_MARIO;
         if (gGlobalTimer < 0x81) {
-            play_sound(SOUND_MARIO_HELLO, gGlobalSoundSource);
+            play_sound(gCharacters[charIndex].sounds[CHAR_SOUND_HELLO], gGlobalSoundSource);
         } else {
-            play_sound(SOUND_MARIO_PRESS_START_TO_PLAY, gGlobalSoundSource);
+            play_sound(gCharacters[charIndex].sounds[CHAR_SOUND_PRESS_START_TO_PLAY], gGlobalSoundSource);
         }
         D_U_801A7C34 = 0;
     }
