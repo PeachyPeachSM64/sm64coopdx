@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "pc/rom_assets.h"
 #include <ultra64.h>
 #include <stdarg.h>
@@ -114,7 +115,7 @@ static OSContPad sPrevFrameCont[4]; // @ 801BAE88
 static u8 D_801BAEA0;
 static struct ObjGadget *sTimerGadgets[GD_NUM_TIMERS]; // @ 801BAEA8
 static u32 D_801BAF28;                                 // RAM addr offset?
-static s16 sTriangleBuf[13][8];                          // [[s16; 8]; 13]? vert indices?
+static s16 sTriangleBuf[200][8];                       // Increased for high poly Goddard support
 static u32 unref_801bb000[3];
 static u8 *sMemBlockPoolBase; // @ 801BB00C
 static u32 sAllocMemory;      // @ 801BB010; malloc-ed bytes
@@ -960,6 +961,12 @@ void gd_exit(UNUSED s32 code) {
 
 /* 24A1D4 -> 24A220; orig name: func_8019BA04 */
 void gd_free(void *ptr) {
+    /*C MEM*/
+    sAllocMemory -= sizeof(ptr);
+    free(ptr);
+    return;
+    /*C MEM*/
+
     sAllocMemory -= gd_free_mem(ptr);
 }
 
@@ -984,6 +991,12 @@ void *gd_allocblock(u32 size) {
 
 /* 24A318 -> 24A3E8 */
 void *gd_malloc(u32 size, u8 perm) {
+    /*C MEM*/
+    size = ALIGN(size, 8);
+    sAllocMemory += size;
+    return malloc(size);
+    /*C MEM*/
+
     void *ptr; // 1c
     size = ALIGN(size, 8);
     ptr = gd_request_mem(size, perm);
@@ -1917,7 +1930,7 @@ Vtx *gd_dl_make_vertex(f32 x, f32 y, f32 z, f32 alpha) {
 /* 24E6C0 -> 24E724 */
 void func_8019FEF0(void) {
     sTriangleBufCount++;
-    if (sVertexBufCount >= 12) {
+    if (sVertexBufCount >= 30) {  // Increased from 12 to 30 for high poly support
         gd_dl_flush_vertices();
         func_801A0038();
     }
@@ -3218,12 +3231,12 @@ void gd_init(void) {
     remove_all_timers();
 
     start_memtracker("Static DL");
-    sStaticDl = new_gd_dl(0, 1900, 4000, 1, 300, 8);
+    sStaticDl = new_gd_dl(0, 2091, 4403, 1, 300, 8);
     stop_memtracker("Static DL");
 
     start_memtracker("Dynamic DLs");
-    sDynamicMainDls[0] = new_gd_dl(1, 600, 10, 200, 10, 3);
-    sDynamicMainDls[1] = new_gd_dl(1, 600, 10, 200, 10, 3);
+    sDynamicMainDls[0] = new_gd_dl(1, 600, 8000, 200, 10, 3);  // Increased verts from 10 to 8000 for high poly Goddard
+    sDynamicMainDls[1] = new_gd_dl(1, 600, 8000, 200, 10, 3);  // Increased verts from 10 to 8000 for high poly Goddard
     stop_memtracker("Dynamic DLs");
 
     sMHeadMainDls[0] = new_gd_dl(1, 100, 0, 0, 0, 0);
