@@ -16,6 +16,7 @@
 #include "renderer.h"
 #include "shape_helper.h"
 #include "skin.h"
+#include "gd_config.h"
 
 /**
  * @file dynlist_proc.c
@@ -29,9 +30,9 @@
 /// Size of the dynamic object name buffer
 #define DYNOBJ_NAME_SIZE 8
 /// Total number of dynamic `GdObj`s that can be created
-#define DYNOBJ_LIST_SIZE 20000
+#define DYNOBJ_LIST_SIZE GD_CFG_DYNOBJ_LIST_SIZE
 /// Maximum number of verticies supported when adding vertices node to an `ObjShape`
-#define VTX_BUF_SIZE 20000
+#define VTX_BUF_SIZE GD_CFG_VTX_BUF_SIZE
 
 // types
 /// Information about a dynamically created `GdObj`

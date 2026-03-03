@@ -27,6 +27,7 @@
 
 #include "config.h"
 #include "gfx_dimensions.h"
+#include "gd_config.h"
 
 #include "pc/controller/controller_mouse.h"
 #include "pc/djui/djui.h"
@@ -115,7 +116,7 @@ static OSContPad sPrevFrameCont[4]; // @ 801BAE88
 static u8 D_801BAEA0;
 static struct ObjGadget *sTimerGadgets[GD_NUM_TIMERS]; // @ 801BAEA8
 static u32 D_801BAF28;                                 // RAM addr offset?
-static s16 sTriangleBuf[200][8];                       // Increased for high poly Goddard support
+static s16 sTriangleBuf[GD_CFG_TRIANGLE_BUF_SIZE][8];
 static u32 unref_801bb000[3];
 static u8 *sMemBlockPoolBase; // @ 801BB00C
 static u32 sAllocMemory;      // @ 801BB010; malloc-ed bytes
@@ -1930,7 +1931,7 @@ Vtx *gd_dl_make_vertex(f32 x, f32 y, f32 z, f32 alpha) {
 /* 24E6C0 -> 24E724 */
 void func_8019FEF0(void) {
     sTriangleBufCount++;
-    if (sVertexBufCount >= 30) {  // Increased from 12 to 30 for high poly support
+    if (sVertexBufCount >= GD_CFG_VERTEX_BATCH_SIZE) {
         gd_dl_flush_vertices();
         func_801A0038();
     }
@@ -3231,12 +3232,12 @@ void gd_init(void) {
     remove_all_timers();
 
     start_memtracker("Static DL");
-    sStaticDl = new_gd_dl(0, 50000, 100000, 1, 300, 8);  // Increased gfx/verts for high poly Goddard
+    sStaticDl = new_gd_dl(0, GD_CFG_STATIC_DL_GFX, GD_CFG_STATIC_DL_VTX, 1, 300, 8);
     stop_memtracker("Static DL");
 
     start_memtracker("Dynamic DLs");
-    sDynamicMainDls[0] = new_gd_dl(1, 50000, 100000, 200, 10, 3);  // Increased for high poly Goddard
-    sDynamicMainDls[1] = new_gd_dl(1, 50000, 100000, 200, 10, 3);  // Increased for high poly Goddard
+    sDynamicMainDls[0] = new_gd_dl(1, GD_CFG_DYNAMIC_DL_GFX, GD_CFG_DYNAMIC_DL_VTX, 200, 10, 3);
+    sDynamicMainDls[1] = new_gd_dl(1, GD_CFG_DYNAMIC_DL_GFX, GD_CFG_DYNAMIC_DL_VTX, 200, 10, 3);
     stop_memtracker("Dynamic DLs");
 
     sMHeadMainDls[0] = new_gd_dl(1, 100, 0, 0, 0, 0);
