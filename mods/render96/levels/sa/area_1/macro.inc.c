@@ -1,0 +1,20 @@
+const MacroObject sa_area_1_macro_objs[] = {
+	MACRO_OBJECT(macro_coin_ring_horizontal_flying, 0, 0, -3500, 0),
+	MACRO_OBJECT(macro_coin_ring_vertical, 90, 0, -2400, -1500),
+	MACRO_OBJECT(macro_coin_ring_vertical, 0, -1500, -2400, 0),
+	MACRO_OBJECT(macro_coin_ring_vertical, 90, 0, -2400, 1500),
+	MACRO_OBJECT(macro_coin_ring_vertical, 0, 1500, -2400, 0),
+	MACRO_OBJECT(macro_fish_group_2, 0, -1000, -4080, -1740),
+	MACRO_OBJECT_WITH_BEH_PARAM(macro_hidden_1up, 0, 0, -3800, 0, 1),
+	MACRO_OBJECT(macro_hidden_1up_trigger, 0, 0, -3500, 0),
+	MACRO_OBJECT(macro_red_coin, 0, -2400, -4607, -2400),
+	MACRO_OBJECT(macro_red_coin, 0, -2400, -4607, 2400),
+	MACRO_OBJECT(macro_red_coin, 0, 2400, -4607, 2400),
+	MACRO_OBJECT(macro_red_coin, 0, 2400, -4607, -2400),
+	MACRO_OBJECT(macro_red_coin, 0, 0, -2200, -1500),
+	MACRO_OBJECT(macro_red_coin, 0, -1500, -2200, 0),
+	MACRO_OBJECT(macro_red_coin, 0, 0, -2200, 1500),
+	MACRO_OBJECT(macro_red_coin, 0, 1500, -2200, 0),
+	MACRO_OBJECT_END(),
+};
+
