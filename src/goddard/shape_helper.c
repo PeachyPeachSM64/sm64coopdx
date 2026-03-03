@@ -35,6 +35,19 @@ struct ObjShape *gShapeSilverSpark = NULL;    // @ 801A82F0
 struct ObjShape *gShapeRedStar = NULL;     // @ 801A82F4
 struct ObjShape *gShapeSilverStar = NULL;  // @ 801A82F8
 
+// Skin weight entry for GDB2 format
+struct GdSkinWeightEntry {
+    u16 vtx_idx;
+    f32 weight;
+};
+
+// Joint skin weight data for GDB2
+struct GdJointSkinData {
+    u32 joint_id;
+    u32 weight_count;
+    struct GdSkinWeightEntry *weights;
+};
+
 static struct {
     bool initialized;
 
@@ -90,6 +103,11 @@ static struct {
     u32 ov_stache_vtx_count;
     u32 ov_stache_tri_count;
 
+    // GDB2: Skin weight data (allows variable poly counts)
+    bool has_skin_weights;
+    u32 joint_skin_count;
+    struct GdJointSkinData *joint_skins;
+
     const u8* last_data;
     s32 last_size;
 } sDynOSGoddardOverride;
@@ -139,6 +157,18 @@ static void gd_dynos_goddard_capture_originals(void) {
     sDynOSGoddardOverride.initialized = true;
 }
 
+static void gd_dynos_goddard_free_skin_weights(void) {
+    if (sDynOSGoddardOverride.joint_skins != NULL) {
+        for (u32 i = 0; i < sDynOSGoddardOverride.joint_skin_count; i++) {
+            free(sDynOSGoddardOverride.joint_skins[i].weights);
+        }
+        free(sDynOSGoddardOverride.joint_skins);
+        sDynOSGoddardOverride.joint_skins = NULL;
+    }
+    sDynOSGoddardOverride.joint_skin_count = 0;
+    sDynOSGoddardOverride.has_skin_weights = false;
+}
+
 static void gd_dynos_goddard_free_override_arrays(void) {
     free(sDynOSGoddardOverride.ov_face_vtx);   sDynOSGoddardOverride.ov_face_vtx = NULL;
     free(sDynOSGoddardOverride.ov_face_tri);   sDynOSGoddardOverride.ov_face_tri = NULL;
@@ -152,6 +182,7 @@ static void gd_dynos_goddard_free_override_arrays(void) {
     free(sDynOSGoddardOverride.ov_brow_l_tri); sDynOSGoddardOverride.ov_brow_l_tri = NULL;
     free(sDynOSGoddardOverride.ov_stache_vtx); sDynOSGoddardOverride.ov_stache_vtx = NULL;
     free(sDynOSGoddardOverride.ov_stache_tri); sDynOSGoddardOverride.ov_stache_tri = NULL;
+    gd_dynos_goddard_free_skin_weights();
 }
 
 static void gd_dynos_goddard_restore_vanilla(void) {
@@ -251,6 +282,66 @@ static bool gd_dynos_goddard_read_mesh(const u8** io_ptr, const u8* end, s16 (**
     return true;
 }
 
+static bool gd_dynos_goddard_read_skin_weights(const u8** io_ptr, const u8* end) {
+    const u8* p = *io_ptr;
+    
+    if (p + 4 > end) return false;
+    u32 joint_count = gd_read_u32_le(p);
+    p += 4;
+    
+    if (joint_count == 0 || joint_count > 256) return false;
+    
+    struct GdJointSkinData *joints = (struct GdJointSkinData*) calloc(joint_count, sizeof(struct GdJointSkinData));
+    if (!joints) return false;
+    
+    for (u32 i = 0; i < joint_count; i++) {
+        if (p + 8 > end) {
+            for (u32 j = 0; j < i; j++) free(joints[j].weights);
+            free(joints);
+            return false;
+        }
+        
+        joints[i].joint_id = gd_read_u32_le(p);
+        joints[i].weight_count = gd_read_u32_le(p + 4);
+        p += 8;
+        
+        if (joints[i].weight_count == 0 || joints[i].weight_count > 65535) {
+            for (u32 j = 0; j < i; j++) free(joints[j].weights);
+            free(joints);
+            return false;
+        }
+        
+        size_t weights_size = joints[i].weight_count * sizeof(struct GdSkinWeightEntry);
+        joints[i].weights = (struct GdSkinWeightEntry*) malloc(weights_size);
+        if (!joints[i].weights) {
+            for (u32 j = 0; j < i; j++) free(joints[j].weights);
+            free(joints);
+            return false;
+        }
+        
+        size_t raw_size = (size_t)joints[i].weight_count * 6;
+        if (p + raw_size > end) {
+            for (u32 j = 0; j <= i; j++) free(joints[j].weights);
+            free(joints);
+            return false;
+        }
+        
+        for (u32 w = 0; w < joints[i].weight_count; w++) {
+            joints[i].weights[w].vtx_idx = gd_read_u16_le(p);
+            p += 2;
+            u32 weight_raw = gd_read_u32_le(p);
+            p += 4;
+            joints[i].weights[w].weight = *(f32*)&weight_raw;
+        }
+    }
+    
+    sDynOSGoddardOverride.joint_skins = joints;
+    sDynOSGoddardOverride.joint_skin_count = joint_count;
+    sDynOSGoddardOverride.has_skin_weights = true;
+    *io_ptr = p;
+    return true;
+}
+
 static void gd_dynos_goddard_apply_override_if_present(void) {
     gd_dynos_goddard_capture_originals();
 
@@ -265,21 +356,22 @@ static void gd_dynos_goddard_apply_override_if_present(void) {
     }
 
     if (sDynOSGoddardOverride.last_data == data && sDynOSGoddardOverride.last_size == size && sDynOSGoddardOverride.ov_face_vtx != NULL) {
-        // already applied
         return;
     }
 
-    // New data; clear previous override arrays and re-parse
     gd_dynos_goddard_free_override_arrays();
     gd_dynos_goddard_restore_vanilla();
 
-    if (memcmp(data, "GDB1", 4) != 0) {
+    bool is_gdb1 = (memcmp(data, "GDB1", 4) == 0);
+    bool is_gdb2 = (memcmp(data, "GDB2", 4) == 0);
+    
+    if (!is_gdb1 && !is_gdb2) {
         return;
     }
+    
     u32 version = gd_read_u32_le(data + 4);
-    if (version != 1) {
-        return;
-    }
+    if (is_gdb1 && version != 1) return;
+    if (is_gdb2 && version != 2) return;
 
     const u8* p = data + 12;
     const u8* end = data + size;
@@ -291,16 +383,18 @@ static void gd_dynos_goddard_apply_override_if_present(void) {
     if (!gd_dynos_goddard_read_mesh(&p, end, &sDynOSGoddardOverride.ov_brow_l_vtx, &sDynOSGoddardOverride.ov_brow_l_vtx_count, &sDynOSGoddardOverride.ov_brow_l_tri, &sDynOSGoddardOverride.ov_brow_l_tri_count)) goto failed;
     if (!gd_dynos_goddard_read_mesh(&p, end, &sDynOSGoddardOverride.ov_stache_vtx, &sDynOSGoddardOverride.ov_stache_vtx_count, &sDynOSGoddardOverride.ov_stache_tri, &sDynOSGoddardOverride.ov_stache_tri_count)) goto failed;
 
-    // IMPORTANT: Goddard's pipeline has other per-vertex data (skin/weights/joints etc.)
-    // that is still coming from the vanilla dynlists. If vertex counts differ, indices
-    // no longer line up and the game can crash. Until we also override those structures,
-    // require a 1:1 vertex count match for each mesh part.
-    if ((u32) sDynOSGoddardOverride.orig_face_vtx_count   != sDynOSGoddardOverride.ov_face_vtx_count)   goto failed;
-    if ((u32) sDynOSGoddardOverride.orig_eye_r_vtx_count  != sDynOSGoddardOverride.ov_eye_r_vtx_count)  goto failed;
-    if ((u32) sDynOSGoddardOverride.orig_eye_l_vtx_count  != sDynOSGoddardOverride.ov_eye_l_vtx_count)  goto failed;
-    if ((u32) sDynOSGoddardOverride.orig_brow_r_vtx_count != sDynOSGoddardOverride.ov_brow_r_vtx_count) goto failed;
-    if ((u32) sDynOSGoddardOverride.orig_brow_l_vtx_count != sDynOSGoddardOverride.ov_brow_l_vtx_count) goto failed;
-    if ((u32) sDynOSGoddardOverride.orig_stache_vtx_count != sDynOSGoddardOverride.ov_stache_vtx_count) goto failed;
+    if (is_gdb2) {
+        if (!gd_dynos_goddard_read_skin_weights(&p, end)) goto failed;
+    }
+
+    if (is_gdb1) {
+        if ((u32) sDynOSGoddardOverride.orig_face_vtx_count   != sDynOSGoddardOverride.ov_face_vtx_count)   goto failed;
+        if ((u32) sDynOSGoddardOverride.orig_eye_r_vtx_count  != sDynOSGoddardOverride.ov_eye_r_vtx_count)  goto failed;
+        if ((u32) sDynOSGoddardOverride.orig_eye_l_vtx_count  != sDynOSGoddardOverride.ov_eye_l_vtx_count)  goto failed;
+        if ((u32) sDynOSGoddardOverride.orig_brow_r_vtx_count != sDynOSGoddardOverride.ov_brow_r_vtx_count) goto failed;
+        if ((u32) sDynOSGoddardOverride.orig_brow_l_vtx_count != sDynOSGoddardOverride.ov_brow_l_vtx_count) goto failed;
+        if ((u32) sDynOSGoddardOverride.orig_stache_vtx_count != sDynOSGoddardOverride.ov_stache_vtx_count) goto failed;
+    }
 
     mario_Face_VtxInfo.data = sDynOSGoddardOverride.ov_face_vtx;
     mario_Face_FaceInfo.data = sDynOSGoddardOverride.ov_face_tri;
@@ -329,6 +423,10 @@ static void gd_dynos_goddard_apply_override_if_present(void) {
 
     sDynOSGoddardOverride.last_data = data;
     sDynOSGoddardOverride.last_size = size;
+    
+    if (is_gdb2 && sDynOSGoddardOverride.has_skin_weights) {
+        printf("[DynOS] Goddard: loaded GDB2 with %d joint skin weight groups\n", sDynOSGoddardOverride.joint_skin_count);
+    }
     return;
 
 failed:
@@ -336,6 +434,29 @@ failed:
     gd_dynos_goddard_restore_vanilla();
     sDynOSGoddardOverride.last_data = NULL;
     sDynOSGoddardOverride.last_size = 0;
+}
+
+bool gd_dynos_goddard_has_skin_weights(void) {
+    return sDynOSGoddardOverride.has_skin_weights;
+}
+
+u32 gd_dynos_goddard_get_skin_joint_count(void) {
+    return sDynOSGoddardOverride.joint_skin_count;
+}
+
+bool gd_dynos_goddard_get_skin_joint_data(u32 index, u32 *out_joint_id, u32 *out_weight_count) {
+    if (index >= sDynOSGoddardOverride.joint_skin_count) return false;
+    *out_joint_id = sDynOSGoddardOverride.joint_skins[index].joint_id;
+    *out_weight_count = sDynOSGoddardOverride.joint_skins[index].weight_count;
+    return true;
+}
+
+bool gd_dynos_goddard_get_skin_weight(u32 joint_index, u32 weight_index, u16 *out_vtx_idx, f32 *out_weight) {
+    if (joint_index >= sDynOSGoddardOverride.joint_skin_count) return false;
+    if (weight_index >= sDynOSGoddardOverride.joint_skins[joint_index].weight_count) return false;
+    *out_vtx_idx = sDynOSGoddardOverride.joint_skins[joint_index].weights[weight_index].vtx_idx;
+    *out_weight = sDynOSGoddardOverride.joint_skins[joint_index].weights[weight_index].weight;
+    return true;
 }
 
 // Not sure what this data is, but it looks like stub animation data
