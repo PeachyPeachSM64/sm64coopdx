@@ -31,6 +31,7 @@
 #include "pc/configfile.h"
 #include "pc/lua/smlua_hooks.h"
 #include "pc/lua/utils/smlua_obj_utils.h"
+#include "characters.h"
 
 u8 sDelayInvincTimer;
 s16 gInteractionInvulnerable;
@@ -724,7 +725,10 @@ void bounce_back_from_attack(struct MarioState *m, u32 interaction) {
         if (m->action & ACT_FLAG_AIR) {
             mario_set_forward_vel(m, -16.0f);
         } else {
-            mario_set_forward_vel(m, -48.0f);
+            // Wario doesn't bounce back on ground attacks
+            if (get_character(m)->type != CT_WARIO) {
+                mario_set_forward_vel(m, -48.0f);
+            }
         }
 
         if (m->playerIndex == 0) { set_camera_shake_from_hit(SHAKE_ATTACK); }
@@ -1690,7 +1694,12 @@ u32 interact_bully(struct MarioState *m, UNUSED u32 interactType, struct Object 
         queue_rumble_data_mario(m, 5, 80);
         push_mario_out_of_object(m, o, 5.0f);
 
-        m->forwardVel = -16.0f;
+        // Wario has reduced knockback when attacking bullies
+        if (get_character(m)->type == CT_WARIO) {
+            m->forwardVel = -2.0f;
+        } else {
+            m->forwardVel = -16.0f;
+        }
         o->oMoveAngleYaw = m->faceAngle[1];
         o->oForwardVel = 3392.0f / o->hitboxRadius;
 

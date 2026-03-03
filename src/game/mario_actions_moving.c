@@ -747,7 +747,12 @@ void anim_and_audio_for_walk(struct MarioState *m) {
                         m->actionTimer = 2;
                     } else {
                         //! (Speed Crash) If Mario's speed is more than 2^17.
-                        val14 = (s32)(val04 / 4.0f * 0x10000);
+                        // Wario has fixed animation speed for running
+                        if (get_character(m)->type == CT_WARIO) {
+                            val14 = (s32)(0x60000);
+                        } else {
+                            val14 = (s32)(val04 / 4.0f * 0x10000);
+                        }
                         set_character_anim_with_accel(m, CHAR_ANIM_RUNNING, val14);
                         play_step_sound(m, 9, 45);
                         targetPitch = tilt_body_running(m);
@@ -790,7 +795,12 @@ void anim_and_audio_for_hold_walk(struct MarioState *m) {
                     m->actionTimer = 1;
                 } else {
                     //! (Speed Crash) Crashes if Mario's speed exceeds or equals 2^15.
-                    val0C = (s32)(val04 * 0x10000);
+                    // Wario has fixed animation speed when holding light objects
+                    if (get_character(m)->type == CT_WARIO) {
+                        val0C = (s32)(0x60000);
+                    } else {
+                        val0C = (s32)(val04 * 0x10000);
+                    }
                     set_character_anim_with_accel(m, CHAR_ANIM_SLOW_WALK_WITH_LIGHT_OBJ, val0C);
                     play_step_sound(m, 12, 62);
 
@@ -805,7 +815,12 @@ void anim_and_audio_for_hold_walk(struct MarioState *m) {
                     m->actionTimer = 2;
                 } else {
                     //! (Speed Crash) Crashes if Mario's speed exceeds or equals 2^15.
-                    val0C = (s32)(val04 * 0x10000);
+                    // Wario has fixed animation speed when holding light objects
+                    if (get_character(m)->type == CT_WARIO) {
+                        val0C = (s32)(0x60000);
+                    } else {
+                        val0C = (s32)(val04 * 0x10000);
+                    }
                     set_character_anim_with_accel(m, CHAR_ANIM_WALK_WITH_LIGHT_OBJ, val0C);
                     play_step_sound(m, 12, 62);
 
@@ -818,7 +833,12 @@ void anim_and_audio_for_hold_walk(struct MarioState *m) {
                     m->actionTimer = 1;
                 } else {
                     //! (Speed Crash) Crashes if Mario's speed exceeds or equals 2^16.
-                    val0C = (s32)(val04 / 2.0f * 0x10000);
+                    // Wario has fixed animation speed when running with light objects
+                    if (get_character(m)->type == CT_WARIO) {
+                        val0C = (s32)(0x40000);
+                    } else {
+                        val0C = (s32)(val04 / 2.0f * 0x10000);
+                    }
                     set_character_anim_with_accel(m, CHAR_ANIM_RUN_WITH_LIGHT_OBJ, val0C);
                     play_step_sound(m, 10, 49);
 
@@ -839,7 +859,13 @@ Sets the character animation speed based on Mario's intended movement speed
 |descriptionEnd| */
 void anim_and_audio_for_heavy_walk(struct MarioState *m) {
     if (!m) { return; }
-    s32 val04 = (s32)(m->intendedMag * 0x10000);
+    s32 val04;
+    // Wario has fixed animation speed when carrying heavy objects
+    if (get_character(m)->type == CT_WARIO) {
+        val04 = (s32)(0x40000);
+    } else {
+        val04 = (s32)(m->intendedMag * 0x10000);
+    }
     set_character_anim_with_accel(m, CHAR_ANIM_WALK_WITH_HEAVY_OBJ, val04);
     play_step_sound(m, 26, 79);
 }
@@ -1100,7 +1126,10 @@ s32 act_hold_walking(struct MarioState *m) {
         return drop_and_set_mario_action(m, ACT_CROUCH_SLIDE, 0);
     }
 
-    m->intendedMag *= 0.4f;
+    // Wario doesn't slow down when holding light objects
+    if (get_character(m)->type != CT_WARIO) {
+        m->intendedMag *= 0.4f;
+    }
 
     update_walking_speed(m);
 
@@ -1139,7 +1168,12 @@ s32 act_hold_heavy_walking(struct MarioState *m) {
         return set_mario_action(m, ACT_HOLD_HEAVY_IDLE, 0);
     }
 
-    m->intendedMag *= 0.1f;
+    // Wario moves faster when carrying heavy objects
+    if (get_character(m)->type == CT_WARIO) {
+        m->intendedMag *= 0.5f;
+    } else {
+        m->intendedMag *= 0.1f;
+    }
 
     update_walking_speed(m);
 

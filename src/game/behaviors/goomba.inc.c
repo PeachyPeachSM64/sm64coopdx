@@ -1,4 +1,9 @@
 
+/* oAction values for Wario grab */
+#define GOOMBA_ACT_GRAB 3
+#define GOOMBA_ACT_GRAB_INIT 4
+#define GOOMBA_ACT_THROWN 5
+
 /**
  * Behavior for bhvGoomba and bhvGoombaTripletSpawner,
  * Goombas can either be spawned individually, or spawned by a triplet spawner.
@@ -53,6 +58,30 @@ static u8 sGoombaAttackHandlers[][6] = {
         /* ATTACK_FROM_BELOW:            */ ATTACK_HANDLER_KNOCKBACK,
     },
     // huge
+    {
+        /* ATTACK_PUNCH:                 */ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED,
+        /* ATTACK_KICK_OR_TRIP:          */ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED,
+        /* ATTACK_FROM_ABOVE:            */ ATTACK_HANDLER_SQUISHED,
+        /* ATTACK_GROUND_POUND_OR_TWIRL: */ ATTACK_HANDLER_SQUISHED_WITH_BLUE_COIN,
+        /* ATTACK_FAST_ATTACK:           */ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED,
+        /* ATTACK_FROM_BELOW:            */ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED,
+    },
+};
+
+/**
+ * Wario-specific attack handlers for goombas - uses STUN instead of SQUISHED for jump attacks.
+ */
+static u8 sGoombaAttackHandlersWario[][6] = {
+    // regular and tiny - Wario stuns goombas by jumping on them
+    {
+        /* ATTACK_PUNCH:                 */ ATTACK_HANDLER_KNOCKBACK,
+        /* ATTACK_KICK_OR_TRIP:          */ ATTACK_HANDLER_KNOCKBACK,
+        /* ATTACK_FROM_ABOVE:            */ ATTACK_HANDLER_STUN,
+        /* ATTACK_GROUND_POUND_OR_TWIRL: */ ATTACK_HANDLER_SQUISHED,
+        /* ATTACK_FAST_ATTACK:           */ ATTACK_HANDLER_KNOCKBACK,
+        /* ATTACK_FROM_BELOW:            */ ATTACK_HANDLER_KNOCKBACK,
+    },
+    // huge - Wario still squishes huge goombas
     {
         /* ATTACK_PUNCH:                 */ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED,
         /* ATTACK_KICK_OR_TRIP:          */ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED,
@@ -265,10 +294,192 @@ void huge_goomba_weakly_attacked(void) {
 }
 
 /**
+ * Wario-specific: Initialize grab state for goomba
+ */
+static void goomba_act_grab_init(void) {
+    o->oTimer = 0;
+    spawn_object(o, MODEL_NONE, bhvHorStarParticleSpawner);
+    o->oInteractType = INTERACT_GRABBABLE;
+    o->oFlags |= OBJ_FLAG_HOLDABLE;  // Required for oHeldState to work
+    o->oAction = GOOMBA_ACT_GRAB;
+}
+
+/**
+ * Wario-specific: Goomba in grabbable/stunned state
+ */
+static void goomba_act_grab(void) {
+    o->oAnimState = 1;
+    
+    // Being held - become invisible
+    if (o->oHeldState == HELD_HELD) {
+        o->oGoombaGrabbed = 1;
+        o->header.gfx.node.flags |= GRAPH_RENDER_INVISIBLE;
+        cur_obj_become_intangible();
+        return;
+    }
+    
+    // Thrown state
+    if (o->oHeldState == HELD_THROWN) {
+        o->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;
+        cur_obj_become_tangible();
+        o->oGravity = -2.5f;
+        o->oFriction = 0.875f;
+        o->oBuoyancy = 1.4f;
+        o->oForwardVel = 50.0f;
+        o->oHeldState = HELD_FREE;
+        o->oAction = GOOMBA_ACT_THROWN;
+        return;
+    }
+    
+    // Dropped state
+    if (o->oHeldState == HELD_DROPPED) {
+        o->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;
+        cur_obj_become_tangible();
+        cur_obj_get_dropped();
+        o->oForwardVel = 0.0f;
+        o->oHeldState = HELD_FREE;
+        o->oInteractType = INTERACT_BOUNCE_TOP;
+        o->oFlags &= ~OBJ_FLAG_HOLDABLE;
+        o->oAction = GOOMBA_ACT_WALK;
+        return;
+    }
+    
+    // Free and not grabbed yet - spinning/stunned on ground
+    if (o->oHeldState == HELD_FREE && o->oGoombaGrabbed != 1 && o->oTimer <= 150) {
+        o->oGoombaTargetYaw += 0x1000;
+        cur_obj_rotate_yaw_toward(o->oGoombaTargetYaw, 0x1000);
+    }
+    
+    // Stun timer expired - return to normal
+    if (o->oHeldState == HELD_FREE && o->oGoombaGrabbed != 1 && o->oTimer > 150) {
+        o->oInteractType = INTERACT_BOUNCE_TOP;
+        o->oFlags &= ~OBJ_FLAG_HOLDABLE;
+        o->oAction = GOOMBA_ACT_WALK;
+    }
+}
+
+/**
+ * Wario-specific: Handle goomba movement after being thrown
+ */
+static void goomba_box_act_move(void) {
+    cur_obj_update_floor_and_walls();
+    cur_obj_move_standard(-78);
+
+    obj_attack_collided_from_other_object(o);
+
+    // Destroy on first ground contact
+    if (o->oMoveFlags & OBJ_MOVE_LANDED) {
+        spawn_mist_particles();
+        obj_spawn_loot_yellow_coins(o, 1, 20.0f);
+        create_sound_spawner(SOUND_OBJ_STOMPED);
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
+        return;
+    }
+    
+    // Destroy if hit wall
+    if (o->oMoveFlags & OBJ_MOVE_HIT_WALL) {
+        spawn_mist_particles();
+        obj_spawn_loot_yellow_coins(o, 1, 20.0f);
+        create_sound_spawner(SOUND_OBJ_STOMPED);
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
+        return;
+    }
+    
+    // Check floor death (lava, death barrier, etc.)
+    if (o->oMoveFlags & OBJ_MOVE_ABOVE_LAVA) {
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
+    }
+}
+
+/**
+ * Wario-specific: Main grab handler for goomba
+ */
+static void goomba_wario_grab(void) {
+    f32 animSpeed;
+
+    if (obj_update_standard_actions(o->oGoombaScale)) {
+        cur_obj_scale(o->oGoombaScale);
+        obj_update_blinking(&o->oGoombaBlinkTimer, 30, 50, 5);
+
+        if ((animSpeed = o->oForwardVel / o->oGoombaScale * 0.4f) < 1.0f) {
+            animSpeed = 1.0f;
+        }
+
+        if (o->oAction < GOOMBA_ACT_GRAB) {
+            cur_obj_init_animation_with_accel_and_sound(0, animSpeed);
+            cur_obj_update_floor_and_walls();
+        }
+
+        switch (o->oAction) {
+            case GOOMBA_ACT_WALK:
+                goomba_act_walk();
+                break;
+            case GOOMBA_ACT_ATTACKED_MARIO:
+                goomba_act_attacked_mario();
+                break;
+            case GOOMBA_ACT_JUMP:
+                goomba_act_jump();
+                break;
+            case GOOMBA_ACT_GRAB_INIT:
+                goomba_act_grab_init();
+                break;
+            case GOOMBA_ACT_GRAB:
+                goomba_act_grab();
+                break;
+            case GOOMBA_ACT_THROWN:
+                goomba_box_act_move();
+                break;
+        }
+
+        if (o->oAction < GOOMBA_ACT_GRAB) {
+            if (o->oInteractStatus & INT_STATUS_INTERACTED) {
+                if (o->oInteractStatus & INT_STATUS_ATTACKED_MARIO) {
+                    if (o->oAction != GOOMBA_ACT_ATTACKED_MARIO) {
+                        o->oAction = GOOMBA_ACT_ATTACKED_MARIO;
+                        o->oTimer = 0;
+                    }
+                } else {
+                    s32 attackType = o->oInteractStatus & INT_STATUS_ATTACK_MASK;
+
+                    switch (sGoombaAttackHandlersWario[o->oGoombaSize & 1][attackType - 1]) {
+                        case ATTACK_HANDLER_NOP:
+                            break;
+                        case ATTACK_HANDLER_KNOCKBACK:
+                            obj_set_knockback_action(attackType);
+                            break;
+                        case ATTACK_HANDLER_SQUISHED:
+                            obj_set_squished_action();
+                            break;
+                        case ATTACK_HANDLER_STUN:
+                            o->oTimer = 0;
+                            o->oAction = GOOMBA_ACT_GRAB_INIT;
+                            break;
+                    }
+                }
+                o->oInteractStatus = 0;
+            }
+            cur_obj_move_standard(-78);
+        } else {
+            // In GRAB state - clear interact status but don't move normally
+            o->oInteractStatus = 0;
+        }
+    } else {
+        o->oAnimState = TRUE;
+    }
+}
+
+/**
  * Update function for goomba.
  */
 void bhv_goomba_update(void) {
     // PARTIAL_UPDATE
+
+    // Wario uses alternate goomba behavior that allows grabbing
+    struct MarioState *nearestMario = nearest_mario_state_to_object(o);
+    if (nearestMario && get_character(nearestMario)->type == CT_WARIO) {
+        goomba_wario_grab();
+        return;
+    }
 
     f32 animSpeed;
 

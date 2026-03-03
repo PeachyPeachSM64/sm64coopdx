@@ -49,6 +49,7 @@
 #include "pc/lua/smlua_hooks.h"
 #include "hardcoded.h"
 #include "engine/lighting_engine.h"
+#include "characters.h"
 
 #define o gCurrentObject
 

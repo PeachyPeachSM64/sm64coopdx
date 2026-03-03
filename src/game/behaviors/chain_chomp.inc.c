@@ -494,7 +494,13 @@ void bhv_wooden_post_update(void) {
     if (!o->oWoodenPostMarioPounding) {
         if ((o->oWoodenPostMarioPounding = cur_obj_is_mario_ground_pounding_platform())) {
             cur_obj_play_sound_2(SOUND_GENERAL_POUND_WOOD_POST);
-            o->oWoodenPostSpeedY = -70.0f;
+            // Wario pounds posts much faster
+            struct MarioState *nearestMario = nearest_mario_state_to_object(o);
+            if (nearestMario && get_character(nearestMario)->type == CT_WARIO) {
+                o->oWoodenPostSpeedY = -210.0f;
+            } else {
+                o->oWoodenPostSpeedY = -70.0f;
+            }
         }
     } else if (approach_f32_ptr(&o->oWoodenPostSpeedY, 0.0f, 25.0f)) {
         // Stay still until mario is done ground pounding

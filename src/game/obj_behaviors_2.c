@@ -49,6 +49,7 @@
 #include "pc/network/network.h"
 #include "pc/lua/utils/smlua_model_utils.h"
 #include "pc/lua/smlua_hooks.h"
+#include "characters.h"
 
 #define POS_OP_SAVE_POSITION 0
 #define POS_OP_COMPUTE_VELOCITY 1
@@ -824,6 +825,12 @@ s32 obj_handle_attacks(struct ObjectHitbox *hitbox, s32 attackedMarioAction,
 
                 case ATTACK_HANDLER_SQUISHED_WITH_BLUE_COIN:
                     o->oNumLootCoins = -1;
+                    obj_set_squished_action();
+                    break;
+
+                case ATTACK_HANDLER_STUN:
+                    // For generic enemies, stun acts like squish
+                    // Individual behaviors (like goomba) handle this specially
                     obj_set_squished_action();
                     break;
             }
