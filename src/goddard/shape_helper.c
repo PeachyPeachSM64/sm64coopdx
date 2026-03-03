@@ -460,6 +460,54 @@ bool gd_dynos_goddard_get_skin_weight(u32 joint_index, u32 weight_index, u16 *ou
     return true;
 }
 
+/**
+ * Apply GDB2 skin weights to joint objects.
+ * This must be called after the Mario head dynlist is processed.
+ */
+void gd_dynos_apply_gdb2_skin_weights(void) {
+    if (!sDynOSGoddardOverride.has_skin_weights) return;
+    
+    for (u32 i = 0; i < sDynOSGoddardOverride.joint_skin_count; i++) {
+        u32 joint_id = sDynOSGoddardOverride.joint_skins[i].joint_id;
+        
+        // Build the joint object name (format: "N<id>l")
+        char joint_name[16];
+        sprintf(joint_name, "N%dl", joint_id);
+        
+        // Try to find the joint object
+        struct GdObj *obj = d_use_obj(joint_name);
+        if (obj == NULL || obj->type != OBJ_TYPE_JOINTS) {
+            continue;
+        }
+        
+        struct ObjJoint *joint = (struct ObjJoint *)obj;
+        
+        // Clear existing weights on this joint
+        if (joint->weightGrp != NULL) {
+            // Free all existing weight objects in the group
+            struct ListNode *node = joint->weightGrp->firstMember;
+            while (node != NULL) {
+                struct ListNode *next = node->next;
+                // Note: We don't free the weight objects themselves as they may be
+                // managed by the memory system, just clear the group
+                node = next;
+            }
+            joint->weightGrp->firstMember = NULL;
+            joint->weightGrp->lastMember = NULL;
+            joint->weightGrp->memberCount = 0;
+        }
+        
+        // Apply GDB2 weights to this joint
+        for (u32 w = 0; w < sDynOSGoddardOverride.joint_skins[i].weight_count; w++) {
+            u16 vtx_idx = sDynOSGoddardOverride.joint_skins[i].weights[w].vtx_idx;
+            f32 weight = sDynOSGoddardOverride.joint_skins[i].weights[w].weight;
+            set_skin_weight(joint, vtx_idx, NULL, weight / 100.0f);
+        }
+    }
+    
+    printf("[DynOS] Applied GDB2 skin weights to %d joints\n", sDynOSGoddardOverride.joint_skin_count);
+}
+
 // Not sure what this data is, but it looks like stub animation data
 
 static struct GdAnimTransform unusedAnimData1[] = {
@@ -1901,6 +1949,9 @@ s32 load_mario_head(void (*aniFn)(struct ObjAnimator *)) {
     sp54->netType = 3;
     addto_group(gMarioFaceGrp, &sp48->header);
     addto_groupfirst(gMarioFaceGrp, &sp54->header);
+
+    // Apply GDB2 skin weights if available (for high-poly DynOS models)
+    gd_dynos_apply_gdb2_skin_weights();
 
     return 0;
 }
