@@ -31,16 +31,13 @@
 #include "pc/pc_main.h"
 #include "pc/platform.h"
 
-#include "gfx_pc.h"
-#include "gfx_cc.h"
-#include "gfx_window_manager_api.h"
-#include "gfx_rendering_api.h"
-#include "gfx_screen_config.h"
-#include "gfx_lighting.h"
-#include "gfx_shader_pack.h"
-#include "pc/gfx/gfx_window_manager_api.h"
-
 #include "pc/fs/fs.h"
+
+#include "pc/gfx/gfx_cc.h"
+#include "pc/gfx/gfx_pc.h"
+#include "pc/gfx/gfx_rendering_api.h"
+#include "pc/gfx/gfx_screen_config.h"
+#include "pc/gfx/gfx_window_manager_api.h"
 
 // this is used for multi-textures
 // and it's quite a hack... instead of allowing 8 tiles, we basically only allow 2
@@ -914,27 +911,8 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 V = (int32_t)((doty / 127.0f + 1.0f) / 4.0f * rsp.texture_scaling_factor.t);
             }
 
-            // if new lighting system is enabled, use it to replace N64 lighting
-            if (gLightingState.lightingEnabled && configLightingEnabled) {
-                Vec3f color = { 255.0f, 255.0f, 255.0f };
-                CTX_BEGIN(CTX_LIGHTING);
-
-                Vec3f vpos    = { v->ob[0], v->ob[1], v->ob[2] };
-                Vec3f vnormal = { nx, ny, nz };
-
-                // transform vpos and vnormal to world space
-                gfx_local_to_world_space(vpos, vnormal);
-
-                gfx_lighting_calculate_vertex_color(vpos, vnormal, color);
-
-                CTX_END(CTX_LIGHTING);
-
-                d->color.r *= color[0] / 255.0f;
-                d->color.g *= color[1] / 255.0f;
-                d->color.b *= color[2] / 255.0f;
-            }
             // if lighting engine is enabled and either we want to affect all shaded surfaces or the lighting engine geometry mode is on
-            else if (le_is_enabled() && ((le_get_mode() != LE_MODE_AFFECT_ONLY_GEOMETRY_MODE) || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
+            if (le_is_enabled() && ((le_get_mode() != LE_MODE_AFFECT_ONLY_GEOMETRY_MODE) || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
                 Color color = { gLEAmbientColor[0], gLEAmbientColor[1], gLEAmbientColor[2] };
                 CTX_BEGIN(CTX_LIGHTING);
 
@@ -952,34 +930,8 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 d->color.g *= color[1] / 255.0f;
                 d->color.b *= color[2] / 255.0f;
             }
-        // if new lighting system is enabled for vertex-colored surfaces
-        } else if (gLightingState.lightingEnabled && configLightingEnabled && !(rsp.geometry_mode & G_LIGHT_MAP_EXT)) {
-            Vec3f color = { 255.0f, 255.0f, 255.0f };
-            CTX_BEGIN(CTX_LIGHTING);
-
-            Vec3f vpos = { v->ob[0], v->ob[1], v->ob[2] };
-            Vec3f vnormal = { 0.0f, 1.0f, 0.0f };
-
-            // transform vpos to world space
-            gfx_local_to_world_space(vpos, NULL);
-
-            gfx_lighting_calculate_vertex_color(vpos, vnormal, color);
-
-            CTX_END(CTX_LIGHTING);
-
-            // multiply vertex color by lighting
-            if (luaVertexColor) {
-                d->color.r = (v->cn[0] * color[0] / 255.0f) * vertexColorCached[0];
-                d->color.g = (v->cn[1] * color[1] / 255.0f) * vertexColorCached[1];
-                d->color.b = (v->cn[2] * color[2] / 255.0f) * vertexColorCached[2];
-            } else {
-                d->color.r = v->cn[0] * color[0] / 255.0f;
-                d->color.g = v->cn[1] * color[1] / 255.0f;
-                d->color.b = v->cn[2] * color[2] / 255.0f;
-            }
-        }
         // if lighting engine is enabled and we should affect all vertex colored surfaces or the lighting engine geometry mode is on
-        else if (le_is_enabled() && !(rsp.geometry_mode & G_LIGHT_MAP_EXT) && (affectAllVertexColored || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
+        } else if (le_is_enabled() && !(rsp.geometry_mode & G_LIGHT_MAP_EXT) && (affectAllVertexColored || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
             Color color = { gLEAmbientColor[0], gLEAmbientColor[1], gLEAmbientColor[2] };
             CTX_BEGIN(CTX_LIGHTING);
 
@@ -1017,29 +969,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 }
             }
         } else {
-            // Apply new lighting system to level geometry (no G_LIGHTING flag)
-            if (gLightingState.lightingEnabled && configLightingEnabled && !(rsp.geometry_mode & G_LIGHT_MAP_EXT)) {
-                Vec3f color = { 255.0f, 255.0f, 255.0f };
-                CTX_BEGIN(CTX_LIGHTING);
-
-                Vec3f vpos = { v->ob[0], v->ob[1], v->ob[2] };
-                Vec3f vnormal = { 0.0f, 1.0f, 0.0f };
-
-                gfx_local_to_world_space(vpos, NULL);
-                gfx_lighting_calculate_vertex_color(vpos, vnormal, color);
-
-                CTX_END(CTX_LIGHTING);
-
-                if (luaVertexColor) {
-                    d->color.r = (v->cn[0] * color[0] / 255.0f) * vertexColorCached[0];
-                    d->color.g = (v->cn[1] * color[1] / 255.0f) * vertexColorCached[1];
-                    d->color.b = (v->cn[2] * color[2] / 255.0f) * vertexColorCached[2];
-                } else {
-                    d->color.r = v->cn[0] * color[0] / 255.0f;
-                    d->color.g = v->cn[1] * color[1] / 255.0f;
-                    d->color.b = v->cn[2] * color[2] / 255.0f;
-                }
-            } else if (!(rsp.geometry_mode & G_LIGHT_MAP_EXT) && luaVertexColor) {
+            if (!(rsp.geometry_mode & G_LIGHT_MAP_EXT) && luaVertexColor) {
                 d->color.r = v->cn[0] * vertexColorCached[0];
                 d->color.g = v->cn[1] * vertexColorCached[1];
                 d->color.b = v->cn[2] * vertexColorCached[2];
@@ -2089,24 +2019,6 @@ void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, co
     gfx_rapi->init();
 
     gfx_cc_precomp();
-    
-    gfx_lighting_init();
-    gfx_shader_pack_init();
-    gfx_shader_pack_scan_directory("shaderpacks");
-    
-    if (configLightingEnabled) {
-        gfx_lighting_enable(true);
-    }
-    if (configLightingShadowsEnabled) {
-        gfx_lighting_enable_shadows(true);
-    }
-    if (configLightingShaderPacksEnabled && configLightingActiveShaderPack[0] != '\0') {
-        int packCount = gfx_shader_pack_get_count();
-        for (int i = 0; i < packCount; i++) {
-            gfx_shader_pack_activate(i);
-            break;
-        }
-    }
 
     gGfxInited = true;
 }
@@ -2194,9 +2106,6 @@ void gfx_end_frame(void) {
 }
 
 void gfx_shutdown(void) {
-    gfx_lighting_shutdown();
-    gfx_shader_pack_shutdown();
-    
     if (gfx_rapi) {
         if (gfx_rapi->shutdown) gfx_rapi->shutdown();
         gfx_rapi = NULL;

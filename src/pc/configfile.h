@@ -202,13 +202,6 @@ extern bool         configQolSmoothPitchWhenHittingFloorUnderwater;
 extern bool         configQolLedgeClimbProtection;
 extern bool         configQolBetterExitAirborne;
 
-// Lighting system settings
-extern bool         configLightingEnabled;
-extern bool         configLightingShadowsEnabled;
-extern unsigned int configLightingShadowQuality;
-extern bool         configLightingShaderPacksEnabled;
-extern char         configLightingActiveShaderPack[MAX_CONFIG_STRING];
-
 // DJUI settings
 extern unsigned int configDjuiTheme;
 extern bool         configDjuiThemeCenter;

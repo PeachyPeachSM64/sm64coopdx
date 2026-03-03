@@ -259,12 +259,6 @@ bool configQolSmoothPitchWhenHittingFloorUnderwater = false;
 bool configQolLedgeClimbProtection = false;
 bool configQolBetterExitAirborne = false;
 
-bool configLightingEnabled = false;
-bool configLightingShadowsEnabled = false;
-unsigned int configLightingShadowQuality = 2;
-bool configLightingShaderPacksEnabled = false;
-char configLightingActiveShaderPack[MAX_CONFIG_STRING] = "default";
-
 static char* configfile_get_character_preset_name(enum CharacterType c) {
     switch (c) {
         case CT_MARIO:   return configPlayerPalettePresetMario;
@@ -563,12 +557,6 @@ static const struct ConfigOption options[] = {
     {.name = "qol_smooth_pitch_floor_underwater",       .type = CONFIG_TYPE_BOOL, .boolValue = &configQolSmoothPitchWhenHittingFloorUnderwater},
     {.name = "qol_ledge_climb_protection",              .type = CONFIG_TYPE_BOOL, .boolValue = &configQolLedgeClimbProtection},
     {.name = "qol_better_exit_airborne",                .type = CONFIG_TYPE_BOOL, .boolValue = &configQolBetterExitAirborne},
-    // lighting system
-    {.name = "lighting_enabled",               .type = CONFIG_TYPE_BOOL,   .boolValue   = &configLightingEnabled},
-    {.name = "lighting_shadows_enabled",       .type = CONFIG_TYPE_BOOL,   .boolValue   = &configLightingShadowsEnabled},
-    {.name = "lighting_shadow_quality",        .type = CONFIG_TYPE_UINT,   .uintValue   = &configLightingShadowQuality},
-    {.name = "lighting_shader_packs_enabled",  .type = CONFIG_TYPE_BOOL,   .boolValue   = &configLightingShaderPacksEnabled},
-    {.name = "lighting_active_shader_pack",    .type = CONFIG_TYPE_STRING, .stringValue = configLightingActiveShaderPack, .maxStringLength = MAX_CONFIG_STRING},
     // other
     {.name = "rules_version",                  .type = CONFIG_TYPE_UINT,   .uintValue   = &configRulesVersion},
     {.name = "compress_on_startup",            .type = CONFIG_TYPE_BOOL,   .boolValue   = &configCompressOnStartup},
