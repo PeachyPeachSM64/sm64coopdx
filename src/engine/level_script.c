@@ -28,13 +28,17 @@
 #include "level_table.h"
 #include "pc/lua/utils/smlua_model_utils.h"
 #include "pc/lua/smlua.h"
+#include "pc/configfile.h"
 #include "pc/djui/djui.h"
 #include "pc/debug_context.h"
-#include "pc/configfile.h"
+
 #include "game/characters.h"
+
 #include "game/hardcoded.h"
 #include "menu/intro_geo.h"
 #include "game/envfx_snow.h"
+
+extern void DynOS_Goddard_RecomputeActiveMarioHeadBin(void);
 
 #define CMD_GET(type, offset) (*(type *) (CMD_PROCESS_OFFSET(offset) + (u8 *) sCurrentCmd))
 
@@ -868,10 +872,21 @@ static void level_cmd_get_or_set_var(void) {
 
                 if (gCurrSaveFileNum >= 1 && gCurrSaveFileNum <= NUM_SAVE_FILES) {
                     u8 charIndex = save_file_get_last_character(gCurrSaveFileNum - 1);
+                    
+                    // Update last save file and character tracking BEFORE syncing palette
+                    // This ensures configLastCharacter matches configPlayerModel
+                    configLastSaveFileNum = gCurrSaveFileNum;
+                    configLastCharacter = charIndex;
+                    
                     if (charIndex < CT_MAX) {
                         configPlayerModel = charIndex;
                         configfile_sync_player_palette();
                     }
+                    
+                    configfile_save(configfile_name());
+                    
+                    // Recompute Goddard head for this save's character
+                    DynOS_Goddard_RecomputeActiveMarioHeadBin();
                 }
                 break;
             case 1:

@@ -595,6 +595,8 @@ u8 save_file_get_last_character(s32 fileIndex) {
     return (u8)((flags & SAVE_FILE_LAST_CHAR_MASK) >> SAVE_FILE_LAST_CHAR_SHIFT);
 }
 
+extern void DynOS_Goddard_RecomputeActiveMarioHeadBin(void);
+
 void save_file_set_last_character(s32 fileIndex, u8 characterIndex) {
     if (INVALID_FILE_INDEX(fileIndex)) { return; }
     if (INVALID_SRC_SLOT(gSaveFileUsingBackupSlot)) { return; }
@@ -604,6 +606,9 @@ void save_file_set_last_character(s32 fileIndex, u8 characterIndex) {
     *flags |= (((u32)characterIndex << SAVE_FILE_LAST_CHAR_SHIFT) & SAVE_FILE_LAST_CHAR_MASK);
     *flags |= SAVE_FLAG_FILE_EXISTS;
     gSaveFileModified = TRUE;
+    
+    // Recompute Goddard head for the new character
+    DynOS_Goddard_RecomputeActiveMarioHeadBin();
 }
 
 s32 save_file_exists(s32 fileIndex) {

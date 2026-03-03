@@ -4,6 +4,7 @@
 extern "C" {
 #include "engine/graph_node.h"
 #include "game/save_file.h"
+#include "pc/configfile.h"
 }
 
 #define MAX_CHARACTER_HEADS 16
@@ -104,21 +105,27 @@ static void DynOS_Goddard_LoadActiveMarioHeadBinIfNeeded() {
     printf("[DynOS] Goddard: loaded mario_head.gdbin (%d bytes) from %s\n", _Size, _Path.c_str());
 }
 
-static s32 DynOS_Goddard_GetCharacterIndexFromSaveFile() {
-    // Get last played character from save file 0 (or current save file)
-    // Returns 0 for Mario, 1 for Luigi, 2 for Toad, 3 for Waluigi, 4 for Wario
-    u8 character = save_file_get_last_character(0);
+static s32 DynOS_Goddard_GetCharacterIndex() {
+    // First check configPlayerModel (set when player changes character or enters a save)
+    u32 character = configPlayerModel;
     if (character >= MAX_CHARACTER_HEADS) {
         character = 0;
     }
+    
+    // If still at default (Mario), use configLastCharacter from config file
+    // This is saved when entering a save file, so it persists across game restarts
+    if (character == 0 && configLastCharacter > 0 && configLastCharacter < MAX_CHARACTER_HEADS) {
+        character = configLastCharacter;
+    }
+    
     return (s32)character;
 }
 
-static void DynOS_Goddard_RecomputeActiveMarioHeadBin() {
+extern "C" void DynOS_Goddard_RecomputeActiveMarioHeadBin() {
     DynOS_Goddard_ActiveMarioHeadBin() = "";
     
-    // Get the character index from save file
-    s32 charIndex = DynOS_Goddard_GetCharacterIndexFromSaveFile();
+    // Get the character index from config
+    s32 charIndex = DynOS_Goddard_GetCharacterIndex();
     
     // First try to find a character-specific head, then fall back to mario_head
     for (auto& _Pack : DynosPacks()) {

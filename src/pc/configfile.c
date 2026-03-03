@@ -172,6 +172,8 @@ bool         configCtxProfiler                    = false;
 #endif
 // player settings
 unsigned int configPlayerModel                    = 0;
+unsigned int configLastSaveFileNum                = 0;
+unsigned int configLastCharacter                  = 0;
 struct PlayerPalette configPlayerPalette          = { { { 0x00, 0x00, 0xff }, { 0xff, 0x00, 0x00 }, { 0xff, 0xff, 0xff }, { 0x72, 0x1c, 0x0e }, { 0x73, 0x06, 0x00 }, { 0xfe, 0xc1, 0x79 }, { 0xff, 0x00, 0x00 }, { 0xff, 0x00, 0x00 } } };
 struct PlayerPalette configPlayerPalettes[5]      = { 0 };
 bool configPlayerPaletteCustomEnabled[5]          = { false };
@@ -302,6 +304,13 @@ void configfile_reset_all_character_palettes(void) {
 void configfile_sync_player_palette(void) {
     u8 modelIndex = (u8)configPlayerModel;
     if (modelIndex >= CT_MAX) { modelIndex = CT_MARIO; }
+    
+    // If still at default (Mario), use configLastCharacter from config file
+    // This ensures correct palette on startup before a save file is selected
+    if (modelIndex == CT_MARIO && configLastCharacter > 0 && configLastCharacter < CT_MAX) {
+        modelIndex = (u8)configLastCharacter;
+    }
+    
     configPlayerPalette = configPlayerPalettes[modelIndex];
 }
 
@@ -443,6 +452,8 @@ static const struct ConfigOption options[] = {
     {.name = "ctx_profiler",                   .type = CONFIG_TYPE_BOOL, .boolValue   = &configCtxProfiler},
 #endif
     // player settings
+    {.name = "last_save_file_num",             .type = CONFIG_TYPE_UINT, .uintValue = &configLastSaveFileNum},
+    {.name = "last_character",                 .type = CONFIG_TYPE_UINT, .uintValue = &configLastCharacter},
     {.name = "player_palette_preset_mario",    .type = CONFIG_TYPE_STRING, .stringValue = configPlayerPalettePresetMario,   .maxStringLength = MAX_CONFIG_STRING},
     {.name = "player_palette_preset_luigi",    .type = CONFIG_TYPE_STRING, .stringValue = configPlayerPalettePresetLuigi,   .maxStringLength = MAX_CONFIG_STRING},
     {.name = "player_palette_preset_toad",     .type = CONFIG_TYPE_STRING, .stringValue = configPlayerPalettePresetToad,    .maxStringLength = MAX_CONFIG_STRING},

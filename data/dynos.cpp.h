@@ -901,6 +901,7 @@ const SysPath& DynOS_Goddard_GetActiveMarioHeadBin();
 void DynOS_Goddard_ModShutdown();
 const u8* DynOS_Goddard_GetActiveMarioHeadBinData();
 s32 DynOS_Goddard_GetActiveMarioHeadBinSize();
+extern "C" void DynOS_Goddard_RecomputeActiveMarioHeadBin();
 
 //
 // Actor Manager
