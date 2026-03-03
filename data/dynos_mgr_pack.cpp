@@ -3,7 +3,18 @@
 #include "dynos.cpp.h"
 extern "C" {
 #include "engine/graph_node.h"
+#include "game/save_file.h"
 }
+
+#define MAX_CHARACTER_HEADS 16
+static const char* sCharacterHeadNames[MAX_CHARACTER_HEADS] = {
+    "mario_head.gdbin",
+    "luigi_head.gdbin",
+    "toad_head.gdbin",
+    "waluigi_head.gdbin",
+    "wario_head.gdbin",
+    NULL
+};
 
 static std::deque<PackData>& DynosPacks() {
     static std::deque<PackData> sDynosPacks;
@@ -93,19 +104,44 @@ static void DynOS_Goddard_LoadActiveMarioHeadBinIfNeeded() {
     printf("[DynOS] Goddard: loaded mario_head.gdbin (%d bytes) from %s\n", _Size, _Path.c_str());
 }
 
+static s32 DynOS_Goddard_GetCharacterIndexFromSaveFile() {
+    // Get last played character from save file 0 (or current save file)
+    // Returns 0 for Mario, 1 for Luigi, 2 for Toad, 3 for Waluigi, 4 for Wario
+    u8 character = save_file_get_last_character(0);
+    if (character >= MAX_CHARACTER_HEADS) {
+        character = 0;
+    }
+    return (s32)character;
+}
+
 static void DynOS_Goddard_RecomputeActiveMarioHeadBin() {
     DynOS_Goddard_ActiveMarioHeadBin() = "";
+    
+    // Get the character index from save file
+    s32 charIndex = DynOS_Goddard_GetCharacterIndexFromSaveFile();
+    
+    // First try to find a character-specific head, then fall back to mario_head
     for (auto& _Pack : DynosPacks()) {
         if (!_Pack.mEnabled) { continue; }
-        if (!_Pack.mGoddardMarioHeadBin.empty()) {
+        
+        // Try character-specific head first
+        if (charIndex > 0 && charIndex < MAX_CHARACTER_HEADS && !_Pack.mGoddardCharacterHeadBins[charIndex].empty()) {
+            DynOS_Goddard_ActiveMarioHeadBin() = _Pack.mGoddardCharacterHeadBins[charIndex];
+        }
+        // Fall back to mario_head (index 0) or legacy mGoddardMarioHeadBin
+        else if (!_Pack.mGoddardCharacterHeadBins[0].empty()) {
+            DynOS_Goddard_ActiveMarioHeadBin() = _Pack.mGoddardCharacterHeadBins[0];
+        }
+        else if (!_Pack.mGoddardMarioHeadBin.empty()) {
             DynOS_Goddard_ActiveMarioHeadBin() = _Pack.mGoddardMarioHeadBin;
         }
     }
 
     if (DynOS_Goddard_ActiveMarioHeadBin().empty()) {
-        printf("[DynOS] Goddard: no active mario_head.gdbin (no enabled packs provide it)\n");
+        printf("[DynOS] Goddard: no active head.gdbin (no enabled packs provide it)\n");
     } else {
-        printf("[DynOS] Goddard: active mario_head.gdbin: %s\n", DynOS_Goddard_ActiveMarioHeadBin().c_str());
+        const char* charName = (charIndex < MAX_CHARACTER_HEADS && sCharacterHeadNames[charIndex]) ? sCharacterHeadNames[charIndex] : "mario_head.gdbin";
+        printf("[DynOS] Goddard: active head for character %d (%s): %s\n", charIndex, charName, DynOS_Goddard_ActiveMarioHeadBin().c_str());
     }
 
     DynOS_Goddard_LoadActiveMarioHeadBinIfNeeded();
@@ -147,10 +183,18 @@ static void ScanPackBins(struct PackData* aPack) {
 
     // check for goddard
     // Pack layout: dynos/packs/<pack>/goddard/mario_head.gdbin
-    SysPath _GoddardBin = fstring("%s/goddard/mario_head.gdbin", aPack->mPath.c_str());
-    if (fs_sys_file_exists(_GoddardBin.c_str())) {
-        aPack->mGoddardMarioHeadBin = _GoddardBin;
-        printf("[DynOS] Goddard: found mario_head.gdbin in pack %s\n", aPack->mPath.c_str());
+    // Also check for character-specific heads: luigi_head.gdbin, toad_head.gdbin, etc.
+    for (s32 i = 0; sCharacterHeadNames[i] != NULL && i < MAX_CHARACTER_HEADS; i++) {
+        SysPath _GoddardBin = fstring("%s/goddard/%s", aPack->mPath.c_str(), sCharacterHeadNames[i]);
+        if (fs_sys_file_exists(_GoddardBin.c_str())) {
+            aPack->mGoddardCharacterHeadBins[i] = _GoddardBin;
+            printf("[DynOS] Goddard: found %s in pack %s\n", sCharacterHeadNames[i], aPack->mPath.c_str());
+            
+            // Also set mGoddardMarioHeadBin for backwards compatibility (use mario_head as default)
+            if (i == 0) {
+                aPack->mGoddardMarioHeadBin = _GoddardBin;
+            }
+        }
     }
 }
 
@@ -283,7 +327,7 @@ PackData* DynOS_Pack_Add(const SysPath& aPath) {
 
     auto& _DynosPacks = DynosPacks();
     s32 index = _DynosPacks.size();
-    const PackData packData = {
+    PackData packData = {
         .mIndex = index,
         .mEnabled = false,
         .mPath = aPath,
@@ -291,6 +335,7 @@ PackData* DynOS_Pack_Add(const SysPath& aPath) {
         .mGfxData = {},
         .mTextures = {},
         .mGoddardMarioHeadBin = "",
+        .mGoddardCharacterHeadBins = {},
         .mLoaded = false,
     };
     _DynosPacks.push_back(packData);

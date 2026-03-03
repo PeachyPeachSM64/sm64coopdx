@@ -611,6 +611,7 @@ struct PackData {
     std::vector<std::pair<std::string, GfxData *>> mGfxData;
     std::vector<DataNode<TexData>*> mTextures;
     SysPath mGoddardMarioHeadBin;
+    SysPath mGoddardCharacterHeadBins[16];
     bool mLoaded;
 };
 
