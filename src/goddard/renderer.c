@@ -3231,12 +3231,12 @@ void gd_init(void) {
     remove_all_timers();
 
     start_memtracker("Static DL");
-    sStaticDl = new_gd_dl(0, 2091, 4403, 1, 300, 8);
+    sStaticDl = new_gd_dl(0, 50000, 100000, 1, 300, 8);  // Increased gfx/verts for high poly Goddard
     stop_memtracker("Static DL");
 
     start_memtracker("Dynamic DLs");
-    sDynamicMainDls[0] = new_gd_dl(1, 600, 8000, 200, 10, 3);  // Increased verts from 10 to 8000 for high poly Goddard
-    sDynamicMainDls[1] = new_gd_dl(1, 600, 8000, 200, 10, 3);  // Increased verts from 10 to 8000 for high poly Goddard
+    sDynamicMainDls[0] = new_gd_dl(1, 50000, 100000, 200, 10, 3);  // Increased for high poly Goddard
+    sDynamicMainDls[1] = new_gd_dl(1, 50000, 100000, 200, 10, 3);  // Increased for high poly Goddard
     stop_memtracker("Dynamic DLs");
 
     sMHeadMainDls[0] = new_gd_dl(1, 100, 0, 0, 0, 0);
