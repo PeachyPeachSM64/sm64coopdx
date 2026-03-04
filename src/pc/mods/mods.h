@@ -6,7 +6,7 @@
 #include "pc/platform.h"
 #include "mod.h"
 
-#define MAX_MOD_SIZE (512 * 1048576) // 512MB
+#define MAX_MOD_SIZE (1024 * 1048576) // 1024MB
 #define MOD_DIRECTORY "mods"
 #define TMP_DIRECTORY ".tmp"
 
