@@ -204,6 +204,9 @@ extern bool         configQolSmoothPitchWhenHittingFloorUnderwater;
 extern bool         configQolLedgeClimbProtection;
 extern bool         configQolBetterExitAirborne;
 
+// General QoL settings
+extern bool         configQolBetterGoddardMaterial;
+
 // DJUI settings
 extern unsigned int configDjuiTheme;
 extern bool         configDjuiThemeCenter;

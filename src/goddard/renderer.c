@@ -32,6 +32,7 @@
 #include "pc/controller/controller_mouse.h"
 #include "pc/djui/djui.h"
 #include "pc/gfx/gfx.h"
+#include "pc/configfile.h"
 
 #define MAX_GD_DLS 1000
 #define OS_MESG_SI_COMPLETE 0x33333333
@@ -645,6 +646,18 @@ ROM_ASSET_LOAD_TEXTURE(gd_texture_mario_face_shine, "textures/intro_raw/mario_fa
 static Gfx gd_dl_mario_face_shine[] = {
     gsSPSetGeometryMode(G_TEXTURE_GEN),
     gsSPTexture(0x07C0, 0x07C0, 0, G_TX_RENDERTILE, G_ON),
+    gsDPSetTexturePersp(G_TP_PERSP),
+    gsDPSetTextureFilter(G_TF_BILERP),
+    gsDPSetCombineMode(G_CC_HILITERGBA, G_CC_HILITERGBA),
+    gsDPLoadTextureBlock(gd_texture_mario_face_shine, G_IM_FMT_IA, G_IM_SIZ_8b, 32, 32, 0, 
+                        G_TX_WRAP | G_TX_NOMIRROR, G_TX_WRAP | G_TX_NOMIRROR, 5, 5, G_TX_NOLOD, G_TX_NOLOD),
+    gsDPPipeSync(),
+    gsSPEndDisplayList(),
+};
+
+static Gfx gd_dl_mario_face_shine_subtle[] = {
+    gsSPSetGeometryMode(G_TEXTURE_GEN),
+    gsSPTexture(0x0280, 0x0280, 0, G_TX_RENDERTILE, G_ON),
     gsDPSetTexturePersp(G_TP_PERSP),
     gsDPSetTextureFilter(G_TF_BILERP),
     gsDPSetCombineMode(G_CC_HILITERGBA, G_CC_HILITERGBA),
@@ -2313,7 +2326,11 @@ void gddl_is_loading_stub_dl(UNUSED s32 dlLoad) {
 /* 250B58 -> 250C18 */
 void gddl_is_loading_shine_dl(s32 dlLoad) {
     if (dlLoad) {
-        gSPDisplayList(next_gfx(), osVirtualToPhysical(&gd_dl_mario_face_shine));
+        if (configQolBetterGoddardMaterial) {
+            gSPDisplayList(next_gfx(), osVirtualToPhysical(&gd_dl_mario_face_shine_subtle));
+        } else {
+            gSPDisplayList(next_gfx(), osVirtualToPhysical(&gd_dl_mario_face_shine));
+        }
     } else {
         gSPTexture(next_gfx(), 0x8000, 0x8000, 0, G_TX_RENDERTILE, G_OFF);
         gDPSetCombineMode(next_gfx(), G_CC_SHADE, G_CC_SHADE);
