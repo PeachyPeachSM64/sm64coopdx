@@ -3020,6 +3020,14 @@ void set_camera_mode(struct Camera *c, s16 mode, s16 frames) {
 
     if (c->mode == CAMERA_MODE_ROM_HACK && allow_romhack_camera_override_mode(mode)) { return; }
 
+    // Photo mode forces the camera mode each frame. In water-heavy levels (ex: Secret Aquarium),
+    // submerged camera preset logic may call set_camera_mode continuously, causing the camera
+    // to rapidly flip between modes. Ignore mode changes while photo mode is active.
+    if ((sCurrPlayMode == PLAY_MODE_PHOTO_MODE || c->mode == CAMERA_MODE_PHOTO_MODE || gLakituState.mode == CAMERA_MODE_PHOTO_MODE)
+        && mode != CAMERA_MODE_PHOTO_MODE) {
+        return;
+    }
+
     bool allowSetCameraMode = true;
     smlua_call_event_hooks(HOOK_ON_SET_CAMERA_MODE, c, mode, frames, &allowSetCameraMode);
     if (!allowSetCameraMode) {
