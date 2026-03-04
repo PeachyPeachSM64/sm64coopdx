@@ -106,6 +106,9 @@ static s16 djui_panel_pause_secret_warp_get_level_from_index(unsigned int index)
         index--;
     }
 
+    if (index == 0) { return LEVEL_FOURTH_FLOOR; }
+    index--;
+
     if (index == 0) { return LEVEL_BOWSER_1; }
     index--;
     if (index == 0) { return LEVEL_BOWSER_2; }
@@ -161,7 +164,7 @@ static void djui_panel_pause_secret_warp_create(struct DjuiBase* caller) {
             }
         }
 
-        count += 3;
+        count += 4;
 
         if (count > 0) {
             if (sSecretWarpLevelIndex >= count) { sSecretWarpLevelIndex = 0; }
@@ -180,7 +183,11 @@ static void djui_panel_pause_secret_warp_create(struct DjuiBase* caller) {
                 if (i >= count) { break; }
             }
 
-            if (i + 3 <= count) {
+            if (i + 4 <= count) {
+                allocatedChoices[i] = strdup("Fourth Floor");
+                choices[i] = allocatedChoices[i];
+                i = i + 1;
+
                 allocatedChoices[i] = strdup("Bowser Fight 1");
                 choices[i] = allocatedChoices[i];
                 i = i + 1;
