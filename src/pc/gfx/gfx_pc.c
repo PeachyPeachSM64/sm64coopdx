@@ -631,7 +631,13 @@ static void calculate_normal_dir(const Light_t *light, Vec3f coeffs, bool applyL
         light_dir[2] += gLightingDir[2];
     }
 
-    gfx_transposed_matrix_mul(coeffs, light_dir, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
+    if (applyLightingDir && sHasInverseCameraMatrix) {
+        Mat4 model;
+        mtxf_mul(model, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], sInverseCameraMatrix);
+        gfx_transposed_matrix_mul(coeffs, light_dir, model);
+    } else {
+        gfx_transposed_matrix_mul(coeffs, light_dir, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
+    }
     vec3f_normalize(coeffs);
 }
 
