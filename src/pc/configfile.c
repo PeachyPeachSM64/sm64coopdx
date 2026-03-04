@@ -262,6 +262,9 @@ bool configQolSmoothPitchWhenHittingFloorUnderwater = false;
 bool configQolLedgeClimbProtection = false;
 bool configQolBetterExitAirborne = false;
 
+// General QoL settings
+bool configQolBetterGoddardMaterial = false;
+
 static char* configfile_get_character_preset_name(enum CharacterType c) {
     switch (c) {
         case CT_MARIO:   return configPlayerPalettePresetMario;
@@ -570,6 +573,8 @@ static const struct ConfigOption options[] = {
     {.name = "qol_smooth_pitch_floor_underwater",       .type = CONFIG_TYPE_BOOL, .boolValue = &configQolSmoothPitchWhenHittingFloorUnderwater},
     {.name = "qol_ledge_climb_protection",              .type = CONFIG_TYPE_BOOL, .boolValue = &configQolLedgeClimbProtection},
     {.name = "qol_better_exit_airborne",                .type = CONFIG_TYPE_BOOL, .boolValue = &configQolBetterExitAirborne},
+    // General QoL settings
+    {.name = "qol_better_goddard_material",             .type = CONFIG_TYPE_BOOL, .boolValue = &configQolBetterGoddardMaterial},
     // other
     {.name = "rules_version",                  .type = CONFIG_TYPE_UINT,   .uintValue   = &configRulesVersion},
     {.name = "compress_on_startup",            .type = CONFIG_TYPE_BOOL,   .boolValue   = &configCompressOnStartup},
