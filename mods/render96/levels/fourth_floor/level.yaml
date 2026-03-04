@@ -1,0 +1,13 @@
+# Fourth Floor
+short-name: fourth_floor
+full-name: Fourth Floor
+texture-file: ["/texture_include.inc.c"]
+area-count: 1
+objects: []
+shared-path: []
+# loaded files
+skybox-bin: water
+texture-bin: generic
+effects: false
+actor-bins: []
+common-bin: [common0]
