@@ -127,6 +127,7 @@ s64 DynOS_Lvl_ParseLevelScriptConstants(const String& _Arg, bool* found) {
     lvl_constant(SEQ_EVENT_CUTSCENE_ENDING);
     lvl_constant(SEQ_MENU_FILE_SELECT);
     lvl_constant(SEQ_EVENT_CUTSCENE_LAKITU);
+    lvl_constant(SEQ_LEVEL_FOURTH_FLOOR);
     lvl_constant(SEQ_COUNT);
 
     // Model constants

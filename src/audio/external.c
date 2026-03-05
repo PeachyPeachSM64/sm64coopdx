@@ -181,6 +181,9 @@ s16 sDynHmc[] = {
     SEQ_LEVEL_UNDERGROUND, DYN2(MARIO_X_GE, 0, MARIO_Y_LT, -203, 4),
     DYN2(MARIO_X_LT, 0, MARIO_Y_LT, -2400, 4), 3,
 };
+s16 sDynFourthFloor[] = {
+    SEQ_LEVEL_FOURTH_FLOOR, 0,
+};
 s16 sDynUnk38[] = {
     SEQ_LEVEL_UNDERGROUND,
     DYN1(MARIO_IS_IN_AREA, 1, 3),
@@ -1778,11 +1781,20 @@ static void seq_player_play_sequence(u8 player, u8 seqId, u16 arg2) {
     MUTEX_LOCK(gAudioThread);
     
     if (player >= SEQUENCE_PLAYERS) { return; }
+
+    u8 seqIdBase = (seqId & SEQ_BASE_ID);
+    u8 seqIdToLoad = seqIdBase;
+    
+    // Alias SEQ_LEVEL_FOURTH_FLOOR to load underground m64 data (until custom m64 exists)
+    if (seqIdBase == SEQ_LEVEL_FOURTH_FLOOR) {
+        seqIdToLoad = SEQ_LEVEL_UNDERGROUND;
+    }
+    
     u8 targetVolume;
     u8 i;
 
     if (player == SEQ_PLAYER_LEVEL) {
-        sCurrentBackgroundMusicSeqId = seqId & SEQ_BASE_ID;
+        sCurrentBackgroundMusicSeqId = seqIdBase;
         sBackgroundMusicForDynamics = SEQUENCE_NONE;
         sCurrentMusicDynamic = 0xff;
         sMusicDynamicDelay = 2;
@@ -1794,7 +1806,7 @@ static void seq_player_play_sequence(u8 player, u8 seqId, u16 arg2) {
 
 #if defined(VERSION_EU) || defined(VERSION_SH)
     queue_audio_cmd_s8(AUDIO_CMD_ARGS(AUDIO_CMD_SEQUENCE_VARIATION, player, 0, 0), seqId & SEQ_VARIATION);
-    queue_audio_cmd_u32(AUDIO_CMD_ARGS(AUDIO_CMD_LOAD_SEQUENCE, player, seqId & SEQ_BASE_ID, 0), arg2);
+    queue_audio_cmd_u32(AUDIO_CMD_ARGS(AUDIO_CMD_LOAD_SEQUENCE, player, seqIdToLoad, 0), arg2);
 
     if (player == SEQ_PLAYER_LEVEL) {
         targetVolume = begin_background_music_fade(0);
@@ -1805,7 +1817,7 @@ static void seq_player_play_sequence(u8 player, u8 seqId, u16 arg2) {
 #else
 
     gSequencePlayers[player].seqVariation = seqId & SEQ_VARIATION;
-    load_sequence(player, seqId & SEQ_BASE_ID, 0);
+    load_sequence(player, seqIdToLoad, 0);
 
     if (player == SEQ_PLAYER_LEVEL) {
         targetVolume = begin_background_music_fade(0);

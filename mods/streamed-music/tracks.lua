@@ -37,13 +37,13 @@ local T = {
     [4]  = { file = "audio/levels/level_inside_castle.wav", loopStart = 22810, loopEnd = -1, volume = vol127(110) },
 
     -- These are custom Render96ex sequences (not vanilla sm64); keep them by numeric IDs if present in this build.
-    -- [??] = { file = "audio/levels/level_fourth_floor.wav", loopStart = 1, loopEnd = -1, volume = vol127(80) },
+    [35] = { file = "audio/levels/level_fourth_floor.wav", loopStart = 15102, loopEnd = -1, volume = vol127(127) },
     [30] = { file = "audio/levels/level_castle_courtyard.wav", loopStart = 1, loopEnd = -1, volume = vol127(80) },
     [31] = { file = "audio/levels/level_castle_grounds.wav", loopStart = 1, loopEnd = -1, volume = vol127(80) },
 
     -- Event / special sequences
     [22] = { file = "audio/jingles/event_boss_theme.wav", loopStart = 124950, loopEnd = -1, volume = vol127(114) },
-    [35] = { file = "audio/jingles/event_boss_intro.wav", loopStart = 1, loopEnd = -1, loop = true, volume = vol127(114) },
+    [126] = { file = "audio/jingles/event_boss_intro.wav", loopStart = 1, loopEnd = -1, loop = true, volume = vol127(114) },
     [15] = { file = "audio/jingles/event_cap_metal.wav", loopStart = 180000, loopEnd = -1, volume = vol127(102) },
     [20] = { file = "audio/jingles/event_race_fanfare.wav", loopStart = 1, loopEnd = -1, volume = vol127(102) },
     [14] = { file = "audio/jingles/event_powerup.wav", loopStart = 372400, loopEnd = -1, volume = vol127(82) },
