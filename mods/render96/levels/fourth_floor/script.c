@@ -28,7 +28,7 @@ const LevelScript level_fourth_floor_entry[] = {
 		WARP_NODE(/*id*/ 0xF1, /*destLevel*/ LEVEL_CASTLE, /*destArea*/ 0x01, /*destNode*/ 0x1F, /*flags*/ WARP_NO_CHECKPOINT),
 		TERRAIN(fourth_floor_area_1_collision),
 		MACRO_OBJECTS(fourth_floor_area_1_Area_1_macro_objs),
-		SET_BACKGROUND_MUSIC(0x00, SEQ_SOUND_PLAYER),
+		SET_BACKGROUND_MUSIC(0x00, SEQ_LEVEL_FOURTH_FLOOR),
 		TERRAIN_TYPE(TERRAIN_STONE),
 	END_AREA(),
 

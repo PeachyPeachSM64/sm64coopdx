@@ -1,5 +1,7 @@
 local M = {}
 
+local BOSS_INTRO_SEQ_ID = 126
+
 local function is_boss_start_dialog(dialogId)
     return dialogId == DIALOG_017
         or dialogId == DIALOG_114
@@ -61,11 +63,11 @@ function M.new(opts)
             if not active then
                 active = true
                 if type(set_forced_seq_id) == 'function' then
-                    set_forced_seq_id(35)
+                    set_forced_seq_id(BOSS_INTRO_SEQ_ID)
                 end
                 refresh_track()
             end
-            return 35
+            return BOSS_INTRO_SEQ_ID
         end
 
         if active then
