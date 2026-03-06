@@ -497,6 +497,7 @@ enum BehaviorId {
     id_bhvWallTinyStarParticle,
     id_bhvWarp,
     id_bhvWarpPipe,
+    id_bhvWarioCoin,
     id_bhvWaterAirBubble,
     id_bhvWaterBomb,
     id_bhvWaterBombCannon,

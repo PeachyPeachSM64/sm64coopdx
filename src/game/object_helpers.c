@@ -148,6 +148,21 @@ Gfx *geo_update_layer_transparency(s32 callContext, struct GraphNode *node, UNUS
     return dlStart;
 }
 
+Gfx *geo_rotate_coin(s32 callContext, struct GraphNode *node, UNUSED Mat4 *c) {
+    struct Object *obj;
+
+    if (callContext == GEO_CONTEXT_RENDER) {
+        obj = (struct Object *) gCurGraphNodeObject;
+        struct GraphNodeRotation *rotNode = (struct GraphNodeRotation *) node->next;
+        vec3s_set(rotNode->rotation, 0, obj->oAnimState, 0);
+        obj->oAnimState += 0x0800;
+        if (obj->oAnimState > 0xFFFF) {
+            obj->oAnimState = 0;
+        }
+    }
+    return NULL;
+}
+
 /**
  * @bug Every geo function declares the 3 parameters of callContext, node, and
  * the matrix array. This one (see also geo_switch_area) doesn't. When executed,

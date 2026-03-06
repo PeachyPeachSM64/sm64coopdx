@@ -54,6 +54,8 @@ extern const Gfx dl_ia_text_tex_settings[];
 extern const Gfx dl_rgba16_load_tex_block[];
 extern void *main_credits_font_lut[];
 extern u8* main_hud_camera_lut[6];
+extern ALIGNED8 const Texture texture_hud_boo_key[];
+extern ALIGNED8 const Texture texture_hud_wario_coin[];
 extern const Gfx dl_draw_text_bg_box[];
 extern const Gfx dl_draw_triangle[];
 extern const u8* seg2_dialog_original[];

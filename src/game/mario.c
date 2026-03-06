@@ -2283,7 +2283,8 @@ void init_mario_single_from_save_file(struct MarioState* m, u16 index) {
 
     m->numCoins = 0;
     m->numStars = save_file_get_total_star_count(gCurrSaveFileNum - 1, COURSE_MIN - 1, COURSE_MAX - 1);
-    m->numKeys = 0;
+    m->numKeys = save_file_get_keys(gCurrSaveFileNum - 1);
+    m->numWarioCoins = save_file_get_wario_coins(gCurrSaveFileNum - 1);
 
     m->numLives = 4;
     m->health = 0x880;

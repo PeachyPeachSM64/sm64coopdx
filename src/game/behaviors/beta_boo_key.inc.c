@@ -1,24 +1,26 @@
 /**
- * Behavior for bhvAlphaBooKey and bhvBetaBooKey.
- * They were apparently intended to be a key that would be contained in boos
- * and would fall out, like coins do. There is a model, MODEL_BETA_BOO_KEY, that
- * is loaded in script_func_global_10, which contains boo-themed models used in
- * BBH and the castle courtyard. It is used in a macro preset with bhvAlphaBooKey,
- * which is also grouped near other boo/BBH-related macros. This is evidence that
- * bhvAlphaBooKey was supposed to be a key. bhvBetaBooKey has code similar to
- * bhvAlphaBooKey's for rotation and collection, and functions correctly when
- * spawned as a child of a boo (it checks the death status of the boo to know when
- * to drop, so this is almost definitely what was intended). It appears that
- * bhvAlphaBooKey was abandoned for reasons unknown and replaced with bhvBetaBooKey.
+ * Behavior for bhvAlphaBooKey and bhvBetaBooKey (Luigi Keys).
+ * Repurposed from the beta boo key mechanic for Render96 collectibles.
  */
+
+#include "game/save_file.h"
+
+static void validate_key(void) {
+    if (save_file_taken_key(gCurrSaveFileNum - 1, o->oBehParams2ndByte)) {
+        cur_obj_become_intangible();
+        cur_obj_disable_rendering();
+        obj_mark_for_deletion(o);
+    }
+}
+
+void bhv_key_init(void) {
+    o->oPosY += 80;
+    validate_key();
+}
 
 /**
  * Update function for bhvAlphaBooKey.
  * It rotates the key, and deletes it when collected.
- * The code in this function is similar to that found in
- * bhvBetaBooKey code, which implies that these are 2 versions
- * of the same object. It is a less developed version of
- * bhvBetaBooKey, hence the "alpha" moniker.
  */
 void bhv_alpha_boo_key_loop(void) {
     // Rotate the key
@@ -26,15 +28,6 @@ void bhv_alpha_boo_key_loop(void) {
     o->oFaceAngleYaw += 0x200;
 
     if (obj_check_if_collided_with_object(o, gMarioObject)) {
-        // This line makes the object inside the key's parent boo drop.
-        // Was this intended to make the boo die when the key is collected?
-        // Boos don't read from oBooDeathStatus, they only set it to let the
-        // objects inside them know when to drop.
-        // Due to this line, the key will cause the game to crash if collected
-        // when its parent object is NULL.
-        // Another theory is that the boo key was intended to be spawned by a
-        // spawner that used object field 0x00 for something else. This
-        // is elaborated on more in beta_boo_key_dropped_loop.
         if (o->parentObj) {
             o->parentObj->oBooDeathStatus = BOO_DEATH_STATUS_DYING;
         }
@@ -171,8 +164,41 @@ static void (*sBetaBooKeyActions[])(void) = { beta_boo_key_inside_boo_loop, beta
                                               beta_boo_key_dropped_loop };
 
 /**
- * Update function for bhvBetaBooKey.
+ * Update function for bhvBetaBooKey (Luigi Key collectible).
  */
 void bhv_beta_boo_key_loop(void) {
-    CUR_OBJ_CALL_ACTION_FUNCTION(sBetaBooKeyActions);
+    o->oFaceAngleYaw += 0x700;
+    o->oPosY += sins(o->oFaceAngleYaw / (20 * 1000)) * 2;
+    
+    if (obj_check_if_collided_with_object(o, gMarioObject)) {
+        obj_mark_for_deletion(o);
+        spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+        play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource);
+        gMarioState->numKeys++;
+        save_file_register_key(gCurrSaveFileNum - 1, o->oBehParams2ndByte);
+    }
+}
+
+// Wario Coin functions
+static void validate_wario_coin(void) {
+    if (save_file_taken_wario_coin(gCurrSaveFileNum - 1, o->oBehParams2ndByte)) {
+        cur_obj_become_intangible();
+        cur_obj_disable_rendering();
+        obj_mark_for_deletion(o);
+    }
+}
+
+void bhv_wario_coin_init(void) {
+    cur_obj_scale(2.0f);
+    validate_wario_coin();
+}
+
+void bhv_wario_coin_loop(void) {
+    if (obj_check_if_collided_with_object(o, gMarioObject)) {
+        obj_mark_for_deletion(o);
+        spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+        play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource);
+        gMarioState->numWarioCoins++;
+        save_file_register_wario_coin(gCurrSaveFileNum - 1, o->oBehParams2ndByte);
+    }
 }

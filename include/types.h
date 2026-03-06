@@ -478,7 +478,8 @@ struct MarioState
     s16 numStars;
     
     s8 numLives;
-    s8 numKeys; // Unused key mechanic
+    s8 numKeys; // Luigi key mechanic
+    s8 numWarioCoins;
     s16 health;
     u8 hurtCounter;
     u8 healCounter;

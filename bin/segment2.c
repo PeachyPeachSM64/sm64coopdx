@@ -161,6 +161,8 @@ ALIGNED8 const Texture texture_hud_char_key[] = {
 #include "textures/segment2/custom_hud_key.rgba16.inc.c"
 };
 
+// texture_hud_boo_key and texture_hud_wario_coin moved to custom_textures.c for DynOS compatibility
+
 ALIGNED8 const Texture texture_hud_char_dash[] = {
 #include "textures/segment2/custom_hud_dash.rgba16.inc.c"
 };

@@ -18,6 +18,7 @@
 
 
 static const LevelScript script_func_local_1[] = {
+    OBJECT(/*model*/ MODEL_BETA_BOO_KEY,               /*pos*/ -1595,  2560,  1657, /*angle*/ 0,   0, 0, /*behParam*/ 0x00040000, /*beh*/ bhvBetaBooKey),
     OBJECT(/*model*/ MODEL_RED_FLAME,                  /*pos*/  2089,  1331, -1125, /*angle*/ 0, 270, 0, /*behParam*/ 0x00000000, /*beh*/ bhvFlame),
     OBJECT(/*model*/ MODEL_RED_FLAME,                  /*pos*/  1331,  1075, -1330, /*angle*/ 0, 90, 0,  /*behParam*/ 0x00000000, /*beh*/ bhvFlame),
     OBJECT(/*model*/ MODEL_RED_FLAME,                  /*pos*/  2089,  1331,  -511, /*angle*/ 0, 270, 0, /*behParam*/ 0x00000000, /*beh*/ bhvFlame),

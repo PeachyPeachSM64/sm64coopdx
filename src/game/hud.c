@@ -661,14 +661,28 @@ void render_hud_stars(void) {
 }
 
 /**
- * Unused function that renders the amount of keys collected.
- * Leftover function from the beta version of the game.
+ * Renders the amount of Luigi keys collected.
  */
 void render_hud_keys(void) {
-    s16 i;
+    if (gHudDisplay.keys > 0 && gHudDisplay.keys < 10) {
+        gSPDisplayList(gDisplayListHead++, dl_hud_img_begin);
+        render_hud_tex_lut(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(22), 35, (u8 *)texture_hud_boo_key);
+        gSPDisplayList(gDisplayListHead++, dl_hud_img_end);
+        print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(38), HUD_TOP_Y - 20, "*"); // 'X' glyph
+        print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(54), HUD_TOP_Y - 20, "%d", gHudDisplay.keys);
+    }
+}
 
-    for (i = 0; i < gHudDisplay.keys; i++) {
-        print_text((i * 16) + 220, 142, "/"); // unused glyph - beta key
+/**
+ * Renders the amount of Wario coins collected.
+ */
+void render_hud_wario_coins(void) {
+    if (gHudDisplay.wario_coins > 0 && gHudDisplay.wario_coins < 6) {
+        gSPDisplayList(gDisplayListHead++, dl_hud_img_begin);
+        render_hud_tex_lut(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(22), 55, (u8 *)texture_hud_wario_coin);
+        gSPDisplayList(gDisplayListHead++, dl_hud_img_end);
+        print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(38), HUD_TOP_Y - 40, "*"); // 'X' glyph
+        print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(54), HUD_TOP_Y - 40, "%d", gHudDisplay.wario_coins);
     }
 }
 
@@ -831,6 +845,7 @@ void render_hud(void) {
 
         if (hudDisplayFlags & HUD_DISPLAY_FLAG_KEYS && showHud) {
             render_hud_keys();
+            render_hud_wario_coins();
         }
 
         if (hudDisplayFlags & HUD_DISPLAY_FLAG_CAMERA_AND_POWER && showHud) {

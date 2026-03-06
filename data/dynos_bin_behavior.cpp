@@ -732,6 +732,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found) {
     bhv_constant(id_bhvWallTinyStarParticle);
     bhv_constant(id_bhvWarp);
     bhv_constant(id_bhvWarpPipe);
+    bhv_constant(id_bhvWarioCoin);
     bhv_constant(id_bhvWaterAirBubble);
     bhv_constant(id_bhvWaterBomb);
     bhv_constant(id_bhvWaterBombCannon);

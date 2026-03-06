@@ -16,6 +16,7 @@
 #include "levels/ssl/header.h"
 
 static const LevelScript script_func_local_1[] = {
+    OBJECT(/*model*/ MODEL_BETA_BOO_KEY,     /*pos*/ -5989,  343, -4850, /*angle*/ 0, 0, 0, /*behParam*/ 0x00070000, /*beh*/ bhvBetaBooKey),
     OBJECT(/*model*/ MODEL_SSL_PYRAMID_TOP, /*pos*/ -2047, 1536, -1023, /*angle*/ 0, 0, 0, /*behParam*/ 0x00000000, /*beh*/ bhvPyramidTop),
     RETURN(),
 };

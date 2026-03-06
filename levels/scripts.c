@@ -118,6 +118,15 @@ const LevelScript level_main_scripts_entry[] = {
     LOAD_MODEL_FROM_GEO(MODEL_DIRT_ANIMATION,          dirt_animation_geo),
     LOAD_MODEL_FROM_GEO(MODEL_CARTOON_STAR,            cartoon_star_geo),
 
+    LOAD_MODEL_FROM_GEO(MODEL_BETA_BOO_KEY,            boo_key_geo),
+
+    LOAD_MODEL_FROM_GEO(MODEL_WARIO_COIN_PUMPKIN,      wario_coin_pumpkin_geo),
+    LOAD_MODEL_FROM_GEO(MODEL_WARIO_COIN_HOUSE,        wario_coin_house_geo),
+    LOAD_MODEL_FROM_GEO(MODEL_WARIO_COIN_TREE,         wario_coin_tree_geo),
+    LOAD_MODEL_FROM_GEO(MODEL_WARIO_COIN_KOOPA,        wario_coin_koopa_geo),
+    LOAD_MODEL_FROM_GEO(MODEL_WARIO_COIN_LUNAR,        wario_coin_lunar_geo),
+    LOAD_MODEL_FROM_GEO(MODEL_WARIO_COIN_MARIO,        wario_coin_mario_geo),
+
     // CUSTOM MODELS BEGIN
 
     LOAD_MODEL_FROM_GEO(MODEL_BUBBLE_PLAYER,             water_bomb_geo),
@@ -312,7 +321,7 @@ const LevelScript script_func_global_9[] = {
 
 const LevelScript script_func_global_10[] = {
     LOAD_MODEL_FROM_GEO(MODEL_BOO,                     boo_geo),
-    LOAD_MODEL_FROM_GEO(MODEL_BETA_BOO_KEY,               small_key_geo),
+    // MODEL_BETA_BOO_KEY is now permanently loaded in script_func_global_1
     LOAD_MODEL_FROM_GEO(MODEL_HAUNTED_CHAIR,           haunted_chair_geo),
     LOAD_MODEL_FROM_GEO(MODEL_MAD_PIANO,               mad_piano_geo),
     LOAD_MODEL_FROM_GEO(MODEL_BOOKEND_PART,            bookend_part_geo),

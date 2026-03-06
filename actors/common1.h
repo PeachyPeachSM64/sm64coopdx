@@ -207,6 +207,12 @@ extern const Gfx tree_seg3_dl_03032088[];
 extern const Gfx tree_seg3_dl_03032170[];
 extern const Gfx tree_seg3_dl_03033258[];
 
+// boo_key
+#include "actors/boo_key/geo_header.h"
+
+// wario_coin
+#include "actors/wario_coin/geo_header.h"
+
 // warp_collision
 extern const Collision door_seg3_collision_0301CE78[];
 extern const Collision lll_hexagonal_mesh_seg3_collision_0301CECC[];

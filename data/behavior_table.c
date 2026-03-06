@@ -508,6 +508,7 @@ const struct BehaviorTableEntry gBehaviorTable[id_bhv_max_count] = {
     BHV_ENTRY(bhvWallTinyStarParticle),
     BHV_ENTRY(bhvWarp),
     BHV_ENTRY(bhvWarpPipe),
+    BHV_ENTRY(bhvWarioCoin),
     BHV_ENTRY(bhvWaterAirBubble),
     BHV_ENTRY(bhvWaterBomb),
     BHV_ENTRY(bhvWaterBombCannon),

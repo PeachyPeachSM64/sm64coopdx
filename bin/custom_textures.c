@@ -58,3 +58,27 @@ ALIGNED8 const Texture texture_ping_four[] = {
 ALIGNED8 const Texture texture_ping_full[] = {
 #include "textures/segment2/custom_ping_full.rgba16.inc.c"
 };
+
+ALIGNED8 const Texture texture_hud_boo_key[] = {
+#include "textures/segment2/custom_boo_key.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture texture_hud_wario_coin[] = {
+#include "textures/segment2/custom_wario_coin.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture texture_luigi_save[] = {
+#include "textures/segment2/custom_luigi_save.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture texture_toad_save[] = {
+#include "textures/segment2/custom_toad_save.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture texture_waluigi_save[] = {
+#include "textures/segment2/custom_waluigi_save.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture texture_wario_save[] = {
+#include "textures/segment2/custom_wario_save.rgba16.inc.c"
+};
