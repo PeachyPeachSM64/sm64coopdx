@@ -910,3 +910,51 @@ s32 check_warp_checkpoint(struct WarpNode *warpNode) {
 
     return warpCheckpointActive;
 }
+
+// Luigi Keys functions
+s32 save_file_taken_key(s32 fileIndex, s32 keyId) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
+    if (keyId < 0 || keyId >= 10) { return 0; }
+    return gSaveBuffer.files[fileIndex][0].courseKeys[keyId];
+}
+
+void save_file_register_key(s32 fileIndex, s32 keyId) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return; }
+    if (keyId < 0 || keyId >= 10) { return; }
+    gSaveBuffer.files[fileIndex][0].courseKeys[keyId] = TRUE;
+    gSaveFileModified = TRUE;
+    save_file_do_save(fileIndex, FALSE);
+}
+
+s32 save_file_get_keys(s32 fileIndex) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
+    s32 keyAmount = 0;
+    for (s32 tmp = 0; tmp < 10; tmp++) {
+        if (gSaveBuffer.files[fileIndex][0].courseKeys[tmp]) keyAmount++;
+    }
+    return keyAmount;
+}
+
+// Wario Coins functions
+s32 save_file_taken_wario_coin(s32 fileIndex, s32 coinId) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
+    if (coinId < 0 || coinId >= 6) { return 0; }
+    return gSaveBuffer.files[fileIndex][0].courseWarioCoins[coinId];
+}
+
+void save_file_register_wario_coin(s32 fileIndex, s32 coinId) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return; }
+    if (coinId < 0 || coinId >= 6) { return; }
+    gSaveBuffer.files[fileIndex][0].courseWarioCoins[coinId] = TRUE;
+    gSaveFileModified = TRUE;
+    save_file_do_save(fileIndex, FALSE);
+}
+
+s32 save_file_get_wario_coins(s32 fileIndex) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
+    s32 keyAmount = 0;
+    for (s32 tmp = 0; tmp < 6; tmp++) {
+        if (gSaveBuffer.files[fileIndex][0].courseWarioCoins[tmp]) keyAmount++;
+    }
+    return keyAmount;
+}

@@ -151,6 +151,7 @@ extern const BehaviorScript bhvIgloo[];
 extern const BehaviorScript bhvBowserKey[];
 extern const BehaviorScript bhvGrandStar[];
 extern const BehaviorScript bhvBetaBooKey[];
+extern const BehaviorScript bhvWarioCoin[];
 extern const BehaviorScript bhvAlphaBooKey[];
 extern const BehaviorScript bhvBulletBill[];
 extern const BehaviorScript bhvWhitePuffSmoke[];

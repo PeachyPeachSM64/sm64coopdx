@@ -152,6 +152,7 @@ struct HudDisplay {
     /*0x0A*/ s16 flags;
     /*0x0C*/ u16 timer;
     u16 starGet;
+    s16 wario_coins;
 };
 
 extern struct HudDisplay gHudDisplay;

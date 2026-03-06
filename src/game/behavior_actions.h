@@ -290,10 +290,16 @@ void bhv_bowser_key_loop(void);
 void bhv_grand_star_init(void);
 /* |description|Behavior loop function for Grand Star|descriptionEnd| */
 void bhv_grand_star_loop(void);
-/* |description|Behavior loop function for beta boo key|descriptionEnd| */
+/* |description|Behavior init function for Luigi keys|descriptionEnd| */
+void bhv_key_init(void);
+/* |description|Behavior loop function for beta boo key (Luigi key)|descriptionEnd| */
 void bhv_beta_boo_key_loop(void);
 /* |description|Behavior loop function for alpha boo key|descriptionEnd| */
 void bhv_alpha_boo_key_loop(void);
+/* |description|Behavior init function for Wario coins|descriptionEnd| */
+void bhv_wario_coin_init(void);
+/* |description|Behavior loop function for Wario coins|descriptionEnd| */
+void bhv_wario_coin_loop(void);
 /* |description|Behavior init function for Bullet Bill|descriptionEnd| */
 void bhv_bullet_bill_init(void);
 /* |description|Behavior loop function for Bullet Bill|descriptionEnd| */

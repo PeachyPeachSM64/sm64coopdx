@@ -17,6 +17,8 @@
 #include "levels/vcutm/header.h"
 
 static const LevelScript script_func_local_1[] = {
+    OBJECT(/*model*/ MODEL_WARIO_COIN_TREE,     /*pos*/ -5914,  -383, -1110, /*angle*/ 0,   0, 0, /*behParam*/ 0x00020000, /*beh*/ bhvWarioCoin),
+    OBJECT(/*model*/ MODEL_WARIO_COIN_KOOPA,    /*pos*/  4287,   685, -4391, /*angle*/ 0,   0, 0, /*behParam*/ 0x00030000, /*beh*/ bhvWarioCoin),
     OBJECT(/*model*/ MODEL_VCUTM_SEESAW_PLATFORM, /*pos*/   154, -1919, -6256, /*angle*/ 0, 270, 0, /*behParam*/ 0x00070000, /*beh*/ bhvSeesawPlatform),
     OBJECT(/*model*/ MODEL_VCUTM_SEESAW_PLATFORM, /*pos*/ -2047, -3378, -2047, /*angle*/ 0,   0, 0, /*behParam*/ 0x00070000, /*beh*/ bhvSeesawPlatform),
     //! @bug invalid model IDs - model ID 0x37 isn't loaded

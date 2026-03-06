@@ -1270,6 +1270,7 @@ void update_hud_values(void) {
         gHudDisplay.stars = gMarioState->numStars;
         gHudDisplay.lives = gMarioState->numLives;
         gHudDisplay.keys = gMarioState->numKeys;
+        gHudDisplay.wario_coins = gMarioState->numWarioCoins;
 
         if (numHealthWedges > gHudDisplay.wedges && !gDjuiInMainMenu) {
             play_sound(SOUND_MENU_POWER_METER, gGlobalSoundSource);

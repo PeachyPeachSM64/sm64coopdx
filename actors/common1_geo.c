@@ -1,6 +1,7 @@
 #include <ultra64.h>
 #include "sm64.h"
 #include "geo_commands.h"
+#include "game/object_helpers.h"
 
 #include "make_const_nonconst.h"
 
@@ -25,3 +26,5 @@
 #include "white_particle/geo.inc.c"
 #include "wooden_signpost/geo.inc.c"
 #include "tree/geo.inc.c"
+#include "boo_key/geo.inc.c"
+#include "wario_coin/geo.inc.c"

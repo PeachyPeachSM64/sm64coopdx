@@ -17,6 +17,8 @@
 #include "levels/cotmc/header.h"
 
 static const LevelScript script_func_local_1[] = {
+    OBJECT(/*model*/ MODEL_WARIO_COIN_LUNAR, /*pos*/ -4675,   30,  -105, /*angle*/ 0, 0, 0, /*behParam*/ 0x00040000, /*beh*/ bhvWarioCoin),
+    OBJECT(/*model*/ MODEL_WARIO_COIN_MARIO, /*pos*/     7, -143,  2141, /*angle*/ 0, 0, 0, /*behParam*/ 0x00050000, /*beh*/ bhvWarioCoin),
     OBJECT(/*model*/ MODEL_CAP_SWITCH, /*pos*/ 0,  363, -6144, /*angle*/ 0, 0, 0, /*behParam*/ 0x00010000, /*beh*/ bhvCapSwitch),
     OBJECT(/*model*/ MODEL_NONE,       /*pos*/ 0,  500, -7373, /*angle*/ 0, 0, 0, /*behParam*/ 0x00000000, /*beh*/ bhvWaterfallSoundLoop),
     OBJECT(/*model*/ MODEL_NONE,       /*pos*/ 0,  500,  3584, /*angle*/ 0, 0, 0, /*behParam*/ 0x00000000, /*beh*/ bhvWaterfallSoundLoop),

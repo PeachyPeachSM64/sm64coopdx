@@ -386,7 +386,7 @@
 
 // group 9
 #define MODEL_BOO                         0x54        // boo_geo
-#define MODEL_BETA_BOO_KEY                0x55        // small_key_geo
+#define MODEL_BETA_BOO_KEY                0xFE        // boo_key_geo (moved to permanent range to avoid group conflicts)
 #define MODEL_HAUNTED_CHAIR               0x56        // haunted_chair_geo
 #define MODEL_MAD_PIANO                   0x57        // mad_piano_geo
 #define MODEL_BOOKEND_PART                0x58        // bookend_part_geo
@@ -616,6 +616,13 @@
 #define MODEL_WARIOS_WINGED_METAL_CAP     0xF6 // warios_winged_metal_cap_geo
 
 #define MODEL_ERROR_MODEL                 0xF7 // error_model_geo
+
+#define MODEL_WARIO_COIN_PUMPKIN          0xF8 // wario_coin_pumpkin_geo
+#define MODEL_WARIO_COIN_HOUSE            0xF9 // wario_coin_house_geo
+#define MODEL_WARIO_COIN_TREE             0xFA // wario_coin_tree_geo
+#define MODEL_WARIO_COIN_KOOPA            0xFB // wario_coin_koopa_geo
+#define MODEL_WARIO_COIN_LUNAR            0xFC // wario_coin_lunar_geo
+#define MODEL_WARIO_COIN_MARIO            0xFD // wario_coin_mario_geo
 
 // Custom menu save button models
 #define MODEL_MAIN_MENU_LUIGI_SAVE_BUTTON        0x100

@@ -17,6 +17,8 @@
 #include "levels/totwc/header.h"
 
 static const LevelScript script_func_local_1[] = {
+    OBJECT(/*model*/ MODEL_WARIO_COIN_PUMPKIN, /*pos*/ 4045,  490, 5154, /*angle*/ 0, 0, 0, /*behParam*/ 0x00000000, /*beh*/ bhvWarioCoin),
+    OBJECT(/*model*/ MODEL_WARIO_COIN_HOUSE,   /*pos*/ -698, 1799,    0, /*angle*/ 0, 0, 0, /*behParam*/ 0x00010000, /*beh*/ bhvWarioCoin),
     OBJECT(/*model*/ MODEL_CAP_SWITCH, /*pos*/   0, -2047, 10, /*angle*/ 0, 0, 0, /*behParam*/ 0x00000000, /*beh*/ bhvCapSwitch),
     RETURN(),
 };
