@@ -30,7 +30,7 @@ const LevelScript level_fourth_floor_entry[] = {
 
 	AREA(1, fourth_floor_area_1),
 		// Blue pipe (Mario) - center back
-		OBJECT(MODEL_WARP_PIPE_BOO_BLUE,             311, -110, 2341, 0, 180, 0, 0, bhvWarpPipeBooBlue),
+		OBJECT(MODEL_WARP_PIPE_BOO_RED,             311, -110, 2341, 0, 180, 0, 0, bhvWarpPipeBooBlue),
 		// Red pipe (Mario alternate)
 		OBJECT(MODEL_WARP_PIPE_BOO_RED,              311, -110, 2341, 0, 180, 0, 1, bhvWarpPipeBooRed),
 		// Green pipes (Luigi) - right side

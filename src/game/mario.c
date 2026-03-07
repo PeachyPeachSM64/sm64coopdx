@@ -1114,6 +1114,10 @@ static u32 set_mario_action_cutscene(struct MarioState *m, u32 action, UNUSED u3
             m->vel[1] = 52.0f;
             break;
 
+        case ACT_CHARACTER_SWITCH:
+            m->vel[1] = 64.0f;
+            break;
+
         case ACT_FALL_AFTER_STAR_GRAB:
             mario_set_forward_vel(m, 0.0f);
             break;
