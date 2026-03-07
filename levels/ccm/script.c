@@ -17,7 +17,6 @@
 #include "levels/ccm/header.h"
 
 static const LevelScript script_func_local_1[] = {
-    OBJECT(/*model*/ MODEL_BETA_BOO_KEY,     /*pos*/ -5539, -4812, -6637, /*angle*/ 0,   0, 0, /*behParam*/ 0x00030000, /*beh*/ bhvBetaBooKey),
     OBJECT(/*model*/ MODEL_CCM_ROPEWAY_LIFT, /*pos*/ 531, -4430, 6426,    /*angle*/ 0,   0, 0, /*behParam*/ 0x07120000, /*beh*/ bhvPlatformOnTrack),
     RETURN(),
 };
@@ -47,6 +46,7 @@ static const LevelScript script_func_local_4[] = {
 #ifndef VERSION_JP
     OBJECT(/*model*/ MODEL_NONE,    /*pos*/ -4943,  1321,   667, /*angle*/ 0,   0, 0, /*behParam*/ 0x00000000, /*beh*/ bhvPlaysMusicTrackWhenTouched),
 #endif
+    OBJECT(/*model*/ MODEL_BETA_BOO_KEY,     /*pos*/ -5539, -4812, -6637, /*angle*/ 0,   0, 0, /*behParam*/ 0x00030000, /*beh*/ bhvBetaBooKey),
     RETURN(),
 };
 

@@ -456,7 +456,10 @@ static void *GetPointerFromData(GfxData *aGfxData, const String &aPtrName, u32 a
     }
 
     // Error
-    sys_fatal("Pointer not found: %s", aPtrName.begin());
+    if (aPtrName.Empty()) {
+        sys_fatal("Pointer not found: <empty> (data=%u)", aPtrData);
+    }
+    sys_fatal("Pointer not found: %s (data=%u)", aPtrName.begin(), aPtrData);
     return NULL;
 }
 

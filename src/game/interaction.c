@@ -973,6 +973,93 @@ u32 interact_bbh_entrance(struct MarioState *m, UNUSED u32 interactType, struct 
     return FALSE;
 }
 
+static s32 handle_character_switch_pipe(struct MarioState *m, struct Object *o) {
+    s32 targetCharacter = -1;
+    u8 isUnlocked = FALSE;
+
+    // Blue pipe = Mario
+    if (obj_has_behavior(o, bhvWarpPipeBooBlue)) {
+        targetCharacter = CT_MARIO;
+        isUnlocked = TRUE;
+    }
+    // Red pipe = Mario (alternate)
+    else if (obj_has_behavior(o, bhvWarpPipeBooRed)) {
+        targetCharacter = CT_MARIO;
+        isUnlocked = TRUE;
+    }
+    // Green unlocked = Luigi (requires 10 keys)
+    else if (obj_has_behavior(o, bhvWarpPipeBooGreenUnlocked)) {
+        targetCharacter = CT_LUIGI;
+        isUnlocked = (m->numKeys >= 10);
+    }
+    // Green locked = Luigi (show locked state, reject)
+    else if (obj_has_behavior(o, bhvWarpPipeBooGreenLocked)) {
+        targetCharacter = CT_LUIGI;
+        isUnlocked = FALSE;
+    }
+    // Yellow unlocked = Wario (requires 6 coins)
+    else if (obj_has_behavior(o, bhvWarpPipeBooYellowUnlocked)) {
+        targetCharacter = CT_WARIO;
+        isUnlocked = (m->numWarioCoins >= 6);
+    }
+    // Yellow locked = Wario (show locked state, reject)
+    else if (obj_has_behavior(o, bhvWarpPipeBooYellowLocked)) {
+        targetCharacter = CT_WARIO;
+        isUnlocked = FALSE;
+    }
+    else {
+        return -1; // Not a character switch pipe
+    }
+
+    // Mark as interacted but do NOT set usedObj - this prevents warping
+    o->oInteractStatus = INT_STATUS_INTERACTED;
+    m->interactObj = o;
+
+    play_sound(SOUND_MENU_ENTER_PIPE, m->marioObj->header.gfx.cameraToObject);
+    queue_rumble_data_mario(m, 15, 80);
+
+    if (isUnlocked && targetCharacter >= 0) {
+        // Switch character
+        configPlayerModel = targetCharacter;
+        if (configPlayerModel >= CT_MAX) { configPlayerModel = 0; }
+        m->character = &gCharacters[configPlayerModel];
+        obj_set_model(m->marioObj, m->character->modelId);
+
+        // Sync the character's palette
+        configfile_sync_player_palette();
+
+        // Save character to save file
+        if (gCurrSaveFileNum >= 1 && gCurrSaveFileNum <= NUM_SAVE_FILES) {
+            if (save_file_exists(gCurrSaveFileNum - 1)) {
+                save_file_set_last_character(gCurrSaveFileNum - 1, (u8)configPlayerModel);
+                save_file_do_save(gCurrSaveFileNum - 1, FALSE);
+            }
+        }
+
+        // Play success sound and effect
+        play_character_sound(m, CHAR_SOUND_YAHOO);
+        play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
+        m->particleFlags |= PARTICLE_SPARKLES;
+
+        // Bounce player back out of pipe (stay in level)
+        m->forwardVel = 0.0f;
+        m->vel[1] = 52.0f;
+        mario_set_forward_vel(m, -18.0f);
+        m->skipWarpInteractionsTimer = 20;
+        return set_mario_action(m, ACT_HARD_BACKWARD_GROUND_KB, 0);
+    } else {
+        // Rejected - play Bowser laugh and bounce back
+        play_sound(SOUND_MENU_BOWSER_LAUGH, gGlobalSoundSource);
+        queue_rumble_data_mario(m, 5, 80);
+
+        m->forwardVel = 0.0f;
+        m->vel[1] = 40.0f;
+        mario_set_forward_vel(m, -16.0f);
+        m->skipWarpInteractionsTimer = 20;
+        return set_mario_action(m, ACT_HARD_BACKWARD_GROUND_KB, 0);
+    }
+}
+
 u32 interact_warp(struct MarioState *m, UNUSED u32 interactType, struct Object *o) {
     if (!m || !o) { return FALSE; }
     u32 action;
@@ -984,6 +1071,14 @@ u32 interact_warp(struct MarioState *m, UNUSED u32 interactType, struct Object *
     if (m != &gMarioStates[0]) {
         // don't do for remote players
         return FALSE;
+    }
+
+    // Check for character switch pipes (warp_pipe_boo)
+    if (m->action != ACT_EMERGE_FROM_PIPE && m->action != ACT_HARD_BACKWARD_GROUND_KB) {
+        s32 switchResult = handle_character_switch_pipe(m, o);
+        if (switchResult >= 0) {
+            return switchResult;
+        }
     }
 
     if (o->oInteractionSubtype & INT_SUBTYPE_FADING_WARP) {

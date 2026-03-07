@@ -421,6 +421,12 @@ static const void *sDynosBuiltinActors[] = {
     define_builtin(warios_metal_cap_geo),
     define_builtin(warios_wing_cap_geo),
     define_builtin(warios_winged_metal_cap_geo),
+    define_builtin(warp_pipe_boo_geo),
+    define_builtin(warp_pipe_boo_red_geo),
+    define_builtin(warp_pipe_boo_green_locked_geo),
+    define_builtin(warp_pipe_boo_green_unlocked_geo),
+    define_builtin(warp_pipe_boo_yellow_locked_geo),
+    define_builtin(warp_pipe_boo_yellow_unlocked_geo),
 };
 
 const GeoLayout* DynOS_Builtin_Actor_GetFromName(const char* aDataName) {

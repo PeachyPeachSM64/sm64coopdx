@@ -57,6 +57,12 @@ s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found) {
     common_constant(bhvFadingWarp);
     common_constant(bhvWarp);
     common_constant(bhvWarpPipe);
+    common_constant(bhvWarpPipeBooBlue);
+    common_constant(bhvWarpPipeBooRed);
+    common_constant(bhvWarpPipeBooGreenLocked);
+    common_constant(bhvWarpPipeBooGreenUnlocked);
+    common_constant(bhvWarpPipeBooYellowLocked);
+    common_constant(bhvWarpPipeBooYellowUnlocked);
     common_constant(bhvWhitePuffExplosion);
     common_constant(bhvSpawnedStar);
     common_constant(bhvSpawnedStarNoLevelExit);
@@ -927,9 +933,15 @@ s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool *found) {
     common_constant(MODEL_SPARKLES_ANIMATION);
     common_constant(MODEL_RED_FLAME);
     common_constant(MODEL_BLUE_FLAME);
+    common_constant(MODEL_WARP_PIPE_BOO_BLUE);
+    common_constant(MODEL_WARP_PIPE_BOO_RED);
     common_constant(MODEL_BURN_SMOKE);
     common_constant(MODEL_SPARKLES);
     common_constant(MODEL_SMOKE);
+    common_constant(MODEL_WARP_PIPE_BOO_GREEN_LOCKED);
+    common_constant(MODEL_WARP_PIPE_BOO_GREEN_UNLOCKED);
+    common_constant(MODEL_WARP_PIPE_BOO_YELLOW_LOCKED);
+    common_constant(MODEL_WARP_PIPE_BOO_YELLOW_UNLOCKED);
     common_constant(MODEL_BURN_SMOKE_UNUSED);
     common_constant(MODEL_WHITE_PARTICLE_DL);
     common_constant(MODEL_SAND_DUST);

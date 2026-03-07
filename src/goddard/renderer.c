@@ -3257,8 +3257,8 @@ void gd_init(void) {
     sDynamicMainDls[1] = new_gd_dl(1, GD_CFG_DYNAMIC_DL_GFX, GD_CFG_DYNAMIC_DL_VTX, 200, 10, 3);
     stop_memtracker("Dynamic DLs");
 
-    sMHeadMainDls[0] = new_gd_dl(1, 100, 0, 0, 0, 0);
-    sMHeadMainDls[1] = new_gd_dl(1, 100, 0, 0, 0, 0);
+    sMHeadMainDls[0] = new_gd_dl(1, 5000, 0, 0, 0, 0);
+    sMHeadMainDls[1] = new_gd_dl(1, 5000, 0, 0, 0, 0);
 
     for (i = 0; i < ARRAY_COUNT(sViewDls); i++) {
         sViewDls[i][0] = create_child_gdl(1, sDynamicMainDls[0]);

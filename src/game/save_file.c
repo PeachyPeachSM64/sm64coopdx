@@ -911,6 +911,9 @@ s32 check_warp_checkpoint(struct WarpNode *warpNode) {
     return warpCheckpointActive;
 }
 
+// Gotta fix this :/
+
+/*
 // Luigi Keys functions
 s32 save_file_taken_key(s32 fileIndex, s32 keyId) {
     if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
@@ -958,3 +961,4 @@ s32 save_file_get_wario_coins(s32 fileIndex) {
     }
     return keyAmount;
 }
+*/

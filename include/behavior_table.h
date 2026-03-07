@@ -547,6 +547,13 @@ enum BehaviorId {
     id_bhvAmbientLight,
     id_bhvPointLight,
 
+    id_bhvWarpPipeBooBlue,
+    id_bhvWarpPipeBooRed,
+    id_bhvWarpPipeBooGreenLocked,
+    id_bhvWarpPipeBooGreenUnlocked,
+    id_bhvWarpPipeBooYellowLocked,
+    id_bhvWarpPipeBooYellowUnlocked,
+
     id_bhv_max_count // must be the last in the list
 };
 

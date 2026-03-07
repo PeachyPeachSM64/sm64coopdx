@@ -122,6 +122,14 @@ void bhv_wf_rotating_wooden_platform_loop(void);
 void bhv_fading_warp_loop(void);
 /* |description|Behavior loop function for warp|descriptionEnd| */
 void bhv_warp_loop(void);
+/* |description|Behavior init function for locked Luigi warp pipe|descriptionEnd| */
+void bhv_warp_locked_luigi_init(void);
+/* |description|Behavior init function for unlocked Luigi warp pipe|descriptionEnd| */
+void bhv_warp_unlocked_luigi_init(void);
+/* |description|Behavior init function for locked Wario warp pipe|descriptionEnd| */
+void bhv_warp_locked_wario_init(void);
+/* |description|Behavior init function for unlocked Wario warp pipe|descriptionEnd| */
+void bhv_warp_unlocked_wario_init(void);
 /* |description|Behavior loop function for white puff exploding|descriptionEnd| */
 void bhv_white_puff_exploding_loop(void);
 /* |description|Behavior init function for spawned star|descriptionEnd| */
