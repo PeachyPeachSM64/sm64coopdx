@@ -1,8 +1,12 @@
-Gfx wario_coin_coin_yellow_front_rgba16_aligner[] = {gsSPEndDisplayList()};
-u8 wario_coin_coin_yellow_front_rgba16[] = "actors/wario_coin/custom_coin_yellow_front.rgba16";
+#include "pc/rom_assets.h"
 
-Gfx wario_coin_coin_yellow_side_rgba16_aligner[] = {gsSPEndDisplayList()};
-u8 wario_coin_coin_yellow_side_rgba16[] = "actors/wario_coin/custom_coin_yellow_side.rgba16";
+ALIGNED8 const Texture wario_coin_coin_yellow_front_rgba16[] = {
+#include "actors/wario_coin/custom_coin_yellow_front.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture wario_coin_coin_yellow_side_rgba16[] = {
+#include "actors/wario_coin/custom_coin_yellow_side.rgba16.inc.c"
+};
 
 Vtx wario_coin_000_displaylist_mesh_vtx_0[4464] = {
 	{{{3, 15, 2},0, {2032, 4080},{0x0, 0x0, 0x7F, 0xFF}}},

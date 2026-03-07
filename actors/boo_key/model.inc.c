@@ -1,8 +1,12 @@
-Gfx boo_key_boo_key_gold_rgba16_aligner[] = {gsSPEndDisplayList()};
-u8 boo_key_boo_key_gold_rgba16[] = "actors/boo_key/custom_boo_key_gold.rgba16";
+#include "pc/rom_assets.h"
 
-Gfx boo_key_boo_key_body_rgba16_aligner[] = {gsSPEndDisplayList()};
-u8 boo_key_boo_key_body_rgba16[] = "actors/boo_key/custom_boo_key_body.rgba16";
+ALIGNED8 const Texture boo_key_boo_key_gold_rgba16[] = {
+#include "actors/boo_key/custom_boo_key_gold.rgba16.inc.c"
+};
+
+ALIGNED8 const Texture boo_key_boo_key_body_rgba16[] = {
+#include "actors/boo_key/custom_boo_key_body.rgba16.inc.c"
+};
 
 Vtx boo_key_000_displaylist_mesh_vtx_0[576] = {
 	{{{-96, 0, 22},0, {13091, -16},{0xF, 0x7E, 0xFD, 0xFF}}},
