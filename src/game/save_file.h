@@ -274,19 +274,15 @@ void disable_warp_checkpoint(void);
 void check_if_should_set_warp_checkpoint(struct WarpNode *warpNode);
 s32 check_warp_checkpoint(struct WarpNode *warpNode);
 
-// These are commented out until I can actually fix save files :/
-
-/*
-// Luigi Keys functions
+// Luigi Keys functions (stored in separate auxiliary save file)
 s32 save_file_taken_key(s32 fileIndex, s32 keyId);
 void save_file_register_key(s32 fileIndex, s32 keyId);
 s32 save_file_get_keys(s32 fileIndex);
 
-// Wario Coins functions
+// Wario Coins functions (stored in separate auxiliary save file)
 s32 save_file_taken_wario_coin(s32 fileIndex, s32 coinId);
 void save_file_register_wario_coin(s32 fileIndex, s32 coinId);
 s32 save_file_get_wario_coins(s32 fileIndex);
-*/
 
 #ifdef VERSION_EU
 enum EuLanguages {

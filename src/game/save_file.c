@@ -14,6 +14,18 @@
 #include "macros.h"
 #include "pc/lua/utils/smlua_level_utils.h"
 #include "pc/utils/misc.h"
+#include "pc/fs/fs.h"
+#include <stdio.h>
+
+#define EXT_SAVE_FILENAME_FORMAT "%s/render96dx_ext_save_%d.ini"
+#define NUM_KEYS 10
+#define NUM_WARIO_COINS 6
+
+static s8 sExtSaveKeys[NUM_SAVE_FILES][NUM_KEYS];
+static s8 sExtSaveWarioCoins[NUM_SAVE_FILES][NUM_WARIO_COINS];
+static u8 sExtSaveLoaded[NUM_SAVE_FILES];
+
+static void erase_ext_save(s32 fileIndex);
 
 #ifndef bcopy
 #define bcopy(b1,b2,len) (memmove((b2), (b1), (len)), (void) 0)
@@ -434,6 +446,7 @@ void save_file_erase(s32 fileIndex) {
     touch_high_score_ages(fileIndex);
     bzero(&gSaveBuffer.files[fileIndex][0], sizeof(gSaveBuffer.files[fileIndex][0]));
     bzero(&gSaveBuffer.files[fileIndex][1], sizeof(gSaveBuffer.files[fileIndex][1]));
+    erase_ext_save(fileIndex);
 
     gSaveFileModified = TRUE;
     save_file_do_save(fileIndex, TRUE);
@@ -911,54 +924,160 @@ s32 check_warp_checkpoint(struct WarpNode *warpNode) {
     return warpCheckpointActive;
 }
 
-// Gotta fix this :/
+static void write_ext_save(s32 fileIndex) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return; }
+    
+    char filename[SYS_MAX_PATH] = { 0 };
+    if (snprintf(filename, sizeof(filename), EXT_SAVE_FILENAME_FORMAT, fs_writepath, fileIndex) < 0) {
+        return;
+    }
+    
+    FILE *file = fopen(filename, "wt");
+    if (file == NULL) {
+        return;
+    }
+    
+    fprintf(file, "# Render96DX Extended Save Data\n");
+    fprintf(file, "# This file stores luigi keys and wario coins\n\n");
+    
+    fprintf(file, "[keys]\n");
+    for (s32 i = 0; i < NUM_KEYS; i++) {
+        fprintf(file, "key_%d = %d\n", i, sExtSaveKeys[fileIndex][i] ? 1 : 0);
+    }
+    
+    fprintf(file, "\n[wario_coins]\n");
+    for (s32 i = 0; i < NUM_WARIO_COINS; i++) {
+        fprintf(file, "coin_%d = %d\n", i, sExtSaveWarioCoins[fileIndex][i] ? 1 : 0);
+    }
+    
+    fclose(file);
+}
 
-/*
-// Luigi Keys functions
+static void read_ext_save(s32 fileIndex) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return; }
+    if (sExtSaveLoaded[fileIndex]) { return; }
+    
+    for (s32 i = 0; i < NUM_KEYS; i++) {
+        sExtSaveKeys[fileIndex][i] = 0;
+    }
+    for (s32 i = 0; i < NUM_WARIO_COINS; i++) {
+        sExtSaveWarioCoins[fileIndex][i] = 0;
+    }
+    
+    char filename[SYS_MAX_PATH] = { 0 };
+    if (snprintf(filename, sizeof(filename), EXT_SAVE_FILENAME_FORMAT, fs_writepath, fileIndex) < 0) {
+        sExtSaveLoaded[fileIndex] = TRUE;
+        return;
+    }
+    
+    FILE *file = fopen(filename, "rt");
+    if (file == NULL) {
+        sExtSaveLoaded[fileIndex] = TRUE;
+        return;
+    }
+    
+    char line[256];
+    char section[64] = "";
+    
+    while (fgets(line, sizeof(line), file)) {
+        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r') {
+            continue;
+        }
+        
+        if (line[0] == '[') {
+            char *end = strchr(line, ']');
+            if (end) {
+                *end = '\0';
+                strncpy(section, line + 1, sizeof(section) - 1);
+            }
+            continue;
+        }
+        
+        char key[64];
+        s32 value;
+        if (sscanf(line, "%63[^=]= %d", key, &value) == 2) {
+            char *k = key;
+            while (*k == ' ') k++;
+            char *end = k + strlen(k) - 1;
+            while (end > k && *end == ' ') { *end = '\0'; end--; }
+            
+            if (strcmp(section, "keys") == 0) {
+                s32 idx;
+                if (sscanf(k, "key_%d", &idx) == 1 && idx >= 0 && idx < NUM_KEYS) {
+                    sExtSaveKeys[fileIndex][idx] = (value != 0) ? 1 : 0;
+                }
+            } else if (strcmp(section, "wario_coins") == 0) {
+                s32 idx;
+                if (sscanf(k, "coin_%d", &idx) == 1 && idx >= 0 && idx < NUM_WARIO_COINS) {
+                    sExtSaveWarioCoins[fileIndex][idx] = (value != 0) ? 1 : 0;
+                }
+            }
+        }
+    }
+    
+    fclose(file);
+    sExtSaveLoaded[fileIndex] = TRUE;
+}
+
+static void erase_ext_save(s32 fileIndex) {
+    if (INVALID_FILE_INDEX(fileIndex)) { return; }
+    
+    for (s32 i = 0; i < NUM_KEYS; i++) {
+        sExtSaveKeys[fileIndex][i] = 0;
+    }
+    for (s32 i = 0; i < NUM_WARIO_COINS; i++) {
+        sExtSaveWarioCoins[fileIndex][i] = 0;
+    }
+    sExtSaveLoaded[fileIndex] = TRUE;
+    write_ext_save(fileIndex);
+}
+
 s32 save_file_taken_key(s32 fileIndex, s32 keyId) {
     if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
-    if (keyId < 0 || keyId >= 10) { return 0; }
-    return gSaveBuffer.files[fileIndex][0].courseKeys[keyId];
+    if (keyId < 0 || keyId >= NUM_KEYS) { return 0; }
+    read_ext_save(fileIndex);
+    return sExtSaveKeys[fileIndex][keyId];
 }
 
 void save_file_register_key(s32 fileIndex, s32 keyId) {
     if (INVALID_FILE_INDEX(fileIndex)) { return; }
-    if (keyId < 0 || keyId >= 10) { return; }
-    gSaveBuffer.files[fileIndex][0].courseKeys[keyId] = TRUE;
-    gSaveFileModified = TRUE;
-    save_file_do_save(fileIndex, FALSE);
+    if (keyId < 0 || keyId >= NUM_KEYS) { return; }
+    read_ext_save(fileIndex);
+    sExtSaveKeys[fileIndex][keyId] = TRUE;
+    write_ext_save(fileIndex);
 }
 
 s32 save_file_get_keys(s32 fileIndex) {
     if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
+    read_ext_save(fileIndex);
     s32 keyAmount = 0;
-    for (s32 tmp = 0; tmp < 10; tmp++) {
-        if (gSaveBuffer.files[fileIndex][0].courseKeys[tmp]) keyAmount++;
+    for (s32 i = 0; i < NUM_KEYS; i++) {
+        if (sExtSaveKeys[fileIndex][i]) keyAmount++;
     }
     return keyAmount;
 }
 
-// Wario Coins functions
 s32 save_file_taken_wario_coin(s32 fileIndex, s32 coinId) {
     if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
-    if (coinId < 0 || coinId >= 6) { return 0; }
-    return gSaveBuffer.files[fileIndex][0].courseWarioCoins[coinId];
+    if (coinId < 0 || coinId >= NUM_WARIO_COINS) { return 0; }
+    read_ext_save(fileIndex);
+    return sExtSaveWarioCoins[fileIndex][coinId];
 }
 
 void save_file_register_wario_coin(s32 fileIndex, s32 coinId) {
     if (INVALID_FILE_INDEX(fileIndex)) { return; }
-    if (coinId < 0 || coinId >= 6) { return; }
-    gSaveBuffer.files[fileIndex][0].courseWarioCoins[coinId] = TRUE;
-    gSaveFileModified = TRUE;
-    save_file_do_save(fileIndex, FALSE);
+    if (coinId < 0 || coinId >= NUM_WARIO_COINS) { return; }
+    read_ext_save(fileIndex);
+    sExtSaveWarioCoins[fileIndex][coinId] = TRUE;
+    write_ext_save(fileIndex);
 }
 
 s32 save_file_get_wario_coins(s32 fileIndex) {
     if (INVALID_FILE_INDEX(fileIndex)) { return 0; }
-    s32 keyAmount = 0;
-    for (s32 tmp = 0; tmp < 6; tmp++) {
-        if (gSaveBuffer.files[fileIndex][0].courseWarioCoins[tmp]) keyAmount++;
+    read_ext_save(fileIndex);
+    s32 coinAmount = 0;
+    for (s32 i = 0; i < NUM_WARIO_COINS; i++) {
+        if (sExtSaveWarioCoins[fileIndex][i]) coinAmount++;
     }
-    return keyAmount;
+    return coinAmount;
 }
-*/

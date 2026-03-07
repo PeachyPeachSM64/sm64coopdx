@@ -6,11 +6,11 @@
 #include "game/save_file.h"
 
 static void validate_key(void) {
-    /*if (save_file_taken_key(gCurrSaveFileNum - 1, o->oBehParams2ndByte)) {
+    if (save_file_taken_key(gCurrSaveFileNum - 1, o->oBehParams2ndByte)) {
         cur_obj_become_intangible();
         cur_obj_disable_rendering();
         obj_mark_for_deletion(o);
-    }*/
+    }
 }
 
 void bhv_key_init(void) {
@@ -175,17 +175,17 @@ void bhv_beta_boo_key_loop(void) {
         spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
         play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource);
         gMarioState->numKeys++;
-        //save_file_register_key(gCurrSaveFileNum - 1, o->oBehParams2ndByte);
+        save_file_register_key(gCurrSaveFileNum - 1, o->oBehParams2ndByte);
     }
 }
 
 // Wario Coin functions
 static void validate_wario_coin(void) {
-    /*if (save_file_taken_wario_coin(gCurrSaveFileNum - 1, o->oBehParams2ndByte)) {
+    if (save_file_taken_wario_coin(gCurrSaveFileNum - 1, o->oBehParams2ndByte)) {
         cur_obj_become_intangible();
         cur_obj_disable_rendering();
         obj_mark_for_deletion(o);
-    }*/
+    }
 }
 
 void bhv_wario_coin_init(void) {
@@ -199,6 +199,6 @@ void bhv_wario_coin_loop(void) {
         spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
         play_sound(SOUND_GENERAL_COIN, gGlobalSoundSource);
         gMarioState->numWarioCoins++;
-        //save_file_register_wario_coin(gCurrSaveFileNum - 1, o->oBehParams2ndByte);
+        save_file_register_wario_coin(gCurrSaveFileNum - 1, o->oBehParams2ndByte);
     }
 }
