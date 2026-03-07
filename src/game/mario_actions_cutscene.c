@@ -1240,6 +1240,65 @@ s32 act_warp_door_spawn(struct MarioState *m) {
     return FALSE;
 }
 
+static s32 sCharacterSwitchAlreadyPlayed = FALSE;
+
+s32 act_character_switch(struct MarioState *m) {
+    if (!m) { return 0; }
+    struct Object *marioObj = m->marioObj;
+
+    if (m->actionTimer++ < 33) {
+        marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_ACTIVE;
+        return FALSE;
+    }
+
+    marioObj->header.gfx.node.flags |= GRAPH_RENDER_ACTIVE;
+
+    if (gCurrLevelNum == LEVEL_THI) {
+        if (gCurrAreaIndex == 2) {
+            play_sound_if_no_flag(m, SOUND_MENU_EXIT_PIPE, MARIO_ACTION_SOUND_PLAYED);
+        } else {
+            play_sound_if_no_flag(m, SOUND_MENU_ENTER_PIPE, MARIO_ACTION_SOUND_PLAYED);
+        }
+    }
+
+    if (m->actionArg) {
+        if (!sCharacterSwitchAlreadyPlayed) {
+            play_character_sound_if_no_flag(m, CHAR_SOUND_YAHOO, MARIO_MARIO_SOUND_PLAYED);
+            play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
+            play_transition(WARP_TRANSITION_FADE_FROM_MARIO, 0x14, 0x00, 0x00, 0x00);
+            sCharacterSwitchAlreadyPlayed = TRUE;
+        }
+
+        m->faceAngle[1] = -32;
+
+        if (launch_mario_until_land(m, ACT_HARD_BACKWARD_GROUND_KB, CHAR_ANIM_BACKWARD_AIR_KB, -18.0f)) {
+            mario_set_forward_vel(m, 0.0f);
+            play_mario_landing_sound(m, SOUND_ACTION_TERRAIN_LANDING);
+            sCharacterSwitchAlreadyPlayed = FALSE;
+        }
+
+        m->particleFlags |= PARTICLE_SPARKLES;
+    } else {
+        if (!sCharacterSwitchAlreadyPlayed) {
+            play_sound(SOUND_MENU_BOWSER_LAUGH, gGlobalSoundSource);
+            play_transition(WARP_TRANSITION_FADE_FROM_BOWSER, 0x12, 0x00, 0x00, 0x00);
+            sCharacterSwitchAlreadyPlayed = TRUE;
+        }
+
+        if (m->actionTimer < 11) {
+            marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_ACTIVE;
+            return FALSE;
+        }
+
+        if (launch_mario_until_land(m, ACT_HARD_BACKWARD_GROUND_KB, CHAR_ANIM_BACKWARD_AIR_KB, -18.0f)) {
+            queue_rumble_data_mario(m, 5, 80);
+            sCharacterSwitchAlreadyPlayed = FALSE;
+        }
+    }
+
+    return FALSE;
+}
+
 static s32 launch_mario_until_land_no_collision(struct MarioState *m, s32 endAction, s32 animation, f32 forwardVel) {
     if (!m) { return 0; }
     mario_set_forward_vel(m, forwardVel);
@@ -3221,6 +3280,7 @@ s32 mario_execute_cutscene_action(struct MarioState *m) {
             case ACT_DEBUG_FREE_MOVE:            cancel = act_debug_free_move(m);            break;
             case ACT_READING_SIGN:               cancel = act_reading_sign(m);               break;
             case ACT_JUMBO_STAR_CUTSCENE:        cancel = act_jumbo_star_cutscene(m);        break;
+            case ACT_CHARACTER_SWITCH:           cancel = act_character_switch(m);           break;
             case ACT_WAITING_FOR_DIALOG:         cancel = act_waiting_for_dialog(m);         break;
             case ACT_STANDING_DEATH:             cancel = act_standing_death(m);             break;
             case ACT_QUICKSAND_DEATH:            cancel = act_quicksand_death(m);            break;
