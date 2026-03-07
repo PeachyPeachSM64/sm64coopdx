@@ -12,3 +12,6 @@
 
 // toad_cap
 #include "toad_cap/model.inc.c"
+
+// warp_pipe_boo
+#include "warp_pipe_boo/model.inc.c"

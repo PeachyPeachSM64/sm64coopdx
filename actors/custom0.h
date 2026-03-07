@@ -12,4 +12,7 @@
 // toad_cap
 #include "actors/toad_cap/geo_header.h"
 
+// warp_pipe_boo
+#include "actors/warp_pipe_boo/geo_header.h"
+
 #endif

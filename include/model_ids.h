@@ -483,15 +483,15 @@
 #define MODEL_SPARKLES_ANIMATION          0x8F        // sparkles_animation_geo
 #define MODEL_RED_FLAME                   0x90        // red_flame_geo
 #define MODEL_BLUE_FLAME                  0x91        // blue_flame_geo
-// find me
-// find me
+#define MODEL_WARP_PIPE_BOO_BLUE          0x92        // warp_pipe_boo_geo
+#define MODEL_WARP_PIPE_BOO_RED           0x93        // warp_pipe_boo_red_geo
 #define MODEL_BURN_SMOKE                  0x94        // burn_smoke_geo
 #define MODEL_SPARKLES                    0x95        // sparkles_geo
 #define MODEL_SMOKE                       0x96        // smoke_geo
-// find me
-// find me
-// find me
-// find me
+#define MODEL_WARP_PIPE_BOO_GREEN_LOCKED    0x97        // warp_pipe_boo_green_locked_geo
+#define MODEL_WARP_PIPE_BOO_GREEN_UNLOCKED  0x98        // warp_pipe_boo_green_unlocked_geo
+#define MODEL_WARP_PIPE_BOO_YELLOW_LOCKED   0x99        // warp_pipe_boo_yellow_locked_geo
+#define MODEL_WARP_PIPE_BOO_YELLOW_UNLOCKED 0x9A        // warp_pipe_boo_yellow_unlocked_geo
 // find me
 #define MODEL_BURN_SMOKE_UNUSED           0x9C        // burn_smoke_geo - unused & duplicated
 // find me

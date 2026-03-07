@@ -1071,55 +1071,56 @@ id_bhvVolcanoSoundLoop                    = 489 --- @type BehaviorId
 id_bhvWallTinyStarParticle                = 490 --- @type BehaviorId
 id_bhvWarp                                = 491 --- @type BehaviorId
 id_bhvWarpPipe                            = 492 --- @type BehaviorId
-id_bhvWaterAirBubble                      = 493 --- @type BehaviorId
-id_bhvWaterBomb                           = 494 --- @type BehaviorId
-id_bhvWaterBombCannon                     = 495 --- @type BehaviorId
-id_bhvWaterBombShadow                     = 496 --- @type BehaviorId
-id_bhvWaterBombSpawner                    = 497 --- @type BehaviorId
-id_bhvWaterDroplet                        = 498 --- @type BehaviorId
-id_bhvWaterDropletSplash                  = 499 --- @type BehaviorId
-id_bhvWaterfallSoundLoop                  = 500 --- @type BehaviorId
-id_bhvWaterLevelDiamond                   = 501 --- @type BehaviorId
-id_bhvWaterLevelPillar                    = 502 --- @type BehaviorId
-id_bhvWaterMist                           = 503 --- @type BehaviorId
-id_bhvWaterMist2                          = 504 --- @type BehaviorId
-id_bhvWaterSplash                         = 505 --- @type BehaviorId
-id_bhvWaveTrail                           = 506 --- @type BehaviorId
-id_bhvWdwExpressElevator                  = 507 --- @type BehaviorId
-id_bhvWdwExpressElevatorPlatform          = 508 --- @type BehaviorId
-id_bhvWdwRectangularFloatingPlatform      = 509 --- @type BehaviorId
-id_bhvWdwSquareFloatingPlatform           = 510 --- @type BehaviorId
-id_bhvWfBreakableWallLeft                 = 511 --- @type BehaviorId
-id_bhvWfBreakableWallRight                = 512 --- @type BehaviorId
-id_bhvWfElevatorTowerPlatform             = 513 --- @type BehaviorId
-id_bhvWfRotatingWoodenPlatform            = 514 --- @type BehaviorId
-id_bhvWfSlidingPlatform                   = 515 --- @type BehaviorId
-id_bhvWfSlidingTowerPlatform              = 516 --- @type BehaviorId
-id_bhvWfSolidTowerPlatform                = 517 --- @type BehaviorId
-id_bhvWfTumblingBridge                    = 518 --- @type BehaviorId
-id_bhvWhirlpool                           = 519 --- @type BehaviorId
-id_bhvWhitePuff1                          = 520 --- @type BehaviorId
-id_bhvWhitePuff2                          = 521 --- @type BehaviorId
-id_bhvWhitePuffExplosion                  = 522 --- @type BehaviorId
-id_bhvWhitePuffSmoke                      = 523 --- @type BehaviorId
-id_bhvWhitePuffSmoke2                     = 524 --- @type BehaviorId
-id_bhvWhompKingBoss                       = 525 --- @type BehaviorId
-id_bhvWigglerBody                         = 526 --- @type BehaviorId
-id_bhvWigglerHead                         = 527 --- @type BehaviorId
-id_bhvWind                                = 528 --- @type BehaviorId
-id_bhvWingCap                             = 529 --- @type BehaviorId
-id_bhvWoodenPost                          = 530 --- @type BehaviorId
-id_bhvYellowBackgroundInMenu              = 531 --- @type BehaviorId
-id_bhvYellowBall                          = 532 --- @type BehaviorId
-id_bhvYellowCoin                          = 533 --- @type BehaviorId
-id_bhvYoshi                               = 534 --- @type BehaviorId
-id_RM_Scroll_Texture                      = 535 --- @type BehaviorId
-id_editor_Scroll_Texture                  = 536 --- @type BehaviorId
-id_bhvBlueCoinNumber                      = 537 --- @type BehaviorId
-id_bhvStarNumber                          = 538 --- @type BehaviorId
-id_bhvAmbientLight                        = 539 --- @type BehaviorId
-id_bhvPointLight                          = 540 --- @type BehaviorId
-id_bhv_max_count                          = 541 --- @type BehaviorId
+id_bhvWarioCoin                           = 493 --- @type BehaviorId
+id_bhvWaterAirBubble                      = 494 --- @type BehaviorId
+id_bhvWaterBomb                           = 495 --- @type BehaviorId
+id_bhvWaterBombCannon                     = 496 --- @type BehaviorId
+id_bhvWaterBombShadow                     = 497 --- @type BehaviorId
+id_bhvWaterBombSpawner                    = 498 --- @type BehaviorId
+id_bhvWaterDroplet                        = 499 --- @type BehaviorId
+id_bhvWaterDropletSplash                  = 500 --- @type BehaviorId
+id_bhvWaterfallSoundLoop                  = 501 --- @type BehaviorId
+id_bhvWaterLevelDiamond                   = 502 --- @type BehaviorId
+id_bhvWaterLevelPillar                    = 503 --- @type BehaviorId
+id_bhvWaterMist                           = 504 --- @type BehaviorId
+id_bhvWaterMist2                          = 505 --- @type BehaviorId
+id_bhvWaterSplash                         = 506 --- @type BehaviorId
+id_bhvWaveTrail                           = 507 --- @type BehaviorId
+id_bhvWdwExpressElevator                  = 508 --- @type BehaviorId
+id_bhvWdwExpressElevatorPlatform          = 509 --- @type BehaviorId
+id_bhvWdwRectangularFloatingPlatform      = 510 --- @type BehaviorId
+id_bhvWdwSquareFloatingPlatform           = 511 --- @type BehaviorId
+id_bhvWfBreakableWallLeft                 = 512 --- @type BehaviorId
+id_bhvWfBreakableWallRight                = 513 --- @type BehaviorId
+id_bhvWfElevatorTowerPlatform             = 514 --- @type BehaviorId
+id_bhvWfRotatingWoodenPlatform            = 515 --- @type BehaviorId
+id_bhvWfSlidingPlatform                   = 516 --- @type BehaviorId
+id_bhvWfSlidingTowerPlatform              = 517 --- @type BehaviorId
+id_bhvWfSolidTowerPlatform                = 518 --- @type BehaviorId
+id_bhvWfTumblingBridge                    = 519 --- @type BehaviorId
+id_bhvWhirlpool                           = 520 --- @type BehaviorId
+id_bhvWhitePuff1                          = 521 --- @type BehaviorId
+id_bhvWhitePuff2                          = 522 --- @type BehaviorId
+id_bhvWhitePuffExplosion                  = 523 --- @type BehaviorId
+id_bhvWhitePuffSmoke                      = 524 --- @type BehaviorId
+id_bhvWhitePuffSmoke2                     = 525 --- @type BehaviorId
+id_bhvWhompKingBoss                       = 526 --- @type BehaviorId
+id_bhvWigglerBody                         = 527 --- @type BehaviorId
+id_bhvWigglerHead                         = 528 --- @type BehaviorId
+id_bhvWind                                = 529 --- @type BehaviorId
+id_bhvWingCap                             = 530 --- @type BehaviorId
+id_bhvWoodenPost                          = 531 --- @type BehaviorId
+id_bhvYellowBackgroundInMenu              = 532 --- @type BehaviorId
+id_bhvYellowBall                          = 533 --- @type BehaviorId
+id_bhvYellowCoin                          = 534 --- @type BehaviorId
+id_bhvYoshi                               = 535 --- @type BehaviorId
+id_RM_Scroll_Texture                      = 536 --- @type BehaviorId
+id_editor_Scroll_Texture                  = 537 --- @type BehaviorId
+id_bhvBlueCoinNumber                      = 538 --- @type BehaviorId
+id_bhvStarNumber                          = 539 --- @type BehaviorId
+id_bhvAmbientLight                        = 540 --- @type BehaviorId
+id_bhvPointLight                          = 541 --- @type BehaviorId
+id_bhv_max_count                          = 542 --- @type BehaviorId
 
 --- @alias BehaviorId
 --- | `id_bhv1Up`
@@ -1615,6 +1616,7 @@ id_bhv_max_count                          = 541 --- @type BehaviorId
 --- | `id_bhvWallTinyStarParticle`
 --- | `id_bhvWarp`
 --- | `id_bhvWarpPipe`
+--- | `id_bhvWarioCoin`
 --- | `id_bhvWaterAirBubble`
 --- | `id_bhvWaterBomb`
 --- | `id_bhvWaterBombCannon`
@@ -1760,6 +1762,9 @@ CAMERA_MODE_NEWCAM = 0x12
 
 --- @type integer
 CAMERA_MODE_ROM_HACK = 0x13
+
+--- @type integer
+CAMERA_MODE_PHOTO_MODE = 0x14
 
 --- @type integer
 CAM_MOVE_RETURN_TO_MIDDLE = 0x0001
@@ -3330,9 +3335,6 @@ INT_STATUS_STOP_RIDING = (1 << 22)
 INT_STATUS_TOUCHED_BOB_OMB = (1 << 23)
 
 --- @type integer
-MAX_LOCAL_STATE_HISTORY = 30
-
---- @type integer
 WARP_CHECKPOINT = 0x80
 
 --- @type integer
@@ -3377,7 +3379,8 @@ LEVEL_UNKNOWN_35       = 35 --- @type LevelNum
 LEVEL_TTM              = 36 --- @type LevelNum
 LEVEL_UNKNOWN_37       = 37 --- @type LevelNum
 LEVEL_UNKNOWN_38       = 38 --- @type LevelNum
-LEVEL_COUNT            = 39 --- @type LevelNum
+LEVEL_FOURTH_FLOOR     = 39 --- @type LevelNum
+LEVEL_COUNT            = 40 --- @type LevelNum
 
 --- @alias LevelNum
 --- | `LEVEL_NONE`
@@ -3419,6 +3422,7 @@ LEVEL_COUNT            = 39 --- @type LevelNum
 --- | `LEVEL_TTM`
 --- | `LEVEL_UNKNOWN_37`
 --- | `LEVEL_UNKNOWN_38`
+--- | `LEVEL_FOURTH_FLOOR`
 --- | `LEVEL_COUNT`
 
 --- @type integer
@@ -4548,16 +4552,18 @@ MARIO_HAS_WING_CAP_OFF    = 3 --- @type MarioCapGSCId
 --- | `MARIO_HAS_WING_CAP_ON`
 --- | `MARIO_HAS_WING_CAP_OFF`
 
-GRAB_POS_NULL      = 0 --- @type MarioGrabPosGSCId
-GRAB_POS_LIGHT_OBJ = 1 --- @type MarioGrabPosGSCId
-GRAB_POS_HEAVY_OBJ = 2 --- @type MarioGrabPosGSCId
-GRAB_POS_BOWSER    = 3 --- @type MarioGrabPosGSCId
+GRAB_POS_NULL           = 0 --- @type MarioGrabPosGSCId
+GRAB_POS_LIGHT_OBJ      = 1 --- @type MarioGrabPosGSCId
+GRAB_POS_HEAVY_OBJ      = 2 --- @type MarioGrabPosGSCId
+GRAB_POS_BOWSER         = 3 --- @type MarioGrabPosGSCId
+GRAB_POS_LIGHT_OBJ_SPIN = 4 --- @type MarioGrabPosGSCId
 
 --- @alias MarioGrabPosGSCId
 --- | `GRAB_POS_NULL`
 --- | `GRAB_POS_LIGHT_OBJ`
 --- | `GRAB_POS_HEAVY_OBJ`
 --- | `GRAB_POS_BOWSER`
+--- | `GRAB_POS_LIGHT_OBJ_SPIN`
 
 --- @type integer
 MOD_FS_MAX_SIZE = 0x2000000
@@ -4616,85 +4622,6 @@ MAX_KEYS = 4096
 MAX_KEY_VALUE_LENGTH = 1024
 
 --- @type integer
-SYNC_DISTANCE_ONLY_DEATH = -1
-
---- @type integer
-SYNC_DISTANCE_ONLY_EVENTS = -2
-
---- @type integer
-SYNC_DISTANCE_INFINITE = 0
-
---- @type integer
-PACKET_LENGTH = 3000
-
-NS_SOCKET  = 0 --- @type NetworkSystemType
-NS_MAX     = 1 --- @type NetworkSystemType
-
---- @alias NetworkSystemType
---- | `NS_SOCKET`
---- | `NS_MAX`
-
-PLAYER_INTERACTIONS_NONE  = 0 --- @type PlayerInteractions
-PLAYER_INTERACTIONS_SOLID = 1 --- @type PlayerInteractions
-PLAYER_INTERACTIONS_PVP   = 2 --- @type PlayerInteractions
-
---- @alias PlayerInteractions
---- | `PLAYER_INTERACTIONS_NONE`
---- | `PLAYER_INTERACTIONS_SOLID`
---- | `PLAYER_INTERACTIONS_PVP`
-
-BOUNCY_LEVEL_BOUNDS_OFF    = 0 --- @type BouncyLevelBounds
-BOUNCY_LEVEL_BOUNDS_ON     = 1 --- @type BouncyLevelBounds
-BOUNCY_LEVEL_BOUNDS_ON_CAP = 2 --- @type BouncyLevelBounds
-
---- @alias BouncyLevelBounds
---- | `BOUNCY_LEVEL_BOUNDS_OFF`
---- | `BOUNCY_LEVEL_BOUNDS_ON`
---- | `BOUNCY_LEVEL_BOUNDS_ON_CAP`
-
-PLAYER_PVP_CLASSIC  = 0 --- @type PvpType
-PLAYER_PVP_REVAMPED = 1 --- @type PvpType
-
---- @alias PvpType
---- | `PLAYER_PVP_CLASSIC`
---- | `PLAYER_PVP_REVAMPED`
-
---- @type integer
-UNKNOWN_LOCAL_INDEX = (-1)
-
---- @type integer
-UNKNOWN_GLOBAL_INDEX = (-1)
-
---- @type integer
-UNKNOWN_NETWORK_INDEX = (-1)
-
---- @type integer
-NETWORK_PLAYER_TIMEOUT = 15
-
---- @type integer
-NETWORK_PLAYER_PING_TIMEOUT = 3
-
---- @type integer
-MAX_RX_SEQ_IDS = 256
-
---- @type integer
-USE_REAL_PALETTE_VAR = 0xFF
-
---- @type integer
-MAX_DESCRIPTION_STRING = 20
-
-NPT_UNKNOWN = 0 --- @type NetworkPlayerType
-NPT_LOCAL   = 1 --- @type NetworkPlayerType
-NPT_SERVER  = 2 --- @type NetworkPlayerType
-NPT_CLIENT  = 3 --- @type NetworkPlayerType
-
---- @alias NetworkPlayerType
---- | `NPT_UNKNOWN`
---- | `NPT_LOCAL`
---- | `NPT_SERVER`
---- | `NPT_CLIENT`
-
---- @type integer
 OBJ_COL_FLAG_GROUNDED = (1 << 0)
 
 --- @type integer
@@ -4735,6 +4662,9 @@ ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED = 7
 
 --- @type integer
 ATTACK_HANDLER_SQUISHED_WITH_BLUE_COIN = 8
+
+--- @type integer
+ATTACK_HANDLER_STUN = 9
 
 --- @type integer
 ACTIVE_FLAG_DEACTIVATED = 0
@@ -6938,7 +6868,8 @@ SEQ_EVENT_CUTSCENE_VICTORY      = 31 --- @type SeqId
 SEQ_EVENT_CUTSCENE_ENDING       = 32 --- @type SeqId
 SEQ_MENU_FILE_SELECT            = 33 --- @type SeqId
 SEQ_EVENT_CUTSCENE_LAKITU       = 34 --- @type SeqId
-SEQ_COUNT                       = 35 --- @type SeqId
+SEQ_LEVEL_FOURTH_FLOOR          = 35 --- @type SeqId
+SEQ_COUNT                       = 36 --- @type SeqId
 
 --- @alias SeqId
 --- | `SEQ_SOUND_PLAYER`
@@ -6976,6 +6907,7 @@ SEQ_COUNT                       = 35 --- @type SeqId
 --- | `SEQ_EVENT_CUTSCENE_ENDING`
 --- | `SEQ_MENU_FILE_SELECT`
 --- | `SEQ_EVENT_CUTSCENE_LAKITU`
+--- | `SEQ_LEVEL_FOURTH_FLOOR`
 --- | `SEQ_COUNT`
 
 --- @type integer
@@ -7085,6 +7017,9 @@ AIR_STEP_GRABBED_LEDGE = 3
 
 --- @type integer
 AIR_STEP_GRABBED_CEILING = 4
+
+--- @type integer
+AIR_STEP_HIT_CEILING = 5
 
 --- @type integer
 AIR_STEP_HIT_LAVA_WALL = 6
@@ -7474,6 +7409,9 @@ ACT_HOLD_BUTT_SLIDE_STOP = 0x0800043F
 ACT_WALKING = 0x04000440
 
 --- @type integer
+ACT_WARIO_CHARGE = (0x041 | ACT_FLAG_MOVING | ACT_FLAG_ATTACKING)
+
+--- @type integer
 ACT_HOLD_WALKING = 0x00000442
 
 --- @type integer
@@ -7601,6 +7539,9 @@ ACT_TRIPLE_JUMP = 0x01000882
 
 --- @type integer
 ACT_BACKFLIP = 0x01000883
+
+--- @type integer
+ACT_WARIO_TRIPLE_JUMP = (0x084 | ACT_FLAG_AIR | ACT_FLAG_ALLOW_VERTICAL_WIND_ACTION | ACT_FLAG_CONTROL_JUMP_HEIGHT)
 
 --- @type integer
 ACT_STEEP_JUMP = 0x03000885
@@ -8057,6 +7998,21 @@ ACT_HOLDING_BOWSER = 0x00000391
 
 --- @type integer
 ACT_RELEASING_BOWSER = 0x00000392
+
+--- @type integer
+ACT_PICKING_UP_ENEMIES = (0x193 | ACT_FLAG_STATIONARY | ACT_FLAG_ATTACKING | ACT_FLAG_INVULNERABLE)
+
+--- @type integer
+ACT_HOLDING_ENEMIES = (0x194 | ACT_FLAG_STATIONARY | ACT_FLAG_ATTACKING | ACT_FLAG_INVULNERABLE)
+
+--- @type integer
+ACT_RELEASING_ENEMIES = (0x195 | ACT_FLAG_STATIONARY | ACT_FLAG_ATTACKING | ACT_FLAG_INVULNERABLE)
+
+--- @type integer
+ACT_WARIO_PILE_DRIVER = (0x196 | ACT_FLAG_AIR | ACT_FLAG_ATTACKING | ACT_FLAG_INVULNERABLE)
+
+--- @type integer
+ACT_WARIO_PILE_DRIVER_LAND = (0x197 | ACT_FLAG_STATIONARY | ACT_FLAG_ATTACKING | ACT_FLAG_INVULNERABLE)
 
 --- @type integer
 VALID_BUTTONS = (A_BUTTON | B_BUTTON | Z_TRIG | START_BUTTON | U_JPAD | D_JPAD | L_JPAD | R_JPAD | L_TRIG | R_TRIG | X_BUTTON | Y_BUTTON | U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS )
@@ -11153,6 +11109,9 @@ PLAY_MODE_CHANGE_LEVEL = 4
 PLAY_MODE_FRAME_ADVANCE = 5
 
 --- @type integer
+PLAY_MODE_PHOTO_MODE = 6
+
+--- @type integer
 MAX_PLAYERS = 16
 
 --- @type integer
@@ -11166,24 +11125,3 @@ COOP_OBJ_FLAG_NON_SYNC = (1 << 2)
 
 --- @type integer
 COOP_OBJ_FLAG_INITIALIZED = (1 << 3)
-
---- @type string
-SM64COOPDX_VERSION = "v1.4.1"
-
---- @type string
-VERSION_TEXT = "v"
-
---- @type integer
-VERSION_NUMBER = 41
-
---- @type integer
-MINOR_VERSION_NUMBER = 1
-
---- @type string
-GAME_NAME = "render96dx"
-
---- @type string
-WINDOW_NAME = "Render96 Deluxe"
-
---- @type integer
-MAX_VERSION_LENGTH = 128

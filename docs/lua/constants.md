@@ -58,12 +58,7 @@
     - [enum ModFsFileSeek](#enum-ModFsFileSeek)
 - [mod_storage.h](#mod_storageh)
 - [network.h](#networkh)
-    - [enum NetworkSystemType](#enum-NetworkSystemType)
-    - [enum PlayerInteractions](#enum-PlayerInteractions)
-    - [enum BouncyLevelBounds](#enum-BouncyLevelBounds)
-    - [enum PvpType](#enum-PvpType)
 - [network_player.h](#network_playerh)
-    - [enum NetworkPlayerType](#enum-NetworkPlayerType)
 - [obj_behaviors.c](#obj_behaviorsc)
 - [obj_behaviors_2.h](#obj_behaviors_2h)
 - [object_constants.h](#object_constantsh)
@@ -617,55 +612,56 @@
 | id_bhvWallTinyStarParticle | 490 |
 | id_bhvWarp | 491 |
 | id_bhvWarpPipe | 492 |
-| id_bhvWaterAirBubble | 493 |
-| id_bhvWaterBomb | 494 |
-| id_bhvWaterBombCannon | 495 |
-| id_bhvWaterBombShadow | 496 |
-| id_bhvWaterBombSpawner | 497 |
-| id_bhvWaterDroplet | 498 |
-| id_bhvWaterDropletSplash | 499 |
-| id_bhvWaterfallSoundLoop | 500 |
-| id_bhvWaterLevelDiamond | 501 |
-| id_bhvWaterLevelPillar | 502 |
-| id_bhvWaterMist | 503 |
-| id_bhvWaterMist2 | 504 |
-| id_bhvWaterSplash | 505 |
-| id_bhvWaveTrail | 506 |
-| id_bhvWdwExpressElevator | 507 |
-| id_bhvWdwExpressElevatorPlatform | 508 |
-| id_bhvWdwRectangularFloatingPlatform | 509 |
-| id_bhvWdwSquareFloatingPlatform | 510 |
-| id_bhvWfBreakableWallLeft | 511 |
-| id_bhvWfBreakableWallRight | 512 |
-| id_bhvWfElevatorTowerPlatform | 513 |
-| id_bhvWfRotatingWoodenPlatform | 514 |
-| id_bhvWfSlidingPlatform | 515 |
-| id_bhvWfSlidingTowerPlatform | 516 |
-| id_bhvWfSolidTowerPlatform | 517 |
-| id_bhvWfTumblingBridge | 518 |
-| id_bhvWhirlpool | 519 |
-| id_bhvWhitePuff1 | 520 |
-| id_bhvWhitePuff2 | 521 |
-| id_bhvWhitePuffExplosion | 522 |
-| id_bhvWhitePuffSmoke | 523 |
-| id_bhvWhitePuffSmoke2 | 524 |
-| id_bhvWhompKingBoss | 525 |
-| id_bhvWigglerBody | 526 |
-| id_bhvWigglerHead | 527 |
-| id_bhvWind | 528 |
-| id_bhvWingCap | 529 |
-| id_bhvWoodenPost | 530 |
-| id_bhvYellowBackgroundInMenu | 531 |
-| id_bhvYellowBall | 532 |
-| id_bhvYellowCoin | 533 |
-| id_bhvYoshi | 534 |
-| id_RM_Scroll_Texture | 535 |
-| id_editor_Scroll_Texture | 536 |
-| id_bhvBlueCoinNumber | 537 |
-| id_bhvStarNumber | 538 |
-| id_bhvAmbientLight | 539 |
-| id_bhvPointLight | 540 |
-| id_bhv_max_count | 541 |
+| id_bhvWarioCoin | 493 |
+| id_bhvWaterAirBubble | 494 |
+| id_bhvWaterBomb | 495 |
+| id_bhvWaterBombCannon | 496 |
+| id_bhvWaterBombShadow | 497 |
+| id_bhvWaterBombSpawner | 498 |
+| id_bhvWaterDroplet | 499 |
+| id_bhvWaterDropletSplash | 500 |
+| id_bhvWaterfallSoundLoop | 501 |
+| id_bhvWaterLevelDiamond | 502 |
+| id_bhvWaterLevelPillar | 503 |
+| id_bhvWaterMist | 504 |
+| id_bhvWaterMist2 | 505 |
+| id_bhvWaterSplash | 506 |
+| id_bhvWaveTrail | 507 |
+| id_bhvWdwExpressElevator | 508 |
+| id_bhvWdwExpressElevatorPlatform | 509 |
+| id_bhvWdwRectangularFloatingPlatform | 510 |
+| id_bhvWdwSquareFloatingPlatform | 511 |
+| id_bhvWfBreakableWallLeft | 512 |
+| id_bhvWfBreakableWallRight | 513 |
+| id_bhvWfElevatorTowerPlatform | 514 |
+| id_bhvWfRotatingWoodenPlatform | 515 |
+| id_bhvWfSlidingPlatform | 516 |
+| id_bhvWfSlidingTowerPlatform | 517 |
+| id_bhvWfSolidTowerPlatform | 518 |
+| id_bhvWfTumblingBridge | 519 |
+| id_bhvWhirlpool | 520 |
+| id_bhvWhitePuff1 | 521 |
+| id_bhvWhitePuff2 | 522 |
+| id_bhvWhitePuffExplosion | 523 |
+| id_bhvWhitePuffSmoke | 524 |
+| id_bhvWhitePuffSmoke2 | 525 |
+| id_bhvWhompKingBoss | 526 |
+| id_bhvWigglerBody | 527 |
+| id_bhvWigglerHead | 528 |
+| id_bhvWind | 529 |
+| id_bhvWingCap | 530 |
+| id_bhvWoodenPost | 531 |
+| id_bhvYellowBackgroundInMenu | 532 |
+| id_bhvYellowBall | 533 |
+| id_bhvYellowCoin | 534 |
+| id_bhvYoshi | 535 |
+| id_RM_Scroll_Texture | 536 |
+| id_editor_Scroll_Texture | 537 |
+| id_bhvBlueCoinNumber | 538 |
+| id_bhvStarNumber | 539 |
+| id_bhvAmbientLight | 540 |
+| id_bhvPointLight | 541 |
+| id_bhv_max_count | 542 |
 
 [:arrow_up_small:](#)
 
@@ -713,6 +709,7 @@
 - CAMERA_MODE_SPIRAL_STAIRS
 - CAMERA_MODE_NEWCAM
 - CAMERA_MODE_ROM_HACK
+- CAMERA_MODE_PHOTO_MODE
 - CAM_MOVE_RETURN_TO_MIDDLE
 - CAM_MOVE_ZOOMED_OUT
 - CAM_MOVE_ROTATE_RIGHT
@@ -1483,7 +1480,6 @@
 <br />
 
 ## [lag_compensation.h](#lag_compensation.h)
-- MAX_LOCAL_STATE_HISTORY
 
 [:arrow_up_small:](#)
 
@@ -1541,7 +1537,8 @@
 | LEVEL_TTM | 36 |
 | LEVEL_UNKNOWN_37 | 37 |
 | LEVEL_UNKNOWN_38 | 38 |
-| LEVEL_COUNT | 39 |
+| LEVEL_FOURTH_FLOOR | 39 |
+| LEVEL_COUNT | 40 |
 
 [:arrow_up_small:](#)
 
@@ -2136,6 +2133,7 @@
 | GRAB_POS_LIGHT_OBJ | 1 |
 | GRAB_POS_HEAVY_OBJ | 2 |
 | GRAB_POS_BOWSER | 3 |
+| GRAB_POS_LIGHT_OBJ_SPIN | 4 |
 
 [:arrow_up_small:](#)
 
@@ -2186,58 +2184,12 @@
 <br />
 
 ## [network.h](#network.h)
-- SYNC_DISTANCE_ONLY_DEATH
-- SYNC_DISTANCE_ONLY_EVENTS
-- SYNC_DISTANCE_INFINITE
-- PACKET_LENGTH
-
-### [enum NetworkSystemType](#NetworkSystemType)
-| Identifier | Value |
-| :--------- | :---- |
-| NS_SOCKET | 0 |
-| NS_MAX | 1 |
-
-### [enum PlayerInteractions](#PlayerInteractions)
-| Identifier | Value |
-| :--------- | :---- |
-| PLAYER_INTERACTIONS_NONE | 0 |
-| PLAYER_INTERACTIONS_SOLID | 1 |
-| PLAYER_INTERACTIONS_PVP | 2 |
-
-### [enum BouncyLevelBounds](#BouncyLevelBounds)
-| Identifier | Value |
-| :--------- | :---- |
-| BOUNCY_LEVEL_BOUNDS_OFF | 0 |
-| BOUNCY_LEVEL_BOUNDS_ON | 1 |
-| BOUNCY_LEVEL_BOUNDS_ON_CAP | 2 |
-
-### [enum PvpType](#PvpType)
-| Identifier | Value |
-| :--------- | :---- |
-| PLAYER_PVP_CLASSIC | 0 |
-| PLAYER_PVP_REVAMPED | 1 |
 
 [:arrow_up_small:](#)
 
 <br />
 
 ## [network_player.h](#network_player.h)
-- UNKNOWN_LOCAL_INDEX
-- UNKNOWN_GLOBAL_INDEX
-- UNKNOWN_NETWORK_INDEX
-- NETWORK_PLAYER_TIMEOUT
-- NETWORK_PLAYER_PING_TIMEOUT
-- MAX_RX_SEQ_IDS
-- USE_REAL_PALETTE_VAR
-- MAX_DESCRIPTION_STRING
-
-### [enum NetworkPlayerType](#NetworkPlayerType)
-| Identifier | Value |
-| :--------- | :---- |
-| NPT_UNKNOWN | 0 |
-| NPT_LOCAL | 1 |
-| NPT_SERVER | 2 |
-| NPT_CLIENT | 3 |
 
 [:arrow_up_small:](#)
 
@@ -2264,6 +2216,7 @@
 - ATTACK_HANDLER_SPECIAL_WIGGLER_JUMPED_ON
 - ATTACK_HANDLER_SPECIAL_HUGE_GOOMBA_WEAKLY_ATTACKED
 - ATTACK_HANDLER_SQUISHED_WITH_BLUE_COIN
+- ATTACK_HANDLER_STUN
 
 [:arrow_up_small:](#)
 
@@ -3084,7 +3037,8 @@
 | SEQ_EVENT_CUTSCENE_ENDING | 32 |
 | SEQ_MENU_FILE_SELECT | 33 |
 | SEQ_EVENT_CUTSCENE_LAKITU | 34 |
-| SEQ_COUNT | 35 |
+| SEQ_LEVEL_FOURTH_FLOOR | 35 |
+| SEQ_COUNT | 36 |
 
 [:arrow_up_small:](#)
 
@@ -3127,6 +3081,7 @@
 - AIR_STEP_HIT_WALL
 - AIR_STEP_GRABBED_LEDGE
 - AIR_STEP_GRABBED_CEILING
+- AIR_STEP_HIT_CEILING
 - AIR_STEP_HIT_LAVA_WALL
 - WATER_STEP_NONE
 - WATER_STEP_HIT_FLOOR
@@ -3256,6 +3211,7 @@
 - ACT_BUTT_SLIDE_STOP
 - ACT_HOLD_BUTT_SLIDE_STOP
 - ACT_WALKING
+- ACT_WARIO_CHARGE
 - ACT_HOLD_WALKING
 - ACT_TURNING_AROUND
 - ACT_FINISH_TURNING_AROUND
@@ -3299,6 +3255,7 @@
 - ACT_DOUBLE_JUMP
 - ACT_TRIPLE_JUMP
 - ACT_BACKFLIP
+- ACT_WARIO_TRIPLE_JUMP
 - ACT_STEEP_JUMP
 - ACT_WALL_KICK_AIR
 - ACT_SIDE_FLIP
@@ -3451,6 +3408,11 @@
 - ACT_PICKING_UP_BOWSER
 - ACT_HOLDING_BOWSER
 - ACT_RELEASING_BOWSER
+- ACT_PICKING_UP_ENEMIES
+- ACT_HOLDING_ENEMIES
+- ACT_RELEASING_ENEMIES
+- ACT_WARIO_PILE_DRIVER
+- ACT_WARIO_PILE_DRIVER_LAND
 - VALID_BUTTONS
 - C_BUTTONS
 
@@ -4710,6 +4672,7 @@
 - PLAY_MODE_CHANGE_AREA
 - PLAY_MODE_CHANGE_LEVEL
 - PLAY_MODE_FRAME_ADVANCE
+- PLAY_MODE_PHOTO_MODE
 - MAX_PLAYERS
 - COOP_OBJ_FLAG_NETWORK
 - COOP_OBJ_FLAG_LUA
@@ -4721,17 +4684,6 @@
 <br />
 
 ## [version.h](#version.h)
-- SM64COOPDX_VERSION
-- VERSION_TEXT
-- VERSION_NUMBER
-- MINOR_VERSION_NUMBER
-- GAME_NAME
-- WINDOW_NAME
-- GAME_NAME
-- WINDOW_NAME
-- GAME_NAME
-- WINDOW_NAME
-- MAX_VERSION_LENGTH
 
 [:arrow_up_small:](#)
 

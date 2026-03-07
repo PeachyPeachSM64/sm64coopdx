@@ -601,6 +601,100 @@ const BehaviorScript bhvFadingWarp[] = {
     END_LOOP(),
 };
 
+const BehaviorScript bhvWarpPipeBooBlue[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    ID(id_bhvWarpPipeBooBlue),
+    OR_INT(oFlags, (OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)),
+    SET_INT(oInteractType, INTERACT_WARP),
+    LOAD_COLLISION_DATA(warp_pipe_seg3_collision_03009AC8),
+    SET_FLOAT(oDrawingDistance, 16000),
+    SET_INT(oIntangibleTimer, 0),
+    SET_HITBOX(/*Radius*/ 70, /*Height*/ 50),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_warp_loop),
+        CALL_NATIVE(load_object_collision_model),
+    END_LOOP(),
+};
+
+const BehaviorScript bhvWarpPipeBooRed[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    ID(id_bhvWarpPipeBooRed),
+    OR_INT(oFlags, (OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)),
+    SET_INT(oInteractType, INTERACT_WARP),
+    LOAD_COLLISION_DATA(warp_pipe_seg3_collision_03009AC8),
+    SET_FLOAT(oDrawingDistance, 16000),
+    SET_INT(oIntangibleTimer, 0),
+    SET_HITBOX(/*Radius*/ 70, /*Height*/ 50),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_warp_loop),
+        CALL_NATIVE(load_object_collision_model),
+    END_LOOP(),
+};
+
+const BehaviorScript bhvWarpPipeBooGreenLocked[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    ID(id_bhvWarpPipeBooGreenLocked),
+    OR_INT(oFlags, (OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)),
+    SET_INT(oInteractType, INTERACT_WARP),
+    LOAD_COLLISION_DATA(warp_pipe_seg3_collision_03009AC8),
+    SET_FLOAT(oDrawingDistance, 16000),
+    SET_INT(oIntangibleTimer, 0),
+    SET_HITBOX(/*Radius*/ 70, /*Height*/ 50),
+    CALL_NATIVE(bhv_warp_locked_luigi_init),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_warp_loop),
+        CALL_NATIVE(load_object_collision_model),
+    END_LOOP(),
+};
+
+const BehaviorScript bhvWarpPipeBooGreenUnlocked[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    ID(id_bhvWarpPipeBooGreenUnlocked),
+    OR_INT(oFlags, (OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)),
+    SET_INT(oInteractType, INTERACT_WARP),
+    LOAD_COLLISION_DATA(warp_pipe_seg3_collision_03009AC8),
+    SET_FLOAT(oDrawingDistance, 16000),
+    SET_INT(oIntangibleTimer, 0),
+    SET_HITBOX(/*Radius*/ 70, /*Height*/ 50),
+    CALL_NATIVE(bhv_warp_unlocked_luigi_init),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_warp_loop),
+        CALL_NATIVE(load_object_collision_model),
+    END_LOOP(),
+};
+
+const BehaviorScript bhvWarpPipeBooYellowLocked[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    ID(id_bhvWarpPipeBooYellowLocked),
+    OR_INT(oFlags, (OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)),
+    SET_INT(oInteractType, INTERACT_WARP),
+    LOAD_COLLISION_DATA(warp_pipe_seg3_collision_03009AC8),
+    SET_FLOAT(oDrawingDistance, 16000),
+    SET_INT(oIntangibleTimer, 0),
+    SET_HITBOX(/*Radius*/ 70, /*Height*/ 50),
+    CALL_NATIVE(bhv_warp_locked_wario_init),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_warp_loop),
+        CALL_NATIVE(load_object_collision_model),
+    END_LOOP(),
+};
+
+const BehaviorScript bhvWarpPipeBooYellowUnlocked[] = {
+    BEGIN(OBJ_LIST_SURFACE),
+    ID(id_bhvWarpPipeBooYellowUnlocked),
+    OR_INT(oFlags, (OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW | OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE)),
+    SET_INT(oInteractType, INTERACT_WARP),
+    LOAD_COLLISION_DATA(warp_pipe_seg3_collision_03009AC8),
+    SET_FLOAT(oDrawingDistance, 16000),
+    SET_INT(oIntangibleTimer, 0),
+    SET_HITBOX(/*Radius*/ 70, /*Height*/ 50),
+    CALL_NATIVE(bhv_warp_unlocked_wario_init),
+    BEGIN_LOOP(),
+        CALL_NATIVE(bhv_warp_loop),
+        CALL_NATIVE(load_object_collision_model),
+    END_LOOP(),
+};
+
 const BehaviorScript bhvWarp[] = {
     BEGIN(OBJ_LIST_LEVEL),
     ID(id_bhvWarp),

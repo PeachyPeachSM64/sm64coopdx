@@ -223,7 +223,7 @@ const char *sys_user_path(void)
         return NULL;
     }
 
-    LPCWSTR subdirs[] = { L"render96dx", L"sm64ex-coop", L"render96dx", NULL };
+    LPCWSTR subdirs[] = { L"render96dx", L"render96dx", L"render96dx", NULL };
 
     for (int i = 0; NULL != subdirs[i]; i++)
     {
@@ -305,7 +305,7 @@ const char *sys_user_path(void) {
     static char path[SYS_MAX_PATH] = { 0 };
     if ('\0' != path[0]) { return path; }
 
-    char const *subdirs[] = { "render96dx", "sm64ex-coop", "render96dx", NULL };
+    char const *subdirs[] = { "render96dx", "render96dx", "render96dx", NULL };
 
     char *sdlPath = NULL;
     for (int i = 0; NULL != subdirs[i]; i++)
