@@ -2883,7 +2883,7 @@ sound_ref .chan_15CD
 sound_ref .chan_15DA
 sound_ref .sound_general_cannon_up
 sound_ref .sound_general_grindel_spindel_roll
-sound_ref .sound_general_explosion7
+sound_ref .sound_general_collect_1up
 sound_ref .sound_general_shake_coffin
 sound_ref .sound_general_pyramid_top_spin
 sound_ref .sound_general_pyramid_top_explosion
@@ -3820,6 +3820,10 @@ chan_end
 .layer_160C:
 layer_note1 29, 0xc, 120
 layer_note1 24, 0x24, 120
+layer_end
+
+.layer_16CC:
+layer_note1 51, 0x40, 100
 layer_end
 
 .sound_general_explosion7:
