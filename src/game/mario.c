@@ -42,13 +42,14 @@
 #include "pc/lua/smlua.h"
 #include "bettercamera.h"
 #include "first_person_cam.h"
+#include "pc/cheats.h"
+#include "game/mario_cheats.h"
 
 #define MAX_HANG_PREVENTION 64
 
 u32 unused80339F10;
 s8 filler80339F1C[20];
 u16 gLocalBubbleCounter = 0;
-
 
 /**************************************************
  *                    ANIMATIONS                  *
@@ -919,6 +920,10 @@ void set_mario_y_vel_based_on_fspeed(struct MarioState *m, f32 initialVelY, f32 
     // It was likely trampoline related based on code location.
     m->vel[1] = initialVelY + get_additive_y_vel_for_jumps() + m->forwardVel * multiplier;
 
+    if (m->playerIndex == 0 && Cheats.EnableCheats && m->vel[1] > 0.0f) {
+        m->vel[1] *= (f32)(Cheats.JumpModifier + 1);
+    }
+
     if (m->squishTimer != 0 || m->quicksandDepth > 1.0f) {
         m->vel[1] *= 0.5f;
     }
@@ -1390,7 +1395,10 @@ u8 sSquishScaleOverTime[16] = { 0x46, 0x32, 0x32, 0x3C, 0x46, 0x50, 0x50, 0x3C,
  */
 void squish_mario_model(struct MarioState *m) {
     if (!m) { return; }
-    if (m->squishTimer == 0xFF && m->bounceSquishTimer == 0) { return; }
+    if (m->squishTimer == 0xFF && m->bounceSquishTimer == 0) {
+        vec3f_set(m->marioObj->header.gfx.scale, 1.0f, 1.0f, 1.0f);
+        return;
+    }
 
     // If no longer squished, scale back to default.
     // Also handles the Tiny Mario and Huge Mario cheats.
@@ -1554,8 +1562,7 @@ void update_mario_geometry_inputs(struct MarioState *m) {
             m->input |= INPUT_ABOVE_SLIDE;
         }
 
-        if ((m->floor->flags & SURFACE_FLAG_DYNAMIC)
-            || (m->ceil && m->ceil->flags & SURFACE_FLAG_DYNAMIC)) {
+        if (m->ceil && m->ceil->flags & SURFACE_FLAG_DYNAMIC) {
             ceilToFloorDist = m->ceilHeight - m->floorHeight;
 
             if ((0.0f <= ceilToFloorDist) && (ceilToFloorDist <= 150.0f)) {
@@ -1886,9 +1893,6 @@ void mario_update_hitbox_and_cap_model(struct MarioState *m) {
         bodyState->modelState |= MODEL_STATE_METAL;
     }
 
-    //! (Pause buffered hitstun) Since the global timer increments while paused,
-    //  this can be paused through to give continual invisibility. This leads to
-    //  no interaction with objects.
     if ((m->invincTimer >= 3) && (gGlobalTimer & 1)) {
         m->marioObj->header.gfx.node.flags |= GRAPH_RENDER_INVISIBLE;
     }
@@ -2001,6 +2005,23 @@ s32 execute_mario_action(UNUSED struct Object *o) {
         }
         mario_reset_bodystate(gMarioState);
         update_mario_inputs(gMarioState);
+        cheats_update(gMarioState);
+        cheats_infinite_lives(gMarioState);
+        cheats_god_mode(gMarioState);
+        cheats_moon_gravity(gMarioState);
+        cheats_moon_jump(gMarioState);
+        cheats_super_copter(gMarioState);
+        cheats_auto_wall_kick(gMarioState);
+        cheats_no_hold_heavy(gMarioState);
+        cheats_swim_anywhere(gMarioState);
+        cheats_coins_magnet(gMarioState);
+        cheats_time_stop(gMarioState);
+        cheats_water_control(gMarioState);
+        cheats_hurt_mario(gMarioState);
+        cheats_speed_display(gMarioState);
+        cheats_quick_ending(gMarioState);
+        cheats_debug_move(gMarioState);
+
         mario_handle_special_floors(gMarioState);
         mario_process_interactions(gMarioState);
 
@@ -2082,6 +2103,8 @@ s32 execute_mario_action(UNUSED struct Object *o) {
                     break;
             }
         }
+
+        cheats_blj_anywhere(gMarioState);
 
         sink_mario_in_quicksand(gMarioState);
         squish_mario_model(gMarioState);

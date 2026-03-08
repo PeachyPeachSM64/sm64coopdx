@@ -1148,6 +1148,10 @@ void initiate_delayed_warp(void) {
                         gCurrActNum = 99;
                         initiate_warp(gCurrCreditsEntry->levelNum, gCurrCreditsEntry->areaIndex,
                                     WARP_NODE_CREDITS_START, 0);
+                        // Ensure we always enter the credits cutscene path.
+                        // initiate_warp() runs HOOK_BEFORE_WARP which can override the nodeId,
+                        // causing us to warp normally (with player control) instead of via warp_credits().
+                        sWarpDest.nodeId = WARP_NODE_CREDITS_START;
                     }
                     break;
 
@@ -1172,6 +1176,8 @@ void initiate_delayed_warp(void) {
 
                         initiate_warp(gCurrCreditsEntry->levelNum, gCurrCreditsEntry->areaIndex,
                                     destWarpNode, 0);
+                        // Same reasoning as credits start: enforce credits warp node.
+                        sWarpDest.nodeId = destWarpNode;
                     }
                     break;
 
@@ -1287,6 +1293,14 @@ void basic_update(UNUSED s16 *arg) {
     update_hud_values();
 
     if (gCurrentArea != NULL) {
+        // Prevent stick input from affecting the camera during credits cutscenes.
+        if (gCurrCreditsEntry != NULL && gMarioState && gMarioState->controller) {
+            gMarioState->controller->stickX = 0;
+            gMarioState->controller->stickY = 0;
+            gMarioState->controller->stickMag = 0;
+            gMarioState->controller->extStickX = 0;
+            gMarioState->controller->extStickY = 0;
+        }
         update_camera(gCurrentArea->camera);
     }
 }
