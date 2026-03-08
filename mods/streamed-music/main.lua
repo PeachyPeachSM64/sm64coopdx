@@ -1059,11 +1059,58 @@ local function on_exit()
     stop_stream()
 end
 
+local sSpecialCollectSample = nil
+local function play_special_collectable_jingle_2d()
+    if not state.enabled then return end
+
+    if sSpecialCollectSample == nil then
+        sSpecialCollectSample = audio_sample_load('audio/jingles/event_collectible_grab.wav')
+    end
+    if sSpecialCollectSample == nil then return end
+
+    local playPos = gGlobalSoundSource
+    if gLakituState ~= nil and gLakituState.pos ~= nil then
+        playPos = gLakituState.pos
+    end
+    audio_sample_play(sSpecialCollectSample, playPos, 0.75)
+end
+
+local sPrevKeys = nil
+local sPrevWarioCoins = nil
+local sCollectCooldown = 0
+
+local function on_mario_update(m)
+    if m == nil or m.playerIndex ~= 0 then return end
+
+    if sPrevKeys == nil then
+        sPrevKeys = m.numKeys
+    end
+    if sPrevWarioCoins == nil then
+        sPrevWarioCoins = m.numWarioCoins
+    end
+
+    if sCollectCooldown > 0 then
+        sCollectCooldown = sCollectCooldown - 1
+    end
+
+    local keys = m.numKeys or 0
+    local warioCoins = m.numWarioCoins or 0
+
+    if sCollectCooldown == 0 and (keys > sPrevKeys or warioCoins > sPrevWarioCoins) then
+        play_special_collectable_jingle_2d()
+        sCollectCooldown = 10
+    end
+
+    sPrevKeys = keys
+    sPrevWarioCoins = warioCoins
+end
+
 hook_event(HOOK_ON_LEVEL_INIT, on_level_init)
 hook_event(HOOK_ON_WARP, on_warp)
 hook_event(HOOK_ON_INSTANT_WARP, on_instant_warp)
 hook_event(HOOK_ON_CLEAR_AREAS, on_clear_areas)
 hook_event(HOOK_UPDATE, on_update)
+hook_event(HOOK_MARIO_UPDATE, on_mario_update)
 hook_event(HOOK_ON_EXIT, on_exit)
 
 return {}

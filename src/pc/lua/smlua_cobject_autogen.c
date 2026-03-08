@@ -1377,7 +1377,7 @@ static struct LuaObjectField sMarioBodyStateFields[LUA_MARIO_BODY_STATE_FIELD_CO
     { "wingFlutter",         LVT_S8,      offsetof(struct MarioBodyState, wingFlutter),         false, LOT_NONE,  1,                   sizeof(s8)    },
 };
 
-#define LUA_MARIO_STATE_FIELD_COUNT 80
+#define LUA_MARIO_STATE_FIELD_COUNT 81
 static struct LuaObjectField sMarioStateFields[LUA_MARIO_STATE_FIELD_COUNT] = {
     { "action",                    LVT_U32,       offsetof(struct MarioState, action),                    false, LOT_NONE,              1, sizeof(u32)                       },
     { "actionArg",                 LVT_U32,       offsetof(struct MarioState, actionArg),                 false, LOT_NONE,              1, sizeof(u32)                       },
@@ -1429,6 +1429,7 @@ static struct LuaObjectField sMarioStateFields[LUA_MARIO_STATE_FIELD_COUNT] = {
     { "numKeys",                   LVT_S8,        offsetof(struct MarioState, numKeys),                   false, LOT_NONE,              1, sizeof(s8)                        },
     { "numLives",                  LVT_S8,        offsetof(struct MarioState, numLives),                  false, LOT_NONE,              1, sizeof(s8)                        },
     { "numStars",                  LVT_S16,       offsetof(struct MarioState, numStars),                  false, LOT_NONE,              1, sizeof(s16)                       },
+    { "numWarioCoins",             LVT_S8,        offsetof(struct MarioState, numWarioCoins),             false, LOT_NONE,              1, sizeof(s8)                        },
     { "particleFlags",             LVT_U32,       offsetof(struct MarioState, particleFlags),             false, LOT_NONE,              1, sizeof(u32)                       },
     { "peakHeight",                LVT_F32,       offsetof(struct MarioState, peakHeight),                false, LOT_NONE,              1, sizeof(f32)                       },
     { "playerIndex",               LVT_U16,       offsetof(struct MarioState, playerIndex),               true,  LOT_NONE,              1, sizeof(u16)                       },
