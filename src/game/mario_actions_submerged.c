@@ -18,7 +18,7 @@
 #include "rumble_init.h"
 #include "pc/debuglog.h"
 #include "pc/configfile.h"
-#include "pc/network/network.h"
+#include "pc/cheats.h"
 #include "pc/lua/smlua.h"
 #include "pc/lua/smlua_hooks.h"
 
@@ -201,6 +201,13 @@ u32 perform_water_step(struct MarioState *m) {
     }
 
     vec3f_copy(step, m->vel);
+
+    if (m->playerIndex == 0 && Cheats.EnableCheats) {
+        f32 factor = (f32)(Cheats.SwimModifier + 1);
+        step[0] *= factor;
+        step[1] *= factor;
+        step[2] *= factor;
+    }
 
     if (m->action & ACT_FLAG_SWIMMING) {
         apply_water_current(m, step);

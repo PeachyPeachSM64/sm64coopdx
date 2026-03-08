@@ -11,6 +11,7 @@
 #include "pc/lua/smlua.h"
 #include "game/hardcoded.h"
 #include "pc/configfile.h"
+#include "pc/cheats.h"
 
 static s16 sMovingSandSpeeds[] = { 12, 8, 4, 0 };
 
@@ -422,6 +423,12 @@ s32 perform_ground_step(struct MarioState *m) {
             step[2] = floorNormalY * (m->vel[2] / 4.0f);
         }
 
+        if (m->playerIndex == 0 && Cheats.EnableCheats) {
+            f32 factor = (f32)(Cheats.SpeedModifier + 1);
+            step[0] *= factor;
+            step[2] *= factor;
+        }
+
         intendedPos[0] = m->pos[0] + step[0];
         intendedPos[1] = m->pos[1];
         intendedPos[2] = m->pos[2] + step[2];
@@ -814,6 +821,12 @@ s32 perform_air_step(struct MarioState *m, u32 stepArg) {
             m->vel[1] / 4.0f,
             m->vel[2] / 4.0f,
         };
+
+        if (m->playerIndex == 0 && Cheats.EnableCheats) {
+            f32 factor = (f32)(Cheats.SpeedModifier + 1);
+            step[0] *= factor;
+            step[2] *= factor;
+        }
 
         intendedPos[0] = m->pos[0] + step[0];
         intendedPos[1] = m->pos[1] + step[1];

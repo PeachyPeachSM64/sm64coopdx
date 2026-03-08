@@ -31,8 +31,8 @@
 #include "pc/djui/djui_panel.h"
 #include "pc/djui/djui_panel_pause.h"
 #include "pc/utils/misc.h"
-#include "pc/configfile.h"
-#include "pc/mods/mod.h"
+#include "sound_init.h"
+#include "spawn_sound.h"
 #include "pc/mods/mods.h"
 #include "data/dynos_mgr_builtin_externs.h"
 #include "hud.h"
@@ -3025,7 +3025,8 @@ s16 render_pause_courses_and_castle(void) {
                 render_pause_red_coins();
 
                 /* Always allow exiting from course */
-                if (gLevelValues.pauseExitAnywhere || (gMarioStates[0].action & ACT_FLAG_PAUSE_EXIT)) {
+                if (gLevelValues.pauseExitAnywhere
+                    || (gMarioStates[0].action & ACT_FLAG_PAUSE_EXIT)) {
                     render_pause_course_options(99, 93, &gDialogLineNum, 15);
                 }
 
@@ -3037,6 +3038,15 @@ s16 render_pause_courses_and_castle(void) {
 #endif
                 {
                     bool allowExit = true;
+                    if (gDialogLineNum == 2) {
+                        // Exit Course
+                        allowExit = (gLevelValues.pauseExitAnywhere || (gMarioStates[0].action & ACT_FLAG_PAUSE_EXIT));
+                    } else if (gDialogLineNum == 3) {
+                        // Exit to Castle
+                        allowExit = (gLevelValues.pauseExitAnywhere || (gMarioStates[0].action & ACT_FLAG_PAUSE_EXIT))
+                            && (gLevelValues.exitCastleLevel != LEVEL_NONE);
+                    }
+
                     if (gDialogLineNum == 2 || gDialogLineNum == 3) {
                         smlua_call_event_hooks(HOOK_ON_PAUSE_EXIT, gDialogLineNum == 3, &allowExit);
                     }

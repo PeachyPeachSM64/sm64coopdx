@@ -6,4 +6,6 @@ extern bool gDjuiSecretWarpUnlocked;
 
 void djui_panel_pause_quit_yes(UNUSED struct DjuiBase* caller);
 
+void djui_panel_pause_warp_to_level_create(struct DjuiBase* caller);
+
 void djui_panel_pause_create(struct DjuiBase* caller);

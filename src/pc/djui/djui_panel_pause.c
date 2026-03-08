@@ -8,6 +8,7 @@
 #include "djui_panel_confirm.h"
 #include "djui_panel_mod_menu.h"
 #include "djui_panel_mods.h"
+#include "djui_panel_cheats.h"
 #include "pc/mods/mods.h"
 #include "pc/pc_main.h"
 #include "pc/configfile.h"
@@ -48,7 +49,12 @@ static u8 djui_panel_pause_secret_warp_get_act_count(s16 levelNum) {
     if (COURSE_IS_MAIN_COURSE(courseNum)) {
         return MAX_ACTS;
     }
+
     return 1;
+}
+
+void djui_panel_pause_warp_to_level_create(struct DjuiBase* caller) {
+    djui_panel_pause_secret_warp_create(caller);
 }
 
 static void djui_panel_pause_secret_warp_refresh_act_selector(void) {
@@ -326,7 +332,7 @@ void djui_panel_pause_create(struct DjuiBase* caller) {
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
         if (gDjuiSecretWarpUnlocked) {
-            djui_button_create(body, "Warp To Level", DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_secret_warp_create);
+            djui_button_create(body, "Cheats", DJUI_BUTTON_STYLE_NORMAL, djui_panel_cheats_create);
         }
 
         struct DjuiButton* resume = djui_button_create(body, DLANG(PAUSE, RESUME), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_resume);

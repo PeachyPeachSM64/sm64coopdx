@@ -27,10 +27,10 @@
 #include "object_collision.h"
 #include "object_list_processor.h"
 #include "hardcoded.h"
-
 #include "pc/configfile.h"
 #include "pc/lua/smlua_hooks.h"
 #include "pc/lua/utils/smlua_obj_utils.h"
+#include "pc/cheats.h"
 #include "characters.h"
 
 u8 sDelayInvincTimer;
@@ -2512,6 +2512,9 @@ void mario_handle_special_floors(struct MarioState *m) {
                 break;
 
             case SURFACE_BURNING:
+                if (Cheats.EnableCheats && Cheats.WalkOnHazards) {
+                    break;
+                }
                 if (configQolFixLavaInteraction) {
                     check_lava_boost(m);
                 }
@@ -2521,6 +2524,9 @@ void mario_handle_special_floors(struct MarioState *m) {
         if (!configQolFixLavaInteraction && !(m->action & ACT_FLAG_AIR) && !(m->action & ACT_FLAG_SWIMMING)) {
             switch (floorType) {
                 case SURFACE_BURNING:
+                    if (Cheats.EnableCheats && Cheats.WalkOnHazards) {
+                        break;
+                    }
                     check_lava_boost(m);
                     break;
             }
