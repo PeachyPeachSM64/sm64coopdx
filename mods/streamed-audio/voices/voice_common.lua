@@ -4,15 +4,47 @@ local echoPresets = require('voice_echo_presets')
 
 local gVoiceVolume = mappings.DEFAULT_VOICE_VOLUME
 local gVoiceEchoEnabled = (config.ECHO_ENABLED_DEFAULT == true)
+local gStreamedVoicesEnabled = true
+
+if type(mod_storage_exists) == 'function' then
+    if type(mod_storage_load_bool) == 'function' and mod_storage_exists('voiceEchoEnabled') then
+        gVoiceEchoEnabled = (mod_storage_load_bool('voiceEchoEnabled') == true)
+    end
+    if type(mod_storage_load_number) == 'function' and mod_storage_exists('voiceVolume') then
+        local v = tonumber(mod_storage_load_number('voiceVolume'))
+        if v ~= nil then
+            gVoiceVolume = v
+        end
+    end
+end
 
 local function set_voice_volume(_, value)
     gVoiceVolume = (tonumber(value) or 70) / 100.0
     if gVoiceVolume < 0.0 then gVoiceVolume = 0.0 end
     if gVoiceVolume > 1.0 then gVoiceVolume = 1.0 end
+    if type(mod_storage_save_number) == 'function' then
+        mod_storage_save_number('voiceVolume', gVoiceVolume)
+    end
 end
 
 local function set_voice_echo_enabled(_, value)
     gVoiceEchoEnabled = (value == true)
+    if type(mod_storage_save_bool) == 'function' then
+        mod_storage_save_bool('voiceEchoEnabled', gVoiceEchoEnabled)
+    end
+end
+
+local function set_streamed_voices_enabled(_, value)
+    gStreamedVoicesEnabled = (value == true)
+    if type(mod_storage_save_bool) == 'function' then
+        mod_storage_save_bool('streamedVoices', gStreamedVoicesEnabled)
+    end
+end
+
+if type(mod_storage_exists) == 'function' and type(mod_storage_load_bool) == 'function' then
+    if mod_storage_exists('streamedVoices') then
+        gStreamedVoicesEnabled = (mod_storage_load_bool('streamedVoices') == true)
+    end
 end
 
 if type(hook_mod_menu_slider) == 'function' then
@@ -20,7 +52,11 @@ if type(hook_mod_menu_slider) == 'function' then
 end
 
 if type(hook_mod_menu_checkbox) == 'function' then
-    hook_mod_menu_checkbox('Echo Enabled', (config.ECHO_ENABLED_DEFAULT == true), set_voice_echo_enabled)
+    hook_mod_menu_checkbox('Echo Enabled', gVoiceEchoEnabled, set_voice_echo_enabled)
+end
+
+if type(hook_mod_menu_checkbox) == 'function' then
+    hook_mod_menu_checkbox('Streamed Voices', gStreamedVoicesEnabled, set_streamed_voices_enabled)
 end
 
 local pendingEchoes = {}
@@ -29,9 +65,14 @@ local gCachedLevelNum = nil
 local gCachedAreaIndex = nil
 
 local function get_current_level_and_area()
-    if gNetworkPlayers == nil then return nil end
-    if gNetworkPlayers[0] == nil then return nil end
-    return gNetworkPlayers[0].currLevelNum, gNetworkPlayers[0].currAreaIndex
+    local areaIndex = gCachedAreaIndex
+    if (areaIndex == nil or areaIndex == 0) and gMarioStates ~= nil and gMarioStates[0] ~= nil then
+        local m = gMarioStates[0]
+        if m.area ~= nil and type(m.area.index) == 'number' then
+            areaIndex = m.area.index
+        end
+    end
+    return gCachedLevelNum, areaIndex
 end
 
 local function clear_pending_echoes()
@@ -288,7 +329,7 @@ local function resolve_path(characterType, filename)
         return legacy2
     end
 
-    local p = 'audio/' .. dir .. '/' .. filename
+    local p = 'audio/voices/' .. dir .. '/' .. filename
 
     if type(mod_file_exists) == 'function' then
         if mod_file_exists(p) then return p end
@@ -385,6 +426,7 @@ end
 
 local function on_character_sound(m, characterSound)
     if m == nil or m.character == nil then return nil end
+    if not gStreamedVoicesEnabled then return nil end
 
     local characterType = m.character.type
     local voiceTable = mappings.VOICE_TABLES[characterType]

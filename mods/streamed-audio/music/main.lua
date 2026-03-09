@@ -1,6 +1,3 @@
--- name: Streamed Music Playback
--- description: Replaces vanilla sequence music with streamed audio tracks per level/area, with loop points and vanilla-like fading.
-
 local okTracks, tracksOrErr = pcall(require, 'tracks')
 local tracks = okTracks and tracksOrErr or nil
 
@@ -9,9 +6,9 @@ local boss_intro = okBossIntro and bossIntroOrErr or nil
 
 local sConsoleOk = (type(log_to_console) == 'function')
 local function log_warn(msg)
-    print("[streamed-music] WARNING: " .. msg)
+    print("[streamed-audio] WARNING: " .. msg)
     if sConsoleOk then
-        log_to_console("[streamed-music] " .. msg, CONSOLE_MESSAGE_WARNING)
+        log_to_console("[streamed-audio] " .. msg, CONSOLE_MESSAGE_WARNING)
     end
 end
 
@@ -1064,7 +1061,7 @@ local function play_special_collectable_jingle_2d()
     if not state.enabled then return end
 
     if sSpecialCollectSample == nil then
-        sSpecialCollectSample = audio_sample_load('audio/jingles/event_collectible_grab.wav')
+        sSpecialCollectSample = audio_sample_load('audio/music/jingles/event_collectible_grab.wav')
     end
     if sSpecialCollectSample == nil then return end
 
