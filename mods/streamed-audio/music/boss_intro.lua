@@ -11,7 +11,7 @@ local function is_boss_start_dialog(dialogId)
 end
 
 function M.new(opts)
-    local enabled = false
+    local enabled = true
     if type(opts.mod_storage_exists) == 'function' and type(opts.mod_storage_load_bool) == 'function' then
         if opts.mod_storage_exists("bossIntro") then
             enabled = opts.mod_storage_load_bool("bossIntro")
