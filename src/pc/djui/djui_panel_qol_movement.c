@@ -138,7 +138,7 @@ static void djui_panel_qol_movement_paginated_pre_render(struct DjuiBase* base, 
 
 void djui_panel_qol_movement_create(struct DjuiBase* caller) {
     djui_panel_qol_movement_description_create();
-    struct DjuiThreePanel* panel = djui_panel_menu_create("QoL - Movement", true);
+    struct DjuiThreePanel* panel = djui_panel_menu_create(DLANG(QOL, QOL_MOVEMENT_TITLE), true);
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
         sMovementPaginated = djui_paginated_create(body, 8);

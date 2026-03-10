@@ -332,12 +332,12 @@ void djui_panel_pause_create(struct DjuiBase* caller) {
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
         if (gDjuiSecretWarpUnlocked) {
-            djui_button_create(body, "Cheats", DJUI_BUTTON_STYLE_NORMAL, djui_panel_cheats_create);
+            djui_button_create(body, DLANG(PAUSE, CHEATS), DJUI_BUTTON_STYLE_NORMAL, djui_panel_cheats_create);
         }
 
         struct DjuiButton* resume = djui_button_create(body, DLANG(PAUSE, RESUME), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_resume);
         defaultBase = &resume->base;
-        djui_button_create(body, "Photo Mode", DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_photo_mode);
+        djui_button_create(body, DLANG(PAUSE, PHOTO_MODE), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_photo_mode);
         djui_button_create(body, DLANG(PLAYER, PLAYER), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_customize_create);
         djui_button_create(body, DLANG(PAUSE, OPTIONS), DJUI_BUTTON_STYLE_NORMAL, djui_panel_options_create);
 
@@ -345,7 +345,7 @@ void djui_panel_pause_create(struct DjuiBase* caller) {
             djui_button_create(body, DLANG(HOST_MODS, MODS), DJUI_BUTTON_STYLE_NORMAL, djui_panel_pause_mods_root_create);
         }
 
-        djui_button_create(body, "Exit to Main Menu", DJUI_BUTTON_STYLE_BACK, djui_panel_pause_exit_to_main_menu);
+        djui_button_create(body, DLANG(PAUSE, EXIT_TO_MAIN_MENU), DJUI_BUTTON_STYLE_BACK, djui_panel_pause_exit_to_main_menu);
         djui_button_create(body, DLANG(MAIN, QUIT), DJUI_BUTTON_STYLE_BACK, djui_panel_pause_quit);
     }
 
