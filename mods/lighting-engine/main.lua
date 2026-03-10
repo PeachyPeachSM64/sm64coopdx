@@ -1,5 +1,6 @@
--- name: ExcellentGamer's Lighting Engine
+-- name: Render96 Lighting Engine
 -- description: A mod that utilizes the lighting engine from sm64coopdx.
+-- author: \#40e740\ExcellentGamer
 
 require('config')
 require('ambient')

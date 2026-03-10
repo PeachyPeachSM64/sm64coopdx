@@ -215,6 +215,21 @@ void mod_clear(struct Mod* mod) {
         mod->description = NULL;
     }
 
+    if (mod->shortDescription != NULL) {
+        free(mod->shortDescription);
+        mod->shortDescription = NULL;
+    }
+
+    if (mod->icon != NULL) {
+        free(mod->icon);
+        mod->icon = NULL;
+    }
+
+    if (mod->author != NULL) {
+        free(mod->author);
+        mod->author = NULL;
+    }
+
     if (mod->files != NULL) {
         free(mod->files);
         mod->files = NULL;
@@ -457,6 +472,9 @@ static void mod_extract_fields(struct Mod* mod) {
     mod->incompatible = NULL;
     mod->category = NULL;
     mod->description = NULL;
+    mod->shortDescription = NULL;
+    mod->icon = NULL;
+    mod->author = NULL;
     mod->pausable = true;
     mod->ignoreScriptWarnings = false;
 
@@ -465,6 +483,11 @@ static void mod_extract_fields(struct Mod* mod) {
     char buffer[BUFFER_SIZE] = { 0 };
     while (!feof(f)) {
         file_get_line(buffer, BUFFER_SIZE, f);
+
+        // skip empty lines (allow a blank line before header fields)
+        if (buffer[0] == '\0') {
+            continue;
+        }
 
         // no longer in header
         if (buffer[0] != '-' || buffer[1] != '-') {
@@ -493,6 +516,21 @@ static void mod_extract_fields(struct Mod* mod) {
             mod->description = calloc(MOD_DESCRIPTION_MAX_LENGTH + 1, sizeof(char));
             if (snprintf(mod->description, MOD_DESCRIPTION_MAX_LENGTH, "%s", extracted) < 0) {
                 LOG_INFO("Truncated mod description field '%s'", mod->description);
+            }
+        } else if (mod->shortDescription == NULL && (extracted = extract_lua_field("-- short-description:", buffer))) {
+            mod->shortDescription = calloc(MOD_SHORT_DESCRIPTION_MAX_LENGTH + 1, sizeof(char));
+            if (snprintf(mod->shortDescription, MOD_SHORT_DESCRIPTION_MAX_LENGTH, "%s", extracted) < 0) {
+                LOG_INFO("Truncated mod short description field '%s'", mod->shortDescription);
+            }
+        } else if (mod->icon == NULL && (extracted = extract_lua_field("-- icon:", buffer))) {
+            mod->icon = calloc(MOD_ICON_MAX_LENGTH + 1, sizeof(char));
+            if (snprintf(mod->icon, MOD_ICON_MAX_LENGTH, "%s", extracted) < 0) {
+                LOG_INFO("Truncated mod icon field '%s'", mod->icon);
+            }
+        } else if (mod->author == NULL && (extracted = extract_lua_field("-- author:", buffer))) {
+            mod->author = calloc(MOD_AUTHOR_MAX_LENGTH + 1, sizeof(char));
+            if (snprintf(mod->author, MOD_AUTHOR_MAX_LENGTH, "%s", extracted) < 0) {
+                LOG_INFO("Truncated mod author field '%s'", mod->author);
             }
         } else if ((extracted = extract_lua_field("-- pausable:", buffer))) {
             mod->pausable = !strcmp(extracted, "true");
