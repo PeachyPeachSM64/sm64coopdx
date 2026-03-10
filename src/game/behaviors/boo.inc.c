@@ -35,16 +35,11 @@ void bhv_boo_init(void) {
 
 static s32 boo_should_be_stopped(void) {
     if (cur_obj_has_behavior(bhvMerryGoRoundBigBoo) || cur_obj_has_behavior(bhvMerryGoRoundBoo)) {
-        for (s32 i = 0; i < MAX_PLAYERS; i++) {
-            if (!is_player_active(&gMarioStates[i])) { continue; }
-            if (gMarioStates[i].currentRoom != BBH_DYNAMIC_SURFACE_ROOM && gMarioStates[i].currentRoom != BBH_NEAR_MERRY_GO_ROUND_ROOM) { return TRUE; }
-        }
-        return FALSE;
-        /*if (!gMarioOnMerryGoRound) {
+        if (!gMarioOnMerryGoRound) {
             return TRUE;
         } else {
             return FALSE;
-        }*/
+        }
     } else {
         if (o->activeFlags & ACTIVE_FLAG_IN_DIFFERENT_ROOM) {
             return TRUE;
@@ -359,9 +354,7 @@ static void boo_chase_mario(f32 a0, s16 a1, f32 a2) {
     if (boo_vanish_or_appear()) {
         o->oInteractType = 0x8000;
 
-
-        u8 isMerryGoRoundBoo = (cur_obj_has_behavior(bhvMerryGoRoundBigBoo) || cur_obj_has_behavior(bhvMerryGoRoundBoo));
-        if (!isMerryGoRoundBoo && cur_obj_lateral_dist_from_obj_to_home(player) > 1500.0f) {
+        if (cur_obj_lateral_dist_from_obj_to_home(player) > 1500.0f) {
             sp1A = cur_obj_angle_to_home();
         } else {
             sp1A = angleToPlayer;
