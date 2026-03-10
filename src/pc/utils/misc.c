@@ -120,14 +120,20 @@ void file_get_line(char* buffer, size_t maxLength, FILE* fp) {
 
         // parse new line escape code
         if (c == '\\') {
-            c = fgetc(fp);
+            char next = fgetc(fp);
             if (feof(fp)) { break; }
-            if (c == 'n') {
+            if (next == 'n') {
                 if ((size_t)(buffer - initial) < (maxLength - 1)) {
                     *buffer++ = '\n';
                 }
                 goto next_get;
             }
+
+            // preserve backslash sequences (ex: DJUI color codes like "\\#ff3030\\")
+            if ((size_t)(buffer - initial) < (maxLength - 1)) {
+                *buffer++ = '\\';
+            }
+            c = next;
         }
 
         // found new line

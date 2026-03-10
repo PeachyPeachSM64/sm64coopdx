@@ -360,9 +360,10 @@ DataNode<TexData>* DynOS_Tex_LoadFromBinary(const SysPath &aPackFolder, const Sy
         // and not by `aTexName`, but DynOS_Tex_Get searches for `aTexName`...
         // Normally, this doesn't cause any issue, but things go wrong when `aTexName`
         // is not the same as the texture node name (which is the case for modfs files).
-        if (is_mod_fs_file(aFilename.c_str())) {
-            _TexNode->mName = aTexName;
-        }
+        // We always want the node name to match `aTexName` so that DynOS_Tex_Get can find it.
+        // This is especially important when loading standalone .tex files (their internal name
+        // is often just "icon"), but the caller expects to retrieve it using a unique name.
+        _TexNode->mName = aTexName;
 
         if (aAddToPack) {
             if (!_Pack) { _Pack = DynOS_Pack_Add(aPackFolder); }
