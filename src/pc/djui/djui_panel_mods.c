@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <math.h>
 #include "djui.h"
 #include "djui_panel.h"
 #include "djui_panel_menu.h"
@@ -31,6 +32,8 @@ extern ALIGNED8 const u8 texture_hud_char_mario_head[];
 static struct DjuiFlowLayout* sModLayout = NULL;
 static struct DjuiThreePanel* sDescriptionPanel = NULL;
 static struct DjuiText* sTooltip = NULL;
+static struct DjuiBase* sPreview = NULL;
+static struct DjuiBase* sDescriptionBg = NULL;
 static struct DjuiPaginated* sModPaginated = NULL;
 static struct DjuiButton* sBackButton = NULL;
 static struct DjuiButton* sRefreshButton = NULL;
@@ -38,6 +41,18 @@ static unsigned int sSelectedCategory = MOD_CATEGORY_ALL;
 static bool sWarned = false;
 static char sWarnedIconMods[16][SYS_MAX_PATH] = { 0 };
 static u8 sWarnedIconModsIndex = 0;
+
+extern f32 gRenderingDelta;
+
+#define DJUI_MOD_PREVIEW_MAX (8)
+#define DJUI_MOD_DESCRIPTION_BOX_HEIGHT (170.0f)
+
+struct DjuiModPreview {
+    struct DjuiBase base;
+    s32 modIndex;
+    u8 previewCount;
+    struct TextureInfo previews[DJUI_MOD_PREVIEW_MAX];
+};
 
 static bool djui_mod_card_file_exists(const char* path) {
     if (path == NULL || path[0] == '\0') { return false; }
@@ -76,6 +91,226 @@ static void djui_mod_card_build_icon_texture_name(const struct Mod* mod, char* o
             outName[i] = '_';
         }
     }
+}
+
+static void djui_mod_preview_build_texture_name(const struct Mod* mod, u8 previewIndex, char* outName, size_t outNameSize) {
+    if (outName == NULL || outNameSize == 0) { return; }
+    outName[0] = '\0';
+    if (mod == NULL) { return; }
+    snprintf(outName, outNameSize, "mod_preview_%s_%u", mod->relativePath, (unsigned int)previewIndex);
+    for (size_t i = 0; outName[i] != '\0'; i++) {
+        if (!isalnum((unsigned char)outName[i])) {
+            outName[i] = '_';
+        }
+    }
+}
+
+static void djui_mod_preview_clear(struct DjuiModPreview* preview) {
+    if (preview == NULL) { return; }
+    preview->modIndex = -1;
+    preview->previewCount = 0;
+    memset(preview->previews, 0, sizeof(preview->previews));
+    djui_base_set_visible(&preview->base, false);
+}
+
+static bool djui_mod_preview_try_load_one(struct Mod* mod, u8 previewIndex, struct TextureInfo* outTi) {
+    if (mod == NULL || outTi == NULL) { return false; }
+
+    char texName[SYS_MAX_PATH] = { 0 };
+    djui_mod_preview_build_texture_name(mod, previewIndex, texName, sizeof(texName));
+    if (texName[0] == '\0') { return false; }
+
+    if (dynos_texture_get(texName, outTi)) {
+        return true;
+    }
+
+    // try .tex first, then .png
+    const char* exts[] = { "tex", "png" };
+    for (u32 e = 0; e < (sizeof(exts) / sizeof(exts[0])); e++) {
+        char fileRel[64] = { 0 };
+        snprintf(fileRel, sizeof(fileRel), "textures/preview%u.%s", (unsigned int)previewIndex, exts[e]);
+
+        char previewPath[SYS_MAX_PATH] = { 0 };
+        char previewResourcePath[SYS_MAX_PATH] = { 0 };
+        char previewModFsPath[SYS_MAX_PATH] = { 0 };
+
+        if (mod->isDirectory) {
+            if (!concat_path(previewPath, mod->basePath, fileRel)) { return false; }
+
+            char modsPath[SYS_MAX_PATH] = { 0 };
+            snprintf(modsPath, SYS_MAX_PATH, "%s/%s", sys_resource_path(), MOD_DIRECTORY);
+            char modFolder[SYS_MAX_PATH] = { 0 };
+            if (concat_path(modFolder, modsPath, mod->relativePath)) {
+                concat_path(previewResourcePath, modFolder, fileRel);
+            }
+
+            if (djui_mod_card_file_exists(previewPath)) {
+                if (dynos_add_texture(previewPath, texName) && dynos_texture_get(texName, outTi)) {
+                    return true;
+                }
+                // if it exists but failed to load, don't continue trying other extensions
+                return false;
+            }
+
+            if (previewResourcePath[0] != '\0' && djui_mod_card_file_exists(previewResourcePath)) {
+                if (dynos_add_texture(previewResourcePath, texName) && dynos_texture_get(texName, outTi)) {
+                    return true;
+                }
+                return false;
+            }
+
+            continue;
+        }
+
+        // packed mod: ModFS URI
+        snprintf(previewModFsPath, SYS_MAX_PATH, MOD_FS_URI_FORMAT, mod->relativePath, fileRel);
+        if (dynos_add_texture(previewModFsPath, texName) && dynos_texture_get(texName, outTi)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static void djui_mod_preview_set_mod_index(struct DjuiModPreview* preview, s32 modIndex) {
+    if (preview == NULL) { return; }
+
+    if (modIndex < 0 || modIndex >= gLocalMods.entryCount) {
+        djui_mod_preview_clear(preview);
+        return;
+    }
+
+    if (preview->modIndex == modIndex) {
+        return;
+    }
+
+    preview->modIndex = modIndex;
+    preview->previewCount = 0;
+    memset(preview->previews, 0, sizeof(preview->previews));
+
+    struct Mod* mod = gLocalMods.entries[modIndex];
+    if (mod == NULL) {
+        djui_mod_preview_clear(preview);
+        return;
+    }
+
+    for (u8 i = 1; i <= DJUI_MOD_PREVIEW_MAX; i++) {
+        struct TextureInfo ti = { 0 };
+        if (!djui_mod_preview_try_load_one(mod, i, &ti)) {
+            break;
+        }
+        preview->previews[preview->previewCount++] = ti;
+    }
+
+    djui_base_set_visible(&preview->base, preview->previewCount > 0);
+}
+
+static bool djui_mod_preview_render(struct DjuiBase* base) {
+    struct DjuiModPreview* preview = (struct DjuiModPreview*)base;
+    struct DjuiBaseRect* comp = &base->comp;
+
+    if (preview == NULL || preview->previewCount == 0) {
+        return false;
+    }
+
+    // translate position
+    f32 translatedX = comp->x;
+    f32 translatedY = comp->y;
+    djui_gfx_position_translate(&translatedX, &translatedY);
+    create_dl_translation_matrix(DJUI_MTX_PUSH, translatedX, translatedY, 0);
+
+    // translate size
+    f32 translatedWidth = comp->width;
+    f32 translatedHeight = comp->height;
+    djui_gfx_scale_translate(&translatedWidth, &translatedHeight);
+
+    if (!djui_gfx_add_clipping(base)) {
+        // timing
+        const f32 cycleFrames = 300.0f;
+        const f32 fadeFrames = 60.0f;
+        const f32 panFrames = 2400.0f;
+
+        f32 t = (f32)gGlobalTimer + gRenderingDelta;
+        u8 idx = (u8)(((u32)floorf(t / cycleFrames)) % preview->previewCount);
+        u8 nextIdx = (u8)((idx + 1) % preview->previewCount);
+
+        f32 phase = fmodf(t, cycleFrames);
+        f32 fadeT = 0;
+        if (preview->previewCount > 1 && phase >= (cycleFrames - fadeFrames)) {
+            fadeT = (f32)(phase - (cycleFrames - fadeFrames)) / (f32)fadeFrames;
+        }
+
+        // horizontal pan (triangle wave 0..1..0)
+        f32 panPhase = fmodf(t, panFrames);
+        f32 panT = (panPhase < (panFrames / 2))
+            ? (f32)panPhase / (f32)(panFrames / 2)
+            : 1.0f - (f32)(panPhase - (panFrames / 2)) / (f32)(panFrames / 2);
+
+        const struct TextureInfo* a = &preview->previews[idx];
+        const struct TextureInfo* b = &preview->previews[nextIdx];
+        if (a->texture != NULL) {
+            // compute crop region to fill the box
+            f32 targetAspect = comp->height > 0 ? (comp->width / comp->height) : 1.0f;
+            u32 tileW = (u32)roundf((f32)a->height * targetAspect);
+            u32 tileH = a->height;
+            if (tileW > a->width) {
+                tileW = a->width;
+                tileH = (u32)roundf((f32)a->width / targetAspect);
+                if (tileH > a->height) { tileH = a->height; }
+            }
+            u32 maxX = (a->width > tileW) ? (a->width - tileW) : 0;
+            u32 maxY = (a->height > tileH) ? (a->height - tileH) : 0;
+            u32 tileX = (u32)roundf((f32)maxX * panT);
+            u32 tileY = (u32)roundf((f32)maxY * 0.5f);
+
+            f32 aspect = tileH ? ((f32)tileW / (f32)tileH) : 1.0f;
+            u8 alphaA = (u8)roundf((f32)base->color.a * (1.0f - fadeT));
+            gDPSetEnvColor(gDisplayListHead++, base->color.r, base->color.g, base->color.b, alphaA);
+            create_dl_scale_matrix(DJUI_MTX_PUSH, translatedWidth / aspect, translatedHeight, 1.0f);
+            djui_gfx_render_texture_tile(a->texture, a->width, a->height, a->format, a->size, tileX, tileY, tileW, tileH, true, false);
+            gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
+
+            if (preview->previewCount > 1 && fadeT > 0 && b->texture != NULL) {
+                // compute crop region for next image
+                tileW = (u32)roundf((f32)b->height * targetAspect);
+                tileH = b->height;
+                if (tileW > b->width) {
+                    tileW = b->width;
+                    tileH = (u32)roundf((f32)b->width / targetAspect);
+                    if (tileH > b->height) { tileH = b->height; }
+                }
+                maxX = (b->width > tileW) ? (b->width - tileW) : 0;
+                maxY = (b->height > tileH) ? (b->height - tileH) : 0;
+                tileX = (u32)roundf((f32)maxX * panT);
+                tileY = (u32)roundf((f32)maxY * 0.5f);
+                aspect = tileH ? ((f32)tileW / (f32)tileH) : 1.0f;
+                u8 alphaB = (u8)roundf((f32)base->color.a * fadeT);
+                gDPSetEnvColor(gDisplayListHead++, base->color.r, base->color.g, base->color.b, alphaB);
+                create_dl_scale_matrix(DJUI_MTX_PUSH, translatedWidth / aspect, translatedHeight, 1.0f);
+                djui_gfx_render_texture_tile(b->texture, b->width, b->height, b->format, b->size, tileX, tileY, tileW, tileH, true, false);
+                gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
+            }
+        }
+    }
+
+    gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
+    return true;
+}
+
+static void djui_mod_preview_destroy(struct DjuiBase* base) {
+    struct DjuiModPreview* preview = (struct DjuiModPreview*)base;
+    free(preview);
+}
+
+static struct DjuiModPreview* djui_mod_preview_create(struct DjuiBase* parent) {
+    struct DjuiModPreview* preview = calloc(1, sizeof(struct DjuiModPreview));
+    struct DjuiBase* base = &preview->base;
+    preview->modIndex = -1;
+    preview->previewCount = 0;
+    djui_base_init(parent, base, djui_mod_preview_render, djui_mod_preview_destroy);
+    djui_base_set_color(base, 255, 255, 255, 255);
+    djui_base_set_visible(base, false);
+    return preview;
 }
 
 static bool djui_mod_card_try_load_icon_png(struct Mod* mod, struct TextureInfo* outTi) {
@@ -188,13 +423,13 @@ static struct ModCategory sCategories[] = {
     { "GAMEMODES", "gamemode" },
     { "MOVESETS", "moveset" },
     { "CHARACTER_SELECT", "cs" },
+    { "AUDIO", "audio" },
 };
 static const int sNumCategories = sizeof(sCategories) / sizeof(sCategories[0]);
 
 static void djui_panel_mods_description_create(void) {
-    f32 bodyHeight = 1000;
-
-    struct DjuiThreePanel* panel = djui_three_panel_create(&gDjuiRoot->base, 64, bodyHeight, 0);
+    struct DjuiThreePanel* panel = djui_three_panel_create(&gDjuiRoot->base, 0, 1.0f, 0);
+    djui_three_panel_set_body_size_type(panel, DJUI_SVT_RELATIVE);
     struct DjuiThreePanelTheme theme = gDjuiThemes[configDjuiTheme]->threePanels;
 
     djui_base_set_alignment(&panel->base, DJUI_HALIGN_RIGHT, DJUI_VALIGN_CENTER);
@@ -205,19 +440,54 @@ static void djui_panel_mods_description_create(void) {
     djui_base_set_border_width(&panel->base, 8);
     djui_base_set_padding(&panel->base, 16, 16, 16, 16);
     {
-        struct DjuiFlowLayout* body = djui_flow_layout_create(&panel->base);
+        // IMPORTANT: DjuiThreePanel expects header/body/footer as the first 3 children.
+        // Create a transparent header spacer so our real body becomes the second child.
+        struct DjuiRect* headerSpacer = djui_rect_create(&panel->base);
+        djui_base_set_size_type(&headerSpacer->base, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
+        djui_base_set_size(&headerSpacer->base, 1.0f, 0.0f);
+        djui_base_set_color(&headerSpacer->base, 0, 0, 0, 0);
+
+        // body container (absolute layering)
+        struct DjuiRect* body = djui_rect_create(&panel->base);
         djui_base_set_alignment(&body->base, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
         djui_base_set_size_type(&body->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
         djui_base_set_size(&body->base, 1.0f, 1.0f);
         djui_base_set_color(&body->base, 0, 0, 0, 0);
-        djui_flow_layout_set_margin(body, 16);
-        djui_flow_layout_set_flow_direction(body, DJUI_FLOW_DIR_DOWN);
+        djui_base_set_padding(&body->base, 0, 0, 0, 0);
 
-        struct DjuiText* description = djui_text_create(&panel->base, "");
+        // preview fills the entire right panel body (large rectangle)
+        struct DjuiModPreview* preview = djui_mod_preview_create(&body->base);
+        djui_base_set_size_type(&preview->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
+        djui_base_set_size(&preview->base, 1.0f, 1.0f);
+        djui_base_set_alignment(&preview->base, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
+        sPreview = &preview->base;
+
+        // description overlay fills same box as preview (full area)
+        struct DjuiRect* descriptionOverlay = djui_rect_create(&body->base);
+        djui_base_set_size_type(&descriptionOverlay->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
+        djui_base_set_size(&descriptionOverlay->base, 1.0f, 1.0f);
+        djui_base_set_color(&descriptionOverlay->base, 0, 0, 0, 0);
+        djui_base_set_border_width(&descriptionOverlay->base, 0);
+        djui_base_set_padding(&descriptionOverlay->base, 0, 0, 0, 0);
+
+        // top text background (only behind the text)
+        struct DjuiRect* descriptionBg = djui_rect_create(&descriptionOverlay->base);
+        djui_base_set_size_type(&descriptionBg->base, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
+        djui_base_set_size(&descriptionBg->base, 1.0f, DJUI_MOD_DESCRIPTION_BOX_HEIGHT);
+        djui_base_set_color(&descriptionBg->base, 0, 0, 0, 110);
+        djui_base_set_border_width(&descriptionBg->base, 2);
+        djui_base_set_border_color(&descriptionBg->base, theme.borderColor.r, theme.borderColor.g, theme.borderColor.b, theme.borderColor.a);
+        djui_base_set_padding(&descriptionBg->base, 12, 12, 12, 12);
+        djui_base_set_alignment(&descriptionBg->base, DJUI_HALIGN_CENTER, DJUI_VALIGN_TOP);
+        djui_base_set_location_type(&descriptionBg->base, DJUI_SVT_ABSOLUTE, DJUI_SVT_ABSOLUTE);
+        djui_base_set_location(&descriptionBg->base, 0, 0);
+        sDescriptionBg = &descriptionBg->base;
+
+        struct DjuiText* description = djui_text_create(&descriptionBg->base, "");
         djui_base_set_size_type(&description->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
         djui_base_set_size(&description->base, 1.0f, 1.0f);
         djui_base_set_color(&description->base, 222, 222, 222, 255);
-        djui_text_set_alignment(description, DJUI_HALIGN_LEFT, DJUI_VALIGN_CENTER);
+        djui_text_set_alignment(description, DJUI_HALIGN_LEFT, DJUI_VALIGN_TOP);
         djui_text_set_drop_shadow(description, 64, 64, 64, 100);
         sTooltip = description;
     }
@@ -234,10 +504,45 @@ static void djui_mod_checkbox_on_hover(struct DjuiBase* base) {
         }
     }
     djui_text_set_text(sTooltip, description);
+
+    if (sDescriptionBg != NULL && sTooltip != NULL && sDescriptionPanel != NULL) {
+        // measure and resize description background for long descriptions
+        djui_base_compute_tree(&sDescriptionPanel->base);
+
+        // compute line count using the tooltip's current computed width
+        u16 maxLines = 64;
+        u16 lines = (u16)djui_text_count_lines(sTooltip, maxLines);
+        f32 lineHeight = (f32)sTooltip->font->lineHeight * sTooltip->fontScale;
+        f32 textHeight = lines * lineHeight;
+        f32 padding = 12.0f * 2.0f;
+        f32 desired = textHeight + padding;
+
+        // clamp to a portion of the right panel height
+        f32 panelHeight = sDescriptionPanel->base.comp.height;
+        f32 maxH = fmaxf(DJUI_MOD_DESCRIPTION_BOX_HEIGHT, panelHeight * 0.55f);
+        f32 minH = DJUI_MOD_DESCRIPTION_BOX_HEIGHT;
+        desired = fminf(fmaxf(desired, minH), maxH);
+
+        djui_base_set_size_type(sDescriptionBg, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
+        djui_base_set_size(sDescriptionBg, 1.0f, desired);
+    }
+
+    if (sPreview != NULL) {
+        djui_mod_preview_set_mod_index((struct DjuiModPreview*)sPreview, base->tag);
+    }
 }
 
 static void djui_mod_checkbox_on_hover_end(UNUSED struct DjuiBase* base) {
     djui_text_set_text(sTooltip, "");
+
+    if (sDescriptionBg != NULL) {
+        djui_base_set_size_type(sDescriptionBg, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
+        djui_base_set_size(sDescriptionBg, 1.0f, DJUI_MOD_DESCRIPTION_BOX_HEIGHT);
+    }
+
+    if (sPreview != NULL) {
+        djui_mod_preview_clear((struct DjuiModPreview*)sPreview);
+    }
 }
 
 static void djui_mod_checkbox_on_value_change(struct DjuiBase* base);
