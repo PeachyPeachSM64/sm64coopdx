@@ -16,14 +16,14 @@
 extern struct ThreadHandle gAudioThread;
 
 // constant .data
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern struct AudioSessionSettingsEU gAudioSessionPresets[];
 #else
 extern struct AudioSessionSettings gAudioSessionPresets[18];
 #endif
 extern u16 D_80332388[128]; // unused
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern f32 gPitchBendFrequencyScale[256];
 #else
 extern f32 gPitchBendFrequencyScale[255];
@@ -35,20 +35,16 @@ extern u8 gDefaultShortNoteDurationTable[16];
 extern s8 gVibratoCurve[16];
 extern struct AdsrEnvelope gDefaultEnvelope[3];
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern s16 gEuUnknownWave7[256];
 extern s16 *gWaveSamples[6];
 #else
 extern s16 *gWaveSamples[4];
 #endif
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern u8 euUnknownData_8030194c[4];
-#ifdef VERSION_EU
-extern u16 gHeadsetPanQuantization[SOUND_BANK_COUNT];
-#else
 extern u16 gHeadsetPanQuantization[0x40];
-#endif
 extern s16 euUnknownData_80301950[64];
 extern struct NoteSubEu gZeroNoteSub;
 extern struct NoteSubEu gDefaultNoteSub;
@@ -77,7 +73,7 @@ extern volatile s32 gAudioLoadLock;
 extern volatile s32 gAudioFrameCount;
 
 // number of DMAs performed during this frame
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern s32 gCurrAudioFrameDmaCount;
 #else
 extern volatile s32 gCurrAudioFrameDmaCount;
@@ -92,7 +88,7 @@ extern u64 *gAudioCmd;
 extern struct SPTask *gAudioTask;
 extern struct SPTask gAudioTasks[2];
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern f32 D_EU_802298D0;
 extern s32 gRefreshRate;
 #endif
@@ -101,8 +97,6 @@ extern s16 *gAiBuffers[NUMAIBUFFERS];
 extern s16 gAiBufferLengths[NUMAIBUFFERS];
 #if defined(VERSION_SH)
 #define AIBUFFER_LEN 0xb00
-#elif defined(VERSION_EU)
-#define AIBUFFER_LEN (0xa0 * 17)
 #else
 #define AIBUFFER_LEN (0xa0 * 16)
 #endif
@@ -115,7 +109,7 @@ extern u32 gAudioRandom;
 #define EXT_AUDIO_HEAP_SIZE      0x27400
 #define EXT_AUDIO_INIT_POOL_SIZE 0x02000
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 #define UNUSED_COUNT_80333EE8 24
 #define AUDIO_HEAP_BASE 0x96B00
 #define AUDIO_INIT_POOL_SIZE (0x2c00 + EXT_AUDIO_INIT_POOL_SIZE)

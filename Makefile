@@ -1563,10 +1563,9 @@ ifeq ($(COMPILER),ido)
 
     # Enable loop unrolling except for external.c (external.c might also have used
     # unrolling, but it makes one loop harder to match).
-    # For all audio files other than external.c and port_eu.c, put string literals
-    # in .data. (In Shindou, the port_eu.c string literals also moved to .data.)
+    # For all audio files other than external.c, put string literals
+    # in .data.
     $(BUILD_DIR)/src/audio/%.o:        OPT_FLAGS := -O2 -use_readwrite_const
-    $(BUILD_DIR)/src/audio/port_eu.o:  OPT_FLAGS := -O2
     $(BUILD_DIR)/src/audio/external.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
   endif
 

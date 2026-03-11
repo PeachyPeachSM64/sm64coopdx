@@ -58,17 +58,7 @@ static void smlua_audio_utils_reset(struct AudioOverride* override) {
 void smlua_audio_utils_reset_all(void) {
     audio_init();
     for (s32 i = 0; i < MAX_AUDIO_OVERRIDE; i++) {
-#ifdef VERSION_EU
-        if (sAudioOverrides[i].enabled) {
-            if (i >= SEQ_EVENT_CUTSCENE_LAKITU) {
-                sBackgroundMusicDefaultVolume[i] = 75;
-                return;
-            }
-            sBackgroundMusicDefaultVolume[i] = sBackgroundMusicDefaultVolumeDefault[i];
-        }
-#else
         if (sAudioOverrides[i].enabled) { sound_reset_background_music_default_volume(i); }
-#endif
         smlua_audio_utils_reset(&sAudioOverrides[i]);
     }
 }

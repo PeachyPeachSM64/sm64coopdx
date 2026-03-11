@@ -98,14 +98,6 @@ Vp gViewportFullscreen = { {
     { 640, 480, 511, 0 },
 } };
 
-#ifdef VERSION_EU
-const char *gNoControllerMsg[] = {
-    "NO CONTROLLER",
-    "MANETTE DEBRANCHEE",
-    "CONTROLLER FEHLT",
-};
-#endif
-
 void override_viewport_and_clip(Vp *a, Vp *b, u8 c, u8 d, u8 e) {
     u16 sp6 = ((c >> 3) << 11) | ((d >> 3) << 6) | ((e >> 3) << 1) | 1;
 
@@ -129,24 +121,13 @@ static s32 scale_x_to_correct_aspect_center(s32 x) {
 }
 
 void print_intro_text(void) {
-#ifdef VERSION_EU
-    s32 language = eu_get_language();
-#endif
     if ((gGlobalTimer & 0x1F) < 20) {
         if (gControllerBits == 0) {
-#ifdef VERSION_EU
-            print_text_centered(SCREEN_WIDTH / 2, 20, gNoControllerMsg[language]);
-#else
             print_text_centered(scale_x_to_correct_aspect_center(SCREEN_WIDTH / 2), 20, "NO CONTROLLER");
-#endif
         } else {
-#ifdef VERSION_EU
-            print_text(20, 20, "START");
-#else
             s32 x = GFX_DIMENSIONS_FROM_LEFT_EDGE(20);
             print_text(x, 38, "PRESS");
             print_text(x, 20, "START");
-#endif
         }
     }
 }

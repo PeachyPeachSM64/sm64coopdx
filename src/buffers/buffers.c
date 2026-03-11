@@ -4,9 +4,7 @@
 #include "audio/data.h"
 
 ALIGNED8 u8 gDecompressionHeap[0xD000] = { 0 };
-#if defined(VERSION_EU)
-ALIGNED16 u8 gAudioHeap[DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE) - 0x3800] = { 0 };
-#elif defined(VERSION_SH)
+#if defined(VERSION_SH)
 ALIGNED16 u8 gAudioHeap[DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE) - 0x4800] = { 0 };
 #else
 ALIGNED16 u8 gAudioHeap[DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE)] = { 0 };
@@ -37,6 +35,6 @@ ALIGNED8 u8 gAudioSPTaskYieldBuffer[OS_YIELD_AUDIO_SIZE] = { 0 };
 
 // Probably Thread 2 stack space. Unreferenced, and stubbed out with f3dex to
 // avoid an overflowing .buffers segment.
-#if !defined(F3DEX_GBI_SHARED) && !defined(VERSION_EU)
+#if !defined(F3DEX_GBI_SHARED)
 ALIGNED8 u8 gUnusedThread2Stack[0x1400] = { 0 };
 #endif

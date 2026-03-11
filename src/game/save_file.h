@@ -60,12 +60,7 @@ struct MainMenuSaveData
     u32 coinScoreAges[NUM_SAVE_FILES];
     u16 soundMode;
 
-#ifdef VERSION_EU
-    u16 language;
-#define SUBTRAHEND 8
-#else
 #define SUBTRAHEND 6
-#endif
 
     // Pad to match the EEPROM size of 0x200 (10 bytes on JP/US, 8 bytes on EU)
     u8 filler[EEPROM_SIZE / 2 - SUBTRAHEND - NUM_SAVE_FILES * (4 + sizeof(struct SaveFile))];
@@ -283,17 +278,5 @@ s32 save_file_get_keys(s32 fileIndex);
 s32 save_file_taken_wario_coin(s32 fileIndex, s32 coinId);
 void save_file_register_wario_coin(s32 fileIndex, s32 coinId);
 s32 save_file_get_wario_coins(s32 fileIndex);
-
-#ifdef VERSION_EU
-enum EuLanguages {
-    LANGUAGE_ENGLISH,
-    LANGUAGE_FRENCH,
-    LANGUAGE_GERMAN,
-    LANGUAGE_MAX
-};
-
-void eu_set_language(u16 language);
-u16 eu_get_language(void);
-#endif
 
 #endif // SAVE_FILE_H

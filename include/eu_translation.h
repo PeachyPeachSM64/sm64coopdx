@@ -5,11 +5,7 @@
 
 // EU changes most text to arrays for each language. This define allows these
 // differences to be combined.
-#ifdef VERSION_EU
-    #define LANGUAGE_ARRAY(cmd) cmd[LANGUAGE_FUNCTION]
-#else
-    #define LANGUAGE_ARRAY(cmd) cmd
-#endif
+#define LANGUAGE_ARRAY(cmd) cmd
 
 extern u8 *course_name_table_eu_en[];
 extern u8 *act_name_table_eu_en[];

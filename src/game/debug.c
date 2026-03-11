@@ -163,7 +163,6 @@ void print_debug_top_down_normal(const char *str, s32 number) {
     }
 }
 
-#ifndef VERSION_EU
 void print_mapinfo(void) {
     struct Surface *pfloor;
     f32 bgY;
@@ -200,41 +199,6 @@ void print_mapinfo(void) {
         print_debug_top_down_mapinfo("water %d", water);
     }
 }
-#else
-void print_mapinfo(void) {
-    // EU mostly stubbed this function out.
-    struct Surface *pfloor;
-    UNUSED f32 bgY;
-    UNUSED f32 water;
-    UNUSED s32 area;
-    // s32 angY;
-    //
-    // angY = gCurrentObject->oMoveAngleYaw / 182.044000;
-    // area  = ((s32)gCurrentObject->oPosX + 0x2000) / 1024
-    //      + ((s32)gCurrentObject->oPosZ + 0x2000) / 1024 * 16;
-    //
-    bgY = find_floor(gCurrentObject->oPosX, gCurrentObject->oPosY, gCurrentObject->oPosZ, &pfloor);
-    water = find_water_level(gCurrentObject->oPosX, gCurrentObject->oPosZ);
-
-    print_debug_top_down_normal("mapinfo", 0);
-    // print_debug_top_down_mapinfo("area %x", area);
-    // print_debug_top_down_mapinfo("wx   %d", gCurrentObject->oPosX);
-    // print_debug_top_down_mapinfo("wy\t  %d", gCurrentObject->oPosY);
-    // print_debug_top_down_mapinfo("wz   %d", gCurrentObject->oPosZ);
-    // print_debug_top_down_mapinfo("bgY  %d", bgY);
-    // print_debug_top_down_mapinfo("angY %d", angY);
-    //
-    // if(pfloor) // not null
-    //{
-    //    print_debug_top_down_mapinfo("bgcode   %d", pfloor->type);
-    //    print_debug_top_down_mapinfo("bgstatus %d", pfloor->flags);
-    //    print_debug_top_down_mapinfo("bgarea   %d", pfloor->room);
-    //}
-    //
-    // if(gCurrentObject->oPosY < water)
-    //    print_debug_top_down_mapinfo("water %d", water);
-}
-#endif
 
 void print_checkinfo(void) {
     print_debug_top_down_normal("checkinfo", 0);
@@ -525,12 +489,7 @@ void try_do_mario_debug_object_spawn(void) {
     }
 }
 
-// TODO: figure out what this is
-#ifdef VERSION_SH
-static
-#endif
 void debug_print_obj_move_flags(void) {
-#ifndef VERSION_EU // TODO: Is there a better way to diff this? static EU doesn't seem to work.
     if (gCurrentObject->oMoveFlags & OBJ_MOVE_LANDED) {
         print_debug_top_down_objectinfo("BOUND   %x", gCurrentObject->oMoveFlags);
     }
@@ -558,7 +517,6 @@ void debug_print_obj_move_flags(void) {
     if (gCurrentObject->oMoveFlags & OBJ_MOVE_OUT_SCOPE) {
         print_debug_top_down_objectinfo("OUT SCOPE %x", gCurrentObject->oMoveFlags);
     }
-#endif
 }
 
 // unused, what is this?

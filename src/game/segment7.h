@@ -12,16 +12,6 @@ extern const Gfx menu_font_lut[];
 extern const Gfx dl_menu_ia8_text_begin[];
 extern const Gfx dl_menu_ia8_text_end[];
 extern const Gfx dl_menu_rgba16_wood_course[];
-#ifdef VERSION_EU
-extern const Gfx dl_menu_rgba16_wood_course_end[];
-extern const Gfx dl_menu_texture_course_upper[];
-extern const Gfx dl_menu_texture_niveau_upper[];
-extern const Gfx dl_menu_texture_kurs_upper[];
-
-extern const Gfx eu_course_strings_en_table[];
-extern const Gfx eu_course_strings_fr_table[];
-extern const Gfx eu_course_strings_de_table[];
-#endif
 
 // from intro_segment7
 extern const Gfx intro_seg7_dl_0700B3A0[];

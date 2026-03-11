@@ -566,11 +566,11 @@ class NoIndentEncoder(json.JSONEncoder):
 
 def inst_ifdef_json(bank_index, inst_index):
     if bank_index == 7 and inst_index >= 13:
-        return NoIndent(["VERSION_US", "VERSION_EU"])
+        return NoIndent(["VERSION_US"])
     if bank_index == 8 and inst_index >= 16:
-        return NoIndent(["VERSION_US", "VERSION_EU"])
+        return NoIndent(["VERSION_US"])
     if bank_index == 10 and inst_index >= 14:
-        return NoIndent(["VERSION_US", "VERSION_EU"])
+        return NoIndent(["VERSION_US"])
     return None
 
 

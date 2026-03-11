@@ -614,11 +614,7 @@ static void geo_process_perspective(struct GraphNodePerspective *node) {
 
     f32 divisor = (f32) gCurGraphNodeRoot->height;
     if (divisor == 0) { divisor = 1; }
-#ifdef VERSION_EU
-    f32 aspect = ((f32) gCurGraphNodeRoot->width / divisor) * 1.1f;
-#else
     f32 aspect = (f32) gCurGraphNodeRoot->width / divisor;
-#endif
 
     gProjectionVanillaNearValue = node->near;
     gProjectionVanillaFarValue = node->far;

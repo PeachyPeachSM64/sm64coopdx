@@ -11,7 +11,7 @@
 #define DEFAULT_LEN_2CH 0x280
 #endif
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 #define MAX_UPDATES_PER_FRAME 5
 #else
 #define MAX_UPDATES_PER_FRAME 4
@@ -34,7 +34,7 @@ struct SynthesisReverb
     /*0x01, 0x01, 0x01*/ u8 useReverb;
     /*0x02, 0x02, 0x02*/ u8 framesLeftToIgnore;
     /*0x03, 0x03, 0x03*/ u8 curFrame;
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
     /*      0x04, 0x04*/ u8 downsampleRate;
 #ifdef VERSION_SH
     /*            0x05*/ s8 unk5;
@@ -63,7 +63,7 @@ struct SynthesisReverb
     /*0x24, 0x28, 0x30*/ s16 *unk24; // never read
     /*0x28, 0x2C, 0x34*/ s16 *unk28; // never read
     /*0x2C, 0x30, 0x38*/ struct ReverbRingBufferItem items[2][MAX_UPDATES_PER_FRAME];
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
     // Only used in sh:
     /*            0x100*/ s16 *unk100;
     /*            0x104*/ s16 *unk104;
@@ -71,7 +71,7 @@ struct SynthesisReverb
     /*            0x10C*/ s16 *unk10C;
 #endif
 }; // 0xCC <= size <= 0x100
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern struct SynthesisReverb gSynthesisReverbs[4];
 extern s8 gNumSynthesisReverbs;
 extern struct NoteSubEu *gNoteSubsEu;

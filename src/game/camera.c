@@ -316,7 +316,7 @@ s16 sCutsceneShot;
  */
 s16 gCutsceneTimer;
 s16 unused8033B3E8;
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 s16 unused8033B3E82;
 #endif
 /**
@@ -3979,18 +3979,6 @@ s32 move_point_along_spline(Vec3f p, struct CutsceneSplinePoint spline[], s16 *s
     }
     progressChange = (secondSpeed - firstSpeed) * *progress + firstSpeed;
 
-#ifdef VERSION_EU
-    if (gCamera->cutscene == CUTSCENE_INTRO_PEACH) {
-        progressChange += progressChange * 0.19f;
-    }
-    if (gCamera->cutscene == CUTSCENE_CREDITS) {
-        progressChange += progressChange * 0.15f;
-    }
-    if (gCamera->cutscene == CUTSCENE_ENDING) {
-        progressChange += progressChange * 0.1f;
-    }
-#endif
-
     if (1 <= (*progress += progressChange)) {
         (*splineSegment)++;
         if (spline[*splineSegment + 3].index == -1) {
@@ -6862,15 +6850,6 @@ struct CutsceneSplinePoint sIntroPipeToDialogPosition[] = {
 /**
  * Describes the spline that the camera's focus follows, during the same part of the intro as the above.
  */
-/**#ifdef VERSION_EU
-struct CutsceneSplinePoint sIntroPipeToDialogFocus[] = {
-    { 0, 25, { -1248, 450, 4596 } }, { 1, 71, { -1258, 485, 4606 } }, { 2, 71, { -1379, 344, 4769 } },
-    { 3, 22, { -1335, 366, 4815 } }, { 4, 23, { -1315, 370, 4450 } }, { 5, 40, { -1322, 333, 4591 } },
-    { 6, 25, { -1185, 329, 4616 } }, { 7, 21, { -1059, 380, 4487 } }, { 8, 14, { -1086, 421, 4206 } },
-    { 9, 21, { -1321, 346, 4098 } }, { 0, 0, { -1328, 385, 4354 } },  { 0, 0, { -1328, 385, 4354 } },
-    { 0, 0, { -1328, 385, 4354 } },  { -1, 0, { -1328, 385, 4354 } }
-};
-#else**/
 struct CutsceneSplinePoint sIntroPipeToDialogFocus[] = {
     { 0, 20, { -1248, 450, 4596 } }, { 1, 59, { -1258, 485, 4606 } }, { 2, 59, { -1379, 344, 4769 } },
     { 3, 20, { -1335, 366, 4815 } }, { 4, 23, { -1315, 370, 4450 } }, { 5, 40, { -1322, 333, 4591 } },
@@ -6878,7 +6857,6 @@ struct CutsceneSplinePoint sIntroPipeToDialogFocus[] = {
     { 9, 21, { -1321, 346, 4098 } }, { 0, 0, { -1328, 385, 4354 } },  { 0, 0, { -1328, 385, 4354 } },
     { 0, 0, { -1328, 385, 4354 } },  { -1, 0, { -1328, 385, 4354 } }
 };
-//#endif
 
 struct CutsceneSplinePoint sEndingFlyToWindowPos[] = {
     { 0, 0, { -86, 876, 640 } },   { 1, 0, { -86, 876, 610 } },   { 2, 0, { -66, 945, 393 } },
@@ -6923,11 +6901,7 @@ struct CutsceneSplinePoint sEndingLookUpAtCastle[] = {
 };
 
 struct CutsceneSplinePoint sEndingLookAtSkyFocus[] = {
-//#ifdef VERSION_EU
-//    { 0, 50, { 484, 1368, -868 } }, { 0, 72, { 479, 1372, -872 } }, { 0, 50, { 351, 1817, -918 } },
-//#else
     { 0, 50, { 484, 1368, -888 } }, { 0, 72, { 479, 1372, -892 } }, { 0, 50, { 351, 1817, -918 } },
-//#endif
     { 0, 50, { 351, 1922, -598 } }, { 0, 0, { 636, 2027, -415 } },  { 0, 0, { 636, 2027, -415 } },
     { -1, 0, { 636, 2027, -415 } }
 };
@@ -7558,16 +7532,6 @@ BAD_RETURN(s32) cutscene_intro_peach_start_flying_music(UNUSED struct Camera *c)
     cutscene_intro_peach_play_lakitu_flying_music();
 }
 
-#ifdef VERSION_EU
-/**
- * Lower the volume for the letter background music. In US, this happens on the same frame as the music
- * starts.
- */
-BAD_RETURN(s32) cutscene_intro_peach_eu_lower_volume(UNUSED struct Camera *c) {
-    seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
-}
-#endif
-
 void reset_pan_distance(UNUSED struct Camera *c) {
     sPanDistance = 0;
 }
@@ -7930,15 +7894,9 @@ BAD_RETURN(s32) cutscene_ending_peach_wakeup(struct Camera *c) {
     if (!c) { return; }
     cutscene_event(cutscene_ending_reset_spline, c, 0, 0);
     cutscene_event(cutscene_ending_look_up_at_castle, c, 0, 0);
-/**#ifdef VERSION_EU
-    cutscene_event(cutscene_ending_look_up_at_castle, c, 265, -1);
-    cutscene_spawn_obj(7, 315);
-    cutscene_spawn_obj(9, 355);
-#else**/
     cutscene_event(cutscene_ending_look_up_at_castle, c, 250, -1);
     cutscene_spawn_obj(7, 300);
     cutscene_spawn_obj(9, 340);
-//#endif
     vec3f_set(c->pos, -163.f, 978.f, -1082.f);
     player2_rotate_cam(c, -0x800, 0x2000, -0x2000, 0x2000);
 }
@@ -7985,11 +7943,7 @@ BAD_RETURN(s32) cutscene_ending_kiss_here_we_go(struct Camera *c) {
  */
 BAD_RETURN(s32) cutscene_ending_kiss(struct Camera *c) {
     cutscene_event(cutscene_ending_kiss_closeup, c, 0, 0);
-/**#ifdef VERSION_EU
-    cutscene_event(cutscene_ending_kiss_here_we_go, c, 185, -1);
-#else**/
     cutscene_event(cutscene_ending_kiss_here_we_go, c, 155, -1);
-//#endif
     player2_rotate_cam(c, -0x800, 0x2000, -0x2000, 0x2000);
 }
 
@@ -10253,18 +10207,11 @@ BAD_RETURN(s32) cutscene_intro_peach_fly_to_pipe(struct Camera *c) {
     if (!c) { return; }
 #if defined(VERSION_US) || defined(VERSION_SH)
     cutscene_event(play_sound_intro_turn_on_hud, c, 818, 818);
-#elif defined(VERSION_EU)
-    //cutscene_event(play_sound_intro_turn_on_hud, c, 673, 673);
-    cutscene_event(play_sound_intro_turn_on_hud, c, 818, 818);
 #endif
     cutscene_spawn_obj(6, 1);
     cutscene_event(cutscene_intro_peach_start_flying_music, c, 0, 0);
     cutscene_event(cutscene_intro_peach_start_to_pipe_spline, c, 0, -1);
-/**#ifdef VERSION_EU
-    cutscene_event(cutscene_intro_peach_clear_cutscene_status, c, 572, 572);
-#else**/
     cutscene_event(cutscene_intro_peach_clear_cutscene_status, c, 717, 717);
-//#endif
     clamp_pitch(c->pos, c->focus, 0x3B00, -0x3B00);
     sCutsceneVars[1].point[1] = 400.f;
 }
@@ -10308,9 +10255,6 @@ BAD_RETURN(s32) cutscene_intro_peach_letter(struct Camera *c) {
     cutscene_spawn_obj(5, 0);
     cutscene_event(cutscene_intro_peach_zoom_fov, c, 0, 0);
     cutscene_event(cutscene_intro_peach_start_letter_music, c, 65, 65);
-#ifdef VERSION_EU
-    cutscene_event(cutscene_intro_peach_eu_lower_volume, c, 68, 68);
-#endif
     cutscene_event(cutscene_intro_peach_start_to_pipe_spline, c, 0, 0);
     cutscene_event(peach_letter_text, c, 65, 65);
     cutscene_event(play_sound_peach_reading_letter, c, 83, 83);
@@ -11082,16 +11026,6 @@ void cutscene_palette_editor(struct Camera *c) {
 struct Cutscene sCutsceneEnding[] = {
     { cutscene_ending_mario_fall, 170 },
     { cutscene_ending_mario_land, 70 },
-/**#ifdef VERSION_EU
-    { cutscene_ending_mario_land_closeup, 0x44 },
-    { cutscene_ending_stars_free_peach,  0x15c },
-    { cutscene_ending_peach_appears, 0x6d  },
-    { cutscene_ending_peach_descends, 0x212 },
-    { cutscene_ending_mario_to_peach, 0x69 },
-    { cutscene_ending_peach_wakeup, 0x1a4 },
-    { cutscene_ending_dialog, 0x114 },
-    { cutscene_ending_kiss, 0x10b },
-#else**/
     { cutscene_ending_mario_land_closeup, 75 },
 #ifdef VERSION_SH
     { cutscene_ending_stars_free_peach, 431 },
@@ -11109,7 +11043,6 @@ struct Cutscene sCutsceneEnding[] = {
     { cutscene_ending_dialog, 236 },
 #endif
     { cutscene_ending_kiss, 245 },
-//#endif
     { cutscene_ending_cake_for_mario, CUTSCENE_LOOP },
     { cutscene_ending_stop, 0 }
 };
@@ -11253,11 +11186,7 @@ struct Cutscene sCutsceneUnusedExit[] = {
 struct Cutscene sCutsceneIntroPeach[] = {
     { cutscene_intro_peach_letter, CUTSCENE_LOOP },
     { cutscene_intro_peach_reset_fov, 35 },
-//#ifdef VERSION_EU
-//    { cutscene_intro_peach_fly_to_pipe, 675 },
-//#else
     { cutscene_intro_peach_fly_to_pipe, 820 },
-//#endif
     { cutscene_intro_peach_mario_appears, 270 },
     { cutscene_intro_peach_dialog, CUTSCENE_LOOP }
 };

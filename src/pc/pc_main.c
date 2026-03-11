@@ -149,13 +149,8 @@ void send_display_list(struct SPTask *spTask) {
     gfx_run((Gfx *)spTask->task.t.data_ptr);
 }
 
-#ifdef VERSION_EU
-#define SAMPLES_HIGH 560 // gAudioBufferParameters.maxAiBufferLength
-#define SAMPLES_LOW 528 // gAudioBufferParameters.minAiBufferLength
-#else
 #define SAMPLES_HIGH 544
 #define SAMPLES_LOW 528
-#endif
 
 extern void patch_mtx_before(void);
 extern void patch_screen_transition_before(void);

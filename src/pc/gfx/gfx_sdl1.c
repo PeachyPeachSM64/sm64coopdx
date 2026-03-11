@@ -25,12 +25,8 @@
 #include "pc/controller/controller_keyboard.h"
 #include "pc/controller/controller_bind_mapping.h"
 
-// TODO: figure out if this shit even works
-#ifdef VERSION_EU
-# define FRAMERATE 25
-#else
-# define FRAMERATE 30
-#endif
+// TODO: figure out if this crap ;) even works
+#define FRAMERATE 30
 
 static kb_callback_t kb_key_down = NULL;
 static kb_callback_t kb_key_up = NULL;

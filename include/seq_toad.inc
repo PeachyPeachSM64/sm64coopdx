@@ -105,8 +105,6 @@ chan_setlayer 0, .layer_toad_C3C
 chan_end
 
 .layer_toad_C3C:
-.ifdef VERSION_EU
-.endif
 layer_note1 39, 0x14, 127
 layer_end
 
@@ -139,8 +137,6 @@ chan_setlayer 0, .layer_toad_C6C
 chan_end
 
 .layer_toad_C6C:
-.ifdef VERSION_EU
-.endif
 layer_note1 39, 0x30, 127
 layer_end
 

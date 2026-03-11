@@ -12,11 +12,6 @@
 #include "smlua_text_utils.h"
 #include "pc/dialog_table.h"
 
-#ifdef VERSION_EU
-extern s32 gInGameLanguage;
-#include "eu_translation.h"
-#endif
-
 #define INVALID_COURSE_NUM(courseNum) (smlua_level_util_get_info_from_course_num(courseNum) == NULL && !COURSE_IS_VALID_COURSE(courseNum))
 
 /*
@@ -174,22 +169,7 @@ const struct DialogEntry* smlua_text_utils_dialog_get_unmodified(enum DialogId d
     if (!IS_VALID_VANILLA_DIALOG(dialogId)) { return NULL; }
 
     void **dialogTableOrg;
-
-#ifdef VERSION_EU
-    switch (gInGameLanguage) {
-        case LANGUAGE_ENGLISH:
-            dialogTableOrg = segmented_to_virtual(dialog_table_eu_en_original);
-            break;
-        case LANGUAGE_FRENCH:
-            dialogTableOrg = segmented_to_virtual(dialog_table_eu_fr_original);
-            break;
-        case LANGUAGE_GERMAN:
-            dialogTableOrg = segmented_to_virtual(dialog_table_eu_de_original);
-            break;
-    }
-#else
     dialogTableOrg = segmented_to_virtual(seg2_dialog_original);
-#endif
 
     return segmented_to_virtual(dialogTableOrg[dialogId]);
 }

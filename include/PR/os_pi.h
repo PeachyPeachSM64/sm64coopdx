@@ -7,9 +7,7 @@
 /* Types */
 
 typedef struct {
-#if !defined(VERSION_EU)
     u32 errStatus;
-#endif
     void *dramAddr;
     void *C2Addr;
     u32 sectorSize;
@@ -23,9 +21,6 @@ typedef struct {
     u16 blockNum;      // 6
     s32 sectorNum;     // 8
     uintptr_t devAddr; // c
-#if defined(VERSION_EU)
-    u32 errStatus; //error status added moved to blockinfo
-#endif
     u32 bmCtlShadow;        // 10
     u32 seqCtlShadow;       // 14
     __OSBlockInfo block[2]; // 18
@@ -61,7 +56,7 @@ typedef struct {
     /*0x08*/ void *dramAddr;
     /*0x0C*/ uintptr_t devAddr;
     /*0x10*/ size_t size;
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
     OSPiHandle *piHandle; // from the official definition
 #endif
 } OSIoMesg;

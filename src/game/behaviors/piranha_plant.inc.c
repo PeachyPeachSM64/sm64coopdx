@@ -75,11 +75,6 @@ void piranha_plant_act_sleeping(void) {
     if (configBugfixPiranhaPlantSleepDamage) {
         o->oDamageOrCoinValue = 0;
     }
-#ifdef VERSION_EU
-    else {
-        o->oDamageOrCoinValue = 3;
-    }
-#endif
 
     struct Object* player = nearest_player_to_object(o);
     struct Object* localPlayer = gMarioStates[0].marioObj;
@@ -104,14 +99,9 @@ void piranha_plant_act_sleeping(void) {
  * to the biting state.
  */
 void piranha_plant_act_woken_up(void) {
-
-#ifdef VERSION_EU
-    o->oDamageOrCoinValue = 3;
-#else
     if (configBugfixPiranhaPlantSleepDamage) {
         o->oDamageOrCoinValue = 3;
     }
-#endif
 
     if (o->oTimer == 0)
         stop_secondary_music(50);
