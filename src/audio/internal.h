@@ -12,11 +12,7 @@
 #else
 #define SEQUENCE_PLAYERS 3
 #define SEQUENCE_CHANNELS 151
-#ifdef VERSION_JP
-#define SEQUENCE_LAYERS 48
-#else
 #define SEQUENCE_LAYERS 52
-#endif
 #endif
 
 #define LAYERS_MAX       8
@@ -40,28 +36,15 @@
 #define NOTE_PRIORITY_DEFAULT 3
 
 #define TATUMS_PER_BEAT 48
-
-#ifdef VERSION_JP
-#define TEMPO_SCALE 1
-#else
 #define TEMPO_SCALE TATUMS_PER_BEAT
-#endif
 
 // TODO: US_FLOAT should probably be renamed to JP_DOUBLE since eu seems to use floats too
-#ifdef VERSION_JP
-#define US_FLOAT(x) x
-#else
 #define US_FLOAT(x) x ## f
-#endif
 
 // Convert u8 or u16 to f32. On JP, this uses a u32->f32 conversion,
 // resulting in more bloated codegen, while on US it goes through s32.
 // Since u8 and u16 fit losslessly in both, behavior is the same.
-#ifdef VERSION_JP
-#define FLOAT_CAST(x) (f32) (x)
-#else
 #define FLOAT_CAST(x) (f32) (s32) (x)
-#endif
 
 // No-op printf macro which leaves string literals in rodata in IDO. IDO
 // doesn't support variadic macros, so instead we let the parameter list
@@ -290,7 +273,7 @@ struct SequencePlayer
 #ifdef VERSION_SH
     /*              0x000*/ u8 unkSh: 1;
 #endif
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x001       */ s8 seqVariation;
 #endif
     /*0x002, 0x001, 0x001*/ u8 state;
@@ -300,7 +283,7 @@ struct SequencePlayer
     /*0x006, 0x005*/ u8 defaultBank[1]; // must be an array to get a comparison
     // to match; other u8's might also be part of that array
     /*0x007, 0x006*/ u8 loadingBankId;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x008, ?????*/ u8 loadingBankNumInstruments;
     /*0x009, ?????*/ u8 loadingBankNumDrums;
 #endif
@@ -309,7 +292,7 @@ struct SequencePlayer
 #endif
     /*0x00A, 0x008*/ u16 tempo; // beats per minute in JP, tatums per minute in US/EU
     /*0x00C, 0x00A*/ u16 tempoAcc;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x00E, 0x010*/ u16 fadeRemainingFrames;
 #endif
 #ifdef VERSION_SH
@@ -344,7 +327,7 @@ struct SequencePlayer
     /*0x118, 0x120*/ OSMesg bankDmaMesg;
     /*0x11C, 0x124*/ OSIoMesg bankDmaIoMesg;
     /*0x130, 0x13C*/ u8 *bankDmaCurrMemAddr;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x134, ?????*/ struct AudioBank *loadingBank;
 #endif
     /*0x138, 0x140*/ uintptr_t bankDmaCurrDevAddr;
@@ -366,7 +349,7 @@ struct AdsrSettings
 struct AdsrState {
     /*0x00, 0x00*/ u8 action;
     /*0x01, 0x01*/ u8 state;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x02,     */ s16 initial; // always 0
     /*0x04,     */ s16 target;
     /*0x06,     */ s16 current;
@@ -429,7 +412,7 @@ struct NoteAttributes
 #endif
     f32 freqScale;
     f32 velocity;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     f32 pan;
 #endif
 #ifdef VERSION_SH
@@ -492,7 +475,7 @@ struct SequenceChannel
     /*0x1A, 0x1E, 0x20*/ s16 transposition;
     /*0x1C, 0x20, 0x24*/ f32 volumeScale;
     /*0x20, 0x24, 0x28*/ f32 volume;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x24,     */ f32 pan;
     /*0x28,     */ f32 panChannelWeight; // proportion of pan that comes from the channel (0..1)
 #else
@@ -556,11 +539,11 @@ struct SequenceChannelLayer
     /*            0x28*/ f32 unkSH28;
 #endif
     /*0x24, 0x28, 0x2C*/ f32 velocitySquare;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x28,     */ f32 pan; // 0..1
 #endif
     /*0x2C, 0x2C, 0x30*/ f32 noteVelocity;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     /*0x30*/ f32 notePan;
 #endif
     /*0x34, 0x30, 0x34*/ f32 noteFreqScale;
@@ -749,7 +732,7 @@ struct NoteSynthesisBuffers
     s16 panResampleState[0x10];
     s16 panSamplesBuffer[0x20];
     s16 dummyResampleState[0x10];
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     s16 samples[0x40];
 #endif
 #endif

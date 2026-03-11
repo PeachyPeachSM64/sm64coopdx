@@ -38,7 +38,6 @@ void bhv_bbh_tilting_trap_platform_loop(void) {
     // if statement, while immediately setting it over here.
     // This was done so that Mario leaving or getting on the platform
     // resets oTimer to 0.
-#ifndef VERSION_JP
     if (playersTouched > 0) {
         o->oAction = BBH_TILTING_TRAP_PLATFORM_ACT_MARIO_ON;
     } else {
@@ -46,14 +45,10 @@ void bhv_bbh_tilting_trap_platform_loop(void) {
     }
 
     if (o->oAction == BBH_TILTING_TRAP_PLATFORM_ACT_MARIO_ON) {
-#else
-    if (cur_obj_is_any_player_on_platform()) {
-#endif
         o->oAngleVelPitch = (s32)(distanceToPlayer * coss(angleToPlayer));
         o->oFaceAnglePitch += o->oAngleVelPitch;
     } else
-#ifndef VERSION_JP
-        // In the US version, if the platform has tilted more than 3000 angle units
+        // If the platform has tilted more than 3000 angle units
         // in less than 16 frames since Mario got on it, and he has stepped off,
         // this code will not run, so it will continue to rotate with the same
         // angular velocity for 16 more frames. This was probably done to make
@@ -61,7 +56,6 @@ void bhv_bbh_tilting_trap_platform_loop(void) {
         // without the oAction changes above, since oTimer will not ever
         // reset to 0 without them.
         if ((absi(o->oFaceAnglePitch) < 3000) || (o->oTimer >= 16))
-#endif
     {
         // Make the platform return to the horizontal at a speed of
         // 200 angle units/frame, and clamp it to 0 if it's within 200 units of 0.

@@ -231,33 +231,13 @@ ifeq ($(TARGET_BITS), 32)
 endif
 
 # VERSION - selects the version of the game to build
-#   jp - builds the 1996 Japanese version
-#   us - builds the 1996 North American version
-#   eu - builds the 1997 PAL version
-#   sh - builds the 1997 Japanese Shindou version, with rumble pak support
 VERSION ?= us
 $(eval $(call validate-option,VERSION,us))
 
 # Graphics microcode used
 GRUCODE ?= f3dex2e
 
-ifeq      ($(VERSION),jp)
-  DEFINES   += VERSION_JP=1
-  #GRUCODE   ?= f3d_old
-  VERSION_JP_US  ?= true
-else ifeq ($(VERSION),us)
-  DEFINES   += VERSION_US=1
-  #GRUCODE   ?= f3d_old
-  VERSION_JP_US  ?= true
-else ifeq ($(VERSION),eu)
-  DEFINES   += VERSION_EU=1
-  #GRUCODE   ?= f3d_new
-  VERSION_JP_US  ?= false
-else ifeq ($(VERSION),sh)
-  DEFINES   += VERSION_SH=1
-  #GRUCODE   ?= f3d_new
-  VERSION_JP_US  ?= false
-endif
+DEFINES   += VERSION_US=1
 
 # Determine our optimization level.
 # Optimization Levels 0 through 5 optimize for speed,
@@ -1588,18 +1568,6 @@ ifeq ($(COMPILER),ido)
     $(BUILD_DIR)/src/audio/%.o:        OPT_FLAGS := -O2 -use_readwrite_const
     $(BUILD_DIR)/src/audio/port_eu.o:  OPT_FLAGS := -O2
     $(BUILD_DIR)/src/audio/external.o: OPT_FLAGS := -O2 -Wo,-loopunroll,0
-  endif
-  ifeq ($(VERSION_JP_US),true)
-    $(BUILD_DIR)/src/audio/%.o:        OPT_FLAGS := -O2 -Wo,-loopunroll,0
-    $(BUILD_DIR)/src/audio/load.o:     OPT_FLAGS := -O2 -framepointer -Wo,-loopunroll,0
-  endif
-  ifeq ($(VERSION_JP_US),true)
-    # The source-to-source optimizer copt is enabled for audio. This makes it use
-    # acpp, which needs -Wp,-+ to handle C++-style comments.
-    # All other files than external.c should really use copt, but only a few have
-    # been matched so far.
-    $(BUILD_DIR)/src/audio/effects.o:   OPT_FLAGS := -O2 -Wo,-loopunroll,0 -sopt,-inline=sequence_channel_process_sound,-scalaroptimize=1 -Wp,-+
-    $(BUILD_DIR)/src/audio/synthesis.o: OPT_FLAGS := -O2 -sopt,-scalaroptimize=1 -Wp,-+
   endif
 
 # Add a target for build/eu/src/audio/*.copt to make it easier to see debug

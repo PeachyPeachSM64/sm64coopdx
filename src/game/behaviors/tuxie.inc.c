@@ -88,11 +88,7 @@ void tuxies_mother_act_1(void) {
                 obj_set_behavior(o->prevObj, bhvUnused20E0);
 
                 f32* starPos = gLevelValues.starPositions.TuxieMotherStarPos;
-#ifndef VERSION_JP
                 cur_obj_spawn_star_at_y_offset(starPos[0], starPos[1], starPos[2], 200.0f);
-#else
-                spawn_default_star(starPos[0], starPos[1], starPos[2]);
-#endif
                 o->oAction = 2;
             }
             break;
@@ -305,11 +301,7 @@ void bhv_small_penguin_loop(void) {
             if (o->heldByPlayerIndex < MAX_PLAYERS) {
                 obj_copy_pos(o, gMarioStates[o->heldByPlayerIndex].marioObj);
                 if (gGlobalTimer % 30 == 0)
-#ifndef VERSION_JP
                     play_sound(SOUND_OBJ2_BABY_PENGUIN_YELL, gMarioStates[o->heldByPlayerIndex].marioObj->header.gfx.cameraToObject);
-#else
-                    play_sound(SOUND_OBJ2_BABY_PENGUIN_YELL, o->header.gfx.cameraToObject);
-#endif
             }
             break;
         case HELD_THROWN:

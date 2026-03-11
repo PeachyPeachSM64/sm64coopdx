@@ -20,7 +20,7 @@ bool path_ends_with(const char* path, const char* suffix);
 char* extract_lua_field(char* fieldName, char* buffer);
 
 void normalize_path(char* path);
-bool concat_path(char* destination, char* path, char* fname);
+bool concat_path(char* destination, const char* path, const char* fname);
 char* path_basename(char* path);
 void path_get_folder(char* path, char* outpath);
 int path_depth(const char* path);

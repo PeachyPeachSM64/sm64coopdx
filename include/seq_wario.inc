@@ -80,42 +80,23 @@ sound_ref .sound_wario_punch_wah
 sound_ref .sound_wario_uh
 sound_ref .sound_wario_hrmm
 sound_ref .sound_wario_wah2
-.ifdef VERSION_JP
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-.else
-  sound_ref .sound_peach_dear_wario
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_jump_hoo
-  sound_ref .sound_wario_yahoo
-  sound_ref .sound_wario_yahoo
-  sound_ref .sound_wario_yahoo
-  sound_ref .sound_wario_waha
-  sound_ref .sound_wario_yippee
-  sound_ref .sound_wario_doh
-  sound_ref .sound_wario_game_over
-  sound_ref .sound_wario_hello
-  sound_ref .sound_wario_press_start_to_play
-  sound_ref .sound_wario_twirl_bounce
-  sound_ref .sound_wario_snoring3
-  sound_ref .sound_wario_so_longa_bowser
-  sound_ref .sound_wario_ima_tired
-  sound_ref .sound_wario_lets_a_go
-.endif
+sound_ref .sound_peach_dear_wario
+sound_ref .sound_wario_jump_hoo
+sound_ref .sound_wario_jump_hoo
+sound_ref .sound_wario_yahoo
+sound_ref .sound_wario_yahoo
+sound_ref .sound_wario_yahoo
+sound_ref .sound_wario_waha
+sound_ref .sound_wario_yippee
+sound_ref .sound_wario_doh
+sound_ref .sound_wario_game_over
+sound_ref .sound_wario_hello
+sound_ref .sound_wario_press_start_to_play
+sound_ref .sound_wario_twirl_bounce
+sound_ref .sound_wario_snoring3
+sound_ref .sound_wario_so_longa_bowser
+sound_ref .sound_wario_ima_tired
+sound_ref .sound_wario_lets_a_go
 
 .sound_wario_jump_hoo:
 chan_setbank 13
@@ -502,137 +483,135 @@ chan_end
 .layer_wario_E62:
 layer_jump .layer_wario_C4E
 
-.ifndef VERSION_JP
-  .sound_peach_dear_wario:
-  chan_setbank 14
-  chan_setinstr 15
-  chan_setlayer 0, .layer_wario_E6F
-  chan_end
+.sound_peach_dear_wario:
+chan_setbank 14
+chan_setinstr 15
+chan_setlayer 0, .layer_wario_E6F
+chan_end
 
-  .layer_wario_E6F:
-  layer_note1 39, 0x3b, 127
-  layer_end
+.layer_wario_E6F:
+layer_note1 39, 0x3b, 127
+layer_end
 
-  .sound_wario_waha:
-  chan_setbank 13
-  chan_setinstr 24
-  chan_setlayer 0, .layer_wario_E7C
-  chan_end
+.sound_wario_waha:
+chan_setbank 13
+chan_setinstr 24
+chan_setlayer 0, .layer_wario_E7C
+chan_end
 
-  .layer_wario_E7C:
-  layer_note1 39, 0x95, 127
-  layer_end
+.layer_wario_E7C:
+layer_note1 39, 0x95, 127
+layer_end
 
-  .sound_wario_yippee:
-  chan_setbank 13
-  chan_setinstr 25
-  chan_setlayer 0, .layer_wario_E88
-  chan_end
+.sound_wario_yippee:
+chan_setbank 13
+chan_setinstr 25
+chan_setlayer 0, .layer_wario_E88
+chan_end
 
-  .layer_wario_E88:
-  layer_note1 39, 0xa2, 127
-  layer_end
+.layer_wario_E88:
+layer_note1 39, 0xa2, 127
+layer_end
 
-  .sound_wario_doh:
-  chan_setbank 13
-  chan_setinstr 16
-  chan_setlayer 0, .layer_wario_E94
-  chan_end
+.sound_wario_doh:
+chan_setbank 13
+chan_setinstr 16
+chan_setlayer 0, .layer_wario_E94
+chan_end
 
-  .layer_wario_E94:
-  layer_note1 39, 0x2e, 127
-  layer_end
+.layer_wario_E94:
+layer_note1 39, 0x2e, 127
+layer_end
 
-  .sound_wario_game_over:
-  chan_setbank 13
-  chan_setinstr 17
-  chan_setlayer 0, .layer_wario_EA0
-  chan_end
+.sound_wario_game_over:
+chan_setbank 13
+chan_setinstr 17
+chan_setlayer 0, .layer_wario_EA0
+chan_end
 
-  .layer_wario_EA0:
-  layer_note1 39, 0xab, 127
-  layer_end
+.layer_wario_EA0:
+layer_note1 39, 0xab, 127
+layer_end
 
-  .sound_wario_hello:
-  chan_setbank 13
-  chan_setinstr 18
-  chan_setlayer 0, .layer_wario_EAC
-  chan_end
+.sound_wario_hello:
+chan_setbank 13
+chan_setinstr 18
+chan_setlayer 0, .layer_wario_EAC
+chan_end
 
-  .layer_wario_EAC:
-  layer_note1 39, 0x50, 127
-  layer_end
+.layer_wario_EAC:
+layer_note1 39, 0x50, 127
+layer_end
 
-  .sound_wario_press_start_to_play:
-  chan_setbank 13
-  chan_setinstr 19
-  chan_setlayer 0, .layer_wario_EB8
-  chan_end
+.sound_wario_press_start_to_play:
+chan_setbank 13
+chan_setinstr 19
+chan_setlayer 0, .layer_wario_EB8
+chan_end
 
-  .layer_wario_EB8:
-  layer_note1 39, 0x9c, 127
-  layer_end
+.layer_wario_EB8:
+layer_note1 39, 0x9c, 127
+layer_end
 
-  .sound_wario_twirl_bounce:
-  chan_setbank 13
-  chan_setinstr 20
-  chan_setlayer 0, .layer_wario_EC5
-  chan_end
+.sound_wario_twirl_bounce:
+chan_setbank 13
+chan_setinstr 20
+chan_setlayer 0, .layer_wario_EC5
+chan_end
 
-  .layer_wario_EC5:
-  layer_note1 39, 0x6d, 127
-  layer_end
+.layer_wario_EC5:
+layer_note1 39, 0x6d, 127
+layer_end
 
-  .sound_wario_snoring3:
-  chan_setbank 13
-  chan_setlayer 0, .layer_wario_ECF
-  chan_end
+.sound_wario_snoring3:
+chan_setbank 13
+chan_setlayer 0, .layer_wario_ECF
+chan_end
 
-  .layer_wario_ECF:
-  layer_delay 0x4e
-  .layer_wario_ED1:
-  layer_loop 50
-  layer_call .layer_wario_fn_EE1
-  layer_loopend
-  layer_setinstr 21
-  layer_note1 39, 0x44c, 127
-  layer_jump .layer_wario_ED1
-  layer_end
+.layer_wario_ECF:
+layer_delay 0x4e
+.layer_wario_ED1:
+layer_loop 50
+layer_call .layer_wario_fn_EE1
+layer_loopend
+layer_setinstr 21
+layer_note1 39, 0x44c, 127
+layer_jump .layer_wario_ED1
+layer_end
 
-  .layer_wario_fn_EE1:
-  layer_setinstr 21
-  layer_note1 39, 0x53, 127
-  layer_setinstr 15
-  layer_note1 39, 0x4e, 127
-  layer_end
+.layer_wario_fn_EE1:
+layer_setinstr 21
+layer_note1 39, 0x53, 127
+layer_setinstr 15
+layer_note1 39, 0x4e, 127
+layer_end
 
-  .sound_wario_so_longa_bowser:
-  chan_setbank 13
-  chan_setinstr 22
-  chan_setlayer 0, .layer_wario_EF7
-  chan_end
+.sound_wario_so_longa_bowser:
+chan_setbank 13
+chan_setinstr 22
+chan_setlayer 0, .layer_wario_EF7
+chan_end
 
-  .layer_wario_EF7:
-  layer_note1 39, 0xc0, 127
-  layer_end
+.layer_wario_EF7:
+layer_note1 39, 0xc0, 127
+layer_end
 
-  .sound_wario_ima_tired:
-  chan_setbank 13
-  chan_setinstr 23
-  chan_setlayer 0, .layer_wario_F08
-  chan_end
+.sound_wario_ima_tired:
+chan_setbank 13
+chan_setinstr 23
+chan_setlayer 0, .layer_wario_F08
+chan_end
 
-  .layer_wario_F08:
-  layer_note1 39, 0xe1, 127
-  layer_end
+.layer_wario_F08:
+layer_note1 39, 0xe1, 127
+layer_end
 
-  .sound_wario_lets_a_go:
-  chan_setbank 13
-  chan_setinstr 26
-  chan_setlayer 0, .layer_wario_311D
-  chan_end
+.sound_wario_lets_a_go:
+chan_setbank 13
+chan_setinstr 26
+chan_setlayer 0, .layer_wario_311D
+chan_end
 
-  .layer_wario_311D:
-  layer_note1 39, 0x5A, 127
-  layer_end
-.endif
+.layer_wario_311D:
+layer_note1 39, 0x5A, 127
+layer_end

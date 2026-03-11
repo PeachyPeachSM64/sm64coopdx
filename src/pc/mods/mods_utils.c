@@ -217,7 +217,7 @@ void normalize_path(char* path) {
     }
 }
 
-bool concat_path(char* destination, char* path, char* fname) {
+bool concat_path(char* destination, const char* path, const char* fname) {
     return (snprintf(destination, SYS_MAX_PATH - 1, "%s/%s", path, fname) >= 0);
 }
 

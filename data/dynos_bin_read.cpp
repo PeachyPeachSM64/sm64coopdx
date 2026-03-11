@@ -11,11 +11,9 @@ enum {
 struct IfDefPtr { const char *mPtr; u64 mSize; bool mErase; };
 static IfDefPtr GetNearestIfDefPointer(char *pFileBuffer) {
     static const IfDefPtr sIfDefs[] = {
-        { "#ifdef VERSION_JP",  17, true  },
-        { "#ifndef VERSION_JP", 18, false },
         { "#ifdef VERSION_EU",  17, true  },
         { "#ifdef TEXTURE_FIX", 18, false },
-        { "#if defined(VERSION_JP) || defined(VERSION_SH)", 47, false },
+        { "#if defined(VERSION_SH)", 22, false },
     };
     IfDefPtr _Nearest = { NULL, 0, false };
     for (const auto &_IfDef : sIfDefs) {

@@ -266,11 +266,7 @@ void print_course_number(void) {
     gSPDisplayList(gDisplayListHead++, dl_rgba16_text_end);
 }
 
-#ifdef VERSION_JP
-#define ACT_NAME_X 158
-#else
 #define ACT_NAME_X 163
-#endif
 
 /**
  * Print act selector strings, some with special checks.
@@ -440,13 +436,9 @@ s32 lvl_update_obj_and_load_act_button_actions(UNUSED s32 arg, UNUSED s32 unused
 }
 
 void star_select_finish_selection(void) {
-#if defined(VERSION_JP)
-    play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
-#else
     if (gMarioState->marioObj) vec3f_copy(gMarioState->marioObj->header.gfx.cameraToObject, gGlobalSoundSource);
     gDelayedInitSound = CHAR_SOUND_LETS_A_GO;
     play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
-#endif
 #ifdef VERSION_SH
     queue_rumble_data(60, 70);
     func_sh_8024C89C(1);

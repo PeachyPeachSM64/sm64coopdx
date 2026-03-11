@@ -236,7 +236,7 @@ ROM_ASSET_LOAD_TEXTURE(texture_credits_char_Z, "textures/segment2/segment2.07000
 ROM_ASSET_LOAD_TEXTURE(texture_credits_char_period, "textures/segment2/segment2.07080.rgba16.inc.c", 0x00108a40, 48390, 0x00005880, 128);
 
 // JP Small Font
-#if defined(VERSION_JP) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 ALIGNED8 const Texture texture_font_char_jp_0[] = {
 #include "textures/segment2/segment2.07100.ia1.inc.c"
 };
@@ -1684,7 +1684,7 @@ const Texture *const main_font_lut[] = {
     texture_font_char_us_question, texture_font_char_us_double_quote_open, texture_font_char_us_double_quote_close, texture_font_char_us_tilde,
                   0x0, texture_font_char_us_coin, texture_font_char_us_star_filled, texture_font_char_us_multiply,
     texture_font_char_us_interpunct, texture_font_char_us_star_hollow,               0x0,               0x0,
-#elif defined(VERSION_JP) || defined(VERSION_SH)
+#elif defined(VERSION_SH)
     texture_font_char_jp_0, texture_font_char_jp_1, texture_font_char_jp_2, texture_font_char_jp_3,
     texture_font_char_jp_4, texture_font_char_jp_5, texture_font_char_jp_6, texture_font_char_jp_7,
     texture_font_char_jp_8, texture_font_char_jp_9, texture_font_char_jp_A, texture_font_char_jp_B,
@@ -1776,7 +1776,7 @@ const Texture *const main_hud_camera_lut[] = {
 // If you change the language here, the following Makefile rule also needs to
 // change, to generate the right version of define_text.inc.c:
 // $(BUILD_DIR)/bin/segment2.o: $(BUILD_DIR)/text/$(VERSION)/define_text.inc.c
-#if defined(VERSION_JP) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 #include "text/jp/define_text.inc.c"
 #elif defined(VERSION_US)
 #include "text/us/define_text.inc.c"
@@ -1796,7 +1796,7 @@ const Gfx dl_hud_img_begin[] = {
 #endif
 #ifdef VERSION_EU
     gsDPSetTextureFilter(G_TF_POINT),
-#elif defined(VERSION_JP) || defined(VERSION_US)
+#elif defined(VERSION_US)
     gsDPSetRenderMode(G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2),
 #endif
     gsSPEndDisplayList(),
@@ -1822,7 +1822,7 @@ const Gfx dl_hud_img_end[] = {
     gsDPSetTextureFilter(G_TF_BILERP),
 #endif
     gsDPSetCycleType(G_CYC_1CYCLE),
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     gsSPTexture(0xFFFF, 0xFFFF, 0, G_TX_RENDERTILE, G_OFF),
 #endif
     gsSPEndDisplayList(),
@@ -1877,7 +1877,7 @@ const Gfx dl_draw_text_bg_box[] = {
 
 #ifndef VERSION_EU
 // 0x0200EE28 - 0x0200EE68
-#if defined(VERSION_JP) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 static const Vtx vertex_ia8_char[] = {
     {{{     0,      0,      0}, 0, {     0,   1024}, {0xff, 0xff, 0xff, 0xff}}},
     {{{     8,      0,      0}, 0, {   512,   1024}, {0xff, 0xff, 0xff, 0xff}}},

@@ -424,22 +424,14 @@ void turn_off_audio(void) {
  * Initialize hardware, start main thread, then idle.
  */
 void thread1_idle(UNUSED void *arg) {
-#if defined(VERSION_US) || defined(VERSION_SH)
     s32 sp24 = osTvType;
-#endif
 
     osCreateViManager(OS_PRIORITY_VIMGR);
-#if defined(VERSION_US) || defined(VERSION_SH)
     if (sp24 == TV_TYPE_NTSC) {
         osViSetMode(&osViModeTable[OS_VI_NTSC_LAN1]);
     } else {
         osViSetMode(&osViModeTable[OS_VI_PAL_LAN1]);
     }
-#elif defined(VERSION_JP)
-    osViSetMode(&osViModeTable[OS_VI_NTSC_LAN1]);
-#else // VERSION_EU
-    osViSetMode(&osViModeTable[OS_VI_PAL_LAN1]);
-#endif
     osViBlack(TRUE);
     osViSetSpecialFeatures(OS_VI_DITHER_FILTER_ON);
     osViSetSpecialFeatures(OS_VI_GAMMA_OFF);

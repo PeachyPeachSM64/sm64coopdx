@@ -1732,9 +1732,7 @@ static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "oCameraLakituFinishedDialog",                LVT_S32,                 offsetof(struct Object, oCameraLakituFinishedDialog),                false, LOT_NONE,         1,                    sizeof(s32)                   },
     { "oCameraLakituPitchVel",                      LVT_S16,                 offsetof(struct Object, oCameraLakituPitchVel),                      false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCameraLakituSpeed",                         LVT_F32,                 offsetof(struct Object, oCameraLakituSpeed),                         false, LOT_NONE,         1,                    sizeof(f32)                   },
-#ifndef VERSION_JP
     { "oCameraLakituPlayedMusic",                        LVT_S32,                 offsetof(struct Object, oCameraLakituPlayedMusic),                        false, LOT_NONE,         1,                    sizeof(s32)                   },
-#endif
     { "oCameraLakituYawVel",                        LVT_S16,                 offsetof(struct Object, oCameraLakituYawVel),                        false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCannonBarrelBubblesUnkF4",                  LVT_F32,                 offsetof(struct Object, oCannonBarrelBubblesUnkF4),                  false, LOT_NONE,         1,                    sizeof(f32)                   },
     { "oCannonPlayerIndex",                         LVT_S32,                 offsetof(struct Object, oCannonPlayerIndex),                         false, LOT_NONE,         1,                    sizeof(s32)                   },
@@ -1774,9 +1772,7 @@ static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "oCloudFwooshMovementRadius",                 LVT_S16,                 offsetof(struct Object, oCloudFwooshMovementRadius),                 false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCloudGrowSpeed",                            LVT_F32,                 offsetof(struct Object, oCloudGrowSpeed),                            false, LOT_NONE,         1,                    sizeof(f32)                   },
     { "oCoinUnk110",                                LVT_F32,                 offsetof(struct Object, oCoinUnk110),                                false, LOT_NONE,         1,                    sizeof(f32)                   },
-#ifndef VERSION_JP
     { "oCoinUnk1B0",                                LVT_S32,                 offsetof(struct Object, oCoinUnk1B0),                                false, LOT_NONE,         1,                    sizeof(s32)                   },
-#endif
     { "oCoinUnkF4",                                 LVT_S32,                 offsetof(struct Object, oCoinUnkF4),                                 false, LOT_NONE,         1,                    sizeof(s32)                   },
     { "oCoinUnkF8",                                 LVT_S32,                 offsetof(struct Object, oCoinUnkF8),                                 false, LOT_NONE,         1,                    sizeof(s32)                   },
     { "oCollisionDistance",                         LVT_F32,                 offsetof(struct Object, oCollisionDistance),                         false, LOT_NONE,         1,                    sizeof(f32)                   },

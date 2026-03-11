@@ -315,10 +315,7 @@ s32 cur_obj_check_interacted(void);
 void cur_obj_spawn_loot_blue_coin(void);
 s32 cur_obj_is_any_player_on_platform(void);
 f32 cur_obj_lateral_dist_from_obj_to_home(struct Object* obj);
-
-#ifndef VERSION_JP
 void cur_obj_spawn_star_at_y_offset(f32 targetX, f32 targetY, f32 targetZ, f32 offsetY);
-#endif
 
 void cur_obj_set_home_once(void);
 s32 get_trajectory_length(Trajectory* trajectory);

@@ -47,10 +47,9 @@ void bhv_bobomb_anchor_mario_loop(void) {
 u8 king_bobomb_act_0_continue_dialog(void) { return o->oAction == 0 && o->oSubAction != 0; }
 
 void king_bobomb_act_0(void) {
-#ifndef VERSION_JP
     o->oForwardVel = 0.0f;
     o->oVelY = 0.0f;
-#endif
+
     struct MarioState* marioState = nearest_mario_state_to_object(o);
     if (o->oSubAction == 0) {
         cur_obj_become_intangible();
@@ -236,7 +235,7 @@ void king_bobomb_act_8(void) {
         spawn_mist_particles_variable(0, 0, 200.0f);
         spawn_triangle_break_particles(20, 138, 3.0f, 4);
         cur_obj_shake_screen(SHAKE_POS_SMALL);
-#ifndef VERSION_JP
+
         //cur_obj_spawn_star_at_y_offset(2000.0f, 4500.0f, -4500.0f, 200.0f);
         f32 objectPosY = o->oPosY;
         o->oPosY += 200.0f + gDebugInfo[5][0];
@@ -245,11 +244,7 @@ void king_bobomb_act_8(void) {
         star = spawn_default_star(starPos[0], starPos[1], starPos[2]);
 
         o->oPosY = objectPosY;
-#else
-        o->oPosY += 100.0f;
-        f32* starPos = gLevelValues.starPositions.KingBobombStarPos;
-        star = spawn_default_star(starPos[0], starPos[1], starPos[2]);
-#endif
+
         // If we're not the closet to King-Bombomb,
         // Don't play this cutscene!
         if (star != NULL && nearest_mario_state_to_object(o) != &gMarioStates[0]) {

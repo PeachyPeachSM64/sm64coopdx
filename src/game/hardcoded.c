@@ -94,11 +94,7 @@ struct LevelValues gDefaultLevelValues = {
         .BigBullyStarPos              = {  3700.0f,   600.0f, -5500.0f },
         .ChillBullyStarPos            = {   130.0f,  1600.0f, -4335.0f },
         .BigPiranhasStarPos           = { -6300.0f, -1850.0f, -6300.0f },
-#ifdef VERSION_JP
-        .TuxieMotherStarPos           = { 3500.0f,  -4300.0f,  4650.0f },
-#else
         .TuxieMotherStarPos           = {  3167.0f, -4300.0f,  5108.0f },
-#endif
         .WigglerStarPos               = {     0.0f,  2048.0f,     0.0f },
         .PssSlideStarPos              = { -6358.0f, -4300.0f,  4700.0f },
         .RacingPenguinStarPos         = { -7339.0f, -5700.0f, -6774.0f },

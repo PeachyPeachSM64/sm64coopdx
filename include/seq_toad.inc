@@ -80,42 +80,23 @@ sound_ref .sound_toad_punch_wah
 sound_ref .sound_toad_uh
 sound_ref .sound_toad_hrmm
 sound_ref .sound_toad_wah2
-.ifdef VERSION_JP
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-.else
-  sound_ref .sound_peach_dear_toad
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_jump_hoo
-  sound_ref .sound_toad_yahoo
-  sound_ref .sound_toad_yahoo
-  sound_ref .sound_toad_yahoo
-  sound_ref .sound_toad_waha
-  sound_ref .sound_toad_yippee
-  sound_ref .sound_toad_doh
-  sound_ref .sound_toad_game_over
-  sound_ref .sound_toad_hello
-  sound_ref .sound_toad_press_start_to_play
-  sound_ref .sound_toad_twirl_bounce
-  sound_ref .sound_toad_snoring3
-  sound_ref .sound_toad_so_longa_bowser
-  sound_ref .sound_toad_ima_tired
-  sound_ref .sound_toad_lets_a_go
-.endif
+sound_ref .sound_peach_dear_toad
+sound_ref .sound_toad_jump_hoo
+sound_ref .sound_toad_jump_hoo
+sound_ref .sound_toad_yahoo
+sound_ref .sound_toad_yahoo
+sound_ref .sound_toad_yahoo
+sound_ref .sound_toad_waha
+sound_ref .sound_toad_yippee
+sound_ref .sound_toad_doh
+sound_ref .sound_toad_game_over
+sound_ref .sound_toad_hello
+sound_ref .sound_toad_press_start_to_play
+sound_ref .sound_toad_twirl_bounce
+sound_ref .sound_toad_snoring3
+sound_ref .sound_toad_so_longa_bowser
+sound_ref .sound_toad_ima_tired
+sound_ref .sound_toad_lets_a_go
 
 .sound_toad_jump_hoo:
 chan_setbank 15
@@ -508,138 +489,136 @@ layer_transpose 1
 .layer_toad_E62:
 layer_jump .layer_toad_C4E
 
-.ifndef VERSION_JP
-  .sound_peach_dear_toad:
-  chan_setbank 16
-  chan_setinstr 15
-  chan_setlayer 0, .layer_toad_E6F
-  chan_end
+.sound_peach_dear_toad:
+chan_setbank 16
+chan_setinstr 15
+chan_setlayer 0, .layer_toad_E6F
+chan_end
 
-  .layer_toad_E6F:
-  layer_note1 39, 0x2bc, 127
-  layer_end
+.layer_toad_E6F:
+layer_note1 39, 0x2bc, 127
+layer_end
 
-  .sound_toad_waha:
-  chan_setbank 15
-  chan_setinstr 24
-  chan_setlayer 0, .layer_toad_E7C
-  chan_end
+.sound_toad_waha:
+chan_setbank 15
+chan_setinstr 24
+chan_setlayer 0, .layer_toad_E7C
+chan_end
 
-  .layer_toad_E7C:
-  layer_note1 39, 0x5a, 127
-  layer_end
+.layer_toad_E7C:
+layer_note1 39, 0x5a, 127
+layer_end
 
-  .sound_toad_yippee:
-  chan_setbank 15
-  chan_setinstr 25
-  chan_setlayer 0, .layer_toad_E88
-  chan_end
+.sound_toad_yippee:
+chan_setbank 15
+chan_setinstr 25
+chan_setlayer 0, .layer_toad_E88
+chan_end
 
-  .layer_toad_E88:
-  layer_note1 39, 0x5a, 127
-  layer_end
+.layer_toad_E88:
+layer_note1 39, 0x5a, 127
+layer_end
 
-  .sound_toad_doh:
-  chan_setbank 15
-  chan_setinstr 16
-  chan_setlayer 0, .layer_toad_E94
-  chan_end
+.sound_toad_doh:
+chan_setbank 15
+chan_setinstr 16
+chan_setlayer 0, .layer_toad_E94
+chan_end
 
-  .layer_toad_E94:
-  layer_note1 39, 0x46, 127
-  layer_end
+.layer_toad_E94:
+layer_note1 39, 0x46, 127
+layer_end
 
-  .sound_toad_game_over:
-  chan_setbank 15
-  chan_setinstr 17
-  chan_setlayer 0, .layer_toad_EA0
-  chan_end
+.sound_toad_game_over:
+chan_setbank 15
+chan_setinstr 17
+chan_setlayer 0, .layer_toad_EA0
+chan_end
 
-  .layer_toad_EA0:
-  layer_note1 39, 0x55, 127
-  layer_end
+.layer_toad_EA0:
+layer_note1 39, 0x55, 127
+layer_end
 
-  .sound_toad_hello:
-  chan_setbank 15
-  chan_setinstr 18
-  chan_setlayer 0, .layer_toad_EAC
-  chan_end
+.sound_toad_hello:
+chan_setbank 15
+chan_setinstr 18
+chan_setlayer 0, .layer_toad_EAC
+chan_end
 
-  .layer_toad_EAC:
-  layer_note1 39, 0x46, 127
-  layer_end
+.layer_toad_EAC:
+layer_note1 39, 0x46, 127
+layer_end
 
-  .sound_toad_press_start_to_play:
-  chan_setbank 15
-  chan_setinstr 19
-  chan_setlayer 0, .layer_toad_EB8
-  chan_end
+.sound_toad_press_start_to_play:
+chan_setbank 15
+chan_setinstr 19
+chan_setlayer 0, .layer_toad_EB8
+chan_end
 
-  .layer_toad_EB8:
-  layer_note1 39, 0x12c, 127
-  layer_end
+.layer_toad_EB8:
+layer_note1 39, 0x12c, 127
+layer_end
 
-  .sound_toad_twirl_bounce:
-  chan_setbank 15
-  chan_setinstr 20
-  chan_setlayer 0, .layer_toad_EC5
-  chan_end
+.sound_toad_twirl_bounce:
+chan_setbank 15
+chan_setinstr 20
+chan_setlayer 0, .layer_toad_EC5
+chan_end
 
-  .layer_toad_EC5:
-  layer_note1 39, 0x30, 127
-  layer_end
+.layer_toad_EC5:
+layer_note1 39, 0x30, 127
+layer_end
 
-  .sound_toad_snoring3:
-  chan_setbank 15
-  chan_setlayer 0, .layer_toad_ECF
-  chan_end
+.sound_toad_snoring3:
+chan_setbank 15
+chan_setlayer 0, .layer_toad_ECF
+chan_end
 
-  .layer_toad_ECF:
-  layer_delay 0x4e
-  .layer_toad_ED1:
-  layer_loop 50
-  layer_call .layer_toad_fn_EE1
-  layer_loopend
-  layer_setinstr 21
-  layer_note1 39, 0x44c, 127
-  layer_jump .layer_toad_ED1
-  layer_end
+.layer_toad_ECF:
+layer_delay 0x4e
+.layer_toad_ED1:
+layer_loop 50
+layer_call .layer_toad_fn_EE1
+layer_loopend
+layer_setinstr 21
+layer_note1 39, 0x44c, 127
+layer_jump .layer_toad_ED1
+layer_end
 
-  .layer_toad_fn_EE1:
-  layer_setinstr 21
-  layer_note1 39, 0x53, 127
-  layer_setinstr 15
-  layer_note1 39, 0x4e, 127
-  layer_end
+.layer_toad_fn_EE1:
+layer_setinstr 21
+layer_note1 39, 0x53, 127
+layer_setinstr 15
+layer_note1 39, 0x4e, 127
+layer_end
 
-  .sound_toad_so_longa_bowser:
-  chan_setbank 15
-  chan_setinstr 22
-  chan_setlayer 0, .layer_toad_EF7
-  chan_setlayer 1, .layer_toad_EF7
-  chan_end
+.sound_toad_so_longa_bowser:
+chan_setbank 15
+chan_setinstr 22
+chan_setlayer 0, .layer_toad_EF7
+chan_setlayer 1, .layer_toad_EF7
+chan_end
 
-  .layer_toad_EF7:
-  layer_note1 39, 0xc8, 127
-  layer_end
+.layer_toad_EF7:
+layer_note1 39, 0xc8, 127
+layer_end
 
-  .sound_toad_ima_tired:
-  chan_setbank 15
-  chan_setinstr 23
-  chan_setlayer 0, .layer_toad_F08
-  chan_end
+.sound_toad_ima_tired:
+chan_setbank 15
+chan_setinstr 23
+chan_setlayer 0, .layer_toad_F08
+chan_end
 
-  .layer_toad_F08:
-  layer_note1 39, 0x96, 127
-  layer_end
+.layer_toad_F08:
+layer_note1 39, 0x96, 127
+layer_end
 
-  .sound_toad_lets_a_go:
-  chan_setbank 15
-  chan_setinstr 26
-  chan_setlayer 0, .layer_toad_311D
-  chan_end
+.sound_toad_lets_a_go:
+chan_setbank 15
+chan_setinstr 26
+chan_setlayer 0, .layer_toad_311D
+chan_end
 
-  .layer_toad_311D:
-  layer_note1 39, 0x5A, 127
-  layer_end
-.endif
+.layer_toad_311D:
+layer_note1 39, 0x5A, 127
+layer_end

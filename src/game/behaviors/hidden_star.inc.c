@@ -57,15 +57,11 @@ void bhv_hidden_star_trigger_loop(void) {
             // parent so only they get the star cutscene.
             hiddenStar->oHiddenStarLastInteractedObject = &gMarioStates[0];
 
-#ifdef VERSION_JP
-            play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
-#else
             if (count < 5) {
                 play_sound(SOUND_MENU_COLLECT_SECRET + ((4 - count) << 16), gGlobalSoundSource);
             } else {
                 play_sound(SOUND_MENU_COLLECT_SECRET, gGlobalSoundSource);
             }
-#endif
         }
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }

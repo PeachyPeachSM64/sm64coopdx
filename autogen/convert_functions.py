@@ -152,9 +152,6 @@ override_hide_functions = {
 }
 
 override_function_version_excludes = {
-    "bhv_play_music_track_when_touched_loop": "VERSION_JP",
-    "play_knockback_sound": "VERSION_JP",
-    "cur_obj_spawn_star_at_y_offset": "VERSION_JP",
 }
 
 lua_function_params = {

@@ -597,7 +597,6 @@ const Gfx bowser_seg6_dl_0603B8D0[] = {
     gsSPEndDisplayList(),
 };
 
-#ifndef VERSION_JP
 // 0x0603B948 - 0x0603B9C8
 const Gfx bowser_seg6_dl_0603B948[] = {
     gsDPPipeSync(),
@@ -617,7 +616,6 @@ const Gfx bowser_seg6_dl_0603B948[] = {
     gsSPSetGeometryMode(G_LIGHTING),
     gsSPEndDisplayList(),
 };
-#endif
 
 // 0x0603B948
 ROM_ASSET_LOAD_VTX(bowser_seg6_vertex_0603B948, 0x00188440, 199722, 0x0003b9c8, 256);
@@ -1381,7 +1379,6 @@ const Gfx bowser_seg6_dl_06040210[] = {
     gsSPEndDisplayList(),
 };
 
-#ifndef VERSION_JP
 // 0x06040358 - 0x06040428
 const Gfx bowser_seg6_dl_06040358[] = {
     gsDPPipeSync(),
@@ -1411,7 +1408,6 @@ const Gfx bowser_seg6_dl_06040358[] = {
     gsSPDisplayList(bowser_seg6_dl_060401F0),
     gsSPEndDisplayList(),
 };
-#endif
 
 // 0x060402D8
 ROM_ASSET_LOAD_VTX(bowser_seg6_vertex_060402D8, 0x00188440, 199722, 0x00040428, 256);

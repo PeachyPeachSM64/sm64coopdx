@@ -12,11 +12,6 @@
 #include "pc/lua/utils/smlua_level_utils.h"
 #include "pc/lua/utils/smlua_text_utils.h"
 
-#ifdef VERSION_EU
-extern s32 gInGameLanguage;
-#include "eu_translation.h"
-#endif
-
 struct Sm64Char {
     const char *str;
     u32 len;

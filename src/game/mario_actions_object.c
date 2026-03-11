@@ -382,15 +382,11 @@ s32 act_holding_bowser(struct MarioState *m) {
     s16 spin;
 
     if (m->playerIndex == 0 && m->input & INPUT_B_PRESSED) {
-#ifndef VERSION_JP
         if (m->angleVel[1] <= -0xE00 || m->angleVel[1] >= 0xE00) {
             play_character_sound(m, CHAR_SOUND_SO_LONGA_BOWSER);
         } else {
             play_character_sound(m, CHAR_SOUND_HERE_WE_GO);
         }
-#else
-        play_character_sound(m, CHAR_SOUND_HERE_WE_GO);
-#endif
         return set_mario_action(m, ACT_RELEASING_BOWSER, 0);
     }
 

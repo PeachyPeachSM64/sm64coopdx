@@ -60,18 +60,8 @@ struct AudioSessionSettingsEU gAudioSessionPresets[] = {
 // - memory used for persistent banks
 // - memory used for temporary sequences
 // - memory used for temporary banks
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 struct AudioSessionSettings gAudioSessionPresets[18] = {
-#ifdef VERSION_JP
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0800, 0x2FFF, 0x7FFF, 0x3900, 0x6000, 0x4400, 0x2A00 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0A00, 0x47FF, 0x7FFF, 0x3900, 0x6000, 0x4400, 0x2A00 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x1000, 0x2FFF, 0x7FFF, 0x3900, 0x6000, 0x4400, 0x2A00 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0E00, 0x3FFF, 0x7FFF, 0x3900, 0x6000, 0x4400, 0x2A00 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0C00, 0x4FFF, 0x7FFF, 0x3900, 0x6000, 0x4400, 0x2A00 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0800, 0x2FFF, 0x7FFF, 0x3E00, 0x6200, 0x3F00, 0x2A00 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0A00, 0x47FF, 0x7FFF, 0x3F00, 0x6200, 0x4400, 0x2A80 },
-    { 32000, MAX_SIMUL_NOTES, 1, 0x0800, 0x37FF, 0x7FFF, 0x3300, 0x5500, 0x4000, 0x1B00 },
-#else
     { 32000, MAX_SIMUL_NOTES, 1, 0x0C00, 0x2FFF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
     { 32000, MAX_SIMUL_NOTES, 1, 0x0A00, 0x47FF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
     { 32000, MAX_SIMUL_NOTES, 1, 0x1000, 0x2FFF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
@@ -80,7 +70,6 @@ struct AudioSessionSettings gAudioSessionPresets[18] = {
     { 32000, MAX_SIMUL_NOTES, 1, 0x0C00, 0x2FFF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
     { 32000, MAX_SIMUL_NOTES, 1, 0x0A00, 0x47FF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
     { 32000, MAX_SIMUL_NOTES, 1, 0x0800, 0x37FF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
-#endif
     { 27000, MAX_SIMUL_NOTES, 1, 0x0800, 0x2FFF, 0x7FFF, 0x7400, 0x7400, 0x7400, 0x7400 },
     { 27000, MAX_SIMUL_NOTES, 1, 0x0800, 0x3FFF, 0x7FFF, 0x7400, 0x7400, 0x7400, 0x7400 },
     { 27000, MAX_SIMUL_NOTES, 1, 0x1000, 0x2FFF, 0x7FFF, 0x7400, 0x7400, 0x7400, 0x7400 },
@@ -94,7 +83,7 @@ struct AudioSessionSettings gAudioSessionPresets[18] = {
 };
 #endif
 // gAudioCosineTable[k] = round((2**15 - 1) * cos(pi/2 * k / 127)). Unused.
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 u16 gAudioCosineTable[128] = {
     0x7FFF, 32764, 32757, 32744, 32727, 32704, 32677, 32644, 32607, 32564, 32517, 32464, 32407,
     32344,  32277, 32205, 32127, 32045, 31958, 31866, 31770, 31668, 31561, 31450, 31334, 31213,
@@ -181,7 +170,7 @@ u8 gDefaultShortNoteDurationTable[16] = {
     229, 203, 177, 151, 139, 126, 113, 100, 87, 74, 61, 48, 36, 23, 10, 0,
 };
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 // gVibratoCurve[k] = k*8
 s8 gVibratoCurve[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 #endif
@@ -594,7 +583,7 @@ f32 gDefaultPanVolume[128] = {
     0.012368f, 0.0f
 };
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 // gVolRampingLhs136[k] = 2^16 * max(1, (256*k)^(1/17)
 f32 gVolRampingLhs136[128] = {
     65536.0f,    90811.555f,  94590.766f,  96873.96f,   98527.26f,   99829.06f,   100905.47f,
@@ -911,7 +900,7 @@ u8 gQueuedAudioCmdCount = 0;
 u8 gLastQueuedAudioCmdCount = 0;
 
 struct OSMesgQueue *OSMesgQueues[4] = { &OSMesgQueue0, &OSMesgQueue1, &OSMesgQueue2, &OSMesgQueue3 };
-#elif defined(VERSION_JP) || defined(VERSION_US)
+#elif defined(VERSION_US)
 s8 sUnused8033EF8 = 24;
 #endif
 
@@ -942,7 +931,7 @@ s32 gRefreshRate;
 s16 *gAiBuffers[NUMAIBUFFERS];
 s16 gAiBufferLengths[NUMAIBUFFERS];
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 u32 gUnused80226E58[0x10];
 u16 gUnused80226E98[0x10];
 #endif

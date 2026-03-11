@@ -1658,13 +1658,9 @@ void common_slide_action(struct MarioState *m, u32 endAction, u32 airAction, s32
             if (!mario_floor_is_slippery(m)) {
                 if (m->wall == NULL && configBouncyLevelBounds != 0) { break; }
 
-#ifdef VERSION_JP
-                set_mario_particle_flags(m, PARTICLE_VERTICAL_STAR, FALSE);
-#else
                 if (m->forwardVel > 16.0f) {
                     set_mario_particle_flags(m, PARTICLE_VERTICAL_STAR, FALSE);
                 }
-#endif
                 slide_bonk(m, ACT_GROUND_BONK, endAction);
             } else if (m->wall != NULL) {
                 s16 wallAngle = atan2s(m->wallNormal[2], m->wallNormal[0]);
@@ -1893,11 +1889,7 @@ s32 common_ground_knockback_action(struct MarioState *m, s32 animation, s32 arg2
     if (damage > 0) {
         play_character_sound_if_no_flag(m, CHAR_SOUND_ATTACKED, MARIO_MARIO_SOUND_PLAYED);
     } else {
-#ifdef VERSION_JP
-        play_character_sound_if_no_flag(m, CHAR_SOUND_OOOF, MARIO_MARIO_SOUND_PLAYED);
-#else
         play_character_sound_if_no_flag(m, CHAR_SOUND_OOOF2, MARIO_MARIO_SOUND_PLAYED);
-#endif
     }
 
     // Cap speed if it's not a PVP attack
@@ -1952,11 +1944,9 @@ s32 act_hard_backward_ground_kb(struct MarioState *m) {
         set_mario_action(m, ACT_DEATH_ON_BACK, 0);
     }
 
-#ifndef VERSION_JP
     if (animFrame == 54 && m->prevAction == ACT_SPECIAL_DEATH_EXIT) {
         play_character_sound(m, CHAR_SOUND_MAMA_MIA);
     }
-#endif
 
     if (animFrame == 69) {
         play_mario_landing_sound_once(m, SOUND_ACTION_TERRAIN_LANDING);
