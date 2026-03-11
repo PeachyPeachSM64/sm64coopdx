@@ -67,24 +67,11 @@ ROM_ASSET_LOAD_TEXTURE(inside_castle_seg7_texture_0700E800, "levels/castle_insid
 // 0x0700F800 - 0x07010800
 ROM_ASSET_LOAD_TEXTURE(inside_castle_seg7_texture_0700F800, "levels/castle_inside/22.rgba16.inc.c", 0x00396340, 232834, 0x0000f800, 4096);
 
-#ifdef VERSION_JP
-// 0x07010800 - 0x07011800
-ALIGNED8 const Texture inside_castle_seg7_texture_07010800[] = {
-#include "levels/castle_inside/23.rgba16.inc.c"
-};
-
-// 0x07011800 - 0x0701200
-ALIGNED8 const Texture inside_castle_seg7_texture_07011800[] = {
-#include "levels/castle_inside/24.rgba16.inc.c"
-};
-
-#else
 // 0x07010800 - 0x07011800
 ROM_ASSET_LOAD_TEXTURE(inside_castle_seg7_texture_07010800, "levels/castle_inside/23_us.rgba16.inc.c", 0x00396340, 232834, 0x00010800, 4096);
 
 // 0x07011800 - 0x0701200
 ROM_ASSET_LOAD_TEXTURE(inside_castle_seg7_texture_07011800, "levels/castle_inside/24_us.rgba16.inc.c", 0x00396340, 232834, 0x00011800, 4096);
-#endif
 
 // 0x07012800 - 0x07013800
 ROM_ASSET_LOAD_TEXTURE(inside_castle_seg7_texture_07012800, "levels/castle_inside/25.rgba16.inc.c", 0x00396340, 232834, 0x00012800, 4096);

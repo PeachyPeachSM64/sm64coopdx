@@ -5,11 +5,7 @@
 #include "data.h"
 #include "seqplayer.h"
 
-#ifdef VERSION_JP
-#define US_FLOAT2(x) x##.0
-#else
 #define US_FLOAT2(x) x
-#endif
 
 #if defined(VERSION_EU) || defined(VERSION_SH)
 void sequence_channel_process_sound(struct SequenceChannel *seqChannel, s32 recalculateVolume) {
@@ -163,7 +159,7 @@ void sequence_player_process_sound(struct SequencePlayer *seqPlayer) {
 f32 get_portamento_freq_scale(struct Portamento *p) {
     u32 v0;
     f32 result;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     if (p->mode == 0) {
         return 1.0f;
     }
@@ -307,7 +303,7 @@ void note_vibrato_init(struct Note *note) {
 
     vib = &note->vibratoState;
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     if (note->parentLayer->seqChannel->vibratoExtentStart == 0
         && note->parentLayer->seqChannel->vibratoExtentTarget == 0
         && note->parentLayer->portamento.mode == 0) {
@@ -393,7 +389,7 @@ s32 adsr_update(struct AdsrState *adsr) {
             return 0;
 
         case ADSR_STATE_INITIAL: {
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             adsr->current = adsr->initial;
             adsr->target = adsr->initial;
 #endif
@@ -406,7 +402,7 @@ s32 adsr_update(struct AdsrState *adsr) {
 
         case ADSR_STATE_START_LOOP:
             adsr->envIndex = 0;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             adsr->currentHiRes = adsr->current << 0x10;
 #endif
             adsr->state = ADSR_STATE_LOOP;

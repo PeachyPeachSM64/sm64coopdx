@@ -242,13 +242,7 @@ void mr_i_act_0(void) {
     struct Object* player = nearest_player_to_object(o);
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
 
-#ifndef VERSION_JP
     obj_set_angle(o, 0, 0, 0);
-#else
-    o->oMoveAnglePitch = 0;
-    o->oMoveAngleYaw = 0;
-    o->oMoveAngleRoll = 0;
-#endif
     cur_obj_scale(o->oBehParams2ndByte + 1);
     if (o->oTimer == 0)
         cur_obj_set_pos_to_home();

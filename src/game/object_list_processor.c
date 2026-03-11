@@ -498,12 +498,7 @@ void spawn_objects_from_info(UNUSED s32 unused, struct SpawnInfo *spawnInfo) {
     gWDWWaterLevelChanging = FALSE;
     gMarioOnMerryGoRound = FALSE;
 
-    //! (Spawning Displacement) On the Japanese version, Mario's platform object
-    //  isn't cleared when transitioning between areas. This can cause Mario to
-    //  receive displacement after spawning.
-#ifndef VERSION_JP
     clear_mario_platform();
-#endif
 
     if (gCurrLevelNum == LEVEL_CCM && gCurrAreaIndex == 2) {
         gCCMEnteredSlide |= 1;

@@ -118,12 +118,12 @@ s32 sDialogSpeakerVoice[] = {
     SOUND_OBJ2_BOSS_DIALOG_GRUNT,
     SOUND_OBJ_WIGGLER_TALK,
     SOUND_GENERAL_YOSHI_TALK,
-#if defined(VERSION_JP) || defined(VERSION_US)
+ #if defined(VERSION_US)
     NO_SOUND,
     NO_SOUND,
     NO_SOUND,
     NO_SOUND,
-#endif
+ #endif
 };
 
 u8 sNumProcessedSoundRequests = 0;
@@ -251,19 +251,10 @@ u16 sLevelAcousticReaches[LEVEL_COUNT] = {
 
 #define AUDIO_MAX_DISTANCE US_FLOAT(22000.0)
 
-#ifdef VERSION_JP
-#define LOW_VOLUME_REVERB 48.0
-#else
-#define LOW_VOLUME_REVERB 40.0f
-#endif
-
-#ifdef VERSION_JP
-#define VOLUME_RANGE_UNK1 0.8f
-#define VOLUME_RANGE_UNK2 1.0f
-#else
-#define VOLUME_RANGE_UNK1 0.9f
-#define VOLUME_RANGE_UNK2 0.8f
-#endif
+ #define LOW_VOLUME_REVERB 40.0f
+ 
+ #define VOLUME_RANGE_UNK1 0.9f
+ #define VOLUME_RANGE_UNK2 0.8f
 
 const u8 sBackgroundMusicDefaultVolumeDefault[35] = {
     127, // SEQ_SOUND_PLAYER
@@ -382,11 +373,7 @@ u8 sNumSoundsInBank[SOUND_BANK_COUNT] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 
 u8 sMaxChannelsForSoundBank[SOUND_BANK_COUNT] = { 8, 8, 8, 4, 4, 4, 4, 1, 4, 3, 8, 8, 8 };
 
 // Banks 2 and 7 both grew from 0x30 sounds to 0x40 in size in US.
-#ifdef VERSION_JP
-#define BANK27_SIZE 0x30
-#else
-#define BANK27_SIZE 0x40
-#endif
+ #define BANK27_SIZE 0x40
 u8 sNumSoundsPerBank[SOUND_BANK_COUNT] = {
     0x70, 0x30, BANK27_SIZE, 0x80, 0x20, 0x80, 0x20, BANK27_SIZE, 0x80, 0x80, BANK27_SIZE, BANK27_SIZE, BANK27_SIZE
 };
@@ -416,15 +403,13 @@ u8 sRemainingEnvFadeInSkips = 0;
 
 u8 sBackgroundMusicQueueSize = 0;
 
-#ifndef VERSION_JP
 u8 sUnused8033323C = 0; // never read, set to 0
-#endif
 
 
 // bss
-#if defined(VERSION_JP) || defined(VERSION_US)
+ #if !defined(VERSION_EU) && !defined(VERSION_SH)
 s16 *gCurrAiBuffer;
-#endif
+ #endif
 #ifdef VERSION_SH
 s8 D_SH_80343CD0_pad[0x20];
 s32 D_SH_80343CF0;
@@ -478,11 +463,7 @@ extern OSMesgQueue *D_SH_80350F88;
 extern OSMesgQueue *D_SH_80350FA8;
 #endif
 
-#ifdef VERSION_JP
-typedef u16 FadeT;
-#else
-typedef s32 FadeT;
-#endif
+ typedef s32 FadeT;
 
 // some sort of main thread -> sound thread dispatchers
 extern void queue_audio_cmd_f32(u32 bits, f32 arg);
@@ -540,7 +521,6 @@ static u16 get_level_acoustic_reaches(s16 levelNum) {
     return sLevelAcousticReaches[levelNum];
 }
 
-#ifndef VERSION_JP
 void unused_8031E4F0(void) {
     // This is a debug function which is almost entirely optimized away,
     // except for loops, string literals, and a read of a volatile variable.
@@ -614,7 +594,6 @@ void unused_8031E4F0(void) {
 void unused_8031E568(void) {
     stubbed_printf("COUNT %8d\n", gAudioFrameCount);
 }
-#endif
 
 #if defined(VERSION_EU) || defined(VERSION_SH)
 const char unusedErrorStr1[] = "Error : Queue is not empty ( %x ) \n";
@@ -647,7 +626,7 @@ void audio_reset_session_eu(s32 presetId) {
 }
 #endif
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+ #if !defined(VERSION_EU) && !defined(VERSION_SH)
 /**
  * Called from threads: thread3_main, thread5_game_loop
  */
@@ -655,12 +634,10 @@ static void seq_player_fade_to_zero_volume(s32 player, FadeT fadeDuration) {
     if (player >= SEQUENCE_PLAYERS) { return; }
     struct SequencePlayer *seqPlayer = &gSequencePlayers[player];
 
-#ifndef VERSION_JP
     // fadeDuration is never 0 in practice
     if (fadeDuration == 0) {
         fadeDuration++;
     }
-#endif
 
     seqPlayer->fadeVelocity = -(seqPlayer->fadeVolume / fadeDuration);
     seqPlayer->state = SEQUENCE_PLAYER_STATE_FADE_OUT;
@@ -760,11 +737,9 @@ static void seq_player_fade_to_target_volume(s32 player, FadeT fadeDuration, u8 
     if (player >= SEQUENCE_PLAYERS) { return; }
     struct SequencePlayer *seqPlayer = &gSequencePlayers[player];
 
-#if defined(VERSION_JP) || defined(VERSION_US)
     if (seqPlayer->state == SEQUENCE_PLAYER_STATE_FADE_OUT) {
         return;
     }
-#endif
 
     seqPlayer->fadeRemainingFrames = 0;
     if (fadeDuration == 0) {
@@ -1162,9 +1137,7 @@ static void select_current_sounds(u8 bank) {
 //  interrupted in this way, it will keep the background music low afterward.
 //  There are only a few of these sounds, and it probably isn't possible to do
 //  it in practice without using a time stop glitch like triple star spawn.
-#ifndef VERSION_JP
                     update_background_music_after_sound(bank, sCurrentSound[bank][i]);
-#endif
 
                     sSoundBanks[bank][sCurrentSound[bank][i]].soundBits = NO_SOUND;
                     sSoundBanks[bank][sCurrentSound[bank][i]].soundStatus = SOUND_STATUS_STOPPED;
@@ -1267,20 +1240,9 @@ static f32 get_sound_volume(u8 bank, u8 soundIndex, f32 volumeRange) {
     if (bank >= SOUND_BANK_COUNT || soundIndex >= SOUND_INDEX_COUNT) { return 0; }
     f32 maxSoundDistance = AUDIO_MAX_DISTANCE;
     f32 intensity = 0;
-#ifndef VERSION_JP
     f32 div = (bank < 3) ? 2.0f : 3.0f;
-#endif
 
     if (!(sSoundBanks[bank][soundIndex].soundBits & SOUND_NO_VOLUME_LOSS)) {
-#ifdef VERSION_JP
-        // Intensity linearly lowers from 1 at the camera to 0 at maxSoundDistance
-        maxSoundDistance = get_level_acoustic_reaches(gCurrLevelNum);
-        if (maxSoundDistance < sSoundBanks[bank][soundIndex].distance) {
-            intensity = 0.0f;
-        } else {
-            intensity = 1.0 - sSoundBanks[bank][soundIndex].distance / maxSoundDistance;
-        }
-#else
         // Intensity linearly lowers from 1 at the camera to 1 - volumeRange at maxSoundDistance,
         // then it goes from 1 - volumeRange at maxSoundDistance to 0 at AUDIO_MAX_DISTANCE
         if (sSoundBanks[bank][soundIndex].distance > AUDIO_MAX_DISTANCE) {
@@ -1296,14 +1258,9 @@ static f32 get_sound_volume(u8 bank, u8 soundIndex, f32 volumeRange) {
                     1.0f - sSoundBanks[bank][soundIndex].distance / maxSoundDistance * volumeRange;
             }
         }
-#endif
 
         if (sSoundBanks[bank][soundIndex].soundBits & SOUND_VIBRATO) {
-#ifdef VERSION_JP
-            if (intensity != 0.0)
-#else
             if (intensity >= 0.08f)
-#endif
             {
                 intensity -= (f32)(gAudioRandom & 0xf) / US_FLOAT(192.0);
             }
@@ -1346,21 +1303,17 @@ static u8 get_sound_reverb(UNUSED u8 bank, UNUSED u8 soundIndex, u8 channelIndex
     u8 level;
     u8 reverb;
 
-#ifndef VERSION_JP
     // Disable level reverb if NO_ECHO is set
     if (sSoundBanks[bank][soundIndex].soundBits & SOUND_NO_ECHO) {
         level = 0;
         area = 0;
     } else {
-#endif
         level = gCurrLevelNum;
         area = gCurrAreaIndex - 1;
         if (area > 2) {
             area = 2;
         }
-#ifndef VERSION_JP
     }
-#endif
 
     // reverb = reverb adjustment + level reverb + a volume-dependent value
     // The volume-dependent value is 0 when volume is at maximum, and raises to
@@ -1403,9 +1356,7 @@ static void update_game_sound(void) {
     u8 bank;
     u8 channelIndex = 0;
     u8 soundIndex;
-#if defined(VERSION_JP) || defined(VERSION_US)
     f32 value;
-#endif
 
     process_all_sound_requests();
     process_level_music_dynamics();
@@ -1578,15 +1529,6 @@ static void update_game_sound(void) {
                             break;
                     }
                 }
-#ifdef VERSION_JP
-                // If the sound was marked for deletion (bits set to NO_SOUND), then stop playing it
-                // and delete it
-                else if (soundStatus == SOUND_STATUS_STOPPED) {
-                    update_background_music_after_sound(bank, soundIndex);
-                    gSequencePlayers[SEQ_PLAYER_SFX].channels[channelIndex]->soundScriptIO[0] = 0;
-                    delete_sound_from_bank(bank, soundIndex);
-                }
-#else
                 else if (gSequencePlayers[SEQ_PLAYER_SFX].channels[channelIndex]->layers[0] == NULL) {
                     update_background_music_after_sound(bank, soundIndex);
                     sSoundBanks[bank][soundIndex].soundStatus = SOUND_STATUS_STOPPED;
@@ -1601,7 +1543,6 @@ static void update_game_sound(void) {
                     gSequencePlayers[SEQ_PLAYER_SFX].channels[channelIndex]->soundScriptIO[0] = 0;
                     delete_sound_from_bank(bank, soundIndex);
                 }
-#endif
                 // If sound has finished playing, then delete it
                 else if (gSequencePlayers[SEQ_PLAYER_SFX].channels[channelIndex]->layers[0]->enabled
                          == FALSE) {
@@ -2182,10 +2123,8 @@ static u8 begin_background_music_fade(u16 fadeDuration) {
         if (targetVolume != 0xff) {
             seq_player_fade_to_target_volume(SEQ_PLAYER_LEVEL, fadeDuration, targetVolume);
         } else {
-#if defined(VERSION_JP) || defined(VERSION_US)
             gSequencePlayers[SEQ_PLAYER_LEVEL].volume =
                 sBackgroundMusicDefaultVolume[sCurrentBackgroundMusicSeqId] / 127.0f;
-#endif
             seq_player_fade_to_normal_volume(SEQ_PLAYER_LEVEL, fadeDuration);
         }
     }
@@ -2488,12 +2427,10 @@ void play_dialog_sound(s32 dialogID) {
         }
     }
 
-#ifndef VERSION_JP
     // "You've stepped on the (Wing|Metal|Vanish) Cap Switch"
     if (dialogID == gBehaviorValues.dialogs.CapswitchWingDialog || dialogID == gBehaviorValues.dialogs.CapswitchMetalDialog || dialogID == gBehaviorValues.dialogs.CapswitchVanishDialog) {
         play_puzzle_jingle();
     }
-#endif
 }
 
 static bool sSequencePlayerVolumeOverrideEnabled[SEQUENCE_PLAYERS] = { 0 };
@@ -2927,19 +2864,17 @@ void play_toads_jingle(void) {
 void sound_reset(u8 presetId) {
     MUTEX_LOCK(gAudioThread);
     
-#ifndef VERSION_JP
     if (presetId >= 8) {
         presetId = 0;
         sUnused8033323C = 0;
     }
-#endif
     sGameLoopTicked = 0;
     disable_all_sequence_players();
     sound_init();
 #ifdef VERSION_SH
     queue_audio_cmd_u32(AUDIO_CMD_ARGS(AUDIO_CMD_UNMUTE_ALL_SEQUENCE_PLAYERS, 0, 0, 0), 0);
 #endif
-#if defined(VERSION_JP) || defined(VERSION_US)
+ #if !defined(VERSION_EU) && !defined(VERSION_SH)
     audio_reset_session(&gAudioSessionPresets[presetId]);
 #else
     audio_reset_session_eu(presetId);
@@ -2966,7 +2901,7 @@ void audio_set_sound_mode(u8 soundMode) {
     gSoundMode = soundMode;
 }
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+ #if !defined(VERSION_EU) && !defined(VERSION_SH)
 void unused_80321460(UNUSED s32 arg0, UNUSED s32 arg1, UNUSED s32 arg2, UNUSED s32 arg3) {
 }
 

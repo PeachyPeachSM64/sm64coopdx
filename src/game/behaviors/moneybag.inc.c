@@ -151,9 +151,7 @@ void moneybag_act_return_home(void) {
 
     if (is_point_close_to_object(o, o->oHomeX, o->oHomeY, o->oHomeZ, 100)) {
         spawn_object(o, MODEL_YELLOW_COIN, bhvMoneybagHidden);
-#ifndef VERSION_JP
         cur_obj_play_sound_2(SOUND_GENERAL_VANISH_SFX);
-#endif
         cur_obj_init_animation(0);
         o->oAction = MONEYBAG_ACT_DISAPPEAR;
         o->oMoneybagJumpState = MONEYBAG_JUMP_LANDING;
@@ -222,9 +220,7 @@ void bhv_moneybag_hidden_loop(void) {
     switch (o->oAction) {
         case FAKE_MONEYBAG_COIN_ACT_IDLE:
             if (is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 400)) {
-#ifndef VERSION_JP
                 cur_obj_play_sound_2(SOUND_GENERAL_VANISH_SFX);
-#endif
                 o->oAction = FAKE_MONEYBAG_COIN_ACT_TRANSFORM;
             }
             break;

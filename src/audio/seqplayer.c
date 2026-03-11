@@ -74,7 +74,7 @@ void sequence_channel_init(struct SequenceChannel *seqChannel) {
     seqChannel->adsr.envelope = gDefaultEnvelope;
     seqChannel->adsr.releaseRate = 0x20;
     seqChannel->adsr.sustain = 0;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     seqChannel->updatesPerFrameUnused = gAudioUpdatesPerFrame;
 #endif
     seqChannel->vibratoRateTarget = 0x800;
@@ -777,7 +777,7 @@ void seq_channel_layer_process_script(struct SequenceChannelLayer *layer) {
 
             case 0xc6: // layer_setinstr
                 cmd = m64_read_u8(state);
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
                 if (cmd < 127) {
                     cmd = get_instrument(seqChannel, cmd, &layer->instrument, &layer->adsr);
                 }
@@ -925,7 +925,7 @@ void seq_channel_layer_process_script(struct SequenceChannelLayer *layer) {
 #endif
         if ((seqPlayer->muted && (seqChannel->muteBehavior & MUTE_BEHAVIOR_STOP_NOTES) != 0)
             || seqChannel->stopSomething2
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             || !seqChannel->hasInstrument
 #endif
         ) {
@@ -973,7 +973,7 @@ void seq_channel_layer_process_script(struct SequenceChannelLayer *layer) {
                     layer->sound = &drum->sound;
                     layer->freqScale = layer->sound->tuning;
                 }
-#if defined(VERSION_JP) || defined(VERSION_US) || defined(VERSION_SH)
+#if defined(VERSION_US) || defined(VERSION_SH)
             skip:;
 #endif
             } else { // instrument
@@ -1027,7 +1027,7 @@ void seq_channel_layer_process_script(struct SequenceChannelLayer *layer) {
                             case PORTAMENTO_MODE_1:
                             case PORTAMENTO_MODE_3:
                             case PORTAMENTO_MODE_5:
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
                                 sp24 = temp_f2;
 #endif
                                 freqScale = temp_f12;
@@ -1039,7 +1039,7 @@ void seq_channel_layer_process_script(struct SequenceChannelLayer *layer) {
                             default:
 #endif
                                 freqScale = temp_f2;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
                                 sp24 = temp_f12;
 #endif
                                 break;
@@ -1980,7 +1980,7 @@ void sequence_channel_process_script(struct SequenceChannel *seqChannel) {
                         seqChannel->vibratoDelay = m64_read_u8(state) * 16;
                         break;
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
                     case 0xd6: // chan_setupdatesperframe_unimplemented
                         cmd = m64_read_u8(state);
                         if (cmd == 0) {
@@ -2947,7 +2947,7 @@ void process_sequences(UNUSED s32 iterationsRemaining) {
 #endif
         }
     }
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     reclaim_notes();
 #endif
     process_notes();
@@ -3002,7 +3002,7 @@ void init_sequence_players(void) {
     for (i = 0; i < ARRAY_COUNT(gSequenceChannels); i++) {
         gSequenceChannels[i].seqPlayer = NULL;
         gSequenceChannels[i].enabled = FALSE;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     }
 
     for (i = 0; i < ARRAY_COUNT(gSequenceChannels); i++) {

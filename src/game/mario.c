@@ -274,15 +274,11 @@ void play_sound_if_no_flag(struct MarioState *m, u32 soundBits, u32 flags) {
 void play_mario_jump_sound(struct MarioState *m) {
     if (!m) { return; }
     if (!(m->flags & MARIO_MARIO_SOUND_PLAYED)) {
-#ifndef VERSION_JP
         if (m->action == ACT_TRIPLE_JUMP) {
             play_character_sound_offset(m, CHAR_SOUND_YAHOO_WAHA_YIPPEE, ((gAudioRandom % 5) << 16));
         } else {
-#endif
             play_character_sound_offset(m, CHAR_SOUND_YAH_WAH_HOO, ((gAudioRandom % 3) << 16));
-#ifndef VERSION_JP
         }
-#endif
         m->flags |= MARIO_MARIO_SOUND_PLAYED;
     }
 }
@@ -2029,9 +2025,7 @@ s32 execute_mario_action(UNUSED struct Object *o) {
         if (gMarioState->isSnoring && gMarioState->action != ACT_SLEEPING) {
                 stop_sound(get_character(gMarioState)->soundSnoring1, gMarioState->marioObj->header.gfx.cameraToObject);
                 stop_sound(get_character(gMarioState)->soundSnoring2, gMarioState->marioObj->header.gfx.cameraToObject);
-#ifndef VERSION_JP
                 stop_sound(get_character(gMarioState)->soundSnoring3, gMarioState->marioObj->header.gfx.cameraToObject);
-#endif
                 gMarioState->isSnoring = FALSE;
         }
 
@@ -2118,16 +2112,12 @@ s32 execute_mario_action(UNUSED struct Object *o) {
         extern bool gDjuiInMainMenu;
         if (gMarioState->floor && gMarioState->floor->type == SURFACE_HORIZONTAL_WIND && !gDjuiInMainMenu) {
             spawn_wind_particles(0, (gMarioState->floor->force << 8));
-#ifndef VERSION_JP
             play_sound(SOUND_ENV_WIND2, gMarioState->marioObj->header.gfx.cameraToObject);
-#endif
         }
 
         if (gMarioState->floor && gMarioState->floor->type == SURFACE_VERTICAL_WIND) {
             spawn_wind_particles(1, 0);
-#ifndef VERSION_JP
             play_sound(SOUND_ENV_WIND2, gMarioState->marioObj->header.gfx.cameraToObject);
-#endif
         }
 
         play_infinite_stairs_music();

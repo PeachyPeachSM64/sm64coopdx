@@ -4527,7 +4527,6 @@ int smlua_func_bhv_merry_go_round_loop(UNUSED lua_State* L) {
     return 1;
 }
 
-#ifndef VERSION_JP
 int smlua_func_bhv_play_music_track_when_touched_loop(UNUSED lua_State* L) {
     if (!gCurrentObject) { return 0; }
     if (L == NULL) { return 0; }
@@ -4543,7 +4542,6 @@ int smlua_func_bhv_play_music_track_when_touched_loop(UNUSED lua_State* L) {
 
     return 1;
 }
-#endif
 
 int smlua_func_bhv_beta_bowser_anchor_loop(UNUSED lua_State* L) {
     if (!gCurrentObject) { return 0; }
@@ -17243,7 +17241,6 @@ int smlua_func_play_far_fall_sound(lua_State* L) {
     return 1;
 }
 
-#ifndef VERSION_JP
 int smlua_func_play_knockback_sound(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -17261,7 +17258,6 @@ int smlua_func_play_knockback_sound(lua_State* L) {
 
     return 1;
 }
-#endif
 
 int smlua_func_lava_boost_on_wall(lua_State* L) {
     if (L == NULL) { return 0; }
@@ -29894,7 +29890,6 @@ int smlua_func_cur_obj_spawn_loot_blue_coin(UNUSED lua_State* L) {
     return 1;
 }
 
-#ifndef VERSION_JP
 int smlua_func_cur_obj_spawn_star_at_y_offset(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -29918,7 +29913,6 @@ int smlua_func_cur_obj_spawn_star_at_y_offset(lua_State* L) {
 
     return 1;
 }
-#endif
 
 int smlua_func_cur_obj_set_home_once(UNUSED lua_State* L) {
     if (L == NULL) { return 0; }
@@ -37260,9 +37254,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "bhv_bbh_tilting_trap_platform_loop", smlua_func_bhv_bbh_tilting_trap_platform_loop);
     smlua_bind_function(L, "bhv_haunted_bookshelf_loop", smlua_func_bhv_haunted_bookshelf_loop);
     smlua_bind_function(L, "bhv_merry_go_round_loop", smlua_func_bhv_merry_go_round_loop);
-#ifndef VERSION_JP
     smlua_bind_function(L, "bhv_play_music_track_when_touched_loop", smlua_func_bhv_play_music_track_when_touched_loop);
-#endif
     smlua_bind_function(L, "bhv_beta_bowser_anchor_loop", smlua_func_bhv_beta_bowser_anchor_loop);
     smlua_bind_function(L, "bhv_static_checkered_platform_loop", smlua_func_bhv_static_checkered_platform_loop);
     smlua_bind_function(L, "bhv_castle_floor_trap_init", smlua_func_bhv_castle_floor_trap_init);
@@ -38009,9 +38001,7 @@ void smlua_bind_functions_autogen(void) {
     // mario_actions_airborne.c
     smlua_bind_function(L, "play_flip_sounds", smlua_func_play_flip_sounds);
     smlua_bind_function(L, "play_far_fall_sound", smlua_func_play_far_fall_sound);
-#ifndef VERSION_JP
     smlua_bind_function(L, "play_knockback_sound", smlua_func_play_knockback_sound);
-#endif
     smlua_bind_function(L, "lava_boost_on_wall", smlua_func_lava_boost_on_wall);
     smlua_bind_function(L, "check_fall_damage", smlua_func_check_fall_damage);
     smlua_bind_function(L, "check_kick_or_dive_in_air", smlua_func_check_kick_or_dive_in_air);
@@ -38647,9 +38637,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "disable_time_stop_including_mario", smlua_func_disable_time_stop_including_mario);
     smlua_bind_function(L, "cur_obj_check_interacted", smlua_func_cur_obj_check_interacted);
     smlua_bind_function(L, "cur_obj_spawn_loot_blue_coin", smlua_func_cur_obj_spawn_loot_blue_coin);
-#ifndef VERSION_JP
     smlua_bind_function(L, "cur_obj_spawn_star_at_y_offset", smlua_func_cur_obj_spawn_star_at_y_offset);
-#endif
     smlua_bind_function(L, "cur_obj_set_home_once", smlua_func_cur_obj_set_home_once);
     smlua_bind_function(L, "get_trajectory_length", smlua_func_get_trajectory_length);
 

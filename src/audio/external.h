@@ -38,11 +38,7 @@ enum DialogSound {
     DS_NONE = 0xff
 };
 
-#ifdef VERSION_JP
-#define DS_DIFF DS_KOOPA
-#else
 #define DS_DIFF DS_TUXIE
-#endif
 
 extern u16 gSequenceCount;
 extern struct SoundBankEntry* gSoundBanks[6];

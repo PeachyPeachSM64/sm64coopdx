@@ -155,7 +155,6 @@ const Gfx toad_seg6_dl_06007710[] = {
     gsSPEndDisplayList(),
 };
 
-#ifndef VERSION_JP
 // 0x06007788 - 0x06007808
 const Gfx toad_seg6_us_dl_06007788[] = {
     gsDPPipeSync(),
@@ -175,7 +174,6 @@ const Gfx toad_seg6_us_dl_06007788[] = {
     gsDPPipeSync(),
     gsSPEndDisplayList(),
 };
-#endif
 
 // 0x06007788
 static const Lights1 toad_seg6_lights_06007788 = gdSPDefLights1(
@@ -221,7 +219,6 @@ const Gfx toad_seg6_dl_06007A48[] = {
     gsSPEndDisplayList(),
 };
 
-#ifndef VERSION_JP
 // 0x06007B00 - 0x06007B28
 const Gfx toad_seg6_us_dl_06007B00[] = {
     gsDPPipeSync(),
@@ -230,7 +227,6 @@ const Gfx toad_seg6_us_dl_06007B00[] = {
     gsDPPipeSync(),
     gsSPEndDisplayList(),
 };
-#endif
 
 // 0x06007A80
 static const Lights1 toad_seg6_lights_06007A80 = gdSPDefLights1(
@@ -394,8 +390,6 @@ const Gfx toad_seg6_dl_06008520[] = {
     gsSPEndDisplayList(),
 };
 
-// US: 8608
-#ifndef VERSION_JP
 // 0x06008608 - 0x06008650
 const Gfx toad_seg6_us_dl_06008608[] = {
     gsDPPipeSync(),
@@ -408,7 +402,6 @@ const Gfx toad_seg6_us_dl_06008608[] = {
     gsDPSetRenderMode(G_RM_AA_ZB_XLU_SURF, G_RM_NOOP2),
     gsSPEndDisplayList(),
 };
-#endif
 
 // 0x06008560
 static const Lights1 toad_seg6_lights_06008560 = gdSPDefLights1(

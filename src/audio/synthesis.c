@@ -286,7 +286,7 @@ void synthesis_load_note_subs_eu(s32 updateIndex) {
 }
 #endif
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 s32 get_volume_ramping(u16 sourceVol, u16 targetVol, s32 arg2) {
     // This roughly computes 2^16 * (targetVol / sourceVol) ^ (8 / arg2),
     // but with discretizations of targetVol, sourceVol and arg2.
@@ -682,7 +682,7 @@ u64 *synthesis_do_one_audio_update(s16 *aiBuf, s32 bufLen, u64 *cmd, s32 updateI
 #endif
     return cmd;
 }
-#elif defined(VERSION_JP) || defined(VERSION_US)
+#elif defined(VERSION_US)
 u64 *synthesis_do_one_audio_update(s16 *aiBuf, s32 bufLen, u64 *cmd, s32 updateIndex) {
     UNUSED s32 pad1[1];
     s16 ra;
@@ -776,7 +776,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
     UNUSED u8 padEU[0x04];
 #endif
     UNUSED u8 pad8[0x04];
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     u16 resamplingRateFixedPoint;            // sp5c, sp11A
 #endif
     s32 noteFinished;                        // 150 t2, sp124
@@ -829,14 +829,14 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
     u32 samplesLenFixedPoint;    // v1_1
     s32 nSamplesInThisIteration; // v1_2
     u32 a3;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     s32 t9;
 #endif
     u8 *v0_2;
     s32 nParts;                 // spE8, spBC
     s32 curPart;                // spE4, spB8
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     f32 resamplingRate; // f12
 #endif
     s32 temp;
@@ -848,7 +848,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
     u16 noteSamplesDmemAddrBeforeResampling; // spD6, spAA
 
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     for (noteIndex = 0; noteIndex < gMaxSimultaneousNotes; noteIndex++) {
         note = &gNotes[noteIndex];
 #ifdef VERSION_US
@@ -876,7 +876,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
             if (note->needsInit == TRUE) {
 #endif
                 flags = A_INIT;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
                 note->samplePosInt = 0;
                 note->samplePosFrac = 0;
 #else
@@ -890,7 +890,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
 #endif
             }
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             if (note->frequency < US_FLOAT(2.0)) {
                 nParts = 1;
                 if (note->frequency > US_FLOAT(1.99996)) {
@@ -1007,7 +1007,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
                             s0 = t0 * 16;
                             s3 = s6 + s0 - nSamplesToProcess;
                         } else {
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
                             s0 = samplesRemaining + s2 - 0x10;
 #else
                             s0 = samplesRemaining - s6;
@@ -1221,7 +1221,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
                                  noteSamplesDmemAddrBeforeResampling, flags);
 #endif
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             if (note->headsetPanRight != 0 || note->prevHeadsetPanRight != 0) {
                 leftRight = 1;
             } else if (note->headsetPanLeft != 0 || note->prevHeadsetPanLeft != 0) {
@@ -1252,7 +1252,7 @@ u64 *synthesis_process_notes(s16 *aiBuf, s32 bufLen, u64 *cmd) {
             }
 #endif
         }
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     }
 
     t9 = bufLen * 2;
@@ -1692,7 +1692,7 @@ u64 *final_resample(u64 *cmd, struct Note *note, s32 count, u16 pitch, u16 dmemI
 #endif
 
 #ifndef VERSION_SH
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 u64 *process_envelope(u64 *cmd, struct Note *note, s32 nSamples, u16 inBuf, s32 headsetPanSettings,
                       UNUSED u32 flags) {
     UNUSED u8 pad[16];
@@ -1966,7 +1966,7 @@ u64 *note_apply_headset_pan_effects(u64 *cmd, struct Note *note, s32 bufLen, s32
 #endif
     u16 dest;
     u16 pitch;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     u16 prevPanShift;
     u16 panShift;
 #else
@@ -1978,7 +1978,7 @@ u64 *note_apply_headset_pan_effects(u64 *cmd, struct Note *note, s32 bufLen, s32
     switch (leftRight) {
         case 1:
             dest = DMEM_ADDR_LEFT_CH;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             panShift = note->headsetPanRight;
 #else
             panShift = noteSubEu->headsetPanRight;
@@ -1989,7 +1989,7 @@ u64 *note_apply_headset_pan_effects(u64 *cmd, struct Note *note, s32 bufLen, s32
             break;
         case 2:
             dest = DMEM_ADDR_RIGHT_CH;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
             panShift = note->headsetPanLeft;
 #else
             panShift = noteSubEu->headsetPanLeft;
@@ -2098,7 +2098,7 @@ u64 *note_apply_headset_pan_effects(u64 *cmd, struct Note *note, s32 bufLen, s32
     return cmd;
 }
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 // Moved to playback.c in EU
 
 void note_init_volume(struct Note *note) {
@@ -2116,11 +2116,8 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, f32 pan, u8 reverb
     s32 panIndex;
     f32 volLeft;
     f32 volRight;
-#ifdef VERSION_JP
-    panIndex = MIN((s32)(pan * 127.5), 127);
-#else
     panIndex = (s32)(pan * 127.5f) & 127;
-#endif
+
     if (note->stereoHeadsetEffects && gSoundMode == SOUND_MODE_HEADSET) {
         s8 smallPanIndex;
         s8 temp = (s8)(pan * 10.0f);
@@ -2164,13 +2161,8 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, f32 pan, u8 reverb
     if (velocity < 0) {
         velocity = 0;
     }
-#ifdef VERSION_JP
-    note->targetVolLeft = (u16)(velocity * volLeft) & ~0x80FF; // 0x7F00, but that doesn't match
-    note->targetVolRight = (u16)(velocity * volRight) & ~0x80FF;
-#else
     note->targetVolLeft = (u16)(s32)(velocity * volLeft) & ~0x80FF;
     note->targetVolRight = (u16)(s32)(velocity * volRight) & ~0x80FF;
-#endif
     if (note->targetVolLeft == 0) {
         note->targetVolLeft++;
     }

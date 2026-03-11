@@ -131,9 +131,7 @@ void print_displaying_credits_entry(void) {
     char *titleStr;
     s16 numLines;
     s16 strY;
-#ifndef VERSION_JP
     s16 lineHeight;
-#endif
 
     if (sDispCreditsEntry != NULL) {
         currStrPtr = (char **) sDispCreditsEntry->unk0C;
@@ -141,14 +139,11 @@ void print_displaying_credits_entry(void) {
         numLines = *titleStr++ - '0';
 
         strY = (sDispCreditsEntry->unk02 & 0x20 ? 28 : 172) + (numLines == 1) * 16;
-#ifndef VERSION_JP
         lineHeight = 16;
-#endif
 
         dl_rgba16_begin_cutscene_msg_fade();
         print_credits_str_ascii(CREDIT_TEXT_X_LEFT, strY, titleStr);
 
-#ifndef VERSION_JP
         switch (numLines) {
             case 4:
                 print_credits_str_ascii(CREDIT_TEXT_X_LEFT, strY + 24, *currStrPtr++);
@@ -171,16 +166,11 @@ void print_displaying_credits_entry(void) {
                 break;
 #endif
         }
-#endif
 
         while (numLines-- > 0) {
             print_credits_str_ascii(CREDIT_TEXT_X_RIGHT - get_credits_str_width(*currStrPtr), strY, *currStrPtr);
 
-#ifdef VERSION_JP
-            strY += 16;
-#else
             strY += lineHeight;
-#endif
 
             currStrPtr++;
         }
@@ -1552,11 +1542,7 @@ s32 act_death_exit(struct MarioState *m) {
     if (!m) { return 0; }
     if (15 < m->actionTimer++
         && launch_mario_until_land(m, ACT_DEATH_EXIT_LAND, CHAR_ANIM_GENERAL_FALL, -32.0f)) {
-#ifdef VERSION_JP
-        play_character_sound(m, CHAR_SOUND_OOOF);
-#else
         play_character_sound(m, CHAR_SOUND_OOOF2);
-#endif
         queue_rumble_data_mario(m, 5, 80);
         // restore 7.75 units of health
         m->healCounter = 31;
@@ -1569,11 +1555,7 @@ s32 act_death_exit(struct MarioState *m) {
 s32 act_unused_death_exit(struct MarioState *m) {
     if (!m) { return 0; }
     if (launch_mario_until_land(m, ACT_FREEFALL_LAND_STOP, CHAR_ANIM_GENERAL_FALL, 0.0f)) {
-#ifdef VERSION_JP
-        play_character_sound(m, CHAR_SOUND_OOOF);
-#else
         play_character_sound(m, CHAR_SOUND_OOOF2);
-#endif
         // restore 7.75 units of health
         m->healCounter = 31;
     }
@@ -1585,11 +1567,7 @@ s32 act_unused_death_exit(struct MarioState *m) {
 s32 act_falling_death_exit(struct MarioState *m) {
     if (!m) { return 0; }
     if (launch_mario_until_land(m, ACT_DEATH_EXIT_LAND, CHAR_ANIM_GENERAL_FALL, 0.0f)) {
-#ifdef VERSION_JP
-        play_character_sound(m, CHAR_SOUND_OOOF);
-#else
         play_character_sound(m, CHAR_SOUND_OOOF2);
-#endif
         queue_rumble_data_mario(m, 5, 80);
         // restore 7.75 units of health
         m->healCounter = 31;
@@ -2184,9 +2162,7 @@ static void intro_cutscene_jump_out_of_pipe(struct MarioState *m) {
         play_character_sound_if_no_flag(m, CHAR_SOUND_YAHOO, MARIO_MARIO_SOUND_PLAYED);
 #else
         play_character_sound_if_no_flag(m, CHAR_SOUND_YAHOO, MARIO_MARIO_SOUND_PLAYED);
-#ifndef VERSION_JP
         play_sound_if_no_flag(m, SOUND_ACTION_HIT_3, MARIO_ACTION_SOUND_PLAYED);
-#endif
 #endif
 
         set_character_animation(m, CHAR_ANIM_SINGLE_JUMP);
@@ -2194,9 +2170,7 @@ static void intro_cutscene_jump_out_of_pipe(struct MarioState *m) {
         if (perform_air_step(m, 0) == AIR_STEP_LANDED) {
             sound_banks_enable(SEQ_PLAYER_SFX, SOUND_BANKS_DISABLED_DURING_INTRO_CUTSCENE);
             play_mario_landing_sound(m, SOUND_ACTION_TERRAIN_LANDING);
-#ifndef VERSION_JP
             play_character_sound(m, CHAR_SOUND_HAHA);
-#endif
             advance_cutscene_step(m);
         }
     }
@@ -2735,10 +2709,8 @@ static void end_peach_cutscene_dialog_1(struct MarioState *m) {
         case 230:
 #endif
             set_cutscene_message(160, 227, 0, 30);
-#ifndef VERSION_JP
             seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
             play_sound(SOUND_PEACH_MARIO, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
 
 #ifdef VERSION_SH
@@ -2756,9 +2728,7 @@ static void end_peach_cutscene_dialog_1(struct MarioState *m) {
         case 290:
 #endif
             set_cutscene_message(160, 227, 1, 60);
-#ifndef VERSION_JP
             play_sound(SOUND_PEACH_POWER_OF_THE_STARS, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
 
 #ifdef VERSION_SH
@@ -2800,9 +2770,7 @@ static void end_peach_cutscene_dialog_2(struct MarioState *m) {
         case 29:
 #endif
             set_cutscene_message(160, 227, 2, 30);
-#ifndef VERSION_JP
             play_sound(SOUND_PEACH_THANKS_TO_YOU, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
 
 #ifdef VERSION_SH
@@ -2819,16 +2787,12 @@ static void end_peach_cutscene_dialog_2(struct MarioState *m) {
         case 75:
 #endif
             set_cutscene_message(160, 227, 3, 30);
-#ifndef VERSION_JP
             play_sound(SOUND_PEACH_THANK_YOU_MARIO, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
 
         case TIMER_SOMETHING_SPECIAL:
             set_cutscene_message(160, 227, 4, 40);
-#ifndef VERSION_JP
             play_sound(SOUND_PEACH_SOMETHING_SPECIAL, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
 
         case TIMER_PEACH_KISS:
@@ -2931,9 +2895,7 @@ static void end_peach_cutscene_star_dance(struct MarioState *m) {
 
         case 140:
             if (m->playerIndex == 0) {
-#ifndef VERSION_JP
                 seq_player_unlower_volume(SEQ_PLAYER_LEVEL, 60);
-#endif
                 play_cutscene_music(SEQUENCE_ARGS(15, SEQ_EVENT_CUTSCENE_CREDITS));
             }
             break;
@@ -2964,9 +2926,7 @@ static void end_peach_cutscene_dialog_3(struct MarioState *m) {
             sEndToadAnims[1] = 2;
             D_8032CBE8 = 1;
             set_cutscene_message(160, 227, 5, 30);
-#ifndef VERSION_JP
             play_sound(SOUND_PEACH_BAKE_A_CAKE, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
 
         case 55:
@@ -2975,9 +2935,7 @@ static void end_peach_cutscene_dialog_3(struct MarioState *m) {
 
         case 130:
             set_cutscene_message(160, 227, 7, 50);
-#ifndef VERSION_JP
             play_sound(SOUND_PEACH_FOR_MARIO, sEndPeachObj->header.gfx.cameraToObject);
-#endif
             break;
     }
 
@@ -3005,9 +2963,7 @@ static void end_peach_cutscene_run_to_castle(struct MarioState *m) {
 
     if (m->actionTimer == 95 && m->playerIndex == 0) {
         set_cutscene_message(160, 227, 0, 40);
-#ifndef VERSION_JP
         play_sound(SOUND_PEACH_MARIO2, sEndPeachObj->header.gfx.cameraToObject);
-#endif
     }
     if (m->actionTimer == 389) {
         advance_cutscene_step(m);

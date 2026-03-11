@@ -96,7 +96,7 @@ def main():
                     for line in lines:
                         if ("#ifdef VERSION_EU" in line or
                             "#ifdef VERSION_SH" in line or
-                            "#ifdef VERSION_JP" in line):
+                            False):
                             ignore = True
                         if "#endif" in line:
                             ignore = False

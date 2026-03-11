@@ -146,8 +146,6 @@ override_field_immutable = {
 }
 
 override_field_version_excludes = {
-    "oCameraLakituPlayedMusic": "VERSION_JP",
-    "oCoinUnk1B0": "VERSION_JP",
 }
 
 override_allowed_structs = {

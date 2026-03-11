@@ -337,11 +337,11 @@ void process_notes(void) {
     f32 scale;
 #ifndef VERSION_SH
     f32 frequency;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     u8 reverb;
 #endif
     f32 velocity;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     f32 pan;
     f32 cap;
 #endif
@@ -359,7 +359,7 @@ void process_notes(void) {
     u8 bookOffset;
 #endif
     struct NoteAttributes *attributes = NULL;
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     struct AudioListItem *it = NULL;
 #endif
     s32 i;
@@ -689,7 +689,7 @@ void seq_channel_layer_decay_release_internal(struct SequenceChannelLayer *seqLa
     note = seqLayer->note;
     attributes = &note->attributes;
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
     if (seqLayer->seqChannel != NULL && seqLayer->seqChannel->noteAllocPolicy == 0) {
         seqLayer->note = NULL;
     }
@@ -1364,7 +1364,7 @@ null_return:
 #endif
 }
 
-#if defined(VERSION_JP) || defined(VERSION_US)
+#if defined(VERSION_US)
 void reclaim_notes(void) {
     struct Note *note;
     s32 i;

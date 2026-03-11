@@ -1133,9 +1133,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found) {
     bhv_constant(oCoinUnkF4);
     bhv_constant(oCoinUnkF8);
     bhv_constant(oCoinUnk110);
-#ifndef VERSION_JP
     bhv_constant(oCoinUnk1B0);
-#endif
 
     /* CollisionParticle */
     bhv_constant(oCollisionParticleUnkF4);
@@ -1374,9 +1372,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found) {
     bhv_constant(oCameraLakituSpeed);
     bhv_constant(oCameraLakituCircleRadius);
     bhv_constant(oCameraLakituFinishedDialog);
-#ifndef VERSION_JP
     bhv_constant(oCameraLakituPlayedMusic);
-#endif
     bhv_constant(oCameraLakituPitchVel);
     bhv_constant(oCameraLakituYawVel);
 
