@@ -79,7 +79,7 @@ void bhv_coin_loop(void) {
     if (o->oTimer == 0)
 #if defined(VERSION_US)
         cur_obj_play_sound_2(SOUND_GENERAL_COIN_SPURT_2);
-#elif defined(VERSION_EU) || defined(VERSION_SH)
+#elif defined(VERSION_SH)
         cur_obj_play_sound_2(SOUND_GENERAL_COIN_SPURT_EU);
 #else
         cur_obj_play_sound_2(SOUND_GENERAL_COIN_SPURT);

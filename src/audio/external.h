@@ -149,7 +149,7 @@ void sound_reset_background_music_default_volume(u8 seqId);
 /* |description|Sets a sequence's (`seqId`) volume to `volume`|descriptionEnd| */
 void sound_set_background_music_default_volume(u8 seqId, u8 volume);
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 struct SPTask *unused_80321460();
 struct SPTask *unused_80321460(void);
 #endif

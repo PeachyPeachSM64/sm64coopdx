@@ -135,9 +135,6 @@ static inline void bswap_menudata(struct MainMenuSaveData *data) {
     for (s32 i = 0; i < NUM_SAVE_FILES; ++i)
         data->coinScoreAges[i] = BSWAP32(data->coinScoreAges[i]);
     data->soundMode = BSWAP16(data->soundMode);
-#ifdef VERSION_EU
-    data->language = BSWAP16(data->language);
-#endif
     bswap_signature(&data->signature);
 }
 
@@ -864,21 +861,6 @@ void save_file_move_cap_to_default_location(void) {
         save_file_clear_flags(SAVE_FLAG_CAP_ON_GROUND);
     }
 }
-
-#ifdef VERSION_EU
-void eu_set_language(u16 language) {
-    gSaveBuffer.menuData[0].language = language;
-    gMainMenuDataModified = TRUE;
-    save_main_menu_data();
-}
-
-u16 eu_get_language(void) {
-    // check if the language is in range, in case we loaded a US save with garbage padding or something
-    if (gSaveBuffer.menuData[0].language >= LANGUAGE_MAX)
-        eu_set_language(LANGUAGE_ENGLISH); // reset it to english if not
-    return gSaveBuffer.menuData[0].language;
-}
-#endif
 
 void disable_warp_checkpoint(void) {
     // check_warp_checkpoint() checks to see if gWarpCheckpoint.courseNum != COURSE_NONE

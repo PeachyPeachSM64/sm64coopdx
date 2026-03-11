@@ -1197,17 +1197,8 @@ ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_B, "levels/menu/main_menu_seg7_us.
 // 0x0700AF40
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_C, "levels/menu/main_menu_seg7_us.0AF40.ia8.inc.c", 0x002a65b0, 22255, 0x0000af40, 64);
 
-#ifdef VERSION_EU
-// 0x0700AF80
-ALIGNED8 const Texture texture_menu_font_char_D[] = {
-#include "levels/menu/main_menu_seg7_eu.0AF80.ia8.inc.c"
-};
-
-#else
-
 // 0x0700AF80
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_D, "levels/menu/main_menu_seg7_us.0AF80.ia8.inc.c", 0x002a65b0, 22255, 0x0000af80, 64);
-#endif
 
 // 0x0700AFC0
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_E, "levels/menu/main_menu_seg7_us.0AFC0.ia8.inc.c", 0x002a65b0, 22255, 0x0000afc0, 64);
@@ -1287,25 +1278,11 @@ ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_star_filled, "levels/menu/main_men
 // 0x0700B600
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_dash, "levels/menu/main_menu_seg7_us.0B600.ia8.inc.c", 0x002a65b0, 22255, 0x0000b600, 64);
 
-#ifdef VERSION_EU
-// 0x0700B640
-ALIGNED8 const Texture texture_menu_font_char_comma[] = {
-#include "levels/menu/main_menu_seg7_eu.0B640.ia8.inc.c"
-};
-
-// 0x0700B680
-ALIGNED8 const Texture texture_menu_font_char_apostrophe[] = {
-#include "levels/menu/main_menu_seg7_eu.0B680.ia8.inc.c"
-};
-
-#else
-
 // 0x0700B640
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_comma, "levels/menu/main_menu_seg7_us.0B640.ia8.inc.c", 0x002a65b0, 22255, 0x0000b640, 64);
 
 // 0x0700B680
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_apostrophe, "levels/menu/main_menu_seg7_us.0B680.ia8.inc.c", 0x002a65b0, 22255, 0x0000b680, 64);
-#endif
 
 // 0x0700B6C0
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_exclamation, "levels/menu/main_menu_seg7_us.0B6C0.ia8.inc.c", 0x002a65b0, 22255, 0x0000b6c0, 64);
@@ -1324,23 +1301,6 @@ ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_period, "levels/menu/main_menu_seg
 
 // 0x0700B800
 ROM_ASSET_LOAD_TEXTURE(texture_menu_font_char_ampersand, "levels/menu/main_menu_seg7_us.0B800.ia8.inc.c", 0x002a65b0, 22255, 0x0000b800, 64);
-#endif
-
-#ifdef VERSION_EU
-// 0x0700B840
-ALIGNED8 const Texture texture_menu_font_char_umlaut[] = {
-#include "levels/menu/main_menu_seg7_eu.0B840.ia8.inc.c"
-};
-
-// 0x0700B880
-ALIGNED8 const Texture texture_menu_font_char_cedilla_mayus[] = {
-#include "levels/menu/main_menu_seg7_eu.0B880.ia8.inc.c"
-};
-
-// 0x0700B8C0
-ALIGNED8 const Texture texture_menu_font_char_colon[] = {
-#include "levels/menu/main_menu_seg7_eu.0B8C0.ia8.inc.c"
-};
 #endif
 
 // Menu small font print table
@@ -1469,15 +1429,9 @@ const Texture *const menu_font_lut[] = {
           0x0,       0x0,       0x0,       0x0,
           0x0,       0x0,       0x0,       0x0,
           0x0,       0x0,       0x0,       0x0,
-#ifdef VERSION_EU
-          0x0, texture_menu_font_char_ampersand, texture_menu_font_char_colon,       0x0,
-          0x0, texture_menu_font_char_umlaut,       0x0,       0x0,
-          0x0, texture_menu_font_char_cedilla_mayus,       0x0,       0x0,
-#else
           0x0, texture_menu_font_char_ampersand,       0x0,       0x0,
           0x0,       0x0,       0x0,       0x0,
           0x0,       0x0,       0x0,       0x0,
-#endif
           0x0,       0x0, texture_menu_font_char_exclamation,       0x0,
     texture_menu_font_char_question,       0x0,       0x0,       0x0,
           0x0, texture_menu_font_char_coin, texture_menu_font_char_star_filled, texture_menu_font_char_multiply,
@@ -1514,36 +1468,11 @@ const Gfx dl_menu_ia8_text_end[] = {
 
 UNUSED static const u64 menu_unused_1 = 0;
 
-#ifdef VERSION_EU
-
-// 0x0700BDA0 - 0x0700CDA0
-ALIGNED8 const Texture texture_menu_course_upper[] = {
-#include "levels/menu/main_menu_seg7_eu.0BDA0.rgba16.inc.c"
-};
-
-// 0x0700CDA0 - 0x0700DDA0
-ALIGNED8 const Texture texture_menu_niveau_upper[] = {
-#include "levels/menu/main_menu_seg7_eu.0CDA0.rgba16.inc.c"
-};
-
-// 0x0700DDA0 - 0x0700EDA0
-ALIGNED8 const Texture texture_menu_kurs_upper[] = {
-#include "levels/menu/main_menu_seg7_eu.0DDA0.rgba16.inc.c"
-};
-
-// 0x0700EDA0 - 0x0700FDA0
-ALIGNED8 const Texture texture_menu_course_lower[] = {
-#include "levels/menu/main_menu_seg7_eu.0EDA0.rgba16.inc.c"
-};
-
-#else
-
 // 0x0700D1A8 - 0x0700E1A8
 ROM_ASSET_LOAD_TEXTURE(texture_menu_course_upper, "levels/menu/main_menu_seg7.0D1A8.rgba16.inc.c", 0x002a65b0, 22255, 0x0000bce0, 4096);
 
 // 0x0700E1A8 - 0x0700F1A8
 ROM_ASSET_LOAD_TEXTURE(texture_menu_course_lower, "levels/menu/main_menu_seg7.0E1A8.rgba16.inc.c", 0x002a65b0, 22255, 0x0000cce0, 4096);
-#endif
 
 // 0x0700F1A8 - 0x0700F1E8
 ROM_ASSET_LOAD_VTX(vertex_menu_course_upper, 0x002a65b0, 22255, 0x0000dce0, 64);
@@ -1557,13 +1486,7 @@ const Gfx dl_menu_rgba16_wood_course[] = {
     gsDPSetCombineMode(G_CC_DECALRGBA, G_CC_DECALRGBA),
     gsSPTexture(0x8000, 0x8000, 0, G_TX_RENDERTILE, G_ON),
     gsDPSetRenderMode(G_RM_AA_TEX_EDGE, G_RM_AA_TEX_EDGE2),
-#ifdef VERSION_EU
-    gsSPEndDisplayList(),
-};
-const Gfx dl_menu_rgba16_wood_course_end[] = {
-#else
     gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, texture_menu_course_upper),
-#endif
     gsDPSetTile(G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0, G_TX_LOADTILE, 0, G_TX_WRAP | G_TX_NOMIRROR, G_TX_NOMASK, G_TX_NOLOD, G_TX_WRAP | G_TX_NOMIRROR, G_TX_NOMASK, G_TX_NOLOD),
     gsDPLoadSync(),
     gsDPLoadBlock(G_TX_LOADTILE, 0, 0, 64 * 32 - 1, CALC_DXT(64, G_IM_SIZ_16b_BYTES)),
@@ -1585,45 +1508,5 @@ const Gfx dl_menu_rgba16_wood_course_end[] = {
     gsSPEndDisplayList(),
 };
 
-#ifdef VERSION_EU
-// 0x0700FEF0 - 0x0700FF00
-const Gfx dl_menu_texture_course_upper[] = {
-    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, texture_menu_course_upper),
-    gsSPEndDisplayList(),
-};
-
-// 0x0700FF00 - 0x0700FF10
-const Gfx dl_menu_texture_niveau_upper[] = {
-    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, texture_menu_niveau_upper),
-    gsSPEndDisplayList(),
-};
-
-// 0x0700FF10 - 0x0700FF20
-const Gfx dl_menu_texture_kurs_upper[] = {
-    gsDPSetTextureImage(G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, texture_menu_kurs_upper),
-    gsSPEndDisplayList(),
-};
-#endif
-
 // 0x0700F2F8 - 0x0700F328
 ROM_ASSET_LOAD_COLLISION(main_menu_seg7_collision, 0x002a65b0, 22255, 0x0000de30, 48);
-
-#ifdef VERSION_EU
-
-// Duplicate course name tables; the main menu needs all languages loaded at
-// once since it switches language, so the copies in segment 19 aren't good
-// enough.
-
-#define COURSE_TABLE eu_course_strings_en_table
-#include "text/us/define_courses.inc.c"
-#undef COURSE_TABLE
-
-#define COURSE_TABLE eu_course_strings_fr_table
-#include "text/fr/define_courses.inc.c"
-#undef COURSE_TABLE
-
-#define COURSE_TABLE eu_course_strings_de_table
-#include "text/de/define_courses.inc.c"
-#undef COURSE_TABLE
-
-#endif

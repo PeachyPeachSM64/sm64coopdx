@@ -468,8 +468,8 @@ def apply_ifs(json, defines):
 
 def apply_version_diffs(json, defines):
     date_str = json.get("date")
-    if "VERSION_EU" in defines and isinstance(date_str, str):
-        json["date"] = date_str.replace("1996-03-19", "1996-06-24")
+    if isinstance(date_str, str):
+        json["date"] = date_str
 
     ifdef_removed = set()
     for key, inst in json["instruments"].items():

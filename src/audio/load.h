@@ -36,7 +36,7 @@ extern ALSeqFile *gSeqFileHeader;
 extern u8 *gAlBankSets;
 
 extern struct CtlEntry *gCtlEntries;
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 extern struct AudioBufferParametersEU gAudioBufferParameters;
 #endif
 extern s32 gAiFrequency;

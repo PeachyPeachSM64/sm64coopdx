@@ -154,17 +154,6 @@ void print_displaying_credits_entry(void) {
                 print_credits_str_ascii(CREDIT_TEXT_X_LEFT, strY + 16, *currStrPtr++);
                 numLines = 3;
                 break;
-#ifdef VERSION_EU
-            case 6:
-                print_credits_str_ascii(CREDIT_TEXT_X_LEFT, strY + 32, *currStrPtr++);
-                numLines = 3;
-                break;
-            case 7:
-                print_credits_str_ascii(CREDIT_TEXT_X_LEFT, strY + 16, *currStrPtr++);
-                print_credits_str_ascii(CREDIT_TEXT_X_LEFT, strY + 32, *currStrPtr++);
-                numLines = 3;
-                break;
-#endif
         }
 
         while (numLines-- > 0) {
@@ -2073,12 +2062,7 @@ static void intro_cutscene_hide_hud_and_mario(struct MarioState *m) {
     advance_cutscene_step(m);
 }
 
-#ifdef VERSION_EU
-    //#define TIMER_SPAWN_PIPE 47
-    #define TIMER_SPAWN_PIPE 37
-#else
-    #define TIMER_SPAWN_PIPE 37
-#endif
+#define TIMER_SPAWN_PIPE 37
 
 static void intro_cutscene_peach_lakitu_scene(struct MarioState *m) {
     if (!m) { return; }
@@ -2092,14 +2076,9 @@ static void intro_cutscene_peach_lakitu_scene(struct MarioState *m) {
         }
     }
 }
-#undef TIMER_SPAWN_PIPE
 
-#ifdef VERSION_EU
-    //#define TIMER_RAISE_PIPE 28
-    #define TIMER_RAISE_PIPE 38
-#else
-    #define TIMER_RAISE_PIPE 38
-#endif
+#undef TIMER_SPAWN_PIPE
+#define TIMER_RAISE_PIPE 38
 
 static void intro_cutscene_raise_pipe(struct MarioState* m) {
     if (!m) { return; }
@@ -2156,15 +2135,8 @@ static void intro_cutscene_jump_out_of_pipe(struct MarioState *m) {
     if (m->actionTimer++ >= 118) {
         m->marioObj->header.gfx.node.flags |= GRAPH_RENDER_ACTIVE;
 
-#ifdef VERSION_EU
-        // For some reason these calls were swapped.
-        play_sound_if_no_flag(m, SOUND_ACTION_HIT_3, MARIO_ACTION_SOUND_PLAYED);
-        play_character_sound_if_no_flag(m, CHAR_SOUND_YAHOO, MARIO_MARIO_SOUND_PLAYED);
-#else
         play_character_sound_if_no_flag(m, CHAR_SOUND_YAHOO, MARIO_MARIO_SOUND_PLAYED);
         play_sound_if_no_flag(m, SOUND_ACTION_HIT_3, MARIO_ACTION_SOUND_PLAYED);
-#endif
-
         set_character_animation(m, CHAR_ANIM_SINGLE_JUMP);
         mario_set_forward_vel(m, 10.0f);
         if (perform_air_step(m, 0) == AIR_STEP_LANDED) {
@@ -2523,12 +2495,7 @@ static void end_peach_cutscene_summon_jumbo_star(struct MarioState *m) {
     }
 }
 
-#if defined(VERSION_EU)
-    //#define TIMER_FADE_IN_PEACH 201
-    //#define TIMER_DESCEND_PEACH 280
-    #define TIMER_FADE_IN_PEACH 276
-    #define TIMER_DESCEND_PEACH 355
-#elif defined(VERSION_SH)
+#if defined(VERSION_SH)
     #define TIMER_FADE_IN_PEACH 276
     #define TIMER_DESCEND_PEACH 400
 #else
@@ -2589,12 +2556,7 @@ static void end_peach_cutscene_spawn_peach(struct MarioState *m) {
     }
 }
 
-#ifdef VERSION_EU
-    //#define TIMER_RUN_TO_PEACH 531
-    #define TIMER_RUN_TO_PEACH 584
-#else
-    #define TIMER_RUN_TO_PEACH 584
-#endif
+#define TIMER_RUN_TO_PEACH 584
 
 // descend peach
 static void end_peach_cutscene_descend_peach(struct MarioState *m) {
@@ -2741,12 +2703,7 @@ static void end_peach_cutscene_dialog_1(struct MarioState *m) {
     }
 }
 
-#if defined(VERSION_EU)
-    //#define TIMER_SOMETHING_SPECIAL 150
-    //#define TIMER_PEACH_KISS        260
-    #define TIMER_SOMETHING_SPECIAL 130
-    #define TIMER_PEACH_KISS        200
-#elif defined(VERSION_SH)
+#if defined(VERSION_SH)
     #define TIMER_SOMETHING_SPECIAL 170
     #define TIMER_PEACH_KISS        250
 #else
@@ -3056,14 +3013,7 @@ static s32 act_end_peach_cutscene(struct MarioState *m) {
     return FALSE;
 }
 
-#if defined(VERSION_EU)
-    //#define TIMER_CREDITS_SHOW      51
-    //#define TIMER_CREDITS_PROGRESS  80
-    //#define TIMER_CREDITS_WARP     160
-    #define TIMER_CREDITS_SHOW      61
-    #define TIMER_CREDITS_PROGRESS  90
-    #define TIMER_CREDITS_WARP     200
-#elif defined(VERSION_SH)
+#if defined(VERSION_SH)
     #define TIMER_CREDITS_SHOW      61
     #define TIMER_CREDITS_PROGRESS  90
     #define TIMER_CREDITS_WARP     204

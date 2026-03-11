@@ -284,27 +284,11 @@ static void decapitalize_string_sm64(u8 *str64) {
 void **get_course_name_table(void) {
     void **courseNameTbl = segmented_to_virtual(seg2_course_name_table);
 
-#ifdef VERSION_EU
-    switch (gInGameLanguage) {
-        case LANGUAGE_ENGLISH: courseNameTbl = segmented_to_virtual(course_name_table_eu_en); break;
-        case LANGUAGE_FRENCH:  courseNameTbl = segmented_to_virtual(course_name_table_eu_fr); break;
-        case LANGUAGE_GERMAN:  courseNameTbl = segmented_to_virtual(course_name_table_eu_de); break;
-    }
-#endif
-
     return courseNameTbl;
 }
 
 void **get_course_name_table_original(void) {
     void **courseNameTblOrig = segmented_to_virtual(seg2_course_name_table_original);
-
-#ifdef VERSION_EU
-    switch (gInGameLanguage) {
-        case LANGUAGE_ENGLISH: courseNameTblOrig = segmented_to_virtual(course_name_table_eu_en_original); break;
-        case LANGUAGE_FRENCH:  courseNameTblOrig = segmented_to_virtual(course_name_table_eu_fr_original); break;
-        case LANGUAGE_GERMAN:  courseNameTblOrig = segmented_to_virtual(course_name_table_eu_de_original); break;
-    }
-#endif
 
     return courseNameTblOrig;
 }
@@ -312,27 +296,11 @@ void **get_course_name_table_original(void) {
 void **get_act_name_table(void) {
     void **actNameTbl = segmented_to_virtual(seg2_act_name_table);
 
-#ifdef VERSION_EU
-    switch (gInGameLanguage) {
-        case LANGUAGE_ENGLISH: actNameTbl = segmented_to_virtual(act_name_table_eu_en); break;
-        case LANGUAGE_FRENCH:  actNameTbl = segmented_to_virtual(act_name_table_eu_fr); break;
-        case LANGUAGE_GERMAN:  actNameTbl = segmented_to_virtual(act_name_table_eu_de); break;
-    }
-#endif
-
     return actNameTbl;
 }
 
 void **get_act_name_table_original(void) {
     void **actNameTblOrig = segmented_to_virtual(seg2_act_name_table_original);
-
-#ifdef VERSION_EU
-    switch (gInGameLanguage) {
-        case LANGUAGE_ENGLISH: actNameTblOrig = segmented_to_virtual(act_name_table_eu_en_original); break;
-        case LANGUAGE_FRENCH:  actNameTblOrig = segmented_to_virtual(act_name_table_eu_fr_original); break;
-        case LANGUAGE_GERMAN:  actNameTblOrig = segmented_to_virtual(act_name_table_eu_de_original); break;
-    }
-#endif
 
     return actNameTblOrig;
 }

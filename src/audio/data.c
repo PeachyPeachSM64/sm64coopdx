@@ -11,42 +11,6 @@ extern struct OSMesgQueue OSMesgQueue3;
 
 struct ThreadHandle gAudioThread = { 0 };
 
-#ifdef VERSION_EU
-struct ReverbSettingsEU sReverbSettings[] = {
-    { /*Downsample Rate*/ 0x04, /*Window Size*/ 0x0c, /*Gain*/ 0x2fff },
-    { /*Downsample Rate*/ 0x04, /*Window Size*/ 0x0a, /*Gain*/ 0x47ff },
-    { /*Downsample Rate*/ 0x04, /*Window Size*/ 0x10, /*Gain*/ 0x2fff },
-    { /*Downsample Rate*/ 0x04, /*Window Size*/ 0x0e, /*Gain*/ 0x3fff },
-    { /*Downsample Rate*/ 0x04, /*Window Size*/ 0x0c, /*Gain*/ 0x4fff },
-    { /*Downsample Rate*/ 0x04, /*Window Size*/ 0x0a, /*Gain*/ 0x37ff },
-};
-
-/**
-1: Frequency
-2: Unk1 - Should be 1
-3: Simultaneous Notes
-4: Number of Reverberations
-5: Unk2 - Should be 0
-6: Volume
-7: Unk3 - Should be 0
-8: Persistent Sequence Memory
-9: Persistent Bank Memory
-10: Temporary Sequence Memory
-11: Temporary Bank Memory
-*/
-
-struct AudioSessionSettingsEU gAudioSessionPresets[] = {
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[0], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[1], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[2], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[3], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[4], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[0], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x20, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[1], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-    { /*1*/ 0x00007d00, /*2*/ 0x01, /*3*/ 0x28, /*4*/ 0x01, /*5*/ 0x00, &sReverbSettings[5], /*6*/ 0x7fff, /*7*/ 0x0000, /*8*/ 0x0000E800, /*9*/ 0x0000E800, /*10*/ 0x0000E800, /*11*/ 0x0000E800 },
-};
-#endif
-
 #define MAX_SIMUL_NOTES 128
 
 // Format:
@@ -102,12 +66,7 @@ u16 gAudioCosineTable[128] = {
 // between -1 and +1 octave.
 // gPitchBendFrequencyScale[k] = 0.5 * 2^(k/127)
 #ifndef VERSION_SH
-#if defined(VERSION_EU)
-f32 gPitchBendFrequencyScale[256] = {
-    0.5f,
-#else
 f32 gPitchBendFrequencyScale[255] = {
-#endif
     0.5f,      0.502736f, 0.505488f, 0.508254f, 0.511036f, 0.513833f, 0.516645f, 0.519472f, 0.522315f,
     0.525174f, 0.528048f, 0.530938f, 0.533843f, 0.536765f, 0.539702f, 0.542656f, 0.545626f, 0.548612f,
     0.551614f, 0.554633f, 0.557669f, 0.560721f, 0.563789f, 0.566875f, 0.569977f, 0.573097f, 0.576233f,
@@ -182,12 +141,7 @@ struct AdsrEnvelope gDefaultEnvelope[] = {
 };
 #endif
 
-#ifdef VERSION_EU
-struct NoteSubEu gZeroNoteSub = { 0 };
-struct NoteSubEu gDefaultNoteSub = { 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { NULL } };
-#endif
-
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 s16 sSawtoothWaves[256] = {
     0,       1023,   2047,    3071,   4095,    5119,   6143,    7167,   8191,    9215,   10239,
     11263,   0x2FFF, 13311,   0x37FF, 15359,   0x3FFF, 17407,   0x47FF, 19455,   0x4FFF, 21503,
@@ -341,7 +295,7 @@ s16 gEuUnknownWave7[256] = {
 s16 *gWaveSamples[6] = { sSawtoothWaves, sTriangleWaves, sSineWaves, sSquareWaves, sEuUnknownWave6, gEuUnknownWave7 };
 
 #else
-// !VERSION_EU
+// !VERSION_SH?
 
 s16 sSineWave[0x40] = {
     0,      3211,   6392,   9511,   12539,   15446,  18204,  20787,  23169,  25329,  27244,
@@ -502,16 +456,11 @@ u16 gHeadsetPanQuantization[0x40] = {
 };
 #endif
 
-#ifdef VERSION_EU
-u8 euUnknownData_8030194c[4] = { 0x40, 0x20, 0x10, 0x08 };
-u16 gHeadsetPanQuantization[SOUND_BANK_COUNT] = {
-    0x40, 0x40, 0x30, 0x30, 0x20, 0x20, 0x10, 0, 0, 0, 0x30, 0x30, 0x30,
-};
-#elif !defined(VERSION_SH)
+#if !defined(VERSION_SH)
 u16 gHeadsetPanQuantization[SOUND_BANK_COUNT] = { 0x40, 0x30, 0x20, 0x10, 0, 0, 0, 0, 0, 0, 0x20, 0x20, 0x20 };
 #endif
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 s16 euUnknownData_80301950[64] = {
     0, 0, 0,   0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0,
     0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0,
@@ -894,13 +843,7 @@ s32 gAudioInitPoolSize = DOUBLE_SIZE_ON_64_BIT(AUDIO_INIT_POOL_SIZE);
 volatile s32 gAudioLoadLock = AUDIO_LOCK_UNINITIALIZED;
 #endif
 
-#if defined(VERSION_EU)
-u8 bufferDelete2[12] = { 0 };
-u8 gQueuedAudioCmdCount = 0;
-u8 gLastQueuedAudioCmdCount = 0;
-
-struct OSMesgQueue *OSMesgQueues[4] = { &OSMesgQueue0, &OSMesgQueue1, &OSMesgQueue2, &OSMesgQueue3 };
-#elif defined(VERSION_US)
+#if defined(VERSION_US)
 s8 sUnused8033EF8 = 24;
 #endif
 
@@ -908,7 +851,7 @@ s8 sUnused8033EF8 = 24;
 
 volatile s32 gAudioFrameCount;
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 s32 gCurrAudioFrameDmaCount;
 #else
 volatile s32 gCurrAudioFrameDmaCount;
@@ -923,7 +866,7 @@ u64 *gAudioCmd;
 struct SPTask *gAudioTask;
 struct SPTask gAudioTasks[2];
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 f32 D_EU_802298D0;
 s32 gRefreshRate;
 #endif
@@ -938,7 +881,7 @@ u16 gUnused80226E98[0x10];
 
 u32 gAudioRandom;
 
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 s32 gAudioErrorFlags;
 #endif
 

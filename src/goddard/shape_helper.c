@@ -22,10 +22,7 @@
 #include <string.h>
 
 #include "data/dynos.c.h"
-
-#ifndef VERSION_EU
 #include <prevent_bss_reordering.h>
-#endif
 
 // data
 struct ObjGroup *gMarioFaceGrp = NULL;     // @ 801A82E0; returned by load_dynlist

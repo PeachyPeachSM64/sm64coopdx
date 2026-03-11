@@ -41,20 +41,12 @@ extern "C" {
 
 #define WINCLASS_NAME L"N64GAME"
 
-#ifdef VERSION_EU
-#define FRAME_INTERVAL_US_NUMERATOR 40000
-#define FRAME_INTERVAL_US_DENOMINATOR 2
-#else
 #define FRAME_INTERVAL_US_NUMERATOR 100000
 #define FRAME_INTERVAL_US_DENOMINATOR 6
-#endif
 
-// TODO: figure out if this shit even works
-#ifdef VERSION_EU
-# define FRAMERATE 25
-#else
-# define FRAMERATE 30
-#endif
+// TODO: figure out if this crap ;) even works
+#define FRAMERATE 30
+
 // time between consequtive game frames
 static const f64 sFrameTime = 1.0 / ((double)FRAMERATE);
 static f64 sFrameTargetTime = 0;

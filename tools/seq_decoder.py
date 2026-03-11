@@ -275,13 +275,8 @@ if sys.argv[1] == "--emit-asm-macros":
             print(".else\n")
             for (op, cmd) in non_sh:
                 emit_cmd(key, op, cmd)
-            print(".ifdef VERSION_EU\n")
-            for (op, cmd) in eu_sh:
-                emit_cmd(key, op, cmd)
-            print(".else\n")
             for (op, cmd) in us_jp:
                 emit_cmd(key, op, cmd)
-            print(".endif\n")
             print(".endif\n")
 
     print("# envelope commands\n")

@@ -113,12 +113,6 @@ ROM_ASSET_LOAD_TEXTURE(texture_hud_char_apostrophe, "textures/segment2/segment2.
 
 ROM_ASSET_LOAD_TEXTURE(texture_hud_char_double_quote, "textures/segment2/segment2.04A00.rgba16.inc.c", 0x00108a40, 48390, 0x00004000, 512);
 
-#ifdef VERSION_EU
-ALIGNED8 const Texture texture_hud_char_umlaut[] = {
-#include "textures/segment2/segment2.umlaut.rgba16.inc.c"// EU ¨
-};
-#endif
-
 ALIGNED8 const Texture texture_hud_char_exclamation[] = {
 #include "textures/segment2/custom_hud_exclamation.rgba16.inc.c" // beta ! no longer in use, new non beta ! was made for all versions
 };
@@ -895,406 +889,6 @@ ALIGNED8 const Texture texture_font_char_jp_ellipsis[] = {
 #include "textures/segment2/segment2.07B40.ia1.inc.c"
 };
 
-// EU Small Font
-#elif defined(VERSION_EU)
-
-ALIGNED8 const Texture texture_font_char_eu_0[] = {
-#include "textures/segment2/font_graphics.05F00.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_1[] = {
-#include "textures/segment2/font_graphics.05F10.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_2[] = {
-#include "textures/segment2/font_graphics.05F20.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_3[] = {
-#include "textures/segment2/font_graphics.05F30.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_4[] = {
-#include "textures/segment2/font_graphics.05F40.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_5[] = {
-#include "textures/segment2/font_graphics.05F50.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_6[] = {
-#include "textures/segment2/font_graphics.05F60.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_7[] = {
-#include "textures/segment2/font_graphics.05F70.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_8[] = {
-#include "textures/segment2/font_graphics.05F80.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_9[] = {
-#include "textures/segment2/font_graphics.05F90.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_A[] = {
-#include "textures/segment2/font_graphics.05FA0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_B[] = {
-#include "textures/segment2/font_graphics.05FB0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_C[] = {
-#include "textures/segment2/font_graphics.05FC0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_D[] = {
-#include "textures/segment2/font_graphics.05FD0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_E[] = {
-#include "textures/segment2/font_graphics.05FE0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_F[] = {
-#include "textures/segment2/font_graphics.05FF0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_G[] = {
-#include "textures/segment2/font_graphics.06000.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_H[] = {
-#include "textures/segment2/font_graphics.06010.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_I[] = {
-#include "textures/segment2/font_graphics.06020.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_J[] = {
-#include "textures/segment2/font_graphics.06030.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_K[] = {
-#include "textures/segment2/font_graphics.06040.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_L[] = {
-#include "textures/segment2/font_graphics.06050.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_M[] = {
-#include "textures/segment2/font_graphics.06060.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_N[] = {
-#include "textures/segment2/font_graphics.06070.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_O[] = {
-#include "textures/segment2/font_graphics.06080.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_P[] = {
-#include "textures/segment2/font_graphics.06090.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_Q[] = {
-#include "textures/segment2/font_graphics.060A0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_R[] = {
-#include "textures/segment2/font_graphics.060B0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_S[] = {
-#include "textures/segment2/font_graphics.060C0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_T[] = {
-#include "textures/segment2/font_graphics.060D0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_U[] = {
-#include "textures/segment2/font_graphics.060E0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_V[] = {
-#include "textures/segment2/font_graphics.060F0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_W[] = {
-#include "textures/segment2/font_graphics.06100.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_X[] = {
-#include "textures/segment2/font_graphics.06110.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_Y[] = {
-#include "textures/segment2/font_graphics.06120.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_Z[] = {
-#include "textures/segment2/font_graphics.06130.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_a[] = {
-#include "textures/segment2/font_graphics.06140.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_b[] = {
-#include "textures/segment2/font_graphics.06150.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_c[] = {
-#include "textures/segment2/font_graphics.06160.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_d[] = {
-#include "textures/segment2/font_graphics.06170.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_e[] = {
-#include "textures/segment2/font_graphics.06180.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_f[] = {
-#include "textures/segment2/font_graphics.06190.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_g[] = {
-#include "textures/segment2/font_graphics.061A0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_h[] = {
-#include "textures/segment2/font_graphics.061B0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_i[] = {
-#include "textures/segment2/font_graphics.061C0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_j[] = {
-#include "textures/segment2/font_graphics.061D0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_k[] = {
-#include "textures/segment2/font_graphics.061E0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_l[] = {
-#include "textures/segment2/font_graphics.061F0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_m[] = {
-#include "textures/segment2/font_graphics.06200.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_n[] = {
-#include "textures/segment2/font_graphics.06210.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_o[] = {
-#include "textures/segment2/font_graphics.06220.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_p[] = {
-#include "textures/segment2/font_graphics.06230.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_q[] = {
-#include "textures/segment2/font_graphics.06240.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_r[] = {
-#include "textures/segment2/font_graphics.06250.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_s[] = {
-#include "textures/segment2/font_graphics.06260.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_t[] = {
-#include "textures/segment2/font_graphics.06270.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_u[] = {
-#include "textures/segment2/font_graphics.06280.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_v[] = {
-#include "textures/segment2/font_graphics.06290.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_w[] = {
-#include "textures/segment2/font_graphics.062A0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_x[] = {
-#include "textures/segment2/font_graphics.062B0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_y[] = {
-#include "textures/segment2/font_graphics.062C0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_z[] = {
-#include "textures/segment2/font_graphics.062D0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_left_right_arrow[] = {
-#include "textures/segment2/font_graphics.062E0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_ampersand[] = {
-#include "textures/segment2/font_graphics.062F0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_exclamation[] = {
-#include "textures/segment2/font_graphics.06300.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_coin[] = {
-#include "textures/segment2/font_graphics.06310.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_multiply[] = {
-#include "textures/segment2/font_graphics.06320.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_open_parentheses[] = {
-#include "textures/segment2/font_graphics.06330.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_close_open_parentheses[] = {
-#include "textures/segment2/font_graphics.06340.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_close_parentheses[] = {
-#include "textures/segment2/font_graphics.06350.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_tilde[] = {
-#include "textures/segment2/font_graphics.06360.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_period[] = {
-#include "textures/segment2/font_graphics.06370.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_percent[] = {
-#include "textures/segment2/font_graphics.06380.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_interpunct[] = {
-#include "textures/segment2/font_graphics.06390.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_comma[] = {
-#include "textures/segment2/font_graphics.063A0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_apostrophe[] = {
-#include "textures/segment2/font_graphics.063B0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_question[] = {
-#include "textures/segment2/font_graphics.063C0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_star_filled[] = {
-#include "textures/segment2/font_graphics.063D0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_star_hollow[] = {
-#include "textures/segment2/font_graphics.063E0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_double_quote_open[] = {
-#include "textures/segment2/font_graphics.063F0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_double_quote_close[] = {
-#include "textures/segment2/font_graphics.06400.ia1.inc.c"
-};
-
-ROM_ASSET_LOAD_TEXTURE(texture_font_char_eu_colon, "textures/segment2/font_graphics.06410.ia1.inc.c", 0x00188440, 199722, 0x00014676, 16);
-
-ROM_ASSET_LOAD_TEXTURE(texture_font_char_EU_slash, "textures/segment2/font_graphics.06420.ia1.inc.c", 0x001c4230, 80474, 0x00020b5b, 16);
-
-ALIGNED8 const Texture texture_font_char_eu_button_A[] = {
-#include "textures/segment2/font_graphics.06430.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_B[] = {
-#include "textures/segment2/font_graphics.06440.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_C[] = {
-#include "textures/segment2/font_graphics.06450.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_Z[] = {
-#include "textures/segment2/font_graphics.06460.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_R[] = {
-#include "textures/segment2/font_graphics.06470.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_C_up[] = {
-#include "textures/segment2/font_graphics.06480.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_C_down[] = {
-#include "textures/segment2/font_graphics.06490.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_C_left[] = {
-#include "textures/segment2/font_graphics.064A0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_button_C_right[] = {
-#include "textures/segment2/font_graphics.064B0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_umlaut[] = {
-#include "textures/segment2/font_graphics.064C0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_circumflex[] = {
-#include "textures/segment2/font_graphics.064D0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_grave[] = {
-#include "textures/segment2/font_graphics.064E0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_acute[] = {
-#include "textures/segment2/font_graphics.064F0.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_cedilla[] = {
-#include "textures/segment2/font_graphics.06500.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_unknown[] = {
-#include "textures/segment2/font_graphics.06510.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_Cedilla[] = {
-#include "textures/segment2/font_graphics.06520.ia1.inc.c"
-};
-
-ALIGNED8 const Texture texture_font_char_eu_eszeet[] = {
-#include "textures/segment2/font_graphics.06530.ia1.inc.c"
-};
-
-// US Small Font
 #else
 ROM_ASSET_LOAD_TEXTURE(texture_font_char_us_0, "textures/segment2/font_graphics.05900.ia4.inc.c", 0x00108a40, 48390, 0x00005900, 64);
 
@@ -1499,23 +1093,7 @@ extern ALIGNED8 const Texture texture_hud_char_wario_head[];
 
 // Main HUD print table 0x02008250-0x02008337
 const Texture *const main_hud_lut[] = {
-#ifdef VERSION_EU
-    texture_hud_char_0, texture_hud_char_1, texture_hud_char_2, texture_hud_char_3,
-    texture_hud_char_4, texture_hud_char_5, texture_hud_char_6, texture_hud_char_7,
-    texture_hud_char_8, texture_hud_char_9, texture_hud_char_A, texture_hud_char_B,
-    texture_hud_char_C, texture_hud_char_D, texture_hud_char_E, texture_hud_char_F,
-    texture_hud_char_G, texture_hud_char_H, texture_hud_char_I, texture_hud_char_J,
-    texture_hud_char_K, texture_hud_char_L, texture_hud_char_M, texture_hud_char_N,
-    texture_hud_char_O, texture_hud_char_P, texture_hud_char_Q, texture_hud_char_R,
-    texture_hud_char_S, texture_hud_char_T, texture_hud_char_U, texture_hud_char_V,
-    texture_hud_char_W, texture_hud_char_X, texture_hud_char_Y, texture_hud_char_Z,
-    texture_hud_char_exclamation, texture_hud_char_hashtag, texture_hud_char_question, texture_hud_char_ampersand,
-    texture_hud_char_percent, texture_hud_char_multiply, texture_hud_char_coin, texture_hud_char_comma,
-    texture_hud_char_star, texture_hud_char_period, texture_hud_char_key, texture_hud_char_apostrophe,
-    texture_hud_char_double_quote, texture_hud_char_slash, texture_hud_char_dash, texture_hud_char_divide,
-    texture_hud_char_plus, texture_hud_char_mario_head, texture_hud_char_luigi_head, texture_hud_char_wario_head,
-    texture_hud_char_waluigi_head, texture_hud_char_toad_head, texture_hud_char_umlaut,
-#elif defined(VERSION_US)
+#if defined(VERSION_US)
     texture_hud_char_0, texture_hud_char_1, texture_hud_char_2, texture_hud_char_3,
     texture_hud_char_4, texture_hud_char_5, texture_hud_char_6, texture_hud_char_7,
     texture_hud_char_8, texture_hud_char_9, texture_hud_char_A, texture_hud_char_B,
@@ -1552,74 +1130,7 @@ const Texture *const main_hud_lut[] = {
 
 // Main small font print table 0x02008338-0x02008737
 const Texture *const main_font_lut[] = {
-#ifdef VERSION_EU // EU Font Table
-    texture_font_char_eu_0, texture_font_char_eu_1, texture_font_char_eu_2, texture_font_char_eu_3,
-    texture_font_char_eu_4, texture_font_char_eu_5, texture_font_char_eu_6, texture_font_char_eu_7,
-    texture_font_char_eu_8, texture_font_char_eu_9, texture_font_char_eu_A, texture_font_char_eu_B,
-    texture_font_char_eu_C, texture_font_char_eu_D, texture_font_char_eu_E, texture_font_char_eu_F,
-    texture_font_char_eu_G, texture_font_char_eu_H, texture_font_char_eu_I, texture_font_char_eu_J,
-    texture_font_char_eu_K, texture_font_char_eu_L, texture_font_char_eu_M, texture_font_char_eu_N,
-    texture_font_char_eu_O, texture_font_char_eu_P, texture_font_char_eu_Q, texture_font_char_eu_R,
-    texture_font_char_eu_S, texture_font_char_eu_T, texture_font_char_eu_U, texture_font_char_eu_V,
-    texture_font_char_eu_W, texture_font_char_eu_X, texture_font_char_eu_Y, texture_font_char_eu_Z,
-    texture_font_char_eu_a, texture_font_char_eu_b, texture_font_char_eu_c, texture_font_char_eu_d,
-    texture_font_char_eu_e, texture_font_char_eu_f, texture_font_char_eu_g, texture_font_char_eu_h,
-    texture_font_char_eu_i, texture_font_char_eu_j, texture_font_char_eu_k, texture_font_char_eu_l,
-    texture_font_char_eu_m, texture_font_char_eu_n, texture_font_char_eu_o, texture_font_char_eu_p,
-    texture_font_char_eu_q, texture_font_char_eu_r, texture_font_char_eu_s, texture_font_char_eu_t,
-    texture_font_char_eu_u, texture_font_char_eu_v, texture_font_char_eu_w, texture_font_char_eu_x,
-    texture_font_char_eu_y, texture_font_char_eu_z, texture_font_char_eu_apostrophe, texture_font_char_eu_period,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    texture_font_char_eu_button_C_up,
-    texture_font_char_eu_button_C_down,
-    texture_font_char_eu_button_C_left,
-    texture_font_char_eu_button_C_right,
-    texture_font_char_eu_button_A,
-    texture_font_char_eu_button_B,
-    texture_font_char_eu_button_C,
-    texture_font_char_eu_button_Z,
-    texture_font_char_eu_button_R,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    texture_font_char_eu_comma,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    texture_font_char_EU_slash,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-    0x0,
-    texture_font_char_eu_open_parentheses,
-    texture_font_char_eu_close_open_parentheses,
-    texture_font_char_eu_close_parentheses,
-    texture_font_char_eu_left_right_arrow,
-    texture_font_char_eu_ampersand,
-    texture_font_char_eu_colon,
-    texture_font_char_eu_acute,
-    texture_font_char_eu_circumflex,
-    texture_font_char_eu_umlaut,
-    texture_font_char_eu_grave,
-    texture_font_char_eu_unknown,
-    texture_font_char_eu_eszeet,
-    texture_font_char_eu_Cedilla,
-    texture_font_char_eu_cedilla,
-    0x0, 0x0, 0x0,
-    texture_font_char_eu_exclamation,
-    texture_font_char_eu_percent,
-    texture_font_char_eu_question,
-    texture_font_char_eu_double_quote_open,
-    texture_font_char_eu_double_quote_close,
-    texture_font_char_eu_tilde,
-    0x0,
-    texture_font_char_eu_coin,
-    texture_font_char_eu_star_filled,
-    texture_font_char_eu_multiply,
-    texture_font_char_eu_interpunct,
-    texture_font_char_eu_star_hollow,
-    0x0, 0x0,
-#elif defined(VERSION_US) // US Font Table
+#if defined(VERSION_US) // US Font Table
     texture_font_char_us_0, texture_font_char_us_1, texture_font_char_us_2, texture_font_char_us_3,
     texture_font_char_us_4, texture_font_char_us_5, texture_font_char_us_6, texture_font_char_us_7,
     texture_font_char_us_8, texture_font_char_us_9, texture_font_char_us_A, texture_font_char_us_B,
@@ -1791,12 +1302,10 @@ const Gfx dl_hud_img_begin[] = {
     gsDPSetTexturePersp(G_TP_NONE),
     gsDPSetAlphaCompare(G_AC_THRESHOLD),
     gsDPSetBlendColor(255, 255, 255, 255),
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
     gsDPSetRenderMode(G_RM_NOOP, G_RM_NOOP2),
 #endif
-#ifdef VERSION_EU
-    gsDPSetTextureFilter(G_TF_POINT),
-#elif defined(VERSION_US)
+#if defined(VERSION_US)
     gsDPSetRenderMode(G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2),
 #endif
     gsSPEndDisplayList(),
@@ -1818,9 +1327,6 @@ const Gfx dl_hud_img_end[] = {
     gsDPSetTexturePersp(G_TP_PERSP),
     gsDPSetRenderMode(G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2),
     gsDPSetAlphaCompare(G_AC_NONE),
-#ifdef VERSION_EU
-    gsDPSetTextureFilter(G_TF_BILERP),
-#endif
     gsDPSetCycleType(G_CYC_1CYCLE),
 #if defined(VERSION_US)
     gsSPTexture(0xFFFF, 0xFFFF, 0, G_TX_RENDERTILE, G_OFF),
@@ -1875,7 +1381,6 @@ const Gfx dl_draw_text_bg_box[] = {
     gsSPEndDisplayList(),
 };
 
-#ifndef VERSION_EU
 // 0x0200EE28 - 0x0200EE68
 #if defined(VERSION_SH)
 static const Vtx vertex_ia8_char[] = {
@@ -1887,43 +1392,8 @@ static const Vtx vertex_ia8_char[] = {
 #else
 ROM_ASSET_LOAD_VTX(vertex_ia8_char, 0x00108a40, 48390, 0x00011c88, 64);
 #endif
-// !EU
-#endif
 
-#ifdef VERSION_EU
-// 0x020073B0
-const Gfx dl_ia_text_begin[] = {
-    gsDPPipeSync(),
-    gsDPSetTexturePersp(G_TP_NONE),
-    gsDPSetCombineMode(G_CC_FADEA, G_CC_FADEA),
-    gsDPSetEnvColor(255, 255, 255, 255),
-    gsDPSetRenderMode(G_RM_XLU_SURF, G_RM_XLU_SURF2),
-    gsDPSetTextureFilter(G_TF_POINT),
-    gsSPEndDisplayList(),
-};
-
-// 0x020073E8 - 0x02007418
-const Gfx dl_ia_text_tex_settings[] = {
-    gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_16b, 0, 0, G_TX_LOADTILE, 0, G_TX_WRAP | G_TX_MIRROR, 3, G_TX_NOLOD, G_TX_WRAP | G_TX_MIRROR, 4, G_TX_NOLOD),
-    gsDPLoadSync(),
-    gsDPLoadBlock(G_TX_LOADTILE, 0, 0, ((16 * 8 + G_IM_SIZ_4b_INCR) >> G_IM_SIZ_4b_SHIFT) - 1, CALC_DXT(16, G_IM_SIZ_4b_BYTES)),
-    gsDPSetTile(G_IM_FMT_IA, G_IM_SIZ_4b, 1, 0, G_TX_RENDERTILE, 0, G_TX_WRAP | G_TX_MIRROR, 3, G_TX_NOLOD, G_TX_WRAP | G_TX_MIRROR, 4, G_TX_NOLOD),
-    gsDPSetTileSize(0, 0, 0, (16 - 1) << G_TEXTURE_IMAGE_FRAC, (8 - 1) << G_TEXTURE_IMAGE_FRAC),
-    gsSPEndDisplayList(),
-};
-
-// 0x02007418 - 0x02007450
-const Gfx dl_ia_text_end[] = {
-    gsDPPipeSync(),
-    gsDPSetTexturePersp(G_TP_PERSP),
-    gsDPSetRenderMode(G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2),
-    gsDPSetCombineMode(G_CC_SHADE, G_CC_SHADE),
-    gsDPSetEnvColor(255, 255, 255, 255),
-    gsDPSetTextureFilter(G_TF_BILERP),
-    gsSPEndDisplayList(),
-};
-
-#elif defined(VERSION_US)
+#if defined(VERSION_US)
 const Gfx dl_ia_text_begin[] = {
     gsDPPipeSync(),
     gsSPClearGeometryMode(G_LIGHTING),
@@ -1972,7 +1442,6 @@ const Gfx dl_ia_text_tex_settings[] = {
 };
 #endif
 
-#ifndef VERSION_EU
 // 0x0200EEF0 - 0x0200EF30
 const Gfx dl_ia_text_end[] = {
     gsDPPipeSync(),
@@ -1984,7 +1453,6 @@ const Gfx dl_ia_text_end[] = {
     gsDPSetTextureFilter(G_TF_BILERP),
     gsSPEndDisplayList(),
 };
-#endif
 
 // 0x0200EF30 - 0x0200EF60
 ROM_ASSET_LOAD_VTX(vertex_triangle, 0x00108a40, 48390, 0x00011d90, 48);

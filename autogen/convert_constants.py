@@ -136,7 +136,6 @@ overrideConstant = {
 }
 defined_values = {
     'VERSION_US': True,
-    'VERSION_EU': False,
     'VERSION_SH': False,
     'F3DEX_GBI_2': True,
     'DEVELOPMENT': False,

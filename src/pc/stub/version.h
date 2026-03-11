@@ -8,9 +8,7 @@
 #define VERSION_NUMBER 41
 #define MINOR_VERSION_NUMBER 1
 
-#if defined(VERSION_EU)
-#define VERSION_REGION "EU"
-#elif defined(VERSION_SH)
+#if defined(VERSION_SH)
 #define VERSION_REGION "SH"
 #else
 #define VERSION_REGION "US"

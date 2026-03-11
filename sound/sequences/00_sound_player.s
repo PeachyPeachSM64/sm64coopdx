@@ -3,12 +3,6 @@
 .align 0
 sequence_start:
 
-.ifdef VERSION_SH
-  .set VERSION_EU_SH, 1
-.endif
-.ifdef VERSION_EU
-  .set VERSION_EU_SH, 1
-.endif
 
 seq_setmutebhv 0x60
 seq_setmutescale 0
@@ -2151,7 +2145,7 @@ chan_setlayer 0, .layer_C3C
 chan_end
 
 .layer_C3C:
-.ifdef VERSION_EU_SH
+.ifdef VERSION_SH
   layer_transpose 2
 .endif
 layer_portamento 0x82, 41, 127
@@ -2190,7 +2184,7 @@ chan_setlayer 0, .layer_C6C
 chan_end
 
 .layer_C6C:
-.ifdef VERSION_EU_SH
+.ifdef VERSION_SH
   layer_transpose 1
 .endif
 layer_portamento 0x82, 44, 200
@@ -2769,7 +2763,7 @@ layer_jump .layer_C4E
   layer_end
 .endif
 
-.ifdef VERSION_EU_SH
+.ifdef VERSION_SH
   .chan_unused_F9A_eu:
   chan_setbank 8
   chan_setinstr 0
@@ -4200,7 +4194,7 @@ layer_note1 31, 0x14, 127
 layer_end
 
 .sound_general_red_coin:
-.ifdef VERSION_EU_SH
+.ifdef VERSION_SH
   chan_setbank 9
   chan_setinstr 3
 .else

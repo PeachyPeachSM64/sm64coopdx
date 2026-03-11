@@ -68,12 +68,8 @@
 #define GL_MAX_SAMPLES 0x8D57
 #endif
 
-// TODO: figure out if this shit even works
-#ifdef VERSION_EU
-# define FRAMERATE 25
-#else
-# define FRAMERATE 30
-#endif
+// TODO: figure out if this crap ;) even works
+#define FRAMERATE 30
 
 static SDL_Window *wnd;
 static SDL_GLContext ctx = NULL;

@@ -191,19 +191,6 @@
 
 .else
 
-.ifdef VERSION_EU
-
-.macro seq_unreservenotes
-    .byte 0xf0
-.endm
-
-.macro seq_reservenotes a
-    .byte 0xf1
-    .byte \a
-.endm
-
-.else
-
 .macro seq_unreservenotes
     .byte 0xf1
 .endm
@@ -212,8 +199,6 @@
     .byte 0xf2
     .byte \a
 .endm
-
-.endif
 
 .endif
 
@@ -537,24 +522,6 @@
     .byte 0xa0 + \a
 .endm
 
-.ifdef VERSION_EU
-
-.macro chan_setnotepriority a
-    .byte 0xe9
-    .byte \a
-.endm
-
-.macro chan_unreservenotes
-    .byte 0xf0
-.endm
-
-.macro chan_reservenotes a
-    .byte 0xf1
-    .byte \a
-.endm
-
-.else
-
 .macro chan_setnotepriority a
     .byte 0x60 + \a
 .endm
@@ -567,8 +534,6 @@
     .byte 0xf2
     .byte \a
 .endm
-
-.endif
 
 .endif
 

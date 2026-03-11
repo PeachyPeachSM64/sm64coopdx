@@ -25,11 +25,6 @@
 #include "save_file.h"
 #include "hardcoded.h"
 #include "debug_course.h"
-#ifdef VERSION_EU
-#include "memory.h"
-#include "eu_translation.h"
-#include "segment_symbols.h"
-#endif
 #include "level_table.h"
 #include "course_table.h"
 #include "libc/stdlib.h"
@@ -180,12 +175,7 @@ const char *credits15[] = { "2PROGRESS MANAGEMENT", "KIMIYOSHI FUKUI", "KEIZO KA
 const char *credits16[] = { "5SCREEN TEXT WRITER", "TRANSLATION", "LESLIE SWAN", "MINA AKINO",
                             "HIRO YAMADA" };
 const char *credits17[] = { "4MARIO VOICE", "PEACH VOICE", "CHARLES MARTINET", "LESLIE SWAN" };
-const char *credits18[] = { "3SPECIAL THANKS TO", "EAD STAFF", "ALL NINTENDO PERSONNEL",
-#ifdef VERSION_EU
-                           "SUPER MARIO CLUB STAFF" };
-#else
-                           "MARIO CLUB STAFF" };
-#endif
+const char *credits18[] = { "3SPECIAL THANKS TO", "EAD STAFF", "ALL NINTENDO PERSONNEL", "MARIO CLUB STAFF" };
 const char *credits19[] = { "1PRODUCER", "SHIGERU MIYAMOTO" };
 const char *credits20[] = { "1EXECUTIVE PRODUCER", "HIROSHI YAMAUCHI" };
 #endif
@@ -228,7 +218,7 @@ s16 sDelayedWarpOp;
 s16 sDelayedWarpTimer;
 s16 sSourceWarpNodeId;
 s32 sDelayedWarpArg;
-#if defined(VERSION_EU) || defined(VERSION_SH)
+#if defined(VERSION_SH)
 s16 unusedEULevelUpdateBss1;
 #endif
 s8 sTimerRunning;
@@ -1992,23 +1982,6 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
 }
 
 s32 lvl_init_from_save_file(UNUSED s16 arg0, s16 levelNum) {
-#ifdef VERSION_EU
-    s16 var = eu_get_language();
-    switch (var) {
-        case LANGUAGE_ENGLISH:
-            load_segment_decompress(0x19, _translation_en_mio0SegmentRomStart,
-                                    _translation_en_mio0SegmentRomEnd);
-            break;
-        case LANGUAGE_FRENCH:
-            load_segment_decompress(0x19, _translation_fr_mio0SegmentRomStart,
-                                    _translation_fr_mio0SegmentRomEnd);
-            break;
-        case LANGUAGE_GERMAN:
-            load_segment_decompress(0x19, _translation_de_mio0SegmentRomStart,
-                                    _translation_de_mio0SegmentRomEnd);
-            break;
-    }
-#endif
     sWarpDest.type = WARP_TYPE_NOT_WARPING;
     sDelayedWarpOp = WARP_OP_NONE;
     gNeverEnteredCastle = !save_file_exists(gCurrSaveFileNum - 1) && (configSkipIntro == 0);
