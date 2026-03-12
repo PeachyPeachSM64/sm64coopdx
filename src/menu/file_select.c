@@ -512,7 +512,7 @@ void exit_score_file_to_score_menu(struct Object *scoreFileButton, s8 scoreButto
     if (scoreFileButton->oMenuButtonState == MENU_BUTTON_STATE_FULLSCREEN
         && sCursorClickingTimer == 2) {
         play_sound(SOUND_MENU_CAMERA_ZOOM_OUT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
         queue_rumble_data(5, 80);
 #endif
         scoreFileButton->oMenuButtonState = MENU_BUTTON_STATE_SHRINKING;
@@ -581,7 +581,7 @@ void check_score_menu_clicked_buttons(struct Object *scoreButton) {
                 if (buttonID == MENU_BUTTON_SCORE_RETURN || buttonID == MENU_BUTTON_SCORE_COPY_FILE
                     || buttonID == MENU_BUTTON_SCORE_ERASE_FILE) {
                     play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                     queue_rumble_data(5, 80);
 #endif
                     sMainMenuButtons[buttonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN_OUT;
@@ -592,7 +592,7 @@ void check_score_menu_clicked_buttons(struct Object *scoreButton) {
                         // If clicked in a existing save file, select it too see it's score
                         if (save_file_exists(buttonID - MENU_BUTTON_SCORE_MIN) == TRUE) {
                             play_sound(SOUND_MENU_CAMERA_ZOOM_IN, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                             queue_rumble_data(5, 80);
 #endif
                             sMainMenuButtons[buttonID]->oMenuButtonState = MENU_BUTTON_STATE_GROWING;
@@ -601,7 +601,7 @@ void check_score_menu_clicked_buttons(struct Object *scoreButton) {
                         else {
                             // If clicked in a non-existing save file, play buzz sound
                             play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                             queue_rumble_data(5, 80);
 #endif
                             sMainMenuButtons[buttonID]->oMenuButtonState =
@@ -672,7 +672,7 @@ void copy_action_file_button(struct Object *copyButton, s32 copyFileButtonID) {
             if (save_file_exists(copyFileButtonID - MENU_BUTTON_COPY_MIN) == TRUE) {
                 // If clicked in a existing save file, ask where it wants to copy
                 play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(5, 80);
 #endif
                 sMainMenuButtons[copyFileButtonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN;
@@ -683,7 +683,7 @@ void copy_action_file_button(struct Object *copyButton, s32 copyFileButtonID) {
             } else {
                 // If clicked in a non-existing save file, play buzz sound
                 play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(5, 80);
 #endif
                 sMainMenuButtons[copyFileButtonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN_OUT;
@@ -698,7 +698,7 @@ void copy_action_file_button(struct Object *copyButton, s32 copyFileButtonID) {
             if (save_file_exists(copyFileButtonID - MENU_BUTTON_COPY_MIN) == FALSE) {
                 // If clicked in a non-existing save file, copy the file
                 play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(5, 80);
 #endif
                 copyButton->oMenuButtonActionPhase = COPY_PHASE_COPY_COMPLETE;
@@ -711,7 +711,7 @@ void copy_action_file_button(struct Object *copyButton, s32 copyFileButtonID) {
                 // If clicked in a existing save file, play buzz sound
                 if (MENU_BUTTON_COPY_FILE_A + sSelectedFileIndex == copyFileButtonID) {
                     play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                     queue_rumble_data(5, 80);
 #endif
                     sMainMenuButtons[MENU_BUTTON_COPY_FILE_A + sSelectedFileIndex]->oMenuButtonState =
@@ -749,7 +749,7 @@ void check_copy_menu_clicked_buttons(struct Object *copyButton) {
                     || buttonID == MENU_BUTTON_COPY_ERASE_FILE) {
                     if (copyButton->oMenuButtonActionPhase == COPY_PHASE_MAIN) {
                         play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                         queue_rumble_data(5, 80);
 #endif
                         sMainMenuButtons[buttonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN_OUT;
@@ -825,7 +825,7 @@ void erase_action_file_button(struct Object *eraseButton, s32 eraseFileButtonID)
             if (save_file_exists(eraseFileButtonID - MENU_BUTTON_ERASE_MIN) == TRUE) {
                 // If clicked in a existing save file, ask if it wants to delete it
                 play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(5, 80);
 #endif
                 sMainMenuButtons[eraseFileButtonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN;
@@ -836,7 +836,7 @@ void erase_action_file_button(struct Object *eraseButton, s32 eraseFileButtonID)
             } else {
                 // If clicked in a non-existing save file, play buzz sound
                 play_sound(SOUND_MENU_CAMERA_BUZZ, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(5, 80);
 #endif
                 sMainMenuButtons[eraseFileButtonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN_OUT;
@@ -853,7 +853,7 @@ void erase_action_file_button(struct Object *eraseButton, s32 eraseFileButtonID)
                 // Note: The prompt functions are actually called when the ERASE_MSG_PROMPT
                 // message is displayed with print_erase_menu_prompt
                 play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(5, 80);
 #endif
                 sMainMenuButtons[MENU_BUTTON_ERASE_MIN + sSelectedFileIndex]->oMenuButtonState =
@@ -883,7 +883,7 @@ void check_erase_menu_clicked_buttons(struct Object *eraseButton) {
                     || buttonID == MENU_BUTTON_ERASE_COPY_FILE) {
                     if (eraseButton->oMenuButtonActionPhase == ERASE_PHASE_MAIN) {
                         play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                         queue_rumble_data(5, 80);
 #endif
                         sMainMenuButtons[buttonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN_OUT;
@@ -951,7 +951,7 @@ void check_sound_mode_menu_clicked_buttons(struct Object *soundModeButton) {
                     || buttonID == MENU_BUTTON_HEADSET) {
                     if (soundModeButton->oMenuButtonActionPhase == SOUND_MODE_PHASE_MAIN) {
                         play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
                         queue_rumble_data(5, 80);
 #endif
                         sMainMenuButtons[buttonID]->oMenuButtonState = MENU_BUTTON_STATE_ZOOM_IN_OUT;
@@ -1230,28 +1230,28 @@ void check_main_menu_clicked_buttons(void) {
     switch (sSelectedButtonID) {
         case MENU_BUTTON_PLAY_FILE_A:
             play_sound(get_save_file_sound_for_character(SAVE_FILE_A), gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(60, 70);
             func_sh_8024C89C(1);
 #endif
             break;
         case MENU_BUTTON_PLAY_FILE_B:
             play_sound(get_save_file_sound_for_character(SAVE_FILE_B), gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(60, 70);
             func_sh_8024C89C(1);
 #endif
             break;
         case MENU_BUTTON_PLAY_FILE_C:
             play_sound(get_save_file_sound_for_character(SAVE_FILE_C), gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(60, 70);
             func_sh_8024C89C(1);
 #endif
             break;
         case MENU_BUTTON_PLAY_FILE_D:
             play_sound(get_save_file_sound_for_character(SAVE_FILE_D), gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(60, 70);
             func_sh_8024C89C(1);
 #endif
@@ -1259,28 +1259,28 @@ void check_main_menu_clicked_buttons(void) {
         // Play sound of the button clicked and render buttons of that menu.
         case MENU_BUTTON_SCORE:
             play_sound(SOUND_MENU_CAMERA_ZOOM_IN, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(5, 80);
 #endif
             render_score_menu_buttons(sMainMenuButtons[MENU_BUTTON_SCORE]);
             break;
         case MENU_BUTTON_COPY:
             play_sound(SOUND_MENU_CAMERA_ZOOM_IN, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(5, 80);
 #endif
             render_copy_menu_buttons(sMainMenuButtons[MENU_BUTTON_COPY]);
             break;
         case MENU_BUTTON_ERASE:
             play_sound(SOUND_MENU_CAMERA_ZOOM_IN, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(5, 80);
 #endif
             render_erase_menu_buttons(sMainMenuButtons[MENU_BUTTON_ERASE]);
             break;
         case MENU_BUTTON_SOUND_MODE:
             play_sound(SOUND_MENU_CAMERA_ZOOM_IN, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(5, 80);
 #endif
             render_sound_mode_menu_buttons(sMainMenuButtons[MENU_BUTTON_SOUND_MODE]);
@@ -1590,8 +1590,7 @@ void print_save_file_star_count(s8 fileIndex, s16 x, s16 y) {
         print_hud_lut_string(HUD_LUT_GLOBAL, x, y, LANGUAGE_ARRAY(textNew));
     }
 }
-
- #if defined(VERSION_SH)
+#if 0
      #define SELECT_FILE_X 96
      #define SCORE_X 50
      #define COPY_X 115
@@ -1601,7 +1600,7 @@ void print_save_file_star_count(s8 fileIndex, s16 x, s16 y) {
      #define SAVEFILE_X2 209
      #define MARIOTEXT_X1 92
      #define MARIOTEXT_X2 207
- #elif defined(VERSION_US)
+#elif 1
      #define SELECT_FILE_X 93
      #define SCORE_X 52
      #define COPY_X 117
@@ -1649,8 +1648,7 @@ void print_main_menu_strings(void) {
     print_menu_generic_string(MARIOTEXT_X2, 105, textMarioD);
     gSPDisplayList(gDisplayListHead++, dl_menu_ia8_text_end);
 }
-
-#if defined(VERSION_SH)
+#if 0
 #define CHECK_FILE_X 90
 #define NOSAVE_DATA_X1 90
 #else
@@ -1671,8 +1669,7 @@ void score_menu_display_message(s8 messageID) {
             break;
     }
 }
-
-#if defined(VERSION_SH)
+#if 0
     #define RETURN_X     45
     #define COPYFILE_X1  128
     #define ERASEFILE_X1 228
@@ -1728,8 +1725,7 @@ void print_score_menu_strings(void) {
     print_menu_generic_string(211, 105, textMarioD);
     gSPDisplayList(gDisplayListHead++, dl_menu_ia8_text_end);
 }
-
-#if defined(VERSION_SH)
+#if 0
     #define NOFILE_COPY_X  90
     #define COPY_FILE_X    90
     #define COPYIT_WHERE_X 90
@@ -1816,8 +1812,7 @@ void copy_menu_update_message(void) {
             break;
     }
 }
-
-#if defined(VERSION_SH)
+#if 0
     #define VIEWSCORE_X1 133
     #define ERASEFILE_X2 230
 #else
@@ -1857,8 +1852,7 @@ void print_copy_menu_strings(void) {
     print_menu_generic_string(211, 105, textMarioD);
     gSPDisplayList(gDisplayListHead++, dl_menu_ia8_text_end);
 }
-
-#if defined(VERSION_SH)
+#if 0
     #define CURSOR_X (x + 70)
     #define MENU_ERASE_YES_MIN_X 145
     #define MENU_ERASE_YES_MAX_X 164
@@ -1870,7 +1864,7 @@ void print_copy_menu_strings(void) {
 
 #define MENU_ERASE_YES_NO_MIN_Y 191
 #define MENU_ERASE_YES_NO_MAX_Y 210
-#ifdef VERSION_SH
+#if 0
     #define MENU_ERASE_NO_MIN_X 194
     #define MENU_ERASE_NO_MAX_X 213
 #else
@@ -1910,7 +1904,7 @@ void print_erase_menu_prompt(s16 x, s16 y) {
         // ..and is hovering "YES", delete file
         if (sEraseYesNoHoverState == MENU_ERASE_HOVER_YES) {
             play_sound(SOUND_MARIO_WAAAOOOW, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(5, 80);
 #endif
             sMainMenuButtons[MENU_BUTTON_ERASE]->oMenuButtonActionPhase = ERASE_PHASE_MARIO_ERASED;
@@ -1923,7 +1917,7 @@ void print_erase_menu_prompt(s16 x, s16 y) {
             // ..and is hovering "NO", return back to main phase
         } else if (sEraseYesNoHoverState == MENU_ERASE_HOVER_NO) {
             play_sound(SOUND_MENU_CLICK_FILE_SELECT, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
             queue_rumble_data(5, 80);
 #endif
             sMainMenuButtons[MENU_BUTTON_ERASE_MIN + sSelectedFileIndex]->oMenuButtonState =
@@ -1948,7 +1942,7 @@ void print_erase_menu_prompt(s16 x, s16 y) {
 //   US and EU   ---    JP
 // M a r i o   A --- マ リ オ Ａ
 // 0 1 2 3 4 5 6 --- 0 1 2 3
-#if defined(VERSION_SH)
+#if 0
     #define ERASE_FILE_X     111
     #define NOSAVE_DATA_X3   90
     #define MARIO_ERASED_VAR 3
@@ -2032,8 +2026,7 @@ void erase_menu_update_message(void) {
             break;
     }
 }
-
-#if defined(VERSION_SH)
+#if 0
 #define VIEWSCORE_X2 133
 #define COPYFILE_X2 223
 #else
@@ -2077,10 +2070,9 @@ void print_erase_menu_strings(void) {
     print_menu_generic_string(211, 105, textMarioD);
     gSPDisplayList(gDisplayListHead++, dl_menu_ia8_text_end);
 }
-
- #if defined(VERSION_SH)
+#if 0
      #define SOUND_HUD_X 96
- #elif defined(VERSION_US)
+#elif 1
      #define SOUND_HUD_X 88
  #endif
 
@@ -2130,8 +2122,7 @@ void print_score_file_castle_secret_stars(s8 fileIndex, s16 x, s16 y) {
                secretStarsText);
     print_menu_generic_string(x + 16, y, secretStarsText);
 }
-
-#if defined(VERSION_SH)
+#if 0
     #define HISCORE_COIN_ICON_X  0
     #define HISCORE_COIN_TEXT_X  16
     #define HISCORE_COIN_NAMES_X 45
@@ -2149,7 +2140,7 @@ void print_score_file_course_coin_score(s8 fileIndex, s16 courseIndex, s16 x, s1
     u8 stars = save_file_get_star_flags(fileIndex, courseIndex);
     INGAME_TEXT_COPY(textCoinX, TEXT_COIN_X);
     INGAME_TEXT_COPY(textStar, TEXT_STAR);
-#if defined(VERSION_SH)
+#if 0
     #define LENGTH 5
 #else
     #define LENGTH 8
@@ -2207,8 +2198,7 @@ void print_score_file_star_score(s8 fileIndex, s16 courseIndex, s16 x, s16 y) {
     starScoreText[i] = DIALOG_CHAR_TERMINATOR;
     print_menu_generic_string(x, y, starScoreText);
 }
-
-#if defined(VERSION_SH)
+#if 0
     #define MARIO_X 28
     #define FILE_LETTER_X 86
     #define LEVEL_NUM_PAD 5
@@ -2235,7 +2225,7 @@ void print_save_file_scores(s8 fileIndex) {
     INGAME_TEXT_COPY(textMario, TEXT_MARIO);
     INGAME_TEXT_COPY(textHiScore, TEXT_HI_SCORE);
     INGAME_TEXT_COPY(textMyScore, TEXT_MY_SCORE);
-#if defined(VERSION_US) || defined(VERSION_SH)
+#if 1
     INGAME_TEXT_COPY(textFileLetter, TEXT_ZERO);
     void **levelNameTable = segmented_to_virtual(seg2_course_name_table);
 #endif

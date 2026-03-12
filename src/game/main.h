@@ -39,7 +39,7 @@ extern OSMesg D_80339BEC;
 extern OSMesgQueue gDmaMesgQueue;
 extern OSMesgQueue gSIEventMesgQueue;
 
-#ifdef VERSION_SH
+#if 0
 extern OSThread gRumblePakThread;
 extern OSMesg gRumblePakSchedulerMesgBuf[1];
 extern OSMesg gRumbleThreadVIMesgBuf[1];

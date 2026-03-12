@@ -53,7 +53,7 @@ typedef struct {
     OSMesgQueue *eventQueue;
     OSMesgQueue *accessQueue;
     s32 (*dma_func)(s32, u32, void *, size_t);
-#if defined(VERSION_SH)
+#if 0
     s32 (*edma_func)(OSPiHandle*, s32, u32, void *, size_t);
 #else
     u64 force_align;

@@ -20,7 +20,7 @@ void func_802F4A20(void);
 void __osResetGlobalIntMask(u32 mask);
 void __osEPiRawWriteIo(OSPiHandle*, u32, u32);
 void func_802F71F0(void);
-#ifdef VERSION_SH
+#if 0
 void __osSetGlobalIntMask(s32 arg0);
 s32 __osEPiRawReadIo(OSPiHandle *arg0, u32 devAddr, u32 *arg2);
 #endif

@@ -10,7 +10,7 @@ void bhv_1up_interact(void) {
             marioState->healCounter = 31;
             marioState->hurtCounter = 0;
         }
-#ifdef VERSION_SH
+#if 0
         if (marioState->playerIndex == 0) {
             queue_rumble_data(5, 80);
         }

@@ -376,7 +376,7 @@ void thread4_sound(UNUSED void *arg) {
         if (gResetTimer < 25) {
             struct SPTask *spTask;
             profiler_log_thread4_time();
-#ifdef VERSION_SH
+#if 0
             spTask = func_sh_802f5a80(); // The function was probably just moved to a different file. Don't kill me.
 #else
             spTask = create_next_audio_frame_task(); 

@@ -1158,7 +1158,7 @@ ROM_ASSET_LOAD_VTX(intro_seg7_vertex_0700B420, 0x0026a3a0, 20598, 0x0000b420, 64
 // 0x0700B460 - 0x0700B4A0
 ROM_ASSET_LOAD_VTX(intro_seg7_vertex_0700B460, 0x0026a3a0, 20598, 0x0000b460, 64);
 
-#if defined(VERSION_SH)
+#if 0
 // 0x0700B4A0 - 0x0700B4A2
 ALIGNED8 const Texture intro_seg7_texture_0700B4A0[] = {
 #include "levels/intro/2_eu_copyright.rgba16.inc.c"
@@ -1169,7 +1169,7 @@ ALIGNED8 const Texture intro_seg7_texture_0700B4A0[] = {
 ROM_ASSET_LOAD_TEXTURE(intro_seg7_texture_0700B4A0, "levels/intro/2_copyright.rgba16.inc.c", 0x0026a3a0, 20598, 0x0000b4a0, 4096);
 #endif
 
-#if defined(VERSION_SH)
+#if 0
 ALIGNED8 static const u8 intro_seg7_texture_0700C4A0[] = {
 #include "levels/intro/3_sh_tm.rgba16.inc.c"
 };

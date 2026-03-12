@@ -6,7 +6,7 @@ sequence_start:
 
 seq_setmutebhv 0x60
 seq_setmutescale 0
-.ifdef VERSION_SH
+.if 0
   seq_setvol 100
 .else
   seq_setvol 127
@@ -2145,7 +2145,7 @@ chan_setlayer 0, .layer_C3C
 chan_end
 
 .layer_C3C:
-.ifdef VERSION_SH
+.if 0
   layer_transpose 2
 .endif
 layer_portamento 0x82, 41, 127
@@ -2184,7 +2184,7 @@ chan_setlayer 0, .layer_C6C
 chan_end
 
 .layer_C6C:
-.ifdef VERSION_SH
+.if 0
   layer_transpose 1
 .endif
 layer_portamento 0x82, 44, 200
@@ -2763,7 +2763,7 @@ layer_jump .layer_C4E
   layer_end
 .endif
 
-.ifdef VERSION_SH
+.if 0
   .chan_unused_F9A_eu:
   chan_setbank 8
   chan_setinstr 0
@@ -3459,7 +3459,7 @@ chan_setbank 9
 chan_setinstr 3
 chan_setval 40
 chan_call .set_reverb
-.ifdef VERSION_SH
+.if 0
   chan_setreverb 40
 .endif
 chan_setlayer 0, .layer_141A
@@ -3467,7 +3467,7 @@ chan_end
 
 .layer_141A:
 layer_transpose 24
-.ifdef VERSION_SH
+.if 0
   layer_note1 51, 0xc, 90
 .endif
 layer_note1 39, 0x4, 90
@@ -4194,7 +4194,7 @@ layer_note1 31, 0x14, 127
 layer_end
 
 .sound_general_red_coin:
-.ifdef VERSION_SH
+.if 0
   chan_setbank 9
   chan_setinstr 3
 .else
@@ -7483,7 +7483,7 @@ layer_end
 chan_reservenotes 4
 chan_setbank 9
 chan_setinstr 2
-.ifdef VERSION_SH
+.if 0
   chan_setval 15
   .set EXIT_PIPE_NOTE_VELOCITY, 106
 .else
@@ -7801,7 +7801,7 @@ layer_delay 0x6
 
 .layer_3148:
 layer_call .transpose_by_coin_index
-.ifdef VERSION_SH
+.if 0
   layer_note0 46, 0xc, 65, 20
   layer_note0 45, 0xc, 65, 20
   layer_note0 46, 0xc, 65, 20
@@ -7822,7 +7822,7 @@ layer_end
 
 .layer_3168:
 layer_call .transpose_by_coin_index
-.ifdef VERSION_SH
+.if 0
   layer_note0 41, 0xc, 65, 20
   layer_note0 40, 0xc, 65, 20
   layer_note0 41, 0xc, 65, 20
@@ -8131,7 +8131,7 @@ envelope_goto 2
 .envelope_341C:
 envelope_line 25 32760
 envelope_line 60 10000
-.ifdef VERSION_SH
+.if 0
   envelope_hang
 .else
   envelope_goto 2

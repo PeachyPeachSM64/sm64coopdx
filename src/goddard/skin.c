@@ -1,6 +1,6 @@
 #include <PR/ultratypes.h>
 
-#if defined(VERSION_SH)
+#if 0
 #include "prevent_bss_reordering.h"
 #endif
 

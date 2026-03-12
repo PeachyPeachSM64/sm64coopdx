@@ -98,7 +98,7 @@ static OSMesg sGdDMACompleteMsg; // msg buf for D_801BE8B0 queue
 static OSIoMesg sGdDMAReqMesg;
 static struct ObjView *D_801BE994; // store if View flag 0x40 set
 
-#if defined(VERSION_SH)
+#if 0
 u8 EUpad1[0x40];
 // static u32 unref_801be870[16];
 // static u32 unref_801be8e0[25];

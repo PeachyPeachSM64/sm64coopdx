@@ -24,7 +24,7 @@ struct ThreadHandle gAudioThread = { 0 };
 // - memory used for persistent banks
 // - memory used for temporary sequences
 // - memory used for temporary banks
-#if defined(VERSION_US)
+#if 1
 struct AudioSessionSettings gAudioSessionPresets[18] = {
     { 32000, MAX_SIMUL_NOTES, 1, 0x0C00, 0x2FFF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
     { 32000, MAX_SIMUL_NOTES, 1, 0x0A00, 0x47FF, 0x7FFF, 0x7400, 0xCC00, 0x7400, 0x7400 },
@@ -47,7 +47,7 @@ struct AudioSessionSettings gAudioSessionPresets[18] = {
 };
 #endif
 // gAudioCosineTable[k] = round((2**15 - 1) * cos(pi/2 * k / 127)). Unused.
-#if defined(VERSION_US)
+#if 1
 u16 gAudioCosineTable[128] = {
     0x7FFF, 32764, 32757, 32744, 32727, 32704, 32677, 32644, 32607, 32564, 32517, 32464, 32407,
     32344,  32277, 32205, 32127, 32045, 31958, 31866, 31770, 31668, 31561, 31450, 31334, 31213,
@@ -65,7 +65,7 @@ u16 gAudioCosineTable[128] = {
 // Transforms a pitch scale factor in -127..127 into a frequency scale factor
 // between -1 and +1 octave.
 // gPitchBendFrequencyScale[k] = 0.5 * 2^(k/127)
-#ifndef VERSION_SH
+#if 1
 f32 gPitchBendFrequencyScale[255] = {
     0.5f,      0.502736f, 0.505488f, 0.508254f, 0.511036f, 0.513833f, 0.516645f, 0.519472f, 0.522315f,
     0.525174f, 0.528048f, 0.530938f, 0.533843f, 0.536765f, 0.539702f, 0.542656f, 0.545626f, 0.548612f,
@@ -129,7 +129,7 @@ u8 gDefaultShortNoteDurationTable[16] = {
     229, 203, 177, 151, 139, 126, 113, 100, 87, 74, 61, 48, 36, 23, 10, 0,
 };
 
-#if defined(VERSION_US)
+#if 1
 // gVibratoCurve[k] = k*8
 s8 gVibratoCurve[16] = { 0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120 };
 #endif
@@ -141,7 +141,7 @@ struct AdsrEnvelope gDefaultEnvelope[] = {
 };
 #endif
 
-#if defined(VERSION_SH)
+#if 0
 s16 sSawtoothWaves[256] = {
     0,       1023,   2047,    3071,   4095,    5119,   6143,    7167,   8191,    9215,   10239,
     11263,   0x2FFF, 13311,   0x37FF, 15359,   0x3FFF, 17407,   0x47FF, 19455,   0x4FFF, 21503,
@@ -295,7 +295,7 @@ s16 gEuUnknownWave7[256] = {
 s16 *gWaveSamples[6] = { sSawtoothWaves, sTriangleWaves, sSineWaves, sSquareWaves, sEuUnknownWave6, gEuUnknownWave7 };
 
 #else
-// !VERSION_SH?
+// !SH?
 
 s16 sSineWave[0x40] = {
     0,      3211,   6392,   9511,   12539,   15446,  18204,  20787,  23169,  25329,  27244,
@@ -334,7 +334,7 @@ s16 sSawtoothWave[0x40] = {
 s16 *gWaveSamples[4] = { sSawtoothWave, sTriangleWave, sSineWave, sSquareWave };
 #endif
 
-#ifdef VERSION_SH
+#if 0
 s32 unk_sh_data_0[2] = {0, 0};
 f32 gPitchBendFrequencyScale[256] = {
     0.5f,      0.5f,      0.502736f, 0.505488f, 0.508254f, 0.511036f, 0.513833f, 0.516645f, 0.519472f,
@@ -369,7 +369,7 @@ f32 gPitchBendFrequencyScale[256] = {
 };
 #endif
 
-#ifdef VERSION_SH
+#if 0
 f32 unk_sh_data_1[] = {
   0.890899f,  0.890899f,  0.89171f,   0.892521f,  0.893333f,  0.894146f,  0.89496f,   0.895774f,
   0.89659f,   0.897406f,  0.898222f,  0.89904f,   0.899858f,  0.900677f,  0.901496f,  0.902317f,
@@ -441,7 +441,7 @@ u8 unk_sh_data2[4] = { 0, 0, 0, 0 };
 struct NoteSubEu gZeroNoteSub = { 0 };
 struct NoteSubEu gDefaultNoteSub = {
     1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, { NULL },
-#ifdef VERSION_SH
+#if 0
     0
 #endif
 };
@@ -456,11 +456,11 @@ u16 gHeadsetPanQuantization[0x40] = {
 };
 #endif
 
-#if !defined(VERSION_SH)
+#if 1
 u16 gHeadsetPanQuantization[SOUND_BANK_COUNT] = { 0x40, 0x30, 0x20, 0x10, 0, 0, 0, 0, 0, 0, 0x20, 0x20, 0x20 };
 #endif
 
-#if defined(VERSION_SH)
+#if 0
 s16 euUnknownData_80301950[64] = {
     0, 0, 0,   0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0,   0, 0, 0, 0, 0,
     0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0, 0, 0, 0, 500, 0, 0, 0, 0,
@@ -532,7 +532,7 @@ f32 gDefaultPanVolume[128] = {
     0.012368f, 0.0f
 };
 
-#if defined(VERSION_US)
+#if 1
 // gVolRampingLhs136[k] = 2^16 * max(1, (256*k)^(1/17)
 f32 gVolRampingLhs136[128] = {
     65536.0f,    90811.555f,  94590.766f,  96873.96f,   98527.26f,   99829.06f,   100905.47f,
@@ -660,7 +660,7 @@ f32 gVolRampingRhs128[128] = {
 };
 #endif
 
-#ifdef VERSION_SH
+#if 0
 u16 unk_sh_data_3[] = {
     // 30 entries
     // pattern:
@@ -835,7 +835,7 @@ char shindouDebugPrint4[] = "S-Resample Pitch %x (old %d -> delay %d)\n";
 // These debug prints are continued in shindou_debug_prints_1.c.
 #endif
 
-#ifndef VERSION_SH
+#if 1
 s16 gTatumsPerBeat = TATUMS_PER_BEAT;
 s8 gUnusedCount80333EE8 = UNUSED_COUNT_80333EE8;
 s32 gAudioHeapSize = DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE);
@@ -843,7 +843,7 @@ s32 gAudioInitPoolSize = DOUBLE_SIZE_ON_64_BIT(AUDIO_INIT_POOL_SIZE);
 volatile s32 gAudioLoadLock = AUDIO_LOCK_UNINITIALIZED;
 #endif
 
-#if defined(VERSION_US)
+#if 1
 s8 sUnused8033EF8 = 24;
 #endif
 
@@ -851,7 +851,7 @@ s8 sUnused8033EF8 = 24;
 
 volatile s32 gAudioFrameCount;
 
-#if defined(VERSION_SH)
+#if 0
 s32 gCurrAudioFrameDmaCount;
 #else
 volatile s32 gCurrAudioFrameDmaCount;
@@ -866,7 +866,7 @@ u64 *gAudioCmd;
 struct SPTask *gAudioTask;
 struct SPTask gAudioTasks[2];
 
-#if defined(VERSION_SH)
+#if 0
 f32 D_EU_802298D0;
 s32 gRefreshRate;
 #endif
@@ -874,18 +874,18 @@ s32 gRefreshRate;
 s16 *gAiBuffers[NUMAIBUFFERS];
 s16 gAiBufferLengths[NUMAIBUFFERS];
 
-#if defined(VERSION_US)
+#if 1
 u32 gUnused80226E58[0x10];
 u16 gUnused80226E98[0x10];
 #endif
 
 u32 gAudioRandom;
 
-#if defined(VERSION_SH)
+#if 0
 s32 gAudioErrorFlags;
 #endif
 
-#ifdef VERSION_SH
+#if 0
 volatile u32 gAudioLoadLockSH;
 struct EuAudioCmd sAudioCmd[0x100];
 u8 D_SH_80350F18;

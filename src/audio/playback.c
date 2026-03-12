@@ -8,11 +8,9 @@
 #include "synthesis.h"
 #include "effects.h"
 #include "external.h"
-
-#if defined(VERSION_SH)
+#if 0
 void note_set_resampling_rate(struct Note *note, f32 resamplingRateInput);
-
-#ifdef VERSION_SH
+#if 0
 void note_set_vel_pan_reverb(struct Note *note, struct ReverbInfo *reverbInfo)
 #else
 void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
@@ -23,7 +21,7 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
     u8 strongRight;
     u8 strongLeft;
     s32 smallPanIndex;
-#if !defined(VERSION_SH)
+#if 1
     UNUSED u32 pad;
     UNUSED u32 pad1;
     f32 velocity;
@@ -31,8 +29,7 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
     u8 reverb;
     struct ReverbBitsData reverbBits;
 #endif
-
-#ifdef VERSION_SH
+#if 0
     note_set_resampling_rate(note, reverbInfo->freqScale);
     velocity = reverbInfo->velocity;
     pan = reverbInfo->pan;
@@ -42,7 +39,7 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
 #endif
 
     if (note->noteSubEu.stereoHeadsetEffects && gSoundMode == SOUND_MODE_HEADSET) {
-#ifdef VERSION_SH
+#if 0
         smallPanIndex = pan >> 1;
 #else
         smallPanIndex = pan >> 3;
@@ -60,7 +57,7 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
         volLeft = gHeadsetPanVolume[pan];
         volRight = gHeadsetPanVolume[127 - pan];
     } else if (sub->stereoHeadsetEffects && gSoundMode == SOUND_MODE_STEREO) {
-#ifdef VERSION_SH
+#if 0
         strongRight = FALSE;
         strongLeft = FALSE;
         sub->headsetPanRight = 0;
@@ -84,8 +81,7 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
 
         sub->stereoStrongRight = strongRight;
         sub->stereoStrongLeft = strongLeft;
-
-#ifdef VERSION_SH
+#if 0
         switch (reverbBits.stereoHeadsetEffects) {
             case 0:
                 sub->stereoStrongRight = reverbBits.strongRight;
@@ -113,8 +109,7 @@ void note_set_vel_pan_reverb(struct Note *note, f32 velocity, u8 pan, u8 reverb)
         volLeft = gDefaultPanVolume[pan];
         volRight = gDefaultPanVolume[127 - pan];
     }
-
-#ifdef VERSION_SH
+#if 0
 if (velocity < 0.0f) {
         velocity = 0.0f;
     }
@@ -141,7 +136,7 @@ if (velocity < 0.0f) {
 #endif
 
     if (sub->reverbVol != reverb) {
-#ifdef VERSION_SH
+#if 0
         sub->reverbVol = reverb >> 1;
 #else
         sub->reverbVol = reverb;
@@ -158,10 +153,8 @@ if (velocity < 0.0f) {
 }
 
 #endif
-
-#if defined(VERSION_SH)
-
-#ifdef VERSION_SH
+#if 0
+#if 0
 #define MIN_RESAMPLING_RATE 1.99998f
 #else
 #define MIN_RESAMPLING_RATE 1.99996f
@@ -192,8 +185,7 @@ void note_set_resampling_rate(struct Note *note, f32 resamplingRateInput) {
 }
 
 #endif
-
-#if defined(VERSION_SH)
+#if 0
 void note_init_for_layer(struct Note *note, struct SequenceChannelLayer *seqLayer);
 #else
 s32 note_init_for_layer(struct Note *note, struct SequenceChannelLayer *seqLayer);
@@ -205,33 +197,32 @@ void note_init(struct Note *note) {
     } else {
         adsr_init(&note->adsr, note->parentLayer->adsr.envelope, &note->adsrVolScale);
     }
-#ifdef VERSION_SH
+#if 0
     note->unkSH34 = 0;
 #endif
     note->adsr.state = ADSR_STATE_INITIAL;
-#if defined(VERSION_SH)
+#if 0
     note->noteSubEu = gDefaultNoteSub;
 #else
     note_init_volume(note);
     note_enable(note);
 #endif
 }
-
-#if defined(VERSION_SH)
+#if 0
 #define note_disable2 note_disable
 void note_disable(struct Note *note) {
     if (note->noteSubEu.needsInit == TRUE) {
         note->noteSubEu.needsInit = FALSE;
     }
     note->priority = NOTE_PRIORITY_DISABLED;
-#ifdef VERSION_SH
+#if 0
     note->unkSH34 = 0;
 #endif
     note->parentLayer = NO_LAYER;
     note->prevParentLayer = NO_LAYER;
     note->noteSubEu.enabled = FALSE;
     note->noteSubEu.finished = FALSE;
-#ifdef VERSION_SH
+#if 0
     note->adsr.state = ADSR_STATE_DISABLED;
     note->adsr.current = 0;
 #endif
@@ -244,22 +235,22 @@ void note_disable2(struct Note *note) {
 
 void process_notes(void) {
     f32 scale;
-#ifndef VERSION_SH
+#if 1
     f32 frequency;
-#if defined(VERSION_US)
+#if 1
     u8 reverb;
 #endif
     f32 velocity;
-#if defined(VERSION_US)
+#if 1
     f32 pan;
     f32 cap;
 #endif
 #endif
     struct Note *note = NULL;
-#if defined(VERSION_SH)
+#if 0
     struct NotePlaybackState *playbackState = NULL;
     struct NoteSubEu *noteSubEu = NULL;
-#ifndef VERSION_SH
+#if 1
     u8 reverb;
     u8 pan;
 #else
@@ -268,7 +259,7 @@ void process_notes(void) {
     u8 bookOffset;
 #endif
     struct NoteAttributes *attributes = NULL;
-#if defined(VERSION_US)
+#if 1
     struct AudioListItem *it = NULL;
 #endif
     s32 i;
@@ -287,10 +278,10 @@ void process_notes(void) {
 
     for (i = 0; i < gMaxSimultaneousNotes; i++) {
         note = &gNotes[i];
-#if defined(VERSION_SH)
+#if 0
         playbackState = (struct NotePlaybackState *) &note->priority;
         if (note->parentLayer != NO_LAYER) {
-#ifdef VERSION_SH
+#if 0
             if (note != playbackState->parentLayer->note && playbackState->unkSH34 == 0) {
                 playbackState->adsr.action |= ADSR_ACTION_RELEASE;
                 playbackState->adsr.fadeOutVel = gAudioBufferParameters.updatesPerFrameInv;
@@ -350,7 +341,7 @@ void process_notes(void) {
         d:
         if (playbackState->priority != NOTE_PRIORITY_DISABLED) {
             noteSubEu = &note->noteSubEu;
-#ifdef VERSION_SH
+#if 0
             if (playbackState->unkSH34 >= 1 || noteSubEu->finished) {
 #else
             if (playbackState->priority == NOTE_PRIORITY_STOPPING || noteSubEu->finished) {
@@ -390,7 +381,7 @@ void process_notes(void) {
             scale = adsr_update(&playbackState->adsr);
             note_vibrato_update(note);
             attributes = &playbackState->attributes;
-#ifdef VERSION_SH
+#if 0
             if (playbackState->unkSH34 == 1 || playbackState->unkSH34 == 2) {
                 reverbInfo.freqScale = attributes->freqScale;
                 reverbInfo.velocity = attributes->velocity;
@@ -516,8 +507,7 @@ void process_notes(void) {
 #undef PREPEND
 #undef POP
 }
-
-#if defined(VERSION_SH)
+#if 0
 // These three are matching but have been moved from above in shindou:
 struct AudioBankSound *instrument_get_audio_bank_sound(struct Instrument *instrument, s32 semitone) {
     struct AudioBankSound *sound;
@@ -586,8 +576,7 @@ void seq_channel_layer_decay_release_internal(struct SequenceChannelLayer *seqLa
     if (seqLayer == NO_LAYER) {
         return;
     }
-
-#ifdef VERSION_SH
+#if 0
     seqLayer->status = SOUND_LOAD_STATUS_NOT_LOADED;
 #endif
 
@@ -598,7 +587,7 @@ void seq_channel_layer_decay_release_internal(struct SequenceChannelLayer *seqLa
     note = seqLayer->note;
     attributes = &note->attributes;
 
-#if defined(VERSION_US)
+#if 1
     if (seqLayer->seqChannel != NULL && seqLayer->seqChannel->noteAllocPolicy == 0) {
         seqLayer->note = NULL;
     }
@@ -609,8 +598,7 @@ void seq_channel_layer_decay_release_internal(struct SequenceChannelLayer *seqLa
     }
 
     if (note->parentLayer != seqLayer) {
-
-#if defined(VERSION_SH)
+#if 0
         if (note->parentLayer == NO_LAYER && note->wantedParentLayer == NO_LAYER &&
                 note->prevParentLayer == seqLayer && target != ADSR_STATE_DECAY) {
             // Just guessing that this printf goes here... it's hard to parse.
@@ -621,20 +609,19 @@ void seq_channel_layer_decay_release_internal(struct SequenceChannelLayer *seqLa
 #endif
         return;
     }
-
-#ifndef VERSION_SH
+#if 1
     seqLayer->status = SOUND_LOAD_STATUS_NOT_LOADED;
 #endif
     if (note->adsr.state != ADSR_STATE_DECAY) {
         attributes->freqScale = seqLayer->noteFreqScale;
         attributes->velocity = seqLayer->noteVelocity;
         attributes->pan = seqLayer->notePan;
-#ifdef VERSION_SH
+#if 0
         attributes->reverbBits = seqLayer->reverbBits;
 #endif
         if (seqLayer->seqChannel != NULL) {
             attributes->reverb = seqLayer->seqChannel->reverb;
-#ifdef VERSION_SH
+#if 0
             attributes->unk1 = seqLayer->seqChannel->unkSH0C;
             attributes->filter = seqLayer->seqChannel->filter;
             if (seqLayer->seqChannel->seqPlayer->muted && (seqLayer->seqChannel->muteBehavior & 8) != 0) {
@@ -643,31 +630,31 @@ void seq_channel_layer_decay_release_internal(struct SequenceChannelLayer *seqLa
             note->priority = seqLayer->seqChannel->unkSH06;
 #endif
         }
-#ifdef VERSION_SH
+#if 0
         else {
 #endif
             note->priority = NOTE_PRIORITY_STOPPING;
-#ifdef VERSION_SH
+#if 0
         }
 #endif
         note->prevParentLayer = note->parentLayer;
         note->parentLayer = NO_LAYER;
         if (target == ADSR_STATE_RELEASE) {
-#if defined(VERSION_SH)
+#if 0
             note->adsr.fadeOutVel = gAudioBufferParameters.updatesPerFrameInv;
 #else
             note->adsr.fadeOutVel = 0x8000 / gAudioUpdatesPerFrame;
 #endif
             note->adsr.action |= ADSR_ACTION_RELEASE;
-#ifdef VERSION_SH
+#if 0
             note->unkSH34 = 2;
 #endif
         } else {
-#ifdef VERSION_SH
+#if 0
             note->unkSH34 = 1;
 #endif
             note->adsr.action |= ADSR_ACTION_DECAY;
-#if defined(VERSION_SH)
+#if 0
             if (seqLayer->adsr.releaseRate == 0) {
                 note->adsr.fadeOutVel = seqLayer->seqChannel->adsr.releaseRate * gAudioBufferParameters.unkUpdatesPerFrameScaled;
             } else {
@@ -698,8 +685,7 @@ void seq_channel_layer_note_decay(struct SequenceChannelLayer *seqLayer) {
 void seq_channel_layer_note_release(struct SequenceChannelLayer *seqLayer) {
     seq_channel_layer_decay_release_internal(seqLayer, ADSR_STATE_RELEASE);
 }
-
-#if defined(VERSION_SH)
+#if 0
 s32 build_synthetic_wave(struct Note *note, struct SequenceChannelLayer *seqLayer, s32 waveId) {
     f32 freqScale;
     f32 ratio;
@@ -794,7 +780,7 @@ void build_synthetic_wave(struct Note *note, struct SequenceChannelLayer *seqLay
 #endif
 
 void init_synthetic_wave(struct Note *note, struct SequenceChannelLayer *seqLayer) {
-#if defined(VERSION_SH)
+#if 0
     s32 sampleCountIndex;
     s32 waveSampleCountIndex;
     s32 waveId = seqLayer->instOrWave;
@@ -803,7 +789,7 @@ void init_synthetic_wave(struct Note *note, struct SequenceChannelLayer *seqLaye
     }
     sampleCountIndex = note->sampleCountIndex;
     waveSampleCountIndex = build_synthetic_wave(note, seqLayer, waveId);
-#if defined(VERSION_SH)
+#if 0
     note->synthesisState.samplePosInt = note->synthesisState.samplePosInt * euUnknownData_8030194c[waveSampleCountIndex] / euUnknownData_8030194c[sampleCountIndex];
 #else // Not a real change. Just temporary so I can remove this variable.
     note->synthesisState.samplePosInt = note->synthesisState.samplePosInt * gDefaultShortNoteVelocityTable[waveSampleCountIndex] / gDefaultShortNoteVelocityTable[sampleCountIndex];
@@ -880,7 +866,7 @@ void note_pool_clear(struct NotePool *pool) {
                 break;
         }
         if (!source || !dest) { continue; }
-#if defined(VERSION_SH)
+#if 0
         for (;;) {
             cur = source->next;
             if (cur == source) {
@@ -995,8 +981,7 @@ struct Note *pop_node_with_lower_prio(struct AudioListItem *list, s32 limit) {
             best = cur;
         }
     }
-
-#if defined(VERSION_SH)
+#if 0
     if (best == NULL) {
         return NULL;
     }
@@ -1009,14 +994,12 @@ struct Note *pop_node_with_lower_prio(struct AudioListItem *list, s32 limit) {
         return NULL;
     }
 #endif
-
-#ifndef VERSION_SH
+#if 1
     audio_list_remove(best);
 #endif
     return best->u.value;
 }
-
-#if defined(VERSION_SH)
+#if 0
 void note_init_for_layer(struct Note *note, struct SequenceChannelLayer *seqLayer) {
     UNUSED s32 pad[4];
     s16 instId;
@@ -1047,7 +1030,7 @@ void note_init_for_layer(struct Note *note, struct SequenceChannelLayer *seqLaye
     if (sub->isSyntheticWave) {
         build_synthetic_wave(note, seqLayer, instId);
     }
-#ifdef VERSION_SH
+#if 0
     note->unkSH33 = seqLayer->seqChannel->bankId;
 #else
     sub->bankId = seqLayer->seqChannel->bankId;
@@ -1086,13 +1069,12 @@ void func_80319728(struct Note *note, struct SequenceChannelLayer *seqLayer) {
 
 void note_release_and_take_ownership(struct Note *note, struct SequenceChannelLayer *seqLayer) {
     note->wantedParentLayer = seqLayer;
-#ifdef VERSION_SH
+#if 0
     note->priority = seqLayer->seqChannel->notePriority;
 #else
     note->priority = NOTE_PRIORITY_STOPPING;
 #endif
-
-#if defined(VERSION_SH)
+#if 0
     note->adsr.fadeOutVel = gAudioBufferParameters.updatesPerFrameInv;
 #else
     note->adsr.fadeOutVel = 0x8000 / gAudioUpdatesPerFrame;
@@ -1103,7 +1085,7 @@ void note_release_and_take_ownership(struct Note *note, struct SequenceChannelLa
 struct Note *alloc_note_from_disabled(struct NotePool *pool, struct SequenceChannelLayer *seqLayer) {
     struct Note *note = audio_list_pop_back(&pool->disabled);
     if (note != NULL) {
-#if defined(VERSION_SH)
+#if 0
         note_init_for_layer(note, seqLayer);
 #else
         if (note_init_for_layer(note, seqLayer) == TRUE) {
@@ -1126,11 +1108,11 @@ struct Note *alloc_note_from_decaying(struct NotePool *pool, struct SequenceChan
 }
 
 struct Note *alloc_note_from_active(struct NotePool *pool, struct SequenceChannelLayer *seqLayer) {
-#ifdef VERSION_SH
+#if 0
     struct Note *rNote;
 #endif
     struct Note *aNote;
-#ifdef VERSION_SH
+#if 0
     s32 rPriority, aPriority;
     rPriority = aPriority = 0x10;
 
@@ -1146,15 +1128,14 @@ struct Note *alloc_note_from_active(struct NotePool *pool, struct SequenceChanne
     if (aNote == NULL) {
         eu_stubbed_printf_0("Audio: C-Alloc : lowerPrio is NULL\n");
     } else {
-#ifdef VERSION_SH
+#if 0
         aPriority = aNote->priority;
 #else
         func_80319728(aNote, seqLayer);
         audio_list_push_back(&pool->releasing, &aNote->listItem);
 #endif
     }
-
-#ifdef VERSION_SH
+#if 0
     if (rNote == NULL && aNote == NULL) {
         return NULL;
     }
@@ -1181,13 +1162,13 @@ struct Note *alloc_note(struct SequenceChannelLayer *seqLayer) {
     if (policy & NOTE_ALLOC_LAYER) {
         ret = seqLayer->note;
         if (ret != NULL && ret->prevParentLayer == seqLayer
-#if defined(VERSION_SH)
+#if 0
                 && ret->wantedParentLayer == NO_LAYER
 #endif
                 ) {
             note_release_and_take_ownership(ret, seqLayer);
             audio_list_remove(&ret->listItem);
-#if defined(VERSION_SH)
+#if 0
             audio_list_push_back(&ret->listItem.pool->releasing, &ret->listItem);
 #else
             audio_list_push_back(&gNoteFreeLists.releasing, &ret->listItem);
@@ -1200,7 +1181,7 @@ struct Note *alloc_note(struct SequenceChannelLayer *seqLayer) {
         if (!(ret = alloc_note_from_disabled(&seqLayer->seqChannel->notePool, seqLayer))
             && !(ret = alloc_note_from_decaying(&seqLayer->seqChannel->notePool, seqLayer))
             && !(ret = alloc_note_from_active(&seqLayer->seqChannel->notePool, seqLayer))) {
-#ifdef VERSION_SH
+#if 0
             goto null_return;
 #else
             eu_stubbed_printf_0("Sub Limited Warning: Drop Voice");
@@ -1218,7 +1199,7 @@ struct Note *alloc_note(struct SequenceChannelLayer *seqLayer) {
             && !(ret = alloc_note_from_decaying(&seqLayer->seqChannel->seqPlayer->notePool, seqLayer))
             && !(ret = alloc_note_from_active(&seqLayer->seqChannel->notePool, seqLayer))
             && !(ret = alloc_note_from_active(&seqLayer->seqChannel->seqPlayer->notePool, seqLayer))) {
-#ifdef VERSION_SH
+#if 0
             goto null_return;
 #else
             eu_stubbed_printf_0("Warning: Drop Voice");
@@ -1233,7 +1214,7 @@ struct Note *alloc_note(struct SequenceChannelLayer *seqLayer) {
         if (!(ret = alloc_note_from_disabled(&gNoteFreeLists, seqLayer))
             && !(ret = alloc_note_from_decaying(&gNoteFreeLists, seqLayer))
             && !(ret = alloc_note_from_active(&gNoteFreeLists, seqLayer))) {
-#ifdef VERSION_SH
+#if 0
             goto null_return;
 #else
             eu_stubbed_printf_0("Warning: Drop Voice");
@@ -1253,7 +1234,7 @@ struct Note *alloc_note(struct SequenceChannelLayer *seqLayer) {
         && !(ret = alloc_note_from_active(&seqLayer->seqChannel->notePool, seqLayer))
         && !(ret = alloc_note_from_active(&seqLayer->seqChannel->seqPlayer->notePool, seqLayer))
         && !(ret = alloc_note_from_active(&gNoteFreeLists, seqLayer))) {
-#ifdef VERSION_SH
+#if 0
         goto null_return;
 #else
         eu_stubbed_printf_0("Warning: Drop Voice");
@@ -1262,15 +1243,14 @@ struct Note *alloc_note(struct SequenceChannelLayer *seqLayer) {
 #endif
     }
     return ret;
-
-#ifdef VERSION_SH
+#if 0
 null_return:
     seqLayer->status = SOUND_LOAD_STATUS_NOT_LOADED;
     return NULL;
 #endif
 }
 
-#if defined(VERSION_US)
+#if 1
 void reclaim_notes(void) {
     struct Note *note;
     s32 i;
@@ -1320,7 +1300,7 @@ void note_init_all(void) {
 
     for (i = 0; i < gMaxSimultaneousNotes; i++) {
         note = &gNotes[i];
-#if defined(VERSION_SH)
+#if 0
         note->noteSubEu = gZeroNoteSub;
 #else
         note->enabled = FALSE;
@@ -1329,13 +1309,13 @@ void note_init_all(void) {
         note->stereoHeadsetEffects = FALSE;
 #endif
         note->priority = NOTE_PRIORITY_DISABLED;
-#ifdef VERSION_SH
+#if 0
         note->unkSH34 = 0;
 #endif
         note->parentLayer = NO_LAYER;
         note->wantedParentLayer = NO_LAYER;
         note->prevParentLayer = NO_LAYER;
-#if defined(VERSION_SH)
+#if 0
         note->waveId = 0;
 #else
         note->reverb = 0;
@@ -1354,7 +1334,7 @@ void note_init_all(void) {
         note->vibratoState.active = FALSE;
         note->portamento.cur = 0.0f;
         note->portamento.speed = 0.0f;
-#if defined(VERSION_SH)
+#if 0
         note->synthesisState.synthesisBuffers = sound_alloc_uninitialized(&gNotesAndBuffersPool, sizeof(struct NoteSynthesisBuffers));
 #else
         note->synthesisBuffers = soundAlloc(&gNotesAndBuffersPool, sizeof(struct NoteSynthesisBuffers));

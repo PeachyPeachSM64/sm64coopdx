@@ -7,7 +7,7 @@ typedef struct
 {
     u8 *offset;
     s32 len;
-#ifdef VERSION_SH
+#if 0
     s8 magic[2]; // tbl: 0x0204, otherwise: 0x0203
 
     // for ctl (else zeros):
@@ -31,11 +31,11 @@ typedef struct
 
 typedef struct
 {
-#ifndef VERSION_SH
+#if 1
     s16 revision;
 #endif
     s16 seqCount;
-#ifdef VERSION_SH
+#if 0
     s16 unk2;
     u8 *data;
     s32 pad[2];

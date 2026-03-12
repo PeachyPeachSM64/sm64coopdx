@@ -94,8 +94,7 @@ def main():
                         lines = f.readlines()
                     ignore = False
                     for line in lines:
-                        if ("#ifdef VERSION_SH" in line or
-                            False):
+                        if (False):
                             ignore = True
                         if "#endif" in line:
                             ignore = False

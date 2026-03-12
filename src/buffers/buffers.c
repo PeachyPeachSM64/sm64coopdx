@@ -4,7 +4,7 @@
 #include "audio/data.h"
 
 ALIGNED8 u8 gDecompressionHeap[0xD000] = { 0 };
-#if defined(VERSION_SH)
+#if 0
 ALIGNED16 u8 gAudioHeap[DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE) - 0x4800] = { 0 };
 #else
 ALIGNED16 u8 gAudioHeap[DOUBLE_SIZE_ON_64_BIT(AUDIO_HEAP_SIZE)] = { 0 };
@@ -14,7 +14,7 @@ ALIGNED8 u8 gIdleThreadStack[0x800];
 ALIGNED8 u8 gThread3Stack[0x2000];
 ALIGNED8 u8 gThread4Stack[0x2000];
 ALIGNED8 u8 gThread5Stack[0x2000];
-#ifdef VERSION_SH
+#if 0
 ALIGNED8 u8 gThread6Stack[0x2000];
 #endif
 // 0x400 bytes
