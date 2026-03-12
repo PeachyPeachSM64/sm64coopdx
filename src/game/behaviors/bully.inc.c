@@ -72,7 +72,7 @@ void bhv_big_bully_init(void) {
 
 void bully_check_mario_collision(void) {
     if (
-#ifdef VERSION_SH
+#if 0
     o->oAction != BULLY_ACT_LAVA_DEATH && o->oAction != BULLY_ACT_DEATH_PLANE_DEATH &&
 #endif
     o->oInteractStatus & INT_STATUS_INTERACTED) {
@@ -212,7 +212,7 @@ void bully_step(void) {
 
 void bully_spawn_coin(void) {
     struct Object *coin = spawn_object(o, MODEL_YELLOW_COIN, bhvMovingYellowCoin);
-#if defined(VERSION_SH)
+#if 0
     cur_obj_play_sound_2(SOUND_GENERAL_COIN_SPURT_EU);
 #else
     cur_obj_play_sound_2(SOUND_GENERAL_COIN_SPURT_2);

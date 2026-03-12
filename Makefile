@@ -237,8 +237,6 @@ $(eval $(call validate-option,VERSION,us))
 # Graphics microcode used
 GRUCODE ?= f3dex2e
 
-DEFINES   += VERSION_US=1
-
 # Determine our optimization level.
 # Optimization Levels 0 through 5 optimize for speed,
 # While optimization levels 6, and 7 optimize for size.

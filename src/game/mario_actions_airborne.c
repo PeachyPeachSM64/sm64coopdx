@@ -895,7 +895,7 @@ s32 act_twirling(struct MarioState *m) {
     }
 
     m->marioObj->header.gfx.angle[1] += m->twirlYaw;
-#ifdef VERSION_SH
+#if 0
     reset_rumble_timers();
 #endif
     return FALSE;

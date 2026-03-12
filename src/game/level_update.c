@@ -138,7 +138,7 @@ const char *credits01[] = { "1GAME DIRECTOR", "SHIGERU MIYAMOTO" };
 const char *credits02[] = { "2ASSISTANT DIRECTORS", "YOSHIAKI KOIZUMI", "TAKASHI TEZUKA" };
 const char *credits03[] = { "2SYSTEM PROGRAMMERS", "YASUNARI NISHIDA", "YOSHINORI TANIMOTO" };
 const char *credits04[] = { "3PROGRAMMERS", "HAJIME YAJIMA", "DAIKI IWAMOTO", "TOSHIO IWAWAKI" };
-#if defined(VERSION_SH)
+#if 0
 const char *credits05[] = { "1CAMERA PROGRAMMER", "TAKUMI KAWAGOE" };
 const char *credits06[] = { "1MARIO FACE PROGRAMMER", "GILES GODDARD" };
 const char *credits07[] = { "2COURSE DIRECTORS", "YOICHI YAMADA", "YASUHISA YAMAMURA" };
@@ -218,7 +218,7 @@ s16 sDelayedWarpOp;
 s16 sDelayedWarpTimer;
 s16 sSourceWarpNodeId;
 s32 sDelayedWarpArg;
-#if defined(VERSION_SH)
+#if 0
 s16 unusedEULevelUpdateBss1;
 #endif
 s8 sTimerRunning;
@@ -858,7 +858,7 @@ void initiate_painting_warp(s16 paintingIndex) {
 
                 play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
                 fadeout_music(398);
-#ifdef VERSION_SH
+#if 0
                 queue_rumble_data(80, 70);
                 func_sh_8024C89C(1);
 #endif

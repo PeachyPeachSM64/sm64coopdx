@@ -8,7 +8,7 @@
 #define VERSION_NUMBER 41
 #define MINOR_VERSION_NUMBER 1
 
-#if defined(VERSION_SH)
+#if 0
 #define VERSION_REGION "SH"
 #else
 #define VERSION_REGION "US"
@@ -17,7 +17,7 @@
 #ifdef DEVELOPMENT
 #define GAME_NAME "render96dx-dev"
 #define WINDOW_NAME "Render96 Deluxe (DEV)"
-#elif !defined(VERSION_US)
+#elif 0
 #define GAME_NAME "render96dx-intl"
 #define WINDOW_NAME "Render96 Deluxe (INTL)"
 #else

@@ -16,7 +16,7 @@ unsigned char gMusicData[SEQUENCES_SIZE] = {
 #include "sound/sequences.bin.inc.c"
 };
 
-#ifndef VERSION_SH
+#if 1
 unsigned char gBankSetsData[] = {
 #include "sound/bank_sets.inc.c"
 };

@@ -19,7 +19,7 @@ extern u8 gIdleThreadStack[];
 extern u8 gThread3Stack[];
 extern u8 gThread4Stack[];
 extern u8 gThread5Stack[];
-#ifdef VERSION_SH
+#if 0
 extern u8 gThread6Stack[];
 #endif
 

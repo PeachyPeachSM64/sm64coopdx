@@ -61,7 +61,7 @@ extern u32 gAudioRandom;
 extern u8 gAudioSPTaskYieldBuffer[]; // ucode yield data ptr; only used in JP
 
 struct SPTask *create_next_audio_frame_task(void);
-#ifdef VERSION_SH
+#if 0
 struct SPTask *func_sh_802f5a80(void);
 #endif
 /* |description|Plays a sound (`soundBits`) at `pos` (usually `gGlobalSoundSource` or `m.header.gfx.cameraToObject`)|descriptionEnd| */
@@ -149,7 +149,7 @@ void sound_reset_background_music_default_volume(u8 seqId);
 /* |description|Sets a sequence's (`seqId`) volume to `volume`|descriptionEnd| */
 void sound_set_background_music_default_volume(u8 seqId, u8 volume);
 
-#if defined(VERSION_SH)
+#if 0
 struct SPTask *unused_80321460();
 struct SPTask *unused_80321460(void);
 #endif

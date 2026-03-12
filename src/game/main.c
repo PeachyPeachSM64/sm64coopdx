@@ -46,7 +46,7 @@ OSMesg gSIEventMesgBuf[1];
 OSMesg gIntrMesgBuf[16];
 OSMesg gUnknownMesgBuf[16];
 
-#ifdef VERSION_SH
+#if 0
 OSThread gRumblePakThread;
 OSMesgQueue gRumblePakSchedulerMesgQueue;
 OSMesgQueue gRumbleThreadVIMesgQueue;
@@ -148,7 +148,7 @@ void create_thread(OSThread *thread, OSId id, void (*entry)(void *), void *arg, 
     osCreateThread(thread, id, entry, arg, sp, pri);
 }
 
-#ifdef VERSION_SH
+#if 0
 extern void func_sh_802f69cc(void);
 #endif
 
@@ -158,7 +158,7 @@ void handle_nmi_request(void) {
     stop_sounds_in_continuous_banks();
     sound_banks_disable(SEQ_PLAYER_SFX, SOUND_BANKS_BACKGROUND);
     fadeout_music(90);
-#ifdef VERSION_SH
+#if 0
     func_sh_802f69cc();
 #endif
 }
@@ -229,7 +229,7 @@ void handle_vblank(void) {
 
     stub_main_3();
     gNumVblanks++;
-#ifdef VERSION_SH
+#if 0
     if (gResetTimer > 0 && gResetTimer < 100) {
         gResetTimer++;
     }

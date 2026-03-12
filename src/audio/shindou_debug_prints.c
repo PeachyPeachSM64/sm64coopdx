@@ -1,6 +1,6 @@
 #include <ultra64.h>
 
-#ifdef VERSION_SH
+#if 0
 // The first four debug prints are in data.c.
 char shindouDebugPrint5[] = "Warning:Kill Note  %x \n";
 char shindouDebugPrint6[] = "Kill Voice %d (ID %d) %d\n";

@@ -12,7 +12,6 @@ struct IfDefPtr { const char *mPtr; u64 mSize; bool mErase; };
 static IfDefPtr GetNearestIfDefPointer(char *pFileBuffer) {
     static const IfDefPtr sIfDefs[] = {
         { "#ifdef TEXTURE_FIX", 18, false },
-        { "#if defined(VERSION_SH)", 22, false },
     };
     IfDefPtr _Nearest = { NULL, 0, false };
     for (const auto &_IfDef : sIfDefs) {

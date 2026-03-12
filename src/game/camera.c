@@ -316,7 +316,7 @@ s16 sCutsceneShot;
  */
 s16 gCutsceneTimer;
 s16 unused8033B3E8;
-#if defined(VERSION_SH)
+#if 0
 s16 unused8033B3E82;
 #endif
 /**
@@ -7518,7 +7518,7 @@ static UNUSED void unused_cutscene_mario_dialog_looking_up(UNUSED struct Camera 
  * Lower the volume (US only) and start the peach letter background music
  */
 BAD_RETURN(s32) cutscene_intro_peach_start_letter_music(UNUSED struct Camera *c) {
-#if defined(VERSION_US) || defined(VERSION_SH)
+#if 1
     seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
 #endif
     cutscene_intro_peach_play_message_music();
@@ -10205,7 +10205,7 @@ BAD_RETURN(s32) play_sound_intro_turn_on_hud(UNUSED struct Camera *c) {
  */
 BAD_RETURN(s32) cutscene_intro_peach_fly_to_pipe(struct Camera *c) {
     if (!c) { return; }
-#if defined(VERSION_US) || defined(VERSION_SH)
+#if 1
     cutscene_event(play_sound_intro_turn_on_hud, c, 818, 818);
 #endif
     cutscene_spawn_obj(6, 1);
@@ -11027,7 +11027,7 @@ struct Cutscene sCutsceneEnding[] = {
     { cutscene_ending_mario_fall, 170 },
     { cutscene_ending_mario_land, 70 },
     { cutscene_ending_mario_land_closeup, 75 },
-#ifdef VERSION_SH
+#if 0
     { cutscene_ending_stars_free_peach, 431 },
 #else
     { cutscene_ending_stars_free_peach, 386 },
@@ -11035,7 +11035,7 @@ struct Cutscene sCutsceneEnding[] = {
     { cutscene_ending_peach_appears, 139 },
     { cutscene_ending_peach_descends, 590 },
     { cutscene_ending_mario_to_peach, 95 },
-#ifdef VERSION_SH
+#if 0
     { cutscene_ending_peach_wakeup, 455 },
     { cutscene_ending_dialog, 286 },
 #else

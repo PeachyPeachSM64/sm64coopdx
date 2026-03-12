@@ -18,7 +18,7 @@
 /* Flags  */
 #define M_TASK_FLAG0 1
 #define M_TASK_FLAG1 2
-#ifdef VERSION_SH
+#if 0
 #define M_TASK_FLAG2 4
 #endif
 

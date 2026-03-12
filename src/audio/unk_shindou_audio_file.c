@@ -1,5 +1,4 @@
-#ifdef VERSION_SH
-
+#if 0
 #include <ultra64.h>
 
 #include "data.h"

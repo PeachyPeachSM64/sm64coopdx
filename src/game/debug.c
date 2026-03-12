@@ -357,7 +357,7 @@ static void try_change_debug_page(void) {
  * sDebugSysCursor. This is used to adjust enemy and effect behaviors
  * on the fly. (unused)
  */
-#ifdef VERSION_SH
+#if 0
 static
 #endif
 void try_modify_debug_controls(void) {

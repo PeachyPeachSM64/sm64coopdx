@@ -7,7 +7,7 @@ extern unsigned char gSoundDataRaw[];
 
 extern unsigned char gMusicData[];
 
-#ifndef VERSION_SH
+#if 1
 extern unsigned char gBankSetsData[];
 #endif
 

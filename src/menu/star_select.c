@@ -381,7 +381,7 @@ void star_select_finish_selection(void) {
     if (gMarioState->marioObj) vec3f_copy(gMarioState->marioObj->header.gfx.cameraToObject, gGlobalSoundSource);
     gDelayedInitSound = CHAR_SOUND_LETS_A_GO;
     play_sound(SOUND_MENU_STAR_SOUND, gGlobalSoundSource);
-#ifdef VERSION_SH
+#if 0
     queue_rumble_data(60, 70);
     func_sh_8024C89C(1);
 #endif

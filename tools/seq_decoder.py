@@ -267,17 +267,10 @@ if sys.argv[1] == "--emit-asm-macros":
             emit_cmd(key, 0xc0, ['delay_long', 'var_long'])
             emit_cmd(key, 0x40, ['note1_long', 'bits:4', 'var_long', 'u8'])
         if eu_sh or us_jp or sh or non_sh:
-            print(".ifdef VERSION_SH\n")
-            for (op, cmd) in eu_sh:
-                emit_cmd(key, op, cmd)
-            for (op, cmd) in sh:
-                emit_cmd(key, op, cmd)
-            print(".else\n")
             for (op, cmd) in non_sh:
                 emit_cmd(key, op, cmd)
             for (op, cmd) in us_jp:
                 emit_cmd(key, op, cmd)
-            print(".endif\n")
 
     print("# envelope commands\n")
     emit_env_cmd(0, ['disable', 'u16'])
