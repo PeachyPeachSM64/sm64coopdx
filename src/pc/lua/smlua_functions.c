@@ -23,12 +23,26 @@
 #include "utils/smlua_collision_utils.h"
 #include "game/hardcoded.h"
 #include "include/macros.h"
+ #include "menu/file_select.h"
 
 #include "game/mario_misc.h"
 #include "game/photo_mode_poses.h"
 
 extern bool gFileSelectActive;
 extern bool gDjuiInPlayerMenu;
+
+int smlua_func_file_select_get_cursor_pos(lua_State* L) {
+    if (L == NULL) { return 0; }
+    LUA_STACK_CHECK_BEGIN_NUM(L, 2);
+
+    if (!smlua_functions_valid_param_count(L, 0)) { return 0; }
+
+    lua_pushnumber(L, sCursorPos[0]);
+    lua_pushnumber(L, sCursorPos[1]);
+
+    LUA_STACK_CHECK_END(L);
+    return 2;
+}
 
 bool smlua_functions_valid_param_count(lua_State* L, int expected) {
     int top = lua_gettop(L);
@@ -1397,6 +1411,7 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "get_curr_level_num", smlua_func_get_curr_level_num);
     smlua_bind_function(L, "get_curr_course_num", smlua_func_get_curr_course_num);
     smlua_bind_function(L, "is_file_select_active", smlua_func_is_file_select_active);
+    smlua_bind_function(L, "file_select_get_cursor_pos", smlua_func_file_select_get_cursor_pos);
     smlua_bind_function(L, "is_djui_player_menu_open", smlua_func_is_djui_player_menu_open);
     smlua_bind_function(L, "is_play_mode_photo_mode", smlua_func_is_play_mode_photo_mode);
     smlua_bind_function(L, "get_env_sequence_id", smlua_func_get_env_sequence_id);
