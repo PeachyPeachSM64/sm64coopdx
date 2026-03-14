@@ -32,6 +32,10 @@ struct ControllerAPI {
 
 // used for binding keys
 u32 controller_get_raw_key(void);
+
+// Cache the raw key once per frame so multiple subsystems can read it.
+void controller_cache_raw_key(void);
+u32 controller_get_cached_raw_key(void);
 void controller_reconfigure(void);
 
 // rumbles all controllers with rumble support

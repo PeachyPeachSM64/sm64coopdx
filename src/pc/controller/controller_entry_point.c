@@ -69,6 +69,16 @@ void osContGetReadData(OSContPad *pad) {
     }
 }
 
+static u32 sCachedRawKey = VK_INVALID;
+
+void controller_cache_raw_key(void) {
+    sCachedRawKey = controller_get_raw_key();
+}
+
+u32 controller_get_cached_raw_key(void) {
+    return sCachedRawKey;
+}
+
 u32 controller_get_raw_key(void) {
     for (size_t i = 0; i < sizeof(controller_implementations) / sizeof(struct ControllerAPI *); i++) {
         u32 vk = controller_implementations[i]->rawkey();
