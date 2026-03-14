@@ -1092,7 +1092,7 @@ static void geo_process_background(struct GraphNodeBackground *node) {
     }
 }
 
-static void anim_process(Vec3f translation, Vec3s rotation, u8 *animType, s16 animFrame, u16 **animAttribute) {
+static void anim_process(Vec3f translation, Vec3s rotation, Vec3f scale, u8 *animType, s16 animFrame, u16 **animAttribute) {
     if (*animType == ANIM_TYPE_TRANSLATION) {
         translation[0] += retrieve_animation_value(gCurAnim, animFrame, animAttribute) * gCurAnimTranslationMultiplier;
         translation[1] += retrieve_animation_value(gCurAnim, animFrame, animAttribute) * gCurAnimTranslationMultiplier;
@@ -1123,6 +1123,19 @@ static void anim_process(Vec3f translation, Vec3s rotation, u8 *animType, s16 an
         rotation[0] += retrieve_animation_value(gCurAnim, animFrame, animAttribute);
         rotation[1] += retrieve_animation_value(gCurAnim, animFrame, animAttribute);
         rotation[2] += retrieve_animation_value(gCurAnim, animFrame, animAttribute);
+
+        if (gCurAnim->flags & ANIM_FLAG_BONE_SCALE) {
+            s16 scaleX = retrieve_animation_value(gCurAnim, animFrame, animAttribute);
+            s16 scaleY = retrieve_animation_value(gCurAnim, animFrame, animAttribute);
+            s16 scaleZ = retrieve_animation_value(gCurAnim, animFrame, animAttribute);
+
+            if (scale != NULL) {
+                scale[0] *= ((f32) scaleX) / 256.0f;
+                scale[1] *= ((f32) scaleY) / 256.0f;
+                scale[2] *= ((f32) scaleZ) / 256.0f;
+            }
+        }
+
         if (gCurAnim->flags & ANIM_FLAG_BONE_TRANS) {
             *animType = ANIM_TYPE_TRANSLATION;
         }
@@ -1141,6 +1154,7 @@ static void geo_process_animated_part(struct GraphNodeAnimatedPart *node) {
     Mat4 matrix;
     Vec3s rotation;
     Vec3f translation;
+    Vec3f scale;
 
     // Sanity check our stack index, If we above or equal to our stack size. Return to prevent OOB\.
     if ((gMatStackIndex + 1) >= MATRIX_STACK_SIZE) { LOG_ERROR("Preventing attempt to exceed the maximum size %i for our matrix stack with size of %i.", MATRIX_STACK_SIZE - 1, gMatStackIndex); return; }
@@ -1151,8 +1165,10 @@ static void geo_process_animated_part(struct GraphNodeAnimatedPart *node) {
     // current frame
     vec3s_copy(rotation, gVec3sZero);
     vec3s_to_vec3f(translation, node->translation);
-    anim_process(translation, rotation, &gCurAnimType, gCurrAnimFrame, &gCurrAnimAttribute);
+    vec3f_set(scale, 1.0f, 1.0f, 1.0f);
+    anim_process(translation, rotation, scale, &gCurAnimType, gCurrAnimFrame, &gCurrAnimAttribute);
     mtxf_rotate_xyz_and_translate(matrix, translation, rotation);
+    mtxf_scale_vec3f(matrix, matrix, scale);
     mtxf_mul(gMatStack[gMatStackIndex + 1], matrix, gMatStack[gMatStackIndex]);
 
     // previous frame
@@ -1163,8 +1179,10 @@ static void geo_process_animated_part(struct GraphNodeAnimatedPart *node) {
             node->translation
         );
         vec3s_copy(rotation, gVec3sZero);
-        anim_process(translation, rotation, &animType, gPrevAnimFrame, &animAttribute);
+        vec3f_set(scale, 1.0f, 1.0f, 1.0f);
+        anim_process(translation, rotation, scale, &animType, gPrevAnimFrame, &animAttribute);
         mtxf_rotate_xyz_and_translate(matrix, translation, rotation);
+        mtxf_scale_vec3f(matrix, matrix, scale);
         mtxf_mul(gMatStackPrev[gMatStackIndex + 1], matrix, gMatStackPrev[gMatStackIndex]);
     );
 
@@ -1781,7 +1799,7 @@ static void geo_process_bone(struct GraphNodeBone *node) {
     vec3s_copy(rotation, node->rotation);
     vec3s_to_vec3f(translation, node->translation);
     vec3f_copy(scale, node->scale);
-    anim_process(translation, rotation, &gCurAnimType, gCurrAnimFrame, &gCurrAnimAttribute);
+    anim_process(translation, rotation, scale, &gCurAnimType, gCurrAnimFrame, &gCurrAnimAttribute);
     mtxf_rotate_xyz_and_translate(matrix, translation, rotation);
     mtxf_scale_vec3f(matrix, matrix, scale);
     mtxf_mul(gMatStack[gMatStackIndex + 1], matrix, gMatStack[gMatStackIndex]);
@@ -1797,7 +1815,7 @@ static void geo_process_bone(struct GraphNodeBone *node) {
             vec3s_to_vec3f(translation, node->translation);
             vec3f_copy(scale, node->scale);
         }
-        anim_process(translation, rotation, &animType, gPrevAnimFrame, &animAttribute);
+        anim_process(translation, rotation, scale, &animType, gPrevAnimFrame, &animAttribute);
         mtxf_rotate_xyz_and_translate(matrix, translation, rotation);
         mtxf_scale_vec3f(matrix, matrix, scale);
         mtxf_mul(gMatStackPrev[gMatStackIndex + 1], matrix, gMatStackPrev[gMatStackIndex]);
