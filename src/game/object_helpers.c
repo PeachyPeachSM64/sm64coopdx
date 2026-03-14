@@ -190,6 +190,46 @@ Gfx *geo_switch_anim_state(s32 callContext, struct GraphNode *node) {
     return NULL;
 }
 
+/**
+ * Selects goomba mouth state independent of `oAnimState` blinking.
+ * Case 0: closed mouth
+ * Case 1: open mouth
+ */
+#ifdef AVOID_UB
+Gfx *geo_switch_goomba_mouth_state(s32 callContext, struct GraphNode *node, UNUSED void *context) {
+#else
+Gfx *geo_switch_goomba_mouth_state(s32 callContext, struct GraphNode *node) {
+#endif
+    struct Object *obj;
+    struct GraphNodeSwitchCase *switchCase;
+
+    if (callContext == GEO_CONTEXT_RENDER) {
+        obj = (struct Object *) gCurGraphNodeObject;
+        switchCase = (struct GraphNodeSwitchCase *) node;
+
+        if (gCurGraphNodeHeldObject != NULL) {
+            obj = gCurGraphNodeHeldObject->objNode;
+        }
+
+        s32 mouthState = 0;
+
+        // Open mouth when alerted (jumping) or running/chasing (high relative speed)
+        // GOOMBA_ACT_JUMP is 2 (see lua constants / goomba behavior)
+        if (obj != NULL) {
+            if ((obj->oAction == 2) || (obj->oAction == 3)) {
+                mouthState = 1;
+            }
+        }
+
+        if (mouthState >= switchCase->parameter) {
+            mouthState = 0;
+        }
+        switchCase->selectedCase = mouthState;
+    }
+
+    return NULL;
+}
+
 s16 gRoomOverride = -1;
 s16 gPrevNonZeroMarioRoom = 0;
 
