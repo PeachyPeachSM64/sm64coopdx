@@ -1384,7 +1384,7 @@ s32 play_mode_normal(void) {
     // Photo mode shortcut: only during active gameplay (not paused and not in DJUI/menus).
     // Uses raw virtual key presses so it doesn't consume any N64 controller button bits.
     if (sCurrPlayMode == PLAY_MODE_NORMAL && can_use_photo_mode_shortcut()) {
-        u32 rawKey = controller_get_raw_key();
+        u32 rawKey = controller_get_cached_raw_key();
         if (raw_key_matches_bind(rawKey, configKeyPhotoMode)) {
             extern s16 gMenuMode;
             gMenuMode = -1;
@@ -1430,7 +1430,7 @@ s32 play_mode_photo_mode(void) {
 
     // Allow the photo mode shortcut to exit directly back to gameplay.
     if (can_use_photo_mode_shortcut()) {
-        u32 rawKey = controller_get_raw_key();
+        u32 rawKey = controller_get_cached_raw_key();
         if (raw_key_matches_bind(rawKey, configKeyPhotoMode)) {
             close_photo_mode_to_gameplay();
             return 0;

@@ -1,8 +1,12 @@
 #include <ultra64.h>
 
 #include "sm64.h"
+#include "seq_ids.h"
 #include "gfx_dimensions.h"
 #include "audio/external.h"
+#include "sound_init.h"
+#include "profiler.h"
+#include "print.h"
 #include "buffers/buffers.h"
 #include "gfx_dimensions.h"
 #include "buffers/gfx_output_buffer.h"
@@ -11,12 +15,13 @@
 #include "engine/level_script.h"
 #include "game_init.h"
 #include "main.h"
-#include "memory.h"
-#include "profiler.h"
-#include "save_file.h"
-#include "seq_ids.h"
-#include "sound_init.h"
-#include "print.h"
+#include "pc/pc_main.h"
+#include "pc/configfile.h"
+#include "pc/platform.h"
+#include "pc/fs/fs.h"
+#include "pc/controller/controller_api.h"
+#include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/lua/smlua.h"
 #include "segment2.h"
 #include "segment_symbols.h"
 #include "rng_position.h"
@@ -466,6 +471,8 @@ void read_controller_inputs(void) {
         osContGetReadData(gInteractableOverridePad ? &gInteractablePad : &gControllerPads[0]);
     }
     run_demo_inputs();
+
+    controller_cache_raw_key();
 
     for (s32 i = 0; i < 1; i++) {
         struct Controller *controller = &gControllers[i];

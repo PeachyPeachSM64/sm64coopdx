@@ -26,7 +26,7 @@ u32 gKeyPressed = VK_INVALID;
 
 void cheats_update(struct MarioState* m) {
     (void)m;
-    gKeyPressed = controller_get_raw_key();
+    gKeyPressed = controller_get_cached_raw_key();
 }
 
 s32 cheats_moon_jump(struct MarioState* m) {

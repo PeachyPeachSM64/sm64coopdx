@@ -7,4 +7,5 @@ require('3d-skybox')
 
 -- Actors
 require('actors/goomba')
+require('actors/thwomp')
 require('actors/mario')
