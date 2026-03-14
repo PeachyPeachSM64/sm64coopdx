@@ -14,7 +14,7 @@ extern Vtx goomba_foot_R_mesh_layer_1_vtx_0[394];
 extern Gfx goomba_foot_R_mesh_layer_1_tri_0[];
 extern Vtx goomba_head_mesh_layer_1_vtx_0[266];
 extern Gfx goomba_head_mesh_layer_1_tri_0[];
-extern Vtx goomba_head_mesh_layer_1_vtx_1[400];
+extern Vtx goomba_head_mesh_layer_1_vtx_1[226];
 extern Gfx goomba_head_mesh_layer_1_tri_1[];
 extern Vtx goomba_head_mesh_layer_1_vtx_2[1628];
 extern Gfx goomba_head_mesh_layer_1_tri_2[];
