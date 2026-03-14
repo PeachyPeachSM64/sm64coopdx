@@ -308,10 +308,12 @@ static void goomba_act_grab_init(void) {
  * Wario-specific: Goomba in grabbable/stunned state
  */
 static void goomba_act_grab(void) {
+    // Eye state: 0 = normal/blinking, 1 = eyes closed, 2 = dazed
     o->oAnimState = 1;
     
     // Being held - become invisible
     if (o->oHeldState == HELD_HELD) {
+        o->oAnimState = 2;
         o->oGoombaGrabbed = 1;
         o->header.gfx.node.flags |= GRAPH_RENDER_INVISIBLE;
         cur_obj_become_intangible();
@@ -346,6 +348,7 @@ static void goomba_act_grab(void) {
     
     // Free and not grabbed yet - spinning/stunned on ground
     if (o->oHeldState == HELD_FREE && o->oGoombaGrabbed != 1 && o->oTimer <= 150) {
+        o->oAnimState = 2;
         o->oGoombaTargetYaw += 0x1000;
         cur_obj_rotate_yaw_toward(o->oGoombaTargetYaw, 0x1000);
     }
@@ -405,8 +408,10 @@ static void goomba_wario_grab(void) {
             animSpeed = 1.0f;
         }
 
+        // Always keep an animation set so held-object rendering doesn't lose the swapped anim
+        cur_obj_init_animation_with_accel_and_sound(0, animSpeed);
+
         if (o->oAction < GOOMBA_ACT_GRAB) {
-            cur_obj_init_animation_with_accel_and_sound(0, animSpeed);
             cur_obj_update_floor_and_walls();
         }
 

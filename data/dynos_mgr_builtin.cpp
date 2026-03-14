@@ -2052,6 +2052,7 @@ static const DynosBuiltinFunction sDynosBuiltinFuncs[] = {
     // Render96dx Specific
     define_builtin_function(geo_switch_mario_face, FUNCTION_GEO),
     define_builtin_function(geo_switch_mario_eye_custom, FUNCTION_GEO),
+    define_builtin_function(geo_switch_goomba_mouth_state, FUNCTION_GEO),
 };
 
 static const char *sDynosBuiltinFuncTypeNames[] = {

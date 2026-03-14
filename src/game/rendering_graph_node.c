@@ -1471,8 +1471,12 @@ static s32 obj_is_in_view(struct GraphNodeObject *node, Mat4 matrix) {
 
 static void geo_sanitize_object_gfx(void) {
     geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE_DECAL);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE_INTER);
     geo_append_display_list(obj_sanitize_gfx, LAYER_ALPHA);
     geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT_DECAL);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT_INTER);
 }
 
 static struct MarioBodyState *get_mario_body_state_from_mario_object(struct Object *marioObj) {
@@ -1740,6 +1744,7 @@ void geo_process_held_object(struct GraphNodeHeldObject *node) {
         }
 
         // Increment the matrix stack, If we fail to do so. Just return.
+        s32 savedMatStackIndex = gMatStackIndex;
         if (!increment_mat_stack()) { return; }
 
         gGeoTempState.type = gCurAnimType;
@@ -1759,7 +1764,13 @@ void geo_process_held_object(struct GraphNodeHeldObject *node) {
         }
 
         geo_sanitize_object_gfx();
+        // While rendering the held object's geo tree, ensure "current object" globals
+        // refer to the held object, otherwise Lua geo callbacks can accidentally
+        // mutate the holder's render state (e.g. make Wario limbs disappear).
+        struct GraphNodeObject *savedCurGraphNodeObject = gCurGraphNodeObject;
+        gCurGraphNodeObject = &node->objNode->header.gfx;
         geo_process_node_and_siblings(node->objNode->header.gfx.sharedChild);
+        gCurGraphNodeObject = savedCurGraphNodeObject;
         gCurGraphNodeHeldObject = NULL;
         gCurAnimType = gGeoTempState.type;
         gCurAnimEnabled = gGeoTempState.enabled;
@@ -1768,7 +1779,13 @@ void geo_process_held_object(struct GraphNodeHeldObject *node) {
         gCurrAnimAttribute = gGeoTempState.attribute;
         gCurAnim = gGeoTempState.anim;
         gPrevAnimFrame = gGeoTempState.prevFrame;
-        gMatStackIndex--;
+        // Force-restore matrix stack index to avoid any imbalance caused by
+        // held object geo trees (including Lua geo callbacks).
+        gMatStackIndex = savedMatStackIndex;
+
+        // Reset any render-state changes performed by the held object's geo tree
+        // so the holder's remaining body parts render correctly.
+        geo_sanitize_object_gfx();
     }
 
     if (node->fnNode.node.children != NULL) {
