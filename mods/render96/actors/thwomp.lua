@@ -1,6 +1,6 @@
 -- thwomp.lua
 
-local SHAKE_TICKS = 24
+local SHAKE_TICKS = 18
 local SHAKE_POS_MAG = 10.0
 local SHAKE_ANGLE_MAG = 0x120
 
