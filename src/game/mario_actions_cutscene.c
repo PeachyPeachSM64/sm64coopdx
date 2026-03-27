@@ -844,7 +844,7 @@ s32 common_death_handler(struct MarioState *m, s32 animation, s32 frameToDeathWa
             smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
             if (!allowDeath) { return animFrame; }
 
-            if (mario_can_bubble(m)) {
+            if ((mario_can_bubble(m) && m->numLives > 0)) {
                 mario_set_bubbled(m);
             } else {
                 level_trigger_warp(m, WARP_OP_DEATH);
@@ -917,8 +917,7 @@ s32 act_quicksand_death(struct MarioState *m) {
                 bool allowDeath = true;
                 smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
                 if (!allowDeath) { return FALSE; }
-
-                if (mario_can_bubble(m)) {
+                if ((mario_can_bubble(m) && m->numLives > 0)) {
                     mario_set_bubbled(m);
                 } else {
                     level_trigger_warp(m, WARP_OP_DEATH);
@@ -942,7 +941,7 @@ s32 act_eaten_by_bubba(struct MarioState *m) {
             smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
             if (!allowDeath) { return FALSE; }
 
-            if (mario_can_bubble(m)) {
+            if ((mario_can_bubble(m) && m->numLives > 0)) {
                 m->health = 0xFF;
                 mario_set_bubbled(m);
             } else {
@@ -1527,12 +1526,19 @@ s32 act_exit_land_save_dialog(struct MarioState *m) {
     return FALSE;
 }
 
+static void lose_life_after_death_exit(struct MarioState *m) {
+    if (sDelayedWarpArg != WARP_ARG_EXIT_COURSE) {
+        m->numLives--;
+    }
+}
+
 s32 act_death_exit(struct MarioState *m) {
     if (!m) { return 0; }
     if (15 < m->actionTimer++
         && launch_mario_until_land(m, ACT_DEATH_EXIT_LAND, CHAR_ANIM_GENERAL_FALL, -32.0f)) {
         play_character_sound(m, CHAR_SOUND_OOOF2);
         queue_rumble_data_mario(m, 5, 80);
+        lose_life_after_death_exit(m);
         // restore 7.75 units of health
         m->healCounter = 31;
     }
@@ -1545,6 +1551,7 @@ s32 act_unused_death_exit(struct MarioState *m) {
     if (!m) { return 0; }
     if (launch_mario_until_land(m, ACT_FREEFALL_LAND_STOP, CHAR_ANIM_GENERAL_FALL, 0.0f)) {
         play_character_sound(m, CHAR_SOUND_OOOF2);
+        lose_life_after_death_exit(m);
         // restore 7.75 units of health
         m->healCounter = 31;
     }
@@ -1557,6 +1564,7 @@ s32 act_falling_death_exit(struct MarioState *m) {
     if (!m) { return 0; }
     if (launch_mario_until_land(m, ACT_DEATH_EXIT_LAND, CHAR_ANIM_GENERAL_FALL, 0.0f)) {
         play_character_sound(m, CHAR_SOUND_OOOF2);
+        lose_life_after_death_exit(m);
         queue_rumble_data_mario(m, 5, 80);
         // restore 7.75 units of health
         m->healCounter = 31;
@@ -1604,6 +1612,7 @@ s32 act_special_death_exit(struct MarioState *m) {
 
     if (launch_mario_until_land(m, ACT_HARD_BACKWARD_GROUND_KB, CHAR_ANIM_BACKWARD_AIR_KB, -24.0f)) {
         queue_rumble_data_mario(m, 5, 80);
+        lose_life_after_death_exit(m);
         m->healCounter = 31;
     }
     // show Mario
@@ -1914,7 +1923,7 @@ s32 act_squished(struct MarioState *m) {
                     smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
                     if (!allowDeath) { return FALSE; }
 
-                    if (mario_can_bubble(m)) {
+                    if ((mario_can_bubble(m) && m->numLives > 0)) {
                         mario_set_bubbled(m);
                     } else {
                         level_trigger_warp(m, WARP_OP_DEATH);
@@ -1965,7 +1974,7 @@ s32 act_squished(struct MarioState *m) {
             smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
             if (!allowDeath) { return FALSE; }
 
-            if (mario_can_bubble(m)) {
+            if ((mario_can_bubble(m) && m->numLives > 0)) {
                 mario_set_bubbled(m);
             } else {
                 // 0 units of health

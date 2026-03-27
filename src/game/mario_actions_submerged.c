@@ -1014,7 +1014,7 @@ static s32 act_drowning(struct MarioState *m) {
                     smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
                     if (!allowDeath) { return FALSE; }
 
-                    if (mario_can_bubble(m)) {
+                    if ((mario_can_bubble(m) && m->numLives > 0)) {
                         mario_set_bubbled(m);
                     } else {
                         level_trigger_warp(m, WARP_OP_DEATH);
@@ -1049,7 +1049,7 @@ static s32 act_water_death(struct MarioState *m) {
             smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
             if (!allowDeath) { return FALSE; }
 
-            if (mario_can_bubble(m)) {
+            if ((mario_can_bubble(m) && m->numLives > 0)) {
                 mario_set_bubbled(m);
             } else {
                 level_trigger_warp(m, WARP_OP_DEATH);
@@ -1175,7 +1175,7 @@ static s32 act_caught_in_whirlpool(struct MarioState *m) {
                 smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
                 if (!allowDeath) { reset_rumble_timers(m); return FALSE; }
 
-                if (mario_can_bubble(m)) {
+                if ((mario_can_bubble(m) && m->numLives > 0)) {
                     mario_set_bubbled(m);
                 } else {
                     level_trigger_warp(m, WARP_OP_DEATH);
