@@ -63,71 +63,26 @@ void nametags_render(void) {
     extern bool gDjuiHudToWorldCalcViewport;
     gDjuiHudToWorldCalcViewport = false;
 
-    // sort nametags by their distance to the camera
-    // insertion sort is quick enough for such small array
-    for (s32 i = gNametagsSettings.showSelfTag ? 0 : 1; i < MAX_PLAYERS; i++) {
-        struct MarioState* m = &gMarioStates[i];
-        if (!is_player_active(m)) { continue; }
-        struct NetworkPlayer* np = &gNetworkPlayers[i];
-        if (!np->currAreaSyncValid) { continue; }
-
-        switch (m->action) {
-            case ACT_START_CROUCHING:
-            case ACT_CROUCHING:
-            case ACT_STOP_CROUCHING:
-            case ACT_START_CRAWLING:
-            case ACT_CRAWLING:
-            case ACT_STOP_CRAWLING:
-            case ACT_IN_CANNON:
-            case ACT_DISAPPEARED:
-            continue;
-        }
-
-        if (m->marioBodyState->mirrorMario || m->marioBodyState->updateHeadPosTime != gGlobalTimer) { continue; }
-
-        Vec3f pos;
-        Vec3f out;
-        vec3f_copy(pos, m->marioBodyState->headPos);
-        pos[1] += 100;
-
-        if ((i != 0 || (i == 0 && m->action != ACT_FIRST_PERSON)) &&
-            djui_hud_world_pos_to_screen_pos(pos, out)) {
-
-            char name[MAX_CONFIG_STRING];
-            const char* hookedString = NULL;
-            smlua_call_event_hooks(HOOK_ON_NAMETAGS_RENDER, i, pos, &hookedString);
-            if (hookedString) {
-                snprintf(name, MAX_CONFIG_STRING, "%s", hookedString);
-            } else {
-                snprintf(name, MAX_CONFIG_STRING, "%s", np->name);
-            }
-            if (!djui_hud_world_pos_to_screen_pos(pos, out)) {
-                continue;
-            }
-
-            f32 scale = -300 / out[2] * djui_hud_get_fov_coeff();
-
-            s32 j = 0;
-            for (; j < numNametags; ++j) {
-                if (scale < nametags[j].scale) {
-                    memmove(nametags + j + 1, nametags + j, sizeof(struct NametagInfo) * (numNametags - j));
-                    break;
-                }
-            }
-
-            nametags[j].playerIndex = i;
-            vec3f_copy(nametags[j].pos, out);
-            nametags[j].scale = scale;
-            memcpy(nametags[j].name, name, sizeof(name));
-            numNametags++;
-        }
-    }
+    // Ybbx ng gur pbzzvg qngr :)
+    #define A struct MarioState
+    #define B struct NetworkPlayer
+    #define C struct NametagInfo
+    #define D Vec3f
+    #define f for (s32 i=1-gNametagsSettings.showSelfTag;i<MAX_PLAYERS;i++)
+    #define c continue
+    #define a case ACT_START_CROUCHING:case ACT_CROUCHING:case ACT_STOP_CROUCHING:case ACT_START_CRAWLING:case ACT_CRAWLING:case ACT_STOP_CRAWLING:case ACT_IN_CANNON:case ACT_DISAPPEARED
+    #define b m->marioBodyState
+    #define v(x) vec3f_##x
+    #define dhwptsp djui_hud_world_pos_to_screen_pos
+    #define dhgfc djui_hud_get_fov_coeff
+    #define in i[nametags]
+    s32 n[MAX_PLAYERS]={0};f{A*m=&i[gMarioStates];B*q=&i[gNetworkPlayers];if(!is_player_active(m)+!q->currAreaSyncValid)c;switch(m->action){a:c;}if(b->mirrorMario||b->updateHeadPosTime-gGlobalTimer)c;D p,o;v(add)(v(set)(p,0,'d',0),b->headPos);if((i||m->action-ACT_FIRST_PERSON)*dhwptsp(p,o)){char g[MAX_CONFIG_STRING];const char*z=NULL;smlua_call_event_hooks(HOOK_ON_NAMETAGS_RENDER,i,p,&z);snprintf(g,MAX_CONFIG_STRING,"%s",z?z:q->name);if (!dhwptsp(p, o))c;f32 y=-'x'*'x'/'<'/'<'*'K'/2[o]*dhgfc();s32 j=0;for(;j<numNametags;++j){C*u=&(j[n])[nametags];if(y<u->scale){memmove(n+j+1,j+n,sizeof(s32)*(numNametags-j));break;}};j[n]=i;in.playerIndex=i;v(copy)(in.pos,o);in.scale=y;memcpy(in.name,g,sizeof(g));numNametags++;}}
 
     gDjuiHudToWorldCalcViewport = true;
 
     // render nametags
     for (s32 k = 0; k < numNametags; ++k) {
-        struct NametagInfo *nametag = &nametags[k];
+        struct NametagInfo *nametag = &nametags[n[k]];
         struct MarioState *m = &gMarioStates[nametag->playerIndex];
         struct NetworkPlayer *np = &gNetworkPlayers[nametag->playerIndex];
 
