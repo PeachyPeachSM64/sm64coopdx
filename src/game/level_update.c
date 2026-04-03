@@ -37,6 +37,7 @@
 #include "pc/cliopts.h"
 #include "pc/configfile.h"
 #include "pc/djui/djui.h"
+#include "pc/djui/djui_hud_utils.h"
 // used for getting gMainMenuSounds
 #include "pc/djui/djui_panel_menu_options.h"
 #include "pc/djui/djui_panel_pause.h"
@@ -1853,6 +1854,7 @@ s32 update_level(void) {
 
 s32 init_level(void) {
     geo_clear_interp_data();
+    djui_hud_clear_interp_data();
     reset_dialog_render_state();
 
     s32 val4 = 0;
