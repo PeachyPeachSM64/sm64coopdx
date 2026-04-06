@@ -23,7 +23,7 @@
 #include "utils/smlua_collision_utils.h"
 #include "game/hardcoded.h"
 #include "include/macros.h"
- #include "menu/file_select.h"
+#include "menu/file_select.h"
 
 #include "game/mario_misc.h"
 #include "game/photo_mode_poses.h"
@@ -1413,6 +1413,7 @@ void smlua_bind_functions(void) {
     // misc
     smlua_bind_function(L, "table_copy", smlua_func_table_copy);
     smlua_bind_function(L, "table_deepcopy", smlua_func_table_deepcopy);
+    // !!TODO!! AUTOGEN THIS SHIT
     smlua_bind_function(L, "get_curr_level_num", smlua_func_get_curr_level_num);
     smlua_bind_function(L, "get_curr_course_num", smlua_func_get_curr_course_num);
     smlua_bind_function(L, "is_file_select_active", smlua_func_is_file_select_active);
@@ -1430,6 +1431,7 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "fade_out_sequence_player", smlua_func_fade_out_sequence_player);
     smlua_bind_function(L, "get_current_music_dynamic", smlua_func_get_current_music_dynamic);
     smlua_bind_function(L, "get_curr_area_index", smlua_func_get_curr_area_index);
+    ///////////////////////////////
     smlua_bind_function(L, "init_mario_after_warp", smlua_func_init_mario_after_warp);
     smlua_bind_function(L, "reset_level", smlua_func_reset_level);
     smlua_bind_function(L, "set_exclamation_box_contents", smlua_func_set_exclamation_box_contents);
@@ -1445,6 +1447,8 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "cast_graph_node", smlua_func_cast_graph_node);
     smlua_bind_function(L, "get_uncolored_string", smlua_func_get_uncolored_string);
     smlua_bind_function(L, "gfx_set_command", smlua_func_gfx_set_command);
+
+    // !!TODO!! AUTOGEN THIS SHIT
 
     // mario expression geo
     smlua_bind_function(L, "mario_set_face_switch_index", smlua_func_mario_set_face_switch_index);
@@ -1465,4 +1469,6 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "photo_mode_pose_register_custom_anim", smlua_func_photo_mode_pose_register_custom_anim);
     smlua_bind_function(L, "photo_mode_pose_register_mario_anim_index", smlua_func_photo_mode_pose_register_mario_anim_index);
     smlua_bind_function(L, "photo_mode_pose_reset", smlua_func_photo_mode_pose_reset);
+
+    ///////////////////////////
 }
