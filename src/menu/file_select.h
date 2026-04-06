@@ -118,9 +118,6 @@ enum SoundModeMenuActionPhase {
     SOUND_MODE_PHASE_MAIN
 };
 
-extern f32 sCursorPos[2];
-extern s8 sSelectedFileNum;
-
 void beh_yellow_background_menu_init(void);
 void beh_yellow_background_menu_loop(void);
 void bhv_menu_button_init(void);
@@ -131,5 +128,10 @@ Gfx *geo_file_select_background_button_scale(s32 callContext, struct GraphNode *
 Gfx *geo_file_select_strings_and_menu_cursor(s32 callContext, UNUSED struct GraphNode *node, UNUSED Mat4 mtx);
 s32 lvl_init_menu_values_and_cursor_pos(UNUSED s32 arg, UNUSED s32 unused);
 s32 lvl_update_obj_and_load_file_selected(UNUSED s32 arg, UNUSED s32 unused);
+
+/* |description|Checks if the file select is active|descriptionEnd| */
+bool file_select_is_active();
+/* |description|Gets the file select cursor 2D coordinates|descriptionEnd| */
+void file_select_get_cursor_pos(RET f32 *posX, RET f32 *posY);
 
 #endif // FILE_SELECT_H

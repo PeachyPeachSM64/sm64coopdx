@@ -1163,7 +1163,13 @@ id_bhvBlueCoinNumber                      = 538 --- @type BehaviorId
 id_bhvStarNumber                          = 539 --- @type BehaviorId
 id_bhvAmbientLight                        = 540 --- @type BehaviorId
 id_bhvPointLight                          = 541 --- @type BehaviorId
-id_bhv_max_count                          = 542 --- @type BehaviorId
+id_bhvWarpPipeBooBlue                     = 542 --- @type BehaviorId
+id_bhvWarpPipeBooRed                      = 543 --- @type BehaviorId
+id_bhvWarpPipeBooGreenLocked              = 544 --- @type BehaviorId
+id_bhvWarpPipeBooGreenUnlocked            = 545 --- @type BehaviorId
+id_bhvWarpPipeBooYellowLocked             = 546 --- @type BehaviorId
+id_bhvWarpPipeBooYellowUnlocked           = 547 --- @type BehaviorId
+id_bhv_max_count                          = 548 --- @type BehaviorId
 
 --- @alias BehaviorId
 --- | `id_bhv1Up`
@@ -1708,6 +1714,12 @@ id_bhv_max_count                          = 542 --- @type BehaviorId
 --- | `id_bhvStarNumber`
 --- | `id_bhvAmbientLight`
 --- | `id_bhvPointLight`
+--- | `id_bhvWarpPipeBooBlue`
+--- | `id_bhvWarpPipeBooRed`
+--- | `id_bhvWarpPipeBooGreenLocked`
+--- | `id_bhvWarpPipeBooGreenUnlocked`
+--- | `id_bhvWarpPipeBooYellowLocked`
+--- | `id_bhvWarpPipeBooYellowUnlocked`
 --- | `id_bhv_max_count`
 
 RCO_ALL                       = 0 --- @type RomhackCameraOverride
@@ -3416,6 +3428,9 @@ INT_STATUS_STOP_RIDING = (1 << 22)
 INT_STATUS_TOUCHED_BOB_OMB = (1 << 23)
 
 --- @type integer
+MAX_LOCAL_STATE_HISTORY = 30
+
+--- @type integer
 WARP_CHECKPOINT = 0x80
 
 --- @type integer
@@ -4701,6 +4716,85 @@ MAX_KEYS = 4096
 
 --- @type integer
 MAX_KEY_VALUE_LENGTH = 1024
+
+--- @type integer
+SYNC_DISTANCE_ONLY_DEATH = -1
+
+--- @type integer
+SYNC_DISTANCE_ONLY_EVENTS = -2
+
+--- @type integer
+SYNC_DISTANCE_INFINITE = 0
+
+--- @type integer
+PACKET_LENGTH = 3000
+
+NS_SOCKET = 0 --- @type NetworkSystemType
+NS_MAX    = 1 --- @type NetworkSystemType
+
+--- @alias NetworkSystemType
+--- | `NS_SOCKET`
+--- | `NS_MAX`
+
+PLAYER_INTERACTIONS_NONE  = 0 --- @type PlayerInteractions
+PLAYER_INTERACTIONS_SOLID = 1 --- @type PlayerInteractions
+PLAYER_INTERACTIONS_PVP   = 2 --- @type PlayerInteractions
+
+--- @alias PlayerInteractions
+--- | `PLAYER_INTERACTIONS_NONE`
+--- | `PLAYER_INTERACTIONS_SOLID`
+--- | `PLAYER_INTERACTIONS_PVP`
+
+BOUNCY_LEVEL_BOUNDS_OFF    = 0 --- @type BouncyLevelBounds
+BOUNCY_LEVEL_BOUNDS_ON     = 1 --- @type BouncyLevelBounds
+BOUNCY_LEVEL_BOUNDS_ON_CAP = 2 --- @type BouncyLevelBounds
+
+--- @alias BouncyLevelBounds
+--- | `BOUNCY_LEVEL_BOUNDS_OFF`
+--- | `BOUNCY_LEVEL_BOUNDS_ON`
+--- | `BOUNCY_LEVEL_BOUNDS_ON_CAP`
+
+PLAYER_PVP_CLASSIC  = 0 --- @type PvpType
+PLAYER_PVP_REVAMPED = 1 --- @type PvpType
+
+--- @alias PvpType
+--- | `PLAYER_PVP_CLASSIC`
+--- | `PLAYER_PVP_REVAMPED`
+
+--- @type integer
+UNKNOWN_LOCAL_INDEX = (-1)
+
+--- @type integer
+UNKNOWN_GLOBAL_INDEX = (-1)
+
+--- @type integer
+UNKNOWN_NETWORK_INDEX = (-1)
+
+--- @type integer
+NETWORK_PLAYER_TIMEOUT = 15
+
+--- @type integer
+NETWORK_PLAYER_PING_TIMEOUT = 3
+
+--- @type integer
+MAX_RX_SEQ_IDS = 256
+
+--- @type integer
+USE_REAL_PALETTE_VAR = 0xFF
+
+--- @type integer
+MAX_DESCRIPTION_STRING = 20
+
+NPT_UNKNOWN = 0 --- @type NetworkPlayerType
+NPT_LOCAL   = 1 --- @type NetworkPlayerType
+NPT_SERVER  = 2 --- @type NetworkPlayerType
+NPT_CLIENT  = 3 --- @type NetworkPlayerType
+
+--- @alias NetworkPlayerType
+--- | `NPT_UNKNOWN`
+--- | `NPT_LOCAL`
+--- | `NPT_SERVER`
+--- | `NPT_CLIENT`
 
 --- @type integer
 OBJ_COL_FLAG_GROUNDED = (1 << 0)
@@ -6897,17 +6991,6 @@ SAVE_FLAG_COLLECTED_MIPS_STAR_1 = (1 << 27)
 --- @type integer
 SAVE_FLAG_COLLECTED_MIPS_STAR_2 = (1 << 28)
 
-LANGUAGE_ENGLISH = 0 --- @type EuLanguages
-LANGUAGE_FRENCH  = 1 --- @type EuLanguages
-LANGUAGE_GERMAN  = 2 --- @type EuLanguages
-LANGUAGE_MAX     = 3 --- @type EuLanguages
-
---- @alias EuLanguages
---- | `LANGUAGE_ENGLISH`
---- | `LANGUAGE_FRENCH`
---- | `LANGUAGE_GERMAN`
---- | `LANGUAGE_MAX`
-
 --- @type integer
 SEQ_BASE_ID = 0x7f
 
@@ -7872,6 +7955,9 @@ ACT_READING_SIGN = 0x00001308
 
 --- @type integer
 ACT_JUMBO_STAR_CUTSCENE = 0x00001909
+
+--- @type integer
+ACT_CHARACTER_SWITCH = 0x0000190B
 
 --- @type integer
 ACT_WAITING_FOR_DIALOG = 0x0000130A
@@ -9810,6 +9896,9 @@ SOUND_GENERAL_STAR_APPEARS = SOUND_ARG_LOAD(SOUND_BANK_GENERAL, 0x57, 0xFF, SOUN
 SOUND_GENERAL_COLLECT_1UP = SOUND_ARG_LOAD(SOUND_BANK_GENERAL, 0x58, 0xFF, SOUND_DISCRETE)
 
 --- @type integer
+SOUND_GENERAL_SPECIAL_COLLECTABLE = SOUND_GENERAL_COLLECT_1UP
+
+--- @type integer
 SOUND_GENERAL_BUTTON_PRESS_LOWPRIO = SOUND_ARG_LOAD(SOUND_BANK_GENERAL, 0x5A, 0x00, SOUND_DISCRETE)
 
 --- @type integer
@@ -11128,6 +11217,9 @@ ANIM_FLAG_7 = (1 << 7)
 ANIM_FLAG_BONE_TRANS = (1 << 8)
 
 --- @type integer
+ANIM_FLAG_BONE_SCALE = (1 << 9)
+
+--- @type integer
 OBJECT_MAX_BHV_STACK = 16
 
 --- @type integer
@@ -11221,3 +11313,15 @@ COOP_OBJ_FLAG_NON_SYNC = (1 << 2)
 
 --- @type integer
 COOP_OBJ_FLAG_INITIALIZED = (1 << 3)
+
+--- @type string
+RENDER96DX_VERSION = "v0.1"
+
+--- @type string
+GAME_NAME = "render96dx"
+
+--- @type string
+WINDOW_NAME = "Render96 Deluxe"
+
+--- @type integer
+MAX_VERSION_LENGTH = 128

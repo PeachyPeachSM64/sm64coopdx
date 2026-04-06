@@ -48,6 +48,24 @@ function play_transition_after_delay(transType, time, red, green, blue, delay)
     -- ...
 end
 
+--- @return integer
+--- Gets the current level num
+function get_curr_level_num()
+    -- ...
+end
+
+--- @return integer
+--- Gets the current course num
+function get_curr_course_num()
+    -- ...
+end
+
+--- @return integer
+--- Gets the current area index
+function get_curr_area_index()
+    -- ...
+end
+
 --- @param count integer
 --- @param offsetY integer
 --- @param size number
@@ -372,6 +390,26 @@ end
 
 --- Behavior loop function for warp
 function bhv_warp_loop()
+    -- ...
+end
+
+--- Behavior init function for locked Luigi warp pipe
+function bhv_warp_locked_luigi_init()
+    -- ...
+end
+
+--- Behavior init function for unlocked Luigi warp pipe
+function bhv_warp_unlocked_luigi_init()
+    -- ...
+end
+
+--- Behavior init function for locked Wario warp pipe
+function bhv_warp_locked_wario_init()
+    -- ...
+end
+
+--- Behavior init function for unlocked Wario warp pipe
+function bhv_warp_unlocked_wario_init()
     -- ...
 end
 
@@ -790,13 +828,28 @@ function bhv_grand_star_loop()
     -- ...
 end
 
---- Behavior loop function for beta boo key
+--- Behavior init function for Luigi keys
+function bhv_key_init()
+    -- ...
+end
+
+--- Behavior loop function for beta boo key (Luigi key)
 function bhv_beta_boo_key_loop()
     -- ...
 end
 
 --- Behavior loop function for alpha boo key
 function bhv_alpha_boo_key_loop()
+    -- ...
+end
+
+--- Behavior init function for Wario coins
+function bhv_wario_coin_init()
+    -- ...
+end
+
+--- Behavior loop function for Wario coins
+function bhv_wario_coin_loop()
     -- ...
 end
 
@@ -3035,6 +3088,16 @@ function get_id_from_behavior_name(name)
     -- ...
 end
 
+--- @param c Camera
+function cutscene_exit_painting_end(c)
+    -- ...
+end
+
+--- @param c Camera
+function cutscene_star_dance_end(c)
+    -- ...
+end
+
 --- Skips camera interpolation for a frame, locking the camera instantly to the target position. Useful for immediate changes in camera state or position without smooth transitions
 function skip_camera_interpolation()
     -- ...
@@ -4299,6 +4362,21 @@ function play_dialog_sound(dialogID)
 end
 
 --- @param player integer
+--- @param volume number
+--- Sets the `volume` of `player`
+function set_sequence_player_volume(player, volume)
+    -- ...
+end
+
+--- @param player integer
+--- @param enabled boolean
+--- @param volume number
+--- Overrides the volumeScale of `player`. When enabled, calls to set_sequence_player_volume will be clamped to `volume`.
+function set_sequence_player_volume_override(player, enabled, volume)
+    -- ...
+end
+
+--- @param player integer
 --- @param seqArgs integer
 --- @param fadeTimer integer
 --- Plays fading in music (`seqArgs`) on `player` over `fadeTimer`
@@ -4354,6 +4432,12 @@ function is_current_background_music_volume_lowered()
     -- ...
 end
 
+--- @return integer
+--- Gets the current level music dynamic index (used for water/spooky/underground phase mixing)
+function get_current_music_dynamic()
+    -- ...
+end
+
 --- @param seqId integer
 --- @param bgMusicVolume integer
 --- @param volume integer
@@ -4366,6 +4450,18 @@ end
 --- @param fadeTimer integer
 --- Fades out secondary music over `fadeTimer`
 function stop_secondary_music(fadeTimer)
+    -- ...
+end
+
+--- @return integer
+--- Gets the current secondary music sequence id
+function get_current_secondary_music_seq_id()
+    -- ...
+end
+
+--- @return integer
+--- Gets the current secondary music volume
+function get_current_secondary_music_volume()
     -- ...
 end
 
@@ -4436,6 +4532,19 @@ end
 --- @return number
 --- Gets a sound level intensity based on `distance`
 function sound_get_level_intensity(distance)
+    -- ...
+end
+
+--- @return boolean
+--- Checks if the file select is active
+function file_select_is_active()
+    -- ...
+end
+
+--- @return number posX
+--- @return number posY
+--- Gets the file select cursor 2D coordinates
+function file_select_get_cursor_pos()
     -- ...
 end
 
@@ -5289,6 +5398,11 @@ end
 --- @param bank integer
 --- Overrides the soundbank, set to -1 to reset
 function set_sound_bank_override(bank)
+    -- ...
+end
+
+--- @param m MarioState
+function update_mario_health(m)
     -- ...
 end
 
@@ -6451,6 +6565,42 @@ end
 --- @return integer
 --- Executes Mario's current submerged action by first checking common submerged cancels, then setting quicksand depth and head angles to 0. Dispatches to the appropriate action function, such as breaststroke, flutterkick, water punch, ect
 function mario_execute_submerged_action(m)
+    -- ...
+end
+
+--- @param playerIndex integer
+--- @param faceSwitchIndex integer
+function mario_set_face_switch_index(playerIndex, faceSwitchIndex)
+    -- ...
+end
+
+--- @param playerIndex integer
+--- @param hairSwitchIndex integer
+function mario_set_hair_switch_index(playerIndex, hairSwitchIndex)
+    -- ...
+end
+
+--- @param playerIndex integer
+--- @param eyeSwitchIndex integer
+function mario_set_eye_switch_index(playerIndex, eyeSwitchIndex)
+    -- ...
+end
+
+--- @param playerIndex integer
+--- @return integer
+function mario_get_face_switch_index(playerIndex)
+    -- ...
+end
+
+--- @param playerIndex integer
+--- @return integer
+function mario_get_hair_switch_index(playerIndex)
+    -- ...
+end
+
+--- @param playerIndex integer
+--- @return integer
+function mario_get_eye_switch_index(playerIndex)
     -- ...
 end
 
@@ -9944,6 +10094,161 @@ function set_object_respawn_info_bits(obj, bits)
     -- ...
 end
 
+--- @param air boolean
+--- @return integer
+function photo_mode_custom_pose_count(air)
+    -- ...
+end
+
+--- @param air boolean
+--- @param index integer
+--- @return boolean
+--- @return string outName
+function photo_mode_custom_pose_get_name(air, index)
+    -- ...
+end
+
+--- @param air boolean
+--- @param index integer
+--- @return boolean
+--- @return integer outFrame
+function photo_mode_custom_pose_get_frame(air, index)
+    -- ...
+end
+
+--- @param air boolean
+--- @param index integer
+--- @return boolean
+--- @return boolean outIsCustomAnim
+function photo_mode_custom_pose_is_custom_anim(air, index)
+    -- ...
+end
+
+--- @param air boolean
+--- @param index integer
+--- @return boolean
+--- @return integer outAnimId
+function photo_mode_custom_pose_get_character_anim_id(air, index)
+    -- ...
+end
+
+--- @param air boolean
+--- @param index integer
+--- @return boolean
+--- @return string outAnimName
+function photo_mode_custom_pose_get_custom_anim_name(air, index)
+    -- ...
+end
+
+--- @param m MarioState
+--- @param air boolean
+--- @param index integer
+--- @return boolean
+function photo_mode_custom_pose_apply(m, air, index)
+    -- ...
+end
+
+function photo_mode_custom_poses_reset()
+    -- ...
+end
+
+--- @param air boolean
+--- @param name string
+--- @param characterAnimId integer
+--- @param frame integer
+--- @return boolean
+function photo_mode_custom_pose_register_character(air, name, characterAnimId, frame)
+    -- ...
+end
+
+--- @param air boolean
+--- @param name string
+--- @param marioAnimIndex integer
+--- @param frame integer
+--- @return boolean
+function photo_mode_custom_pose_register_mario_anim_index(air, name, marioAnimIndex, frame)
+    -- ...
+end
+
+--- @param air boolean
+--- @param name string
+--- @param animName string
+--- @param frame integer
+--- @return boolean
+function photo_mode_custom_pose_register_custom_anim(air, name, animName, frame)
+    -- ...
+end
+
+--- @param characterType integer
+--- @return integer
+function photo_mode_eye_state_count(characterType)
+    -- ...
+end
+
+--- @param characterType integer
+--- @param index integer
+--- @return boolean
+--- @return string outName
+function photo_mode_eye_state_get_name(characterType, index)
+    -- ...
+end
+
+--- @param characterType integer
+--- @param index integer
+--- @return boolean
+--- @return integer outEyeSwitchIndex
+function photo_mode_eye_state_get_value(characterType, index)
+    -- ...
+end
+
+--- @param characterType integer
+--- @param name string
+--- @param eyeSwitchIndex integer
+--- @return boolean
+function photo_mode_eye_state_register(characterType, name, eyeSwitchIndex)
+    -- ...
+end
+
+--- @param characterType integer
+function photo_mode_eye_state_reset(characterType)
+    -- ...
+end
+
+--- @param characterType integer
+--- @return integer
+function photo_mode_mouth_state_count(characterType)
+    -- ...
+end
+
+--- @param characterType integer
+--- @param index integer
+--- @return boolean
+--- @return string outName
+function photo_mode_mouth_state_get_name(characterType, index)
+    -- ...
+end
+
+--- @param characterType integer
+--- @param index integer
+--- @return boolean
+--- @return integer outFaceSwitchIndex
+function photo_mode_mouth_state_get_value(characterType, index)
+    -- ...
+end
+
+--- @param characterType integer
+--- @param name string
+--- @param faceSwitchIndex integer
+--- @return boolean
+function photo_mode_mouth_state_register(characterType, name, faceSwitchIndex)
+    -- ...
+end
+
+--- @param characterType integer
+function photo_mode_mouth_state_reset(characterType)
+    -- ...
+end
+
 --- @param o Object
 --- @param platform Object
 --- Apply one frame of platform rotation to the object using the given platform
@@ -10134,9 +10439,41 @@ function save_file_get_cap_pos(capPos)
     -- ...
 end
 
+--- @param fileIndex integer
+--- @return integer
+function save_file_get_last_character(fileIndex)
+    -- ...
+end
+
 --- @return integer
 --- Returns the current sound mode (e.g., stereo, mono) stored in the save file. Useful for checking the audio output preferences when loading a save
 function save_file_get_sound_mode()
+    -- ...
+end
+
+--- @param fileIndex integer
+--- @return integer
+function save_file_get_keys(fileIndex)
+    -- ...
+end
+
+--- @param fileIndex integer
+--- @return integer
+function save_file_get_wario_coins(fileIndex)
+    -- ...
+end
+
+--- @param player integer
+--- @return boolean
+--- Checks if the sequence `player` is enabled
+function sequence_player_is_enabled(player)
+    -- ...
+end
+
+--- @param player integer
+--- @return integer
+--- Gets the sequence id of `player`
+function sequence_player_get_seq_id(player)
     -- ...
 end
 
@@ -11217,6 +11554,12 @@ function djui_is_playerlist_open()
 end
 
 --- @return boolean
+--- Checks if the DJUI player menu is open
+function djui_is_player_menu_open()
+    -- ...
+end
+
+--- @return boolean
 --- Checks if the DJUI playerlist is attempting to be opened
 function djui_attempting_to_open_playerlist()
     -- ...
@@ -11412,6 +11755,18 @@ end
 --- @return boolean
 --- Checks if the game is paused
 function is_game_paused()
+    -- ...
+end
+
+--- @return integer
+--- Gets the current menu mode (`gMenuMode`), useful for distinguishing pause menus from course-complete menus
+function get_menu_mode()
+    -- ...
+end
+
+--- @return integer
+--- Gets the current play mode (`sCurrPlayMode`)
+function get_curr_play_mode()
     -- ...
 end
 

@@ -1275,6 +1275,90 @@ Behavior loop function for warp
 
 <br />
 
+## [bhv_warp_locked_luigi_init](#bhv_warp_locked_luigi_init)
+
+### Description
+Behavior init function for locked Luigi warp pipe
+
+### Lua Example
+`bhv_warp_locked_luigi_init()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_warp_locked_luigi_init(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [bhv_warp_unlocked_luigi_init](#bhv_warp_unlocked_luigi_init)
+
+### Description
+Behavior init function for unlocked Luigi warp pipe
+
+### Lua Example
+`bhv_warp_unlocked_luigi_init()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_warp_unlocked_luigi_init(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [bhv_warp_locked_wario_init](#bhv_warp_locked_wario_init)
+
+### Description
+Behavior init function for locked Wario warp pipe
+
+### Lua Example
+`bhv_warp_locked_wario_init()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_warp_locked_wario_init(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [bhv_warp_unlocked_wario_init](#bhv_warp_unlocked_wario_init)
+
+### Description
+Behavior init function for unlocked Wario warp pipe
+
+### Lua Example
+`bhv_warp_unlocked_wario_init()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_warp_unlocked_wario_init(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [bhv_white_puff_exploding_loop](#bhv_white_puff_exploding_loop)
 
 ### Description
@@ -3018,10 +3102,31 @@ Behavior loop function for Grand Star
 
 <br />
 
+## [bhv_key_init](#bhv_key_init)
+
+### Description
+Behavior init function for Luigi keys
+
+### Lua Example
+`bhv_key_init()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_key_init(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [bhv_beta_boo_key_loop](#bhv_beta_boo_key_loop)
 
 ### Description
-Behavior loop function for beta boo key
+Behavior loop function for beta boo key (Luigi key)
 
 ### Lua Example
 `bhv_beta_boo_key_loop()`
@@ -3055,6 +3160,48 @@ Behavior loop function for alpha boo key
 
 ### C Prototype
 `void bhv_alpha_boo_key_loop(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [bhv_wario_coin_init](#bhv_wario_coin_init)
+
+### Description
+Behavior init function for Wario coins
+
+### Lua Example
+`bhv_wario_coin_init()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_wario_coin_init(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [bhv_wario_coin_loop](#bhv_wario_coin_loop)
+
+### Description
+Behavior loop function for Wario coins
+
+### Lua Example
+`bhv_wario_coin_loop()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void bhv_wario_coin_loop(void);`
 
 [:arrow_up_small:](#)
 

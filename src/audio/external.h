@@ -123,6 +123,10 @@ u8 get_current_music_dynamic(void);
 void play_secondary_music(u8 seqId, u8 bgMusicVolume, u8 volume, u16 fadeTimer);
 /* |description|Fades out secondary music over `fadeTimer`|descriptionEnd| */
 void stop_secondary_music(u16 fadeTimer);
+/* |description|Gets the current secondary music sequence id|descriptionEnd| */
+u8 get_current_secondary_music_seq_id(void);
+/* |description|Gets the current secondary music volume|descriptionEnd| */
+u8 get_current_secondary_music_volume(void);
 /* |description|Sets the `fadeOutTime` of audio|descriptionEnd| */
 void set_audio_fadeout(u16 fadeOutTime);
 /* |description|Plays the star collect fanfare (this function's name was mixed up with the other)|descriptionEnd| */

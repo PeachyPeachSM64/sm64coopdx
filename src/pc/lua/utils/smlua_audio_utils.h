@@ -17,14 +17,7 @@ u8 smlua_audio_utils_allocate_sequence(void);
  // mod sounds //
 ////////////////
 
-#if defined(TARGET_WII_U)
-struct ModAudio {
-    const char *filepath;
-    bool isStream;
-    bool loaded;
-    f32 baseVolume;
-};
-#else
+#if !defined(TARGET_WII_U)
 struct ModAudioSampleCopies {
     ma_sound sound;
     ma_decoder decoder;
@@ -32,21 +25,24 @@ struct ModAudioSampleCopies {
     struct ModAudioSampleCopies *prev;
     struct ModAudio *parent;
 };
+#endif
 
 struct ModAudio {
     const char *filepath;
+    bool isStream;
+    bool loaded;
+    f32 baseVolume;
+    bool paused;
+    u64 pausedCursor;
+
+#if !defined(TARGET_WII_U)
     ma_sound sound;
     ma_decoder decoder;
     void *buffer;
     u32 bufferSize;
     struct ModAudioSampleCopies* sampleCopiesTail;
-    bool isStream;
-    f32 baseVolume;
-    bool paused;
-    u64 pausedCursor;
-    bool loaded;
-};
 #endif
+};
 
 /* |description|Loads an `audio` stream by `filename` (with extension)|descriptionEnd| */
 struct ModAudio* audio_stream_load(const char* filename);

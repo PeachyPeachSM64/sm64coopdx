@@ -73,7 +73,6 @@
 - [Painting](#Painting)
 - [PaintingValues](#PaintingValues)
 - [PlayerCameraState](#PlayerCameraState)
-- [PlayerPalette](#PlayerPalette)
 - [RayIntersectionInfo](#RayIntersectionInfo)
 - [RomhackCameraSettings](#RomhackCameraSettings)
 - [ServerSettings](#ServerSettings)
@@ -1609,6 +1608,7 @@
 | numStars | `integer` |  |
 | numLives | `integer` |  |
 | numKeys | `integer` |  |
+| numWarioCoins | `integer` |  |
 | health | `integer` |  |
 | hurtCounter | `integer` |  |
 | healCounter | `integer` |  |
@@ -1721,6 +1721,9 @@
 | incompatible | `string` | read-only |
 | category | `string` | read-only |
 | description | `string` | read-only |
+| shortDescription | `string` | read-only |
+| icon | `string` | read-only |
+| author | `string` | read-only |
 | relativePath | `string` | read-only |
 | basePath | `string` | read-only |
 | index | `integer` | read-only |
@@ -1745,8 +1748,10 @@
 | ----- | ---- | ------ |
 | filepath | `string` | read-only |
 | isStream | `boolean` | read-only |
-| baseVolume | `number` |  |
 | loaded | `boolean` | read-only |
+| baseVolume | `number` |  |
+| paused | `boolean` |  |
+| pausedCursor | `integer` |  |
 
 [:arrow_up_small:](#)
 
@@ -1854,7 +1859,6 @@
 | onRxSeqId | `integer` | read-only |
 | modelIndex | `integer` | read-only |
 | ping | `integer` | read-only |
-| palette | [PlayerPalette](structs.md#PlayerPalette) | read-only |
 | name | `string` | read-only |
 | description | `string` | read-only |
 | descriptionR | `integer` | read-only |
@@ -1863,7 +1867,6 @@
 | descriptionA | `integer` | read-only |
 | overrideLocation | `string` | read-only |
 | overrideModelIndex | `integer` |  |
-| overridePalette | [PlayerPalette](structs.md#PlayerPalette) |  |
 
 [:arrow_up_small:](#)
 
@@ -1915,6 +1918,7 @@
 | oDialogResponse | `integer` |  |
 | oDialogState | `integer` |  |
 | oUnk94 | `integer` |  |
+| oObjectID | `integer` |  |
 | oSyncID | `integer` | read-only |
 | oIntangibleTimer | `integer` |  |
 | oPosX | `number` |  |
@@ -2263,6 +2267,7 @@
 | oGoombaTurningAwayFromWall | `integer` |  |
 | oGoombaRelativeSpeed | `number` |  |
 | oGoombaJumpCooldown | `integer` |  |
+| oGoombaGrabbed | `integer` |  |
 | oHauntedChairUnkF4 | `integer` |  |
 | oHauntedChairUnkF8 | `number` |  |
 | oHauntedChairUnkFC | `number` |  |
@@ -2772,16 +2777,6 @@
 | unused | `integer` |  |
 | cameraEvent | `integer` |  |
 | usedObj | [Object](structs.md#Object) |  |
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [PlayerPalette](#PlayerPalette)
-
-| Field | Type | Access |
-| ----- | ---- | ------ |
-| parts | `Array` <`Color`> | read-only |
 
 [:arrow_up_small:](#)
 

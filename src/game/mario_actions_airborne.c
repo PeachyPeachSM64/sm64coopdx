@@ -344,6 +344,9 @@ void update_air_without_turn(struct MarioState *m) {
     }
 }
 
+/* |description|
+Updates Mario's movement when in actions like lava boost or twirling in mid-air. Applies player input to adjust forward velocity and facing angle, but in a more restricted manner compared to standard jump movement. Used by `ACT_LAVA_BOOST` and `ACT_TWIRLING`
+|descriptionEnd| */
 void update_lava_boost_or_twirling(struct MarioState *m) {
     if (!m) { return; }
     s16 intendedDYaw;
@@ -369,6 +372,9 @@ void update_lava_boost_or_twirling(struct MarioState *m) {
     m->vel[2] = m->slideVelZ = m->forwardVel * coss(m->faceAngle[1]);
 }
 
+/* |description|
+Calculates and applies a change in Mario's yaw while flying, based on horizontal stick input. Approaches a target yaw velocity and sets Mario's roll angle to simulate banking turns. This results in a more natural, curved flight path
+|descriptionEnd| */
 void update_flying_yaw(struct MarioState *m) {
     if (!m) { return; }
     s16 targetYawVel = -(s16)(m->controller->stickX * (m->forwardVel / 4.0f));
@@ -398,6 +404,9 @@ void update_flying_yaw(struct MarioState *m) {
     m->faceAngle[2] = 20 * -m->angleVel[1];
 }
 
+/* |description|
+Calculates and applies a change in Mario's pitch while flying, based on vertical stick input. Approaches a target pitch velocity and clamps the final pitch angle to a certain range, simulating a smooth flight control
+|descriptionEnd| */
 void update_flying_pitch(struct MarioState *m) {
     if (!m) { return; }
     s16 targetPitchVel = -(s16)(m->controller->stickY * (m->forwardVel / 5.0f));
@@ -424,6 +433,9 @@ void update_flying_pitch(struct MarioState *m) {
     }
 }
 
+/* |description|
+Handles the complete flying logic for Mario (usually with the wing cap). Continuously updates pitch and yaw based on controller input, applies drag, and adjusts forward velocity. Also updates Mario's model angles for flight animations
+|descriptionEnd| */
 void update_flying(struct MarioState *m) {
     if (!m) { return; }
     UNUSED u32 unused;
@@ -515,6 +527,9 @@ static void luigi_apply_scuttle_jump(struct MarioState *m) {
     }
 }
 
+/* |description|
+Performs a standard step update for air actions without knockback, typically used for jumps or freefalls. Updates Mario's velocity (and possibly checks horizontal wind), then calls `perform_air_step` with given `stepArg`. Handles how Mario lands, hits walls, grabs ledges, or grabs ceilings. Optionally sets an animation
+|descriptionEnd| */
 u32 common_air_action_step(struct MarioState *m, u32 landAction, s32 animation, u32 stepArg) {
     if (!m) { return 0; }
     u32 stepResult;

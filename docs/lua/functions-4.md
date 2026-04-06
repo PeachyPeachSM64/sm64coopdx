@@ -618,6 +618,26 @@ Overrides the soundbank, set to -1 to reset
 <br />
 
 
+## [update_mario_health](#update_mario_health)
+
+### Lua Example
+`update_mario_health(m)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| m | [MarioState](structs.md#MarioState) |
+
+### Returns
+- None
+
+### C Prototype
+`void update_mario_health(struct MarioState *m);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [is_anim_at_end](#is_anim_at_end)
 
 ### Description
@@ -4402,6 +4422,129 @@ Executes Mario's current submerged action by first checking common submerged can
 
 <br />
 
+
+## [mario_set_face_switch_index](#mario_set_face_switch_index)
+
+### Lua Example
+`mario_set_face_switch_index(playerIndex, faceSwitchIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| playerIndex | `integer` |
+| faceSwitchIndex | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void mario_set_face_switch_index(u8 playerIndex, s16 faceSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [mario_set_hair_switch_index](#mario_set_hair_switch_index)
+
+### Lua Example
+`mario_set_hair_switch_index(playerIndex, hairSwitchIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| playerIndex | `integer` |
+| hairSwitchIndex | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void mario_set_hair_switch_index(u8 playerIndex, s16 hairSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [mario_set_eye_switch_index](#mario_set_eye_switch_index)
+
+### Lua Example
+`mario_set_eye_switch_index(playerIndex, eyeSwitchIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| playerIndex | `integer` |
+| eyeSwitchIndex | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void mario_set_eye_switch_index(u8 playerIndex, s16 eyeSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [mario_get_face_switch_index](#mario_get_face_switch_index)
+
+### Lua Example
+`local integerValue = mario_get_face_switch_index(playerIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| playerIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s16 mario_get_face_switch_index(u8 playerIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [mario_get_hair_switch_index](#mario_get_hair_switch_index)
+
+### Lua Example
+`local integerValue = mario_get_hair_switch_index(playerIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| playerIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s16 mario_get_hair_switch_index(u8 playerIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [mario_get_eye_switch_index](#mario_get_eye_switch_index)
+
+### Lua Example
+`local integerValue = mario_get_eye_switch_index(playerIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| playerIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s16 mario_get_eye_switch_index(u8 playerIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
 
 ## [bhv_toad_message_init](#bhv_toad_message_init)
 

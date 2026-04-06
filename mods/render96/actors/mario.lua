@@ -9,7 +9,7 @@
 require('poses/render_pose_1')
 
 -- Ground Poses
-photo_mode_pose_register_custom_anim(false, 'Render Pose 1', 'render_pose_1', 1)
+photo_mode_custom_pose_register_custom_anim(false, 'Render Pose 1', 'render_pose_1', 1)
 
 ---------------------
 -- # Face States # --

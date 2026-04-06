@@ -35,6 +35,9 @@
    - [area_get_warp_node_from_params](functions.md#area_get_warp_node_from_params)
    - [play_transition](functions.md#play_transition)
    - [play_transition_after_delay](functions.md#play_transition_after_delay)
+   - [get_curr_level_num](functions.md#get_curr_level_num)
+   - [get_curr_course_num](functions.md#get_curr_course_num)
+   - [get_curr_area_index](functions.md#get_curr_area_index)
 
 <br />
 
@@ -97,6 +100,10 @@
    - [bhv_wf_rotating_wooden_platform_loop](functions-2.md#bhv_wf_rotating_wooden_platform_loop)
    - [bhv_fading_warp_loop](functions-2.md#bhv_fading_warp_loop)
    - [bhv_warp_loop](functions-2.md#bhv_warp_loop)
+   - [bhv_warp_locked_luigi_init](functions-2.md#bhv_warp_locked_luigi_init)
+   - [bhv_warp_unlocked_luigi_init](functions-2.md#bhv_warp_unlocked_luigi_init)
+   - [bhv_warp_locked_wario_init](functions-2.md#bhv_warp_locked_wario_init)
+   - [bhv_warp_unlocked_wario_init](functions-2.md#bhv_warp_unlocked_wario_init)
    - [bhv_white_puff_exploding_loop](functions-2.md#bhv_white_puff_exploding_loop)
    - [bhv_spawned_star_init](functions-2.md#bhv_spawned_star_init)
    - [bhv_spawned_star_loop](functions-2.md#bhv_spawned_star_loop)
@@ -180,8 +187,11 @@
    - [bhv_bowser_key_loop](functions-2.md#bhv_bowser_key_loop)
    - [bhv_grand_star_init](functions-2.md#bhv_grand_star_init)
    - [bhv_grand_star_loop](functions-2.md#bhv_grand_star_loop)
+   - [bhv_key_init](functions-2.md#bhv_key_init)
    - [bhv_beta_boo_key_loop](functions-2.md#bhv_beta_boo_key_loop)
    - [bhv_alpha_boo_key_loop](functions-2.md#bhv_alpha_boo_key_loop)
+   - [bhv_wario_coin_init](functions-2.md#bhv_wario_coin_init)
+   - [bhv_wario_coin_loop](functions-2.md#bhv_wario_coin_loop)
    - [bhv_bullet_bill_init](functions-2.md#bhv_bullet_bill_init)
    - [bhv_bullet_bill_loop](functions-2.md#bhv_bullet_bill_loop)
    - [bhv_white_puff_smoke_init](functions-2.md#bhv_white_puff_smoke_init)
@@ -635,6 +645,8 @@
 <br />
 
 - camera.h
+   - [cutscene_exit_painting_end](functions-3.md#cutscene_exit_painting_end)
+   - [cutscene_star_dance_end](functions-3.md#cutscene_star_dance_end)
    - [skip_camera_interpolation](functions-3.md#skip_camera_interpolation)
    - [set_camera_shake_from_hit](functions-3.md#set_camera_shake_from_hit)
    - [set_environmental_camera_shake](functions-3.md#set_environmental_camera_shake)
@@ -834,6 +846,8 @@
    - [sound_banks_enable](functions-3.md#sound_banks_enable)
    - [set_sound_moving_speed](functions-3.md#set_sound_moving_speed)
    - [play_dialog_sound](functions-3.md#play_dialog_sound)
+   - [set_sequence_player_volume](functions-3.md#set_sequence_player_volume)
+   - [set_sequence_player_volume_override](functions-3.md#set_sequence_player_volume_override)
    - [play_music](functions-3.md#play_music)
    - [stop_background_music](functions-3.md#stop_background_music)
    - [fadeout_background_music](functions-3.md#fadeout_background_music)
@@ -843,8 +857,11 @@
    - [get_current_background_music_target_volume](functions-3.md#get_current_background_music_target_volume)
    - [get_current_background_music_max_target_volume](functions-3.md#get_current_background_music_max_target_volume)
    - [is_current_background_music_volume_lowered](functions-3.md#is_current_background_music_volume_lowered)
+   - [get_current_music_dynamic](functions-3.md#get_current_music_dynamic)
    - [play_secondary_music](functions-3.md#play_secondary_music)
    - [stop_secondary_music](functions-3.md#stop_secondary_music)
+   - [get_current_secondary_music_seq_id](functions-3.md#get_current_secondary_music_seq_id)
+   - [get_current_secondary_music_volume](functions-3.md#get_current_secondary_music_volume)
    - [set_audio_fadeout](functions-3.md#set_audio_fadeout)
    - [play_course_clear](functions-3.md#play_course_clear)
    - [play_peachs_jingle](functions-3.md#play_peachs_jingle)
@@ -857,6 +874,12 @@
    - [sound_set_background_music_default_volume](functions-3.md#sound_set_background_music_default_volume)
    - [get_sound_pan](functions-3.md#get_sound_pan)
    - [sound_get_level_intensity](functions-3.md#sound_get_level_intensity)
+
+<br />
+
+- file_select.h
+   - [file_select_is_active](functions-3.md#file_select_is_active)
+   - [file_select_get_cursor_pos](functions-3.md#file_select_get_cursor_pos)
 
 <br />
 
@@ -1009,6 +1032,7 @@
 <br />
 
 - mario.h
+   - [update_mario_health](functions-4.md#update_mario_health)
    - [is_anim_at_end](functions-4.md#is_anim_at_end)
    - [is_anim_past_end](functions-4.md#is_anim_past_end)
    - [set_mario_animation](functions-4.md#set_mario_animation)
@@ -1198,6 +1222,12 @@
 <br />
 
 - mario_misc.h
+   - [mario_set_face_switch_index](functions-4.md#mario_set_face_switch_index)
+   - [mario_set_hair_switch_index](functions-4.md#mario_set_hair_switch_index)
+   - [mario_set_eye_switch_index](functions-4.md#mario_set_eye_switch_index)
+   - [mario_get_face_switch_index](functions-4.md#mario_get_face_switch_index)
+   - [mario_get_hair_switch_index](functions-4.md#mario_get_hair_switch_index)
+   - [mario_get_eye_switch_index](functions-4.md#mario_get_eye_switch_index)
    - [bhv_toad_message_init](functions-4.md#bhv_toad_message_init)
    - [bhv_toad_message_loop](functions-4.md#bhv_toad_message_loop)
    - [bhv_unlock_door_star_init](functions-4.md#bhv_unlock_door_star_init)
@@ -1769,6 +1799,31 @@
 
 <br />
 
+- photo_mode_poses.h
+   - [photo_mode_custom_pose_count](functions-6.md#photo_mode_custom_pose_count)
+   - [photo_mode_custom_pose_get_name](functions-6.md#photo_mode_custom_pose_get_name)
+   - [photo_mode_custom_pose_get_frame](functions-6.md#photo_mode_custom_pose_get_frame)
+   - [photo_mode_custom_pose_is_custom_anim](functions-6.md#photo_mode_custom_pose_is_custom_anim)
+   - [photo_mode_custom_pose_get_character_anim_id](functions-6.md#photo_mode_custom_pose_get_character_anim_id)
+   - [photo_mode_custom_pose_get_custom_anim_name](functions-6.md#photo_mode_custom_pose_get_custom_anim_name)
+   - [photo_mode_custom_pose_apply](functions-6.md#photo_mode_custom_pose_apply)
+   - [photo_mode_custom_poses_reset](functions-6.md#photo_mode_custom_poses_reset)
+   - [photo_mode_custom_pose_register_character](functions-6.md#photo_mode_custom_pose_register_character)
+   - [photo_mode_custom_pose_register_mario_anim_index](functions-6.md#photo_mode_custom_pose_register_mario_anim_index)
+   - [photo_mode_custom_pose_register_custom_anim](functions-6.md#photo_mode_custom_pose_register_custom_anim)
+   - [photo_mode_eye_state_count](functions-6.md#photo_mode_eye_state_count)
+   - [photo_mode_eye_state_get_name](functions-6.md#photo_mode_eye_state_get_name)
+   - [photo_mode_eye_state_get_value](functions-6.md#photo_mode_eye_state_get_value)
+   - [photo_mode_eye_state_register](functions-6.md#photo_mode_eye_state_register)
+   - [photo_mode_eye_state_reset](functions-6.md#photo_mode_eye_state_reset)
+   - [photo_mode_mouth_state_count](functions-6.md#photo_mode_mouth_state_count)
+   - [photo_mode_mouth_state_get_name](functions-6.md#photo_mode_mouth_state_get_name)
+   - [photo_mode_mouth_state_get_value](functions-6.md#photo_mode_mouth_state_get_value)
+   - [photo_mode_mouth_state_register](functions-6.md#photo_mode_mouth_state_register)
+   - [photo_mode_mouth_state_reset](functions-6.md#photo_mode_mouth_state_reset)
+
+<br />
+
 - platform_displacement.h
    - [apply_platform_displacement](functions-6.md#apply_platform_displacement)
 
@@ -1805,11 +1860,16 @@
    - [save_file_is_cannon_unlocked](functions-6.md#save_file_is_cannon_unlocked)
    - [save_file_set_cannon_unlocked](functions-6.md#save_file_set_cannon_unlocked)
    - [save_file_get_cap_pos](functions-6.md#save_file_get_cap_pos)
+   - [save_file_get_last_character](functions-6.md#save_file_get_last_character)
    - [save_file_get_sound_mode](functions-6.md#save_file_get_sound_mode)
+   - [save_file_get_keys](functions-6.md#save_file_get_keys)
+   - [save_file_get_wario_coins](functions-6.md#save_file_get_wario_coins)
 
 <br />
 
 - seqplayer.h
+   - [sequence_player_is_enabled](functions-6.md#sequence_player_is_enabled)
+   - [sequence_player_get_seq_id](functions-6.md#sequence_player_get_seq_id)
    - [sequence_player_get_tempo](functions-6.md#sequence_player_get_tempo)
    - [sequence_player_set_tempo](functions-6.md#sequence_player_set_tempo)
    - [sequence_player_get_tempo_acc](functions-6.md#sequence_player_get_tempo_acc)
@@ -1930,51 +1990,51 @@
 <br />
 
 - smlua_gfx_utils.h
-   - [set_override_fov](functions-6.md#set_override_fov)
-   - [set_override_near](functions-6.md#set_override_near)
-   - [set_override_far](functions-6.md#set_override_far)
-   - [get_lighting_dir](functions-6.md#get_lighting_dir)
-   - [set_lighting_dir](functions-6.md#set_lighting_dir)
-   - [get_lighting_color](functions-6.md#get_lighting_color)
-   - [get_lighting_color_ambient](functions-6.md#get_lighting_color_ambient)
-   - [set_lighting_color](functions-6.md#set_lighting_color)
-   - [set_lighting_color_ambient](functions-6.md#set_lighting_color_ambient)
-   - [get_vertex_color](functions-6.md#get_vertex_color)
-   - [set_vertex_color](functions-6.md#set_vertex_color)
-   - [get_fog_color](functions-6.md#get_fog_color)
-   - [set_fog_color](functions-6.md#set_fog_color)
-   - [get_fog_intensity](functions-6.md#get_fog_intensity)
-   - [set_fog_intensity](functions-6.md#set_fog_intensity)
-   - [get_skybox](functions-6.md#get_skybox)
-   - [set_override_skybox](functions-6.md#set_override_skybox)
-   - [get_skybox_color](functions-6.md#get_skybox_color)
-   - [set_skybox_color](functions-6.md#set_skybox_color)
-   - [gfx_parse](functions-6.md#gfx_parse)
-   - [gfx_get_op](functions-6.md#gfx_get_op)
-   - [gfx_get_display_list](functions-6.md#gfx_get_display_list)
-   - [gfx_get_vertex_buffer](functions-6.md#gfx_get_vertex_buffer)
-   - [gfx_get_vertex_count](functions-6.md#gfx_get_vertex_count)
-   - [gfx_get_texture](functions-6.md#gfx_get_texture)
-   - [gfx_get_from_name](functions-6.md#gfx_get_from_name)
-   - [gfx_get_name](functions-6.md#gfx_get_name)
-   - [gfx_get_length](functions-6.md#gfx_get_length)
-   - [gfx_get_command](functions-6.md#gfx_get_command)
-   - [gfx_get_next_command](functions-6.md#gfx_get_next_command)
-   - [gfx_copy](functions-6.md#gfx_copy)
-   - [gfx_create](functions-6.md#gfx_create)
-   - [gfx_resize](functions-6.md#gfx_resize)
-   - [gfx_delete](functions-6.md#gfx_delete)
-   - [gfx_delete_all](functions-6.md#gfx_delete_all)
-   - [vtx_get_from_name](functions-6.md#vtx_get_from_name)
-   - [vtx_get_name](functions-6.md#vtx_get_name)
-   - [vtx_get_count](functions-6.md#vtx_get_count)
-   - [vtx_get_vertex](functions-6.md#vtx_get_vertex)
-   - [vtx_get_next_vertex](functions-6.md#vtx_get_next_vertex)
-   - [vtx_copy](functions-6.md#vtx_copy)
-   - [vtx_create](functions-6.md#vtx_create)
-   - [vtx_resize](functions-6.md#vtx_resize)
-   - [vtx_delete](functions-6.md#vtx_delete)
-   - [vtx_delete_all](functions-6.md#vtx_delete_all)
+   - [set_override_fov](functions-7.md#set_override_fov)
+   - [set_override_near](functions-7.md#set_override_near)
+   - [set_override_far](functions-7.md#set_override_far)
+   - [get_lighting_dir](functions-7.md#get_lighting_dir)
+   - [set_lighting_dir](functions-7.md#set_lighting_dir)
+   - [get_lighting_color](functions-7.md#get_lighting_color)
+   - [get_lighting_color_ambient](functions-7.md#get_lighting_color_ambient)
+   - [set_lighting_color](functions-7.md#set_lighting_color)
+   - [set_lighting_color_ambient](functions-7.md#set_lighting_color_ambient)
+   - [get_vertex_color](functions-7.md#get_vertex_color)
+   - [set_vertex_color](functions-7.md#set_vertex_color)
+   - [get_fog_color](functions-7.md#get_fog_color)
+   - [set_fog_color](functions-7.md#set_fog_color)
+   - [get_fog_intensity](functions-7.md#get_fog_intensity)
+   - [set_fog_intensity](functions-7.md#set_fog_intensity)
+   - [get_skybox](functions-7.md#get_skybox)
+   - [set_override_skybox](functions-7.md#set_override_skybox)
+   - [get_skybox_color](functions-7.md#get_skybox_color)
+   - [set_skybox_color](functions-7.md#set_skybox_color)
+   - [gfx_parse](functions-7.md#gfx_parse)
+   - [gfx_get_op](functions-7.md#gfx_get_op)
+   - [gfx_get_display_list](functions-7.md#gfx_get_display_list)
+   - [gfx_get_vertex_buffer](functions-7.md#gfx_get_vertex_buffer)
+   - [gfx_get_vertex_count](functions-7.md#gfx_get_vertex_count)
+   - [gfx_get_texture](functions-7.md#gfx_get_texture)
+   - [gfx_get_from_name](functions-7.md#gfx_get_from_name)
+   - [gfx_get_name](functions-7.md#gfx_get_name)
+   - [gfx_get_length](functions-7.md#gfx_get_length)
+   - [gfx_get_command](functions-7.md#gfx_get_command)
+   - [gfx_get_next_command](functions-7.md#gfx_get_next_command)
+   - [gfx_copy](functions-7.md#gfx_copy)
+   - [gfx_create](functions-7.md#gfx_create)
+   - [gfx_resize](functions-7.md#gfx_resize)
+   - [gfx_delete](functions-7.md#gfx_delete)
+   - [gfx_delete_all](functions-7.md#gfx_delete_all)
+   - [vtx_get_from_name](functions-7.md#vtx_get_from_name)
+   - [vtx_get_name](functions-7.md#vtx_get_name)
+   - [vtx_get_count](functions-7.md#vtx_get_count)
+   - [vtx_get_vertex](functions-7.md#vtx_get_vertex)
+   - [vtx_get_next_vertex](functions-7.md#vtx_get_next_vertex)
+   - [vtx_copy](functions-7.md#vtx_copy)
+   - [vtx_create](functions-7.md#vtx_create)
+   - [vtx_resize](functions-7.md#vtx_resize)
+   - [vtx_delete](functions-7.md#vtx_delete)
+   - [vtx_delete_all](functions-7.md#vtx_delete_all)
 
 <br />
 
@@ -2004,6 +2064,7 @@
    - [djui_set_popup_disabled_override](functions-7.md#djui_set_popup_disabled_override)
    - [djui_reset_popup_disabled_override](functions-7.md#djui_reset_popup_disabled_override)
    - [djui_is_playerlist_open](functions-7.md#djui_is_playerlist_open)
+   - [djui_is_player_menu_open](functions-7.md#djui_is_player_menu_open)
    - [djui_attempting_to_open_playerlist](functions-7.md#djui_attempting_to_open_playerlist)
    - [djui_get_playerlist_page_index](functions-7.md#djui_get_playerlist_page_index)
    - [djui_is_chatbox_open](functions-7.md#djui_is_chatbox_open)
@@ -2035,6 +2096,8 @@
    - [act_select_hud_show](functions-7.md#act_select_hud_show)
    - [act_select_hud_is_hidden](functions-7.md#act_select_hud_is_hidden)
    - [is_game_paused](functions-7.md#is_game_paused)
+   - [get_menu_mode](functions-7.md#get_menu_mode)
+   - [get_curr_play_mode](functions-7.md#get_curr_play_mode)
    - [is_pause_menu_hidden](functions-7.md#is_pause_menu_hidden)
    - [set_pause_menu_hidden](functions-7.md#set_pause_menu_hidden)
    - [game_pause](functions-7.md#game_pause)
@@ -2876,6 +2939,69 @@ Plays a screen transition after a `delay` in frames
 
 ### C Prototype
 `void play_transition_after_delay(s16 transType, s16 time, u8 red, u8 green, u8 blue, s16 delay);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_curr_level_num](#get_curr_level_num)
+
+### Description
+Gets the current level num
+
+### Lua Example
+`local integerValue = get_curr_level_num()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`s16 get_curr_level_num();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_curr_course_num](#get_curr_course_num)
+
+### Description
+Gets the current course num
+
+### Lua Example
+`local integerValue = get_curr_course_num()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`s16 get_curr_course_num();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_curr_area_index](#get_curr_area_index)
+
+### Description
+Gets the current area index
+
+### Lua Example
+`local integerValue = get_curr_area_index()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`s16 get_curr_area_index();`
 
 [:arrow_up_small:](#)
 

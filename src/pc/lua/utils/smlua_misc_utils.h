@@ -72,6 +72,8 @@ void djui_set_popup_disabled_override(bool value);
 void djui_reset_popup_disabled_override(void);
 /* |description|Checks if the DJUI playerlist is open|descriptionEnd| */
 bool djui_is_playerlist_open(void);
+/* |description|Checks if the DJUI player menu is open|descriptionEnd| */
+bool djui_is_player_menu_open(void);
 /* |description|Checks if the DJUI playerlist is attempting to be opened|descriptionEnd| */
 bool djui_attempting_to_open_playerlist(void);
 /* |description|Gets the DJUI playerlist's page index|descriptionEnd| */
@@ -141,6 +143,8 @@ bool act_select_hud_is_hidden(enum ActSelectHudPart part);
 bool is_game_paused(void);
 /* |description|Gets the current menu mode (`gMenuMode`), useful for distinguishing pause menus from course-complete menus|descriptionEnd| */
 s16 get_menu_mode(void);
+/* |description|Gets the current play mode (`sCurrPlayMode`)|descriptionEnd| */
+s16 get_curr_play_mode(void);
 /* |description|Gets if the pause menu elements are hidden, useful for creating custom pause menus|descriptionEnd| */
 bool is_pause_menu_hidden(void);
 /* |description|Sets if the pause menu elements are hidden, useful for creating custom pause menus|descriptionEnd| */

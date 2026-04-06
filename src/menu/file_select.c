@@ -31,7 +31,7 @@
 
 #define LANGUAGE_ARRAY(x) (x)
 
-bool gFileSelectActive = false;
+static bool sFileSelectActive = false;
 
 /**
  * @file file_select.c
@@ -64,7 +64,7 @@ static u8 sTextBaseAlpha = 0;
 
 // 2D position of the cursor on the screen.
 // sCursorPos[0]: X | sCursorPos[1]: Y
-f32 sCursorPos[] = {0, 0};
+static f32 sCursorPos[] = {0, 0};
 
 static u32 sPrevMouseWindowButtons = 0;
 static u32 sMouseWindowButtonsPressed = 0;
@@ -107,7 +107,7 @@ static s8 sAllFilesExist = FALSE;
 
 // Defines the value of the save slot selected in the menu.
 // Mario A: 1 | Mario B: 2 | Mario C: 3 | Mario D: 4
-s8 sSelectedFileNum = 0;
+static s8 sSelectedFileNum = 0;
 
 // Which coin score mode to use when scoring files. 0 for local
 // coin high score, 1 for high score across all files.
@@ -2359,7 +2359,7 @@ Gfx *geo_file_select_strings_and_menu_cursor(s32 callContext, UNUSED struct Grap
  * either completing a course choosing "SAVE & QUIT" or having a game over.
  */
 s32 lvl_init_menu_values_and_cursor_pos(UNUSED s32 arg, UNUSED s32 unused) {
-    gFileSelectActive = true;
+    sFileSelectActive = true;
     sSelectedButtonID = MENU_BUTTON_NONE;
     sCurrentMenuLevel = MENU_LAYER_MAIN;
     sTextBaseAlpha = 0;
@@ -2414,7 +2414,16 @@ s32 lvl_init_menu_values_and_cursor_pos(UNUSED s32 arg, UNUSED s32 unused) {
 s32 lvl_update_obj_and_load_file_selected(UNUSED s32 arg, UNUSED s32 unused) {
     area_update_objects();
     if (sSelectedFileNum != 0) {
-        gFileSelectActive = false;
+        sFileSelectActive = false;
     }
     return sSelectedFileNum;
+}
+
+bool file_select_is_active() {
+    return sFileSelectActive;
+}
+
+void file_select_get_cursor_pos(RET f32 *posX, RET f32 *posY) {
+    *posX = sCursorPos[0];
+    *posY = sCursorPos[1];
 }

@@ -2692,6 +2692,14 @@ void stop_secondary_music(u16 fadeTimer) {
     }
 }
 
+u8 get_current_secondary_music_seq_id(void) {
+    return sCurrentSecondaryMusicSeqId & SEQ_BASE_ID;
+}
+
+u8 get_current_secondary_music_volume(void) {
+    return sCurrentSecondaryMusicVolume;
+}
+
 /**
  * Called from threads: thread3_main, thread5_game_loop
  */

@@ -119,7 +119,7 @@ s32 photo_mode_custom_pose_count(bool air) {
     return air ? sAirCustomPoseCount : sGroundCustomPoseCount;
 }
 
-bool photo_mode_custom_pose_get_name(bool air, s32 index, const char** outName) {
+bool photo_mode_custom_pose_get_name(bool air, s32 index, RET const char** outName) {
     s32 count = 0;
     struct PhotoModeCustomPose* list = photo_mode_custom_pose_list(air, &count);
     if (index < 0 || index >= count || outName == NULL) { return false; }
@@ -127,7 +127,7 @@ bool photo_mode_custom_pose_get_name(bool air, s32 index, const char** outName) 
     return (*outName != NULL);
 }
 
-bool photo_mode_custom_pose_get_frame(bool air, s32 index, s16* outFrame) {
+bool photo_mode_custom_pose_get_frame(bool air, s32 index, RET s16* outFrame) {
     s32 count = 0;
     struct PhotoModeCustomPose* list = photo_mode_custom_pose_list(air, &count);
     if (index < 0 || index >= count || outFrame == NULL) { return false; }
@@ -135,7 +135,7 @@ bool photo_mode_custom_pose_get_frame(bool air, s32 index, s16* outFrame) {
     return true;
 }
 
-bool photo_mode_custom_pose_is_custom_anim(bool air, s32 index, bool* outIsCustomAnim) {
+bool photo_mode_custom_pose_is_custom_anim(bool air, s32 index, RET bool* outIsCustomAnim) {
     s32 count = 0;
     struct PhotoModeCustomPose* list = photo_mode_custom_pose_list(air, &count);
     if (index < 0 || index >= count || outIsCustomAnim == NULL) { return false; }
@@ -143,7 +143,7 @@ bool photo_mode_custom_pose_is_custom_anim(bool air, s32 index, bool* outIsCusto
     return true;
 }
 
-bool photo_mode_custom_pose_get_character_anim_id(bool air, s32 index, s32* outAnimId) {
+bool photo_mode_custom_pose_get_character_anim_id(bool air, s32 index, RET s32* outAnimId) {
     s32 count = 0;
     struct PhotoModeCustomPose* list = photo_mode_custom_pose_list(air, &count);
     if (index < 0 || index >= count || outAnimId == NULL) { return false; }
@@ -151,7 +151,7 @@ bool photo_mode_custom_pose_get_character_anim_id(bool air, s32 index, s32* outA
     return !list[index].isCustomAnim;
 }
 
-bool photo_mode_custom_pose_get_custom_anim_name(bool air, s32 index, const char** outAnimName) {
+bool photo_mode_custom_pose_get_custom_anim_name(bool air, s32 index, RET const char** outAnimName) {
     s32 count = 0;
     struct PhotoModeCustomPose* list = photo_mode_custom_pose_list(air, &count);
     if (index < 0 || index >= count || outAnimName == NULL) { return false; }
@@ -208,14 +208,14 @@ s32 photo_mode_eye_state_count(s32 characterType) {
     return sEyeStateCountPerCharacter[characterType];
 }
 
-bool photo_mode_eye_state_get_name(s32 characterType, s32 index, const char** outName) {
+bool photo_mode_eye_state_get_name(s32 characterType, s32 index, RET const char** outName) {
     if (!photo_mode_validate_character_type(characterType)) { return false; }
     if (index < 0 || index >= sEyeStateCountPerCharacter[characterType] || outName == NULL) { return false; }
     *outName = sEyeStatesPerCharacter[characterType][index].name;
     return (*outName != NULL);
 }
 
-bool photo_mode_eye_state_get_value(s32 characterType, s32 index, s16* outEyeSwitchIndex) {
+bool photo_mode_eye_state_get_value(s32 characterType, s32 index, RET s16* outEyeSwitchIndex) {
     if (!photo_mode_validate_character_type(characterType)) { return false; }
     if (index < 0 || index >= sEyeStateCountPerCharacter[characterType] || outEyeSwitchIndex == NULL) { return false; }
     *outEyeSwitchIndex = sEyeStatesPerCharacter[characterType][index].value;
@@ -251,14 +251,14 @@ s32 photo_mode_mouth_state_count(s32 characterType) {
     return sMouthStateCountPerCharacter[characterType];
 }
 
-bool photo_mode_mouth_state_get_name(s32 characterType, s32 index, const char** outName) {
+bool photo_mode_mouth_state_get_name(s32 characterType, s32 index, RET const char** outName) {
     if (!photo_mode_validate_character_type(characterType)) { return false; }
     if (index < 0 || index >= sMouthStateCountPerCharacter[characterType] || outName == NULL) { return false; }
     *outName = sMouthStatesPerCharacter[characterType][index].name;
     return (*outName != NULL);
 }
 
-bool photo_mode_mouth_state_get_value(s32 characterType, s32 index, s16* outFaceSwitchIndex) {
+bool photo_mode_mouth_state_get_value(s32 characterType, s32 index, RET s16* outFaceSwitchIndex) {
     if (!photo_mode_validate_character_type(characterType)) { return false; }
     if (index < 0 || index >= sMouthStateCountPerCharacter[characterType] || outFaceSwitchIndex == NULL) { return false; }
     *outFaceSwitchIndex = sMouthStatesPerCharacter[characterType][index].value;

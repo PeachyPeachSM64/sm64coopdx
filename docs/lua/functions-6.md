@@ -4577,6 +4577,463 @@ Runs an OR operator on the `obj`'s respawn info with `bits` << 8. If `bits` is 0
 <br />
 
 ---
+# functions from photo_mode_poses.h
+
+<br />
+
+
+## [photo_mode_custom_pose_count](#photo_mode_custom_pose_count)
+
+### Lua Example
+`local integerValue = photo_mode_custom_pose_count(air)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 photo_mode_custom_pose_count(bool air);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_get_name](#photo_mode_custom_pose_get_name)
+
+### Lua Example
+`local booleanValue, outName = photo_mode_custom_pose_get_name(air, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `string`
+
+### C Prototype
+`bool photo_mode_custom_pose_get_name(bool air, s32 index, RET const char** outName);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_get_frame](#photo_mode_custom_pose_get_frame)
+
+### Lua Example
+`local booleanValue, outFrame = photo_mode_custom_pose_get_frame(air, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `integer`
+
+### C Prototype
+`bool photo_mode_custom_pose_get_frame(bool air, s32 index, RET s16* outFrame);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_is_custom_anim](#photo_mode_custom_pose_is_custom_anim)
+
+### Lua Example
+`local booleanValue, outIsCustomAnim = photo_mode_custom_pose_is_custom_anim(air, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `boolean`
+
+### C Prototype
+`bool photo_mode_custom_pose_is_custom_anim(bool air, s32 index, RET bool* outIsCustomAnim);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_get_character_anim_id](#photo_mode_custom_pose_get_character_anim_id)
+
+### Lua Example
+`local booleanValue, outAnimId = photo_mode_custom_pose_get_character_anim_id(air, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `integer`
+
+### C Prototype
+`bool photo_mode_custom_pose_get_character_anim_id(bool air, s32 index, RET s32* outAnimId);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_get_custom_anim_name](#photo_mode_custom_pose_get_custom_anim_name)
+
+### Lua Example
+`local booleanValue, outAnimName = photo_mode_custom_pose_get_custom_anim_name(air, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `string`
+
+### C Prototype
+`bool photo_mode_custom_pose_get_custom_anim_name(bool air, s32 index, RET const char** outAnimName);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_apply](#photo_mode_custom_pose_apply)
+
+### Lua Example
+`local booleanValue = photo_mode_custom_pose_apply(m, air, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| m | [MarioState](structs.md#MarioState) |
+| air | `boolean` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool photo_mode_custom_pose_apply(struct MarioState* m, bool air, s32 index);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_poses_reset](#photo_mode_custom_poses_reset)
+
+### Lua Example
+`photo_mode_custom_poses_reset()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void photo_mode_custom_poses_reset(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_register_character](#photo_mode_custom_pose_register_character)
+
+### Lua Example
+`local booleanValue = photo_mode_custom_pose_register_character(air, name, characterAnimId, frame)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| name | `string` |
+| characterAnimId | `integer` |
+| frame | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool photo_mode_custom_pose_register_character(bool air, const char* name, s32 characterAnimId, s16 frame);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_register_mario_anim_index](#photo_mode_custom_pose_register_mario_anim_index)
+
+### Lua Example
+`local booleanValue = photo_mode_custom_pose_register_mario_anim_index(air, name, marioAnimIndex, frame)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| name | `string` |
+| marioAnimIndex | `integer` |
+| frame | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool photo_mode_custom_pose_register_mario_anim_index(bool air, const char* name, s32 marioAnimIndex, s16 frame);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_custom_pose_register_custom_anim](#photo_mode_custom_pose_register_custom_anim)
+
+### Lua Example
+`local booleanValue = photo_mode_custom_pose_register_custom_anim(air, name, animName, frame)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| air | `boolean` |
+| name | `string` |
+| animName | `string` |
+| frame | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool photo_mode_custom_pose_register_custom_anim(bool air, const char* name, const char* animName, s16 frame);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_eye_state_count](#photo_mode_eye_state_count)
+
+### Lua Example
+`local integerValue = photo_mode_eye_state_count(characterType)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 photo_mode_eye_state_count(s32 characterType);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_eye_state_get_name](#photo_mode_eye_state_get_name)
+
+### Lua Example
+`local booleanValue, outName = photo_mode_eye_state_get_name(characterType, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `string`
+
+### C Prototype
+`bool photo_mode_eye_state_get_name(s32 characterType, s32 index, RET const char** outName);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_eye_state_get_value](#photo_mode_eye_state_get_value)
+
+### Lua Example
+`local booleanValue, outEyeSwitchIndex = photo_mode_eye_state_get_value(characterType, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `integer`
+
+### C Prototype
+`bool photo_mode_eye_state_get_value(s32 characterType, s32 index, RET s16* outEyeSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_eye_state_register](#photo_mode_eye_state_register)
+
+### Lua Example
+`local booleanValue = photo_mode_eye_state_register(characterType, name, eyeSwitchIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+| name | `string` |
+| eyeSwitchIndex | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool photo_mode_eye_state_register(s32 characterType, const char* name, s16 eyeSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_eye_state_reset](#photo_mode_eye_state_reset)
+
+### Lua Example
+`photo_mode_eye_state_reset(characterType)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void photo_mode_eye_state_reset(s32 characterType);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_mouth_state_count](#photo_mode_mouth_state_count)
+
+### Lua Example
+`local integerValue = photo_mode_mouth_state_count(characterType)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 photo_mode_mouth_state_count(s32 characterType);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_mouth_state_get_name](#photo_mode_mouth_state_get_name)
+
+### Lua Example
+`local booleanValue, outName = photo_mode_mouth_state_get_name(characterType, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `string`
+
+### C Prototype
+`bool photo_mode_mouth_state_get_name(s32 characterType, s32 index, RET const char** outName);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_mouth_state_get_value](#photo_mode_mouth_state_get_value)
+
+### Lua Example
+`local booleanValue, outFaceSwitchIndex = photo_mode_mouth_state_get_value(characterType, index)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+| index | `integer` |
+
+### Returns
+- `boolean`
+- `integer`
+
+### C Prototype
+`bool photo_mode_mouth_state_get_value(s32 characterType, s32 index, RET s16* outFaceSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_mouth_state_register](#photo_mode_mouth_state_register)
+
+### Lua Example
+`local booleanValue = photo_mode_mouth_state_register(characterType, name, faceSwitchIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+| name | `string` |
+| faceSwitchIndex | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool photo_mode_mouth_state_register(s32 characterType, const char* name, s16 faceSwitchIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [photo_mode_mouth_state_reset](#photo_mode_mouth_state_reset)
+
+### Lua Example
+`photo_mode_mouth_state_reset(characterType)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| characterType | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void photo_mode_mouth_state_reset(s32 characterType);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+---
 # functions from platform_displacement.h
 
 <br />
@@ -5230,6 +5687,26 @@ Retrieves the current position of Mario's cap, if it is on the ground in the cur
 
 <br />
 
+## [save_file_get_last_character](#save_file_get_last_character)
+
+### Lua Example
+`local integerValue = save_file_get_last_character(fileIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| fileIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`u8 save_file_get_last_character(s32 fileIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [save_file_get_sound_mode](#save_file_get_sound_mode)
 
 ### Description
@@ -5251,11 +5728,97 @@ Returns the current sound mode (e.g., stereo, mono) stored in the save file. Use
 
 <br />
 
+## [save_file_get_keys](#save_file_get_keys)
+
+### Lua Example
+`local integerValue = save_file_get_keys(fileIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| fileIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 save_file_get_keys(s32 fileIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [save_file_get_wario_coins](#save_file_get_wario_coins)
+
+### Lua Example
+`local integerValue = save_file_get_wario_coins(fileIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| fileIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 save_file_get_wario_coins(s32 fileIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ---
 # functions from seqplayer.h
 
 <br />
 
+
+## [sequence_player_is_enabled](#sequence_player_is_enabled)
+
+### Description
+Checks if the sequence `player` is enabled
+
+### Lua Example
+`local booleanValue = sequence_player_is_enabled(player)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| player | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool sequence_player_is_enabled(u8 player);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [sequence_player_get_seq_id](#sequence_player_get_seq_id)
+
+### Description
+Gets the sequence id of `player`
+
+### Lua Example
+`local integerValue = sequence_player_get_seq_id(player)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| player | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`u8 sequence_player_get_seq_id(u8 player);`
+
+[:arrow_up_small:](#)
+
+<br />
 
 ## [sequence_player_get_tempo](#sequence_player_get_tempo)
 
@@ -7453,1058 +8016,6 @@ Checks if the surface is a painting warp
 
 <br />
 
-
----
-# functions from smlua_gfx_utils.h
-
-<br />
-
-
-## [set_override_fov](#set_override_fov)
-
-### Description
-Sets the override FOV
-
-### Lua Example
-`set_override_fov(fov)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| fov | `number` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_override_fov(f32 fov);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_override_near](#set_override_near)
-
-### Description
-Sets the override near plane
-
-### Lua Example
-`set_override_near(near)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| near | `number` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_override_near(f32 near);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_override_far](#set_override_far)
-
-### Description
-Sets the override far plane
-
-### Lua Example
-`set_override_far(far)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| far | `number` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_override_far(f32 far);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_lighting_dir](#get_lighting_dir)
-
-### Description
-Gets a value of the global lighting direction
-
-### Lua Example
-`local numberValue = get_lighting_dir(index)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-
-### Returns
-- `number`
-
-### C Prototype
-`f32 get_lighting_dir(u8 index);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_lighting_dir](#set_lighting_dir)
-
-### Description
-Sets a value of the global lighting direction
-
-### Lua Example
-`set_lighting_dir(index, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-| value | `number` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_lighting_dir(u8 index, f32 value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_lighting_color](#get_lighting_color)
-
-### Description
-Gets a value of the global lighting color
-
-### Lua Example
-`local integerValue = get_lighting_color(index)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u8 get_lighting_color(u8 index);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_lighting_color_ambient](#get_lighting_color_ambient)
-
-### Description
-Gets a value of the global ambient lighting color
-
-### Lua Example
-`local integerValue = get_lighting_color_ambient(index)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u8 get_lighting_color_ambient(u8 index);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_lighting_color](#set_lighting_color)
-
-### Description
-Sets a value of the global lighting color
-
-### Lua Example
-`set_lighting_color(index, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-| value | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_lighting_color(u8 index, u8 value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_lighting_color_ambient](#set_lighting_color_ambient)
-
-### Description
-Sets a value of the global lighting color (run this after `set_lighting_color` for the ambient color to not be overriden)
-
-### Lua Example
-`set_lighting_color_ambient(index, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-| value | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_lighting_color_ambient(u8 index, u8 value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_vertex_color](#get_vertex_color)
-
-### Description
-Gets a value of the global vertex shading color
-
-### Lua Example
-`local integerValue = get_vertex_color(index)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u8 get_vertex_color(u8 index);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_vertex_color](#set_vertex_color)
-
-### Description
-Sets a value of the global vertex shading color
-
-### Lua Example
-`set_vertex_color(index, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-| value | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_vertex_color(u8 index, u8 value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_fog_color](#get_fog_color)
-
-### Description
-Gets a value of the global fog color
-
-### Lua Example
-`local integerValue = get_fog_color(index)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u8 get_fog_color(u8 index);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_fog_color](#set_fog_color)
-
-### Description
-Sets a value of the global fog color
-
-### Lua Example
-`set_fog_color(index, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-| value | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_fog_color(u8 index, u8 value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_fog_intensity](#get_fog_intensity)
-
-### Description
-Gets the intensity of the fog
-
-### Lua Example
-`local numberValue = get_fog_intensity()`
-
-### Parameters
-- None
-
-### Returns
-- `number`
-
-### C Prototype
-`f32 get_fog_intensity(void);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_fog_intensity](#set_fog_intensity)
-
-### Description
-Sets the intensity of the fog (this value scales very quickly, 1.0 to 1.1 is a desirable range)
-
-### Lua Example
-`set_fog_intensity(intensity)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| intensity | `number` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_fog_intensity(f32 intensity);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_skybox](#get_skybox)
-
-### Description
-Gets the current skybox
-
-### Lua Example
-`local integerValue = get_skybox()`
-
-### Parameters
-- None
-
-### Returns
-- `integer`
-
-### C Prototype
-`s8 get_skybox(void);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_override_skybox](#set_override_skybox)
-
-### Description
-Sets the override skybox
-
-### Lua Example
-`set_override_skybox(background)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| background | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_override_skybox(s8 background);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [get_skybox_color](#get_skybox_color)
-
-### Description
-Gets a value of the global skybox color
-
-### Lua Example
-`local integerValue = get_skybox_color(index)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u8 get_skybox_color(u8 index);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_skybox_color](#set_skybox_color)
-
-### Description
-Sets a value of the global skybox color
-
-### Lua Example
-`set_skybox_color(index, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| index | `integer` |
-| value | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_skybox_color(u8 index, u8 value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_parse](#gfx_parse)
-
-### Description
-Traverses a display list. Takes a Lua function as a parameter, which is called back for each command in the display list with the parameters `cmd` (display list pointer), and `op`
-
-### Lua Example
-`gfx_parse(cmd, func)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| cmd | `Pointer` <`Gfx`> |
-| func | `Lua Function` () |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_parse(Gfx *cmd, LuaFunction func);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_op](#gfx_get_op)
-
-### Description
-Gets the op of the display list command
-
-### Lua Example
-`local integerValue = gfx_get_op(cmd)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| cmd | `Pointer` <`Gfx`> |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u32 gfx_get_op(Gfx *cmd);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_display_list](#gfx_get_display_list)
-
-### Description
-Gets the display list from a display list command if it has the op `G_DL`
-
-### Lua Example
-`local pointerValue = gfx_get_display_list(cmd)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| cmd | `Pointer` <`Gfx`> |
-
-### Returns
-- `Pointer` <`Gfx`>
-
-### C Prototype
-`Gfx *gfx_get_display_list(Gfx *cmd);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_vertex_buffer](#gfx_get_vertex_buffer)
-
-### Description
-Gets the vertex buffer from a display list command if it has the op `G_VTX`
-
-### Lua Example
-`local pointerValue = gfx_get_vertex_buffer(cmd)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| cmd | `Pointer` <`Gfx`> |
-
-### Returns
-- `Pointer` <`Vtx`>
-
-### C Prototype
-`Vtx *gfx_get_vertex_buffer(Gfx *cmd);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_vertex_count](#gfx_get_vertex_count)
-
-### Description
-Gets the number of vertices from a display list command if it has the op `G_VTX`
-
-### Lua Example
-`local integerValue = gfx_get_vertex_count(cmd)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| cmd | `Pointer` <`Gfx`> |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u16 gfx_get_vertex_count(Gfx *cmd);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_texture](#gfx_get_texture)
-
-### Description
-Gets the texture from a display list command if it has an image related op
-
-### Lua Example
-`local pointerValue = gfx_get_texture(cmd)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| cmd | `Pointer` <`Gfx`> |
-
-### Returns
-- `Pointer` <`Texture`>
-
-### C Prototype
-`Texture *gfx_get_texture(Gfx *cmd);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_from_name](#gfx_get_from_name)
-
-### Description
-Gets a display list of the current mod from its name. Returns a pointer to the display list and its length
-
-### Lua Example
-`local pointerValue, length = gfx_get_from_name(name)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| name | `string` |
-
-### Returns
-- `Pointer` <`Gfx`>
-- `integer`
-
-### C Prototype
-`Gfx *gfx_get_from_name(const char *name, RET u32 *length);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_name](#gfx_get_name)
-
-### Description
-Gets the name of a display list
-
-### Lua Example
-`local stringValue = gfx_get_name(gfx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| gfx | `Pointer` <`Gfx`> |
-
-### Returns
-- `string`
-
-### C Prototype
-`const char *gfx_get_name(Gfx *gfx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_length](#gfx_get_length)
-
-### Description
-Gets the max length of a display list
-
-### Lua Example
-`local integerValue = gfx_get_length(gfx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| gfx | `Pointer` <`Gfx`> |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u32 gfx_get_length(Gfx *gfx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_command](#gfx_get_command)
-
-### Description
-Gets a command of a display list at position `offset`
-
-### Lua Example
-`local pointerValue = gfx_get_command(gfx, offset)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| gfx | `Pointer` <`Gfx`> |
-| offset | `integer` |
-
-### Returns
-- `Pointer` <`Gfx`>
-
-### C Prototype
-`Gfx *gfx_get_command(Gfx *gfx, u32 offset);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_next_command](#gfx_get_next_command)
-
-### Description
-Gets the next command of a given display list pointer. Intended to use in a for loop
-
-### Lua Example
-`local pointerValue = gfx_get_next_command(gfx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| gfx | `Pointer` <`Gfx`> |
-
-### Returns
-- `Pointer` <`Gfx`>
-
-### C Prototype
-`Gfx *gfx_get_next_command(Gfx *gfx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_copy](#gfx_copy)
-
-### Description
-Copies `length` commands from display list `src` to display list `dest`
-
-### Lua Example
-`gfx_copy(dest, src, length)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| dest | `Pointer` <`Gfx`> |
-| src | `Pointer` <`Gfx`> |
-| length | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_copy(Gfx *dest, Gfx *src, u32 length);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_create](#gfx_create)
-
-### Description
-Creates a new named display list of `length` commands
-
-### Lua Example
-`local pointerValue = gfx_create(name, length)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| name | `string` |
-| length | `integer` |
-
-### Returns
-- `Pointer` <`Gfx`>
-
-### C Prototype
-`Gfx *gfx_create(const char *name, u32 length);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_resize](#gfx_resize)
-
-### Description
-Resizes a display list created by `gfx_create`
-
-### Lua Example
-`gfx_resize(gfx, newLength)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| gfx | `Pointer` <`Gfx`> |
-| newLength | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_resize(Gfx *gfx, u32 newLength);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_delete](#gfx_delete)
-
-### Description
-Deletes a display list created by `gfx_create`
-
-### Lua Example
-`gfx_delete(gfx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| gfx | `Pointer` <`Gfx`> |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_delete(Gfx *gfx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_delete_all](#gfx_delete_all)
-
-### Description
-Deletes all display lists created by `gfx_create`
-
-### Lua Example
-`gfx_delete_all()`
-
-### Parameters
-- None
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_delete_all();`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_get_from_name](#vtx_get_from_name)
-
-### Description
-Gets a vertex buffer of the current mod from its name. Returns a pointer to the vertex buffering and its vertex count
-
-### Lua Example
-`local pointerValue, count = vtx_get_from_name(name)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| name | `string` |
-
-### Returns
-- `Pointer` <`Vtx`>
-- `integer`
-
-### C Prototype
-`Vtx *vtx_get_from_name(const char *name, RET u32 *count);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_get_name](#vtx_get_name)
-
-### Description
-Gets the name of a vertex buffer
-
-### Lua Example
-`local stringValue = vtx_get_name(vtx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| vtx | `Pointer` <`Vtx`> |
-
-### Returns
-- `string`
-
-### C Prototype
-`const char *vtx_get_name(Vtx *vtx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_get_count](#vtx_get_count)
-
-### Description
-Gets the max count of vertices of a vertex buffer
-
-### Lua Example
-`local integerValue = vtx_get_count(vtx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| vtx | `Pointer` <`Vtx`> |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u32 vtx_get_count(Vtx *vtx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_get_vertex](#vtx_get_vertex)
-
-### Description
-Gets a vertex of a vertex buffer at position `offset`
-
-### Lua Example
-`local pointerValue = vtx_get_vertex(vtx, offset)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| vtx | `Pointer` <`Vtx`> |
-| offset | `integer` |
-
-### Returns
-- `Pointer` <`Vtx`>
-
-### C Prototype
-`Vtx *vtx_get_vertex(Vtx *vtx, u32 offset);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_get_next_vertex](#vtx_get_next_vertex)
-
-### Description
-Gets the next vertex of a given vertex pointer. Intended to use in a for loop
-
-### Lua Example
-`local pointerValue = vtx_get_next_vertex(vtx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| vtx | `Pointer` <`Vtx`> |
-
-### Returns
-- `Pointer` <`Vtx`>
-
-### C Prototype
-`Vtx *vtx_get_next_vertex(Vtx *vtx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_copy](#vtx_copy)
-
-### Description
-Copies `count` vertices from vertex buffer `src` to vertex buffer `dest`
-
-### Lua Example
-`vtx_copy(dest, src, count)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| dest | `Pointer` <`Vtx`> |
-| src | `Pointer` <`Vtx`> |
-| count | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void vtx_copy(Vtx *dest, Vtx *src, u32 count);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_create](#vtx_create)
-
-### Description
-Creates a new named vertex buffer of `count` vertices
-
-### Lua Example
-`local pointerValue = vtx_create(name, count)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| name | `string` |
-| count | `integer` |
-
-### Returns
-- `Pointer` <`Vtx`>
-
-### C Prototype
-`Vtx *vtx_create(const char *name, u32 count);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_resize](#vtx_resize)
-
-### Description
-Resizes a vertex buffer created by `vtx_create`
-
-### Lua Example
-`vtx_resize(vtx, newCount)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| vtx | `Pointer` <`Vtx`> |
-| newCount | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void vtx_resize(Vtx *vtx, u32 newCount);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_delete](#vtx_delete)
-
-### Description
-Deletes a vertex buffer created by `vtx_create`
-
-### Lua Example
-`vtx_delete(vtx)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| vtx | `Pointer` <`Vtx`> |
-
-### Returns
-- None
-
-### C Prototype
-`void vtx_delete(Vtx *vtx);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_delete_all](#vtx_delete_all)
-
-### Description
-Deletes all vertex buffers created by `vtx_create`
-
-### Lua Example
-`vtx_delete_all()`
-
-### Parameters
-- None
-
-### Returns
-- None
-
-### C Prototype
-`void vtx_delete_all();`
-
-[:arrow_up_small:](#)
-
-<br />
 ---
 
 [< prev](functions-5.md) | [1](functions.md) | [2](functions-2.md) | [3](functions-3.md) | [4](functions-4.md) | [5](functions-5.md) | 6 | [7](functions-7.md) | [next >](functions-7.md)]

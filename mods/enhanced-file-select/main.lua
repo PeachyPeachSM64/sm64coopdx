@@ -38,7 +38,7 @@ local function is_cursor_over_button(cursorX, cursorY, buttonX, buttonY, depth)
 end
 
 local function enhanced_file_select_update()
-    if not is_file_select_active() then
+    if not file_select_is_active() then
         sPrevHoveredKey = nil
         return
     end

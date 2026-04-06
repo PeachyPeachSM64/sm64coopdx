@@ -504,3 +504,15 @@ void get_area_minimum_y(u8* hasMinY, f32* minY) {
         case COURSE_BITS:  *hasMinY = TRUE; *minY = -5065; break;
     }
 }
+
+s16 get_curr_level_num() {
+    return gCurrLevelNum;
+}
+
+s16 get_curr_course_num() {
+    return gCurrCourseNum;
+}
+
+s16 get_curr_area_index() {
+    return gCurrAreaIndex;
+}

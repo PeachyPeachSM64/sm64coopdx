@@ -1100,6 +1100,7 @@
 --- @field public numStars integer
 --- @field public numLives integer
 --- @field public numKeys integer
+--- @field public numWarioCoins integer
 --- @field public health integer
 --- @field public hurtCounter integer
 --- @field public healCounter integer
@@ -1180,6 +1181,9 @@
 --- @field public incompatible string
 --- @field public category string
 --- @field public description string
+--- @field public shortDescription string
+--- @field public icon string
+--- @field public author string
 --- @field public relativePath string
 --- @field public basePath string
 --- @field public index integer
@@ -1197,8 +1201,10 @@
 --- @class ModAudio
 --- @field public filepath string
 --- @field public isStream boolean
---- @field public baseVolume number
 --- @field public loaded boolean
+--- @field public baseVolume number
+--- @field public paused boolean
+--- @field public pausedCursor integer
 
 --- @class ModFs
 --- @field public mod Mod
@@ -1316,6 +1322,7 @@
 --- @field public oDialogResponse integer
 --- @field public oDialogState integer
 --- @field public oUnk94 integer
+--- @field public oObjectID integer
 --- @field public oSyncID integer
 --- @field public oIntangibleTimer integer
 --- @field public oPosX number
@@ -1660,6 +1667,7 @@
 --- @field public oGoombaTurningAwayFromWall integer
 --- @field public oGoombaRelativeSpeed number
 --- @field public oGoombaJumpCooldown integer
+--- @field public oGoombaGrabbed integer
 --- @field public oHauntedChairUnkF4 integer
 --- @field public oHauntedChairUnkF8 number
 --- @field public oHauntedChairUnkFC number

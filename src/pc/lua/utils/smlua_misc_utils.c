@@ -97,6 +97,10 @@ bool djui_is_playerlist_open(void) {
     return false;
 }
 
+bool djui_is_player_menu_open(void) {
+    return gDjuiInPlayerMenu;
+}
+
 bool djui_attempting_to_open_playerlist(void) {
     return false;
 }
@@ -293,6 +297,10 @@ bool is_game_paused(void) {
 
 s16 get_menu_mode(void) {
     return gMenuMode;
+}
+
+s16 get_curr_play_mode(void) {
+    return sCurrPlayMode;
 }
 
 bool is_pause_menu_hidden(void) {

@@ -138,15 +138,15 @@ local function should_pause_stream_for_game_state()
         return true
     end
 
-    if type(is_djui_player_menu_open) == 'function' and is_djui_player_menu_open() then
+    if type(djui_is_player_menu_open) == 'function' and djui_is_player_menu_open() then
         return true
     end
 
-    if type(is_play_mode_photo_mode) == 'function' and is_play_mode_photo_mode() then
+    if type(get_curr_play_mode) == 'function' and get_curr_play_mode() == PLAY_MODE_PHOTO_MODE then
         return true
     end
 
-    if type(is_camera_photo_mode) == 'function' and is_camera_photo_mode() then
+    if gLakituState.mode == CAMERA_MODE_PHOTO_MODE then
         return true
     end
 
@@ -456,8 +456,8 @@ local function update_stream_volume()
 
     -- Use the level sequence player's fadeVolume as the authoritative fade signal.
     local fadeVol = 0.0
-    if type(get_sequence_player_fade_volume) == 'function' then
-        fadeVol = get_sequence_player_fade_volume(SEQ_PLAYER_LEVEL) or 0.0
+    if type(sequence_player_get_fade_volume) == 'function' then
+        fadeVol = sequence_player_get_fade_volume(SEQ_PLAYER_LEVEL) or 0.0
     end
 
     local maxVol = 1.0
@@ -711,8 +711,8 @@ local function on_update()
         -- play short overlay jingles on the ENV sequence player.
         -- If we always force secondarySeqId here, those jingles will never be heard.
         local overlayEnvSeqId = nil
-        if type(get_env_sequence_id) == 'function' then
-            overlayEnvSeqId = get_env_sequence_id()
+        if type(sequence_player_get_seq_id) == 'function' then
+            overlayEnvSeqId = sequence_player_get_seq_id(SEQ_PLAYER_ENV)
         end
         if overlayEnvSeqId == 0 then overlayEnvSeqId = nil end
         if overlayEnvSeqId ~= nil and bit32 ~= nil and bit32.band ~= nil then
@@ -812,8 +812,8 @@ local function on_update()
             if type(set_sequence_player_volume) == 'function' then
                 set_sequence_player_volume(SEQ_PLAYER_ENV, 0.0)
             end
-            if type(fade_out_sequence_player) == 'function' then
-                fade_out_sequence_player(SEQ_PLAYER_ENV, 0)
+            if type(seq_player_fade_out) == 'function' then
+                seq_player_fade_out(SEQ_PLAYER_ENV, 0)
             end
         else
             if state.env.stream ~= nil then
@@ -832,8 +832,8 @@ local function on_update()
         -- Star spawn / course-clear fanfare are started directly on the ENV player,
         -- so fall back to reading the ENV player's active seq id.
         local envSeqId = nil
-        if type(get_env_sequence_id) == 'function' then
-            envSeqId = get_env_sequence_id()
+        if type(sequence_player_get_seq_id) == 'function' then
+            envSeqId = sequence_player_get_seq_id(SEQ_PLAYER_ENV)
         end
 
         if envSeqId == 0 then
@@ -909,8 +909,8 @@ local function on_update()
     end
 
     local fileSelectActive = false
-    if type(is_file_select_active) == 'function' then
-        fileSelectActive = is_file_select_active()
+    if type(file_select_is_active) == 'function' then
+        fileSelectActive = file_select_is_active()
     end
 
     -- Default: don't force any seq

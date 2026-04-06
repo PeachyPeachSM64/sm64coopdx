@@ -15,6 +15,10 @@ void sequence_channel_set_volume(struct SequenceChannel *seqChannel, u8 volume);
 void process_sequences(s32 iterationsRemaining);
 void init_sequence_player(u32 player);
 void init_sequence_players(void);
+/* |description|Checks if the sequence `player` is enabled|descriptionEnd| */
+bool sequence_player_is_enabled(u8 player);
+/* |description|Gets the sequence id of `player`|descriptionEnd| */
+u8 sequence_player_get_seq_id(u8 player);
 /* |description|Gets the `tempo` of `player`|descriptionEnd| */
 u16 sequence_player_get_tempo(u8 player);
 /* |description|Sets the `tempo` of `player`. Resets when another sequence is played|descriptionEnd| */

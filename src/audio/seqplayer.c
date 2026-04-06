@@ -10,6 +10,7 @@
 #include "external.h"
 #include "heap.h"
 #include "load.h"
+#include "seq_ids.h"
 #include "seqplayer.h"
 #include "pc/debuglog.h"
 
@@ -2444,6 +2445,14 @@ void sequence_player_set_tempo_acc(u8 player, u16 tempoAcc) {
 
 void sequence_player_set_transposition(u8 player, u16 transposition) {
     gSequencePlayers[player].transposition = transposition;
+}
+
+bool sequence_player_is_enabled(u8 player) {
+    return gSequencePlayers[player].enabled != 0;
+}
+
+u8 sequence_player_get_seq_id(u8 player) {
+    return gSequencePlayers[SEQ_PLAYER_ENV].seqId & SEQ_BASE_ID;
 }
 
 u16 sequence_player_get_tempo(u8 player) {

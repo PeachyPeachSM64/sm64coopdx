@@ -58,7 +58,12 @@
     - [enum ModFsFileSeek](#enum-ModFsFileSeek)
 - [mod_storage.h](#mod_storageh)
 - [network.h](#networkh)
+    - [enum NetworkSystemType](#enum-NetworkSystemType)
+    - [enum PlayerInteractions](#enum-PlayerInteractions)
+    - [enum BouncyLevelBounds](#enum-BouncyLevelBounds)
+    - [enum PvpType](#enum-PvpType)
 - [network_player.h](#network_playerh)
+    - [enum NetworkPlayerType](#enum-NetworkPlayerType)
 - [obj_behaviors.c](#obj_behaviorsc)
 - [obj_behaviors_2.h](#obj_behaviors_2h)
 - [object_constants.h](#object_constantsh)
@@ -69,7 +74,6 @@
     - [enum PlayerPart](#enum-PlayerPart)
 - [save_file.h](#save_fileh)
     - [enum SaveFileIndex](#enum-SaveFileIndex)
-    - [enum EuLanguages](#enum-EuLanguages)
 - [seq_ids.h](#seq_idsh)
     - [enum SeqId](#enum-SeqId)
 - [sm64.h](#sm64h)
@@ -661,7 +665,13 @@
 | id_bhvStarNumber | 539 |
 | id_bhvAmbientLight | 540 |
 | id_bhvPointLight | 541 |
-| id_bhv_max_count | 542 |
+| id_bhvWarpPipeBooBlue | 542 |
+| id_bhvWarpPipeBooRed | 543 |
+| id_bhvWarpPipeBooGreenLocked | 544 |
+| id_bhvWarpPipeBooGreenUnlocked | 545 |
+| id_bhvWarpPipeBooYellowLocked | 546 |
+| id_bhvWarpPipeBooYellowUnlocked | 547 |
+| id_bhv_max_count | 548 |
 
 [:arrow_up_small:](#)
 
@@ -1493,6 +1503,7 @@
 <br />
 
 ## [lag_compensation.h](#lag_compensation.h)
+- MAX_LOCAL_STATE_HISTORY
 
 [:arrow_up_small:](#)
 
@@ -2197,12 +2208,58 @@
 <br />
 
 ## [network.h](#network.h)
+- SYNC_DISTANCE_ONLY_DEATH
+- SYNC_DISTANCE_ONLY_EVENTS
+- SYNC_DISTANCE_INFINITE
+- PACKET_LENGTH
+
+### [enum NetworkSystemType](#NetworkSystemType)
+| Identifier | Value |
+| :--------- | :---- |
+| NS_SOCKET | 0 |
+| NS_MAX | 1 |
+
+### [enum PlayerInteractions](#PlayerInteractions)
+| Identifier | Value |
+| :--------- | :---- |
+| PLAYER_INTERACTIONS_NONE | 0 |
+| PLAYER_INTERACTIONS_SOLID | 1 |
+| PLAYER_INTERACTIONS_PVP | 2 |
+
+### [enum BouncyLevelBounds](#BouncyLevelBounds)
+| Identifier | Value |
+| :--------- | :---- |
+| BOUNCY_LEVEL_BOUNDS_OFF | 0 |
+| BOUNCY_LEVEL_BOUNDS_ON | 1 |
+| BOUNCY_LEVEL_BOUNDS_ON_CAP | 2 |
+
+### [enum PvpType](#PvpType)
+| Identifier | Value |
+| :--------- | :---- |
+| PLAYER_PVP_CLASSIC | 0 |
+| PLAYER_PVP_REVAMPED | 1 |
 
 [:arrow_up_small:](#)
 
 <br />
 
 ## [network_player.h](#network_player.h)
+- UNKNOWN_LOCAL_INDEX
+- UNKNOWN_GLOBAL_INDEX
+- UNKNOWN_NETWORK_INDEX
+- NETWORK_PLAYER_TIMEOUT
+- NETWORK_PLAYER_PING_TIMEOUT
+- MAX_RX_SEQ_IDS
+- USE_REAL_PALETTE_VAR
+- MAX_DESCRIPTION_STRING
+
+### [enum NetworkPlayerType](#NetworkPlayerType)
+| Identifier | Value |
+| :--------- | :---- |
+| NPT_UNKNOWN | 0 |
+| NPT_LOCAL | 1 |
+| NPT_SERVER | 2 |
+| NPT_CLIENT | 3 |
 
 [:arrow_up_small:](#)
 
@@ -2996,14 +3053,6 @@
 - SAVE_FLAG_COLLECTED_MIPS_STAR_1
 - SAVE_FLAG_COLLECTED_MIPS_STAR_2
 
-### [enum EuLanguages](#EuLanguages)
-| Identifier | Value |
-| :--------- | :---- |
-| LANGUAGE_ENGLISH | 0 |
-| LANGUAGE_FRENCH | 1 |
-| LANGUAGE_GERMAN | 2 |
-| LANGUAGE_MAX | 3 |
-
 [:arrow_up_small:](#)
 
 <br />
@@ -3352,6 +3401,7 @@
 - ACT_STAR_DANCE_NO_EXIT
 - ACT_READING_SIGN
 - ACT_JUMBO_STAR_CUTSCENE
+- ACT_CHARACTER_SWITCH
 - ACT_WAITING_FOR_DIALOG
 - ACT_DEBUG_FREE_MOVE
 - ACT_STANDING_DEATH
@@ -4152,7 +4202,6 @@
 - SOUND_GENERAL_CLAM_SHELL2
 - SOUND_GENERAL_CLAM_SHELL3
 - SOUND_GENERAL_PAINTING_EJECT
-- SOUND_GENERAL_PAINTING_EJECT
 - SOUND_GENERAL_LEVEL_SELECT_CHANGE
 - SOUND_GENERAL_PLATFORM
 - SOUND_GENERAL_DONUT_PLATFORM_EXPLOSION
@@ -4196,6 +4245,7 @@
 - SOUND_GENERAL_POUND_ROCK
 - SOUND_GENERAL_STAR_APPEARS
 - SOUND_GENERAL_COLLECT_1UP
+- SOUND_GENERAL_SPECIAL_COLLECTABLE
 - SOUND_GENERAL_BUTTON_PRESS_LOWPRIO
 - SOUND_GENERAL_BUTTON_PRESS
 - SOUND_GENERAL_BUTTON_PRESS_2_LOWPRIO
@@ -4656,6 +4706,7 @@
 - ANIM_FLAG_6
 - ANIM_FLAG_7
 - ANIM_FLAG_BONE_TRANS
+- ANIM_FLAG_BONE_SCALE
 - OBJECT_MAX_BHV_STACK
 - OBJECT_NUM_REGULAR_FIELDS
 - OBJECT_NUM_CUSTOM_FIELDS
@@ -4704,6 +4755,14 @@
 <br />
 
 ## [version.h](#version.h)
+- RENDER96DX_VERSION
+- GAME_NAME
+- WINDOW_NAME
+- GAME_NAME
+- WINDOW_NAME
+- GAME_NAME
+- WINDOW_NAME
+- MAX_VERSION_LENGTH
 
 [:arrow_up_small:](#)
 

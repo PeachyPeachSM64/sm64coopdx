@@ -287,6 +287,46 @@ Gets a behavior ID from a behavior name
 <br />
 
 
+## [cutscene_exit_painting_end](#cutscene_exit_painting_end)
+
+### Lua Example
+`cutscene_exit_painting_end(c)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| c | [Camera](structs.md#Camera) |
+
+### Returns
+- None
+
+### C Prototype
+`void cutscene_exit_painting_end(struct Camera *c);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [cutscene_star_dance_end](#cutscene_star_dance_end)
+
+### Lua Example
+`cutscene_star_dance_end(c)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| c | [Camera](structs.md#Camera) |
+
+### Returns
+- None
+
+### C Prototype
+`void cutscene_star_dance_end(struct Camera *c);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [skip_camera_interpolation](#skip_camera_interpolation)
 
 ### Description
@@ -4330,6 +4370,55 @@ Plays a dialog sound corresponding to `dialogID`
 
 <br />
 
+## [set_sequence_player_volume](#set_sequence_player_volume)
+
+### Description
+Sets the `volume` of `player`
+
+### Lua Example
+`set_sequence_player_volume(player, volume)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| player | `integer` |
+| volume | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void set_sequence_player_volume(s32 player, f32 volume);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [set_sequence_player_volume_override](#set_sequence_player_volume_override)
+
+### Description
+Overrides the volumeScale of `player`. When enabled, calls to set_sequence_player_volume will be clamped to `volume`.
+
+### Lua Example
+`set_sequence_player_volume_override(player, enabled, volume)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| player | `integer` |
+| enabled | `boolean` |
+| volume | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void set_sequence_player_volume_override(s32 player, bool enabled, f32 volume);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [play_music](#play_music)
 
 ### Description
@@ -4528,6 +4617,27 @@ Checks if the current background music is lowered
 
 <br />
 
+## [get_current_music_dynamic](#get_current_music_dynamic)
+
+### Description
+Gets the current level music dynamic index (used for water/spooky/underground phase mixing)
+
+### Lua Example
+`local integerValue = get_current_music_dynamic()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`u8 get_current_music_dynamic(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [play_secondary_music](#play_secondary_music)
 
 ### Description
@@ -4572,6 +4682,48 @@ Fades out secondary music over `fadeTimer`
 
 ### C Prototype
 `void stop_secondary_music(u16 fadeTimer);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_current_secondary_music_seq_id](#get_current_secondary_music_seq_id)
+
+### Description
+Gets the current secondary music sequence id
+
+### Lua Example
+`local integerValue = get_current_secondary_music_seq_id()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`u8 get_current_secondary_music_seq_id(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_current_secondary_music_volume](#get_current_secondary_music_volume)
+
+### Description
+Gets the current secondary music volume
+
+### Lua Example
+`local integerValue = get_current_secondary_music_volume()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`u8 get_current_secondary_music_volume(void);`
 
 [:arrow_up_small:](#)
 
@@ -4838,6 +4990,55 @@ Gets a sound level intensity based on `distance`
 
 ### C Prototype
 `f32 sound_get_level_intensity(f32 distance);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+---
+# functions from file_select.h
+
+<br />
+
+
+## [file_select_is_active](#file_select_is_active)
+
+### Description
+Checks if the file select is active
+
+### Lua Example
+`local booleanValue = file_select_is_active()`
+
+### Parameters
+- None
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool file_select_is_active();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [file_select_get_cursor_pos](#file_select_get_cursor_pos)
+
+### Description
+Gets the file select cursor 2D coordinates
+
+### Lua Example
+`local posX, posY = file_select_get_cursor_pos()`
+
+### Parameters
+- None
+
+### Returns
+- `number`
+- `number`
+
+### C Prototype
+`void file_select_get_cursor_pos(RET f32 *posX, RET f32 *posY);`
 
 [:arrow_up_small:](#)
 

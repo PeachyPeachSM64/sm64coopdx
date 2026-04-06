@@ -189,4 +189,11 @@ void render_game(void);
 
 void get_area_minimum_y(u8* hasMinY, f32* minY);
 
+/* |description|Gets the current level num|descriptionEnd| */
+s16 get_curr_level_num();
+/* |description|Gets the current course num|descriptionEnd| */
+s16 get_curr_course_num();
+/* |description|Gets the current area index|descriptionEnd| */
+s16 get_curr_area_index();
+
 #endif // AREA_H

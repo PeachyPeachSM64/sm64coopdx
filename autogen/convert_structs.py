@@ -12,7 +12,7 @@ in_files = [
     "src/game/camera.h",
     "src/game/characters.h",
     "src/engine/surface_collision.h",
-    "src/pc/network/network_player.h",
+    "src/pc/stub/network_player.h",
     "src/pc/djui/djui_hud_utils.h",
     "src/pc/djui/djui_theme.h",
     "src/game/object_helpers.h",
@@ -24,7 +24,7 @@ in_files = [
     "src/pc/lua/utils/smlua_collision_utils.h",
     "src/pc/lua/utils/smlua_level_utils.h",
     "src/game/spawn_sound.h",
-    "src/pc/network/network.h",
+    "src/pc/stub/network.h",
     "src/game/hardcoded.h",
     "src/pc/mods/mod.h",
     "src/pc/mods/mod_fs.h",
@@ -149,7 +149,7 @@ override_field_version_excludes = {
 }
 
 override_allowed_structs = {
-    "src/pc/network/network.h": [ "ServerSettings", "NametagsSettings" ],
+    "src/pc/stub/network.h": [ "ServerSettings", "NametagsSettings" ],
     "src/pc/djui/djui_types.h": [ "DjuiColor" ],
     "src/game/player_palette.h": [ ],
     "src/game/ingame_menu.h" : [ "DialogEntry" ],
