@@ -1644,12 +1644,10 @@ void update_mario_inputs(struct MarioState *m) {
 
     /* Developer stuff */
 #ifdef DEVELOPMENT
-    if (gNetworkSystem == &gNetworkSystemSocket) {
-        if (m->playerIndex == 0) {
-            if (m->action != ACT_DEBUG_FREE_MOVE && m->controller->buttonPressed & L_TRIG && m->controller->buttonDown & Z_TRIG) {
-                set_mario_action(m, ACT_DEBUG_FREE_MOVE, 0);
-                m->marioObj->oTimer = 0;
-            }
+    if (m->playerIndex == 0) {
+        if (m->action != ACT_DEBUG_FREE_MOVE && m->controller->buttonPressed & L_TRIG && m->controller->buttonDown & Z_TRIG) {
+            set_mario_action(m, ACT_DEBUG_FREE_MOVE, 0);
+            m->marioObj->oTimer = 0;
         }
     }
 #endif

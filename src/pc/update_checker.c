@@ -22,7 +22,7 @@
 #include "pc/loading.h"
 
 #define URL "https://raw.githubusercontent.com/coop-deluxe/render96dx/refs/heads/main/include/pc/network/version.h"
-#define VERSION_IDENTIFIER "#define SM64COOPDX_VERSION \""
+#define VERSION_IDENTIFIER "#define RENDER96DX_VERSION \""
 
 /*
 

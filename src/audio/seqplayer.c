@@ -2452,7 +2452,7 @@ bool sequence_player_is_enabled(u8 player) {
 }
 
 u8 sequence_player_get_seq_id(u8 player) {
-    return gSequencePlayers[SEQ_PLAYER_ENV].seqId & SEQ_BASE_ID;
+    return gSequencePlayers[player].seqId & SEQ_BASE_ID;
 }
 
 u16 sequence_player_get_tempo(u8 player) {

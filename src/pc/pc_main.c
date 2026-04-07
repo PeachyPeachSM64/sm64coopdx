@@ -480,9 +480,9 @@ void* main_game_init(UNUSED void* dummy) {
     wiiu_boot_log("main_game_init: dynos/mod sync init done");
 #endif
 
-    if (!gCLIOpts.skipUpdateCheck) {
-        check_for_updates();
-    }
+    // if (!gCLIOpts.skipUpdateCheck) {
+    //     check_for_updates();
+    // }
 
     LOADING_SCREEN_MUTEX(loading_screen_set_segment_text("Loading ROM Assets"));
     rom_assets_load();

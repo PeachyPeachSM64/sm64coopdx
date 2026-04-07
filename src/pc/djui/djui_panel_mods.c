@@ -267,7 +267,7 @@ static bool djui_mod_preview_render(struct DjuiBase* base) {
             u8 alphaA = (u8)roundf((f32)base->color.a * (1.0f - fadeT));
             gDPSetEnvColor(gDisplayListHead++, base->color.r, base->color.g, base->color.b, alphaA);
             create_dl_scale_matrix(DJUI_MTX_PUSH, translatedWidth / aspect, translatedHeight, 1.0f);
-            djui_gfx_render_texture_tile(a->texture, a->width, a->height, a->format, a->size, tileX, tileY, tileW, tileH, true, false);
+            djui_gfx_render_texture_tile(a->texture, a->width, a->height, a->format, a->size, tileX, tileY, tileW, tileH, true);
             gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
 
             if (preview->previewCount > 1 && fadeT > 0 && b->texture != NULL) {
@@ -287,7 +287,7 @@ static bool djui_mod_preview_render(struct DjuiBase* base) {
                 u8 alphaB = (u8)roundf((f32)base->color.a * fadeT);
                 gDPSetEnvColor(gDisplayListHead++, base->color.r, base->color.g, base->color.b, alphaB);
                 create_dl_scale_matrix(DJUI_MTX_PUSH, translatedWidth / aspect, translatedHeight, 1.0f);
-                djui_gfx_render_texture_tile(b->texture, b->width, b->height, b->format, b->size, tileX, tileY, tileW, tileH, true, false);
+                djui_gfx_render_texture_tile(b->texture, b->width, b->height, b->format, b->size, tileX, tileY, tileW, tileH, true);
                 gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
             }
         }
@@ -678,7 +678,7 @@ static struct DjuiBase* djui_mod_card_create(struct DjuiBase* parent, struct Mod
     djui_base_set_size_type(&textArea->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
     djui_base_set_size(&textArea->base, 1.0f, 1.0f);
 
-    const char* name = (mod != NULL && mod->name != NULL) ? mod->name : "";
+    const char* name = (mod != NULL) ? mod->name : "";
     const char* author = "";
     if (mod != NULL) {
         if (mod->author != NULL) {

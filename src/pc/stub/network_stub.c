@@ -561,9 +561,6 @@ struct SyncObject* sync_object_init(UNUSED struct Object *o, UNUSED float maxSyn
     return NULL;
 }
 
-void sync_object_init_field(UNUSED struct Object *o, UNUSED void* field) {
-}
-
 void sync_object_init_field_with_size(UNUSED struct Object *o, UNUSED void* field, UNUSED u8 size) {
 }
 

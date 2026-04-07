@@ -1366,7 +1366,7 @@ u8 determine_player_damage_value(struct MarioState* attacker, u32 interaction) {
     return 0;
 }
 
-#if 0
+#if 1
 u8 player_is_sliding(struct MarioState* m) {
     if (!m) { return FALSE; }
     if (m->action & (ACT_FLAG_BUTT_OR_STOMACH_SLIDE | ACT_FLAG_DIVING)) {

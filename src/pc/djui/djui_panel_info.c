@@ -9,10 +9,7 @@ void djui_panel_info_create(struct DjuiBase *caller) {
     struct DjuiThreePanel *panel = djui_panel_menu_create(DLANG(INFORMATION, INFORMATION_TITLE), false);
     struct DjuiBase *body = djui_three_panel_get_body(panel);
     {
-        snprintf(sInfo, 512, "\
-render96dx is an online multiplayer project for the Super Mario 64 PC port, started by the Coop Deluxe Team.\n\
-Its purpose is to actively maintain and improve, but also continue sm64ex-coop, created by djoslin0.\n\
-More features, customization, and power to the Lua API allow modders and players to enjoy Super Mario 64 more than ever!");
+        snprintf(sInfo, 512, "<PLACEHOLDER>");
 
         struct DjuiText* text = djui_text_create(body, sInfo);
         djui_base_set_location(&text->base, 0, 0);

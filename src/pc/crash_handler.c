@@ -282,9 +282,9 @@ static void crash_handler_add_info_str(CrashHandlerText** pTextP, f32 x, f32 y, 
 static void crash_handler_add_version_str(CrashHandlerText** pTextP, f32 x, f32 y) {
     CrashHandlerText* pText = *pTextP;
 #ifdef DEVELOPMENT
-    crash_handler_add_info_str(&pText, x, y, "Dev Build", SM64COOPDX_VERSION);
+    crash_handler_add_info_str(&pText, x, y, "Dev Build", RENDER96DX_VERSION);
 #else
-    crash_handler_add_info_str(&pText, x, y, "Release", SM64COOPDX_VERSION);
+    crash_handler_add_info_str(&pText, x, y, "Release", RENDER96DX_VERSION);
 #endif
     crash_handler_add_info_str(&pText, x, y + 8, "Renderer", RAPI_NAME);
     *pTextP = pText;
