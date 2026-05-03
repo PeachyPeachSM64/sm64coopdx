@@ -90,6 +90,34 @@ static Gfx obj_sanitize_gfx[] = {
     gsSPEndDisplayList(),
 };
 
+static Gfx obj_load_gfx_state[] = {
+    gsSPLoadState(G_STATE_GEOMETRY_MODE
+                | G_STATE_COMBINE_MODE
+                | G_STATE_OTHER_MODE
+                | G_STATE_ENV_COLOR
+                | G_STATE_PRIM_COLOR
+                | G_STATE_FOG_COLOR
+                | G_STATE_FILL_COLOR
+                | G_STATE_FRESNEL
+                | G_STATE_TEXTURES
+                | G_STATE_LIGHTS),
+    gsSPEndDisplayList(),
+};
+
+static Gfx obj_save_gfx_state[] = {
+    gsSPSaveState(G_STATE_GEOMETRY_MODE
+                | G_STATE_COMBINE_MODE
+                | G_STATE_OTHER_MODE
+                | G_STATE_ENV_COLOR
+                | G_STATE_PRIM_COLOR
+                | G_STATE_FOG_COLOR
+                | G_STATE_FILL_COLOR
+                | G_STATE_FRESNEL
+                | G_STATE_TEXTURES
+                | G_STATE_LIGHTS),
+    gsSPEndDisplayList(),
+};
+
 /**
  * Animation nodes have state in global variables, so this struct captures
  * the animation state so a 'context switch' can be made when rendering the
@@ -1420,8 +1448,32 @@ static s32 obj_is_in_view(struct GraphNodeObject *node, Mat4 matrix) {
 
 static void geo_sanitize_object_gfx(void) {
     geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE_DECAL);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE_INTER);
     geo_append_display_list(obj_sanitize_gfx, LAYER_ALPHA);
     geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT_DECAL);
+    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT_INTER);
+}
+
+static void geo_load_object_gfx_state(void) {
+    geo_append_display_list(obj_load_gfx_state, LAYER_OPAQUE);
+    geo_append_display_list(obj_load_gfx_state, LAYER_OPAQUE_DECAL);
+    geo_append_display_list(obj_load_gfx_state, LAYER_OPAQUE_INTER);
+    geo_append_display_list(obj_load_gfx_state, LAYER_ALPHA);
+    geo_append_display_list(obj_load_gfx_state, LAYER_TRANSPARENT);
+    geo_append_display_list(obj_load_gfx_state, LAYER_TRANSPARENT_DECAL);
+    geo_append_display_list(obj_load_gfx_state, LAYER_TRANSPARENT_INTER);
+}
+
+static void geo_save_object_gfx_state(void) {
+    geo_append_display_list(obj_save_gfx_state, LAYER_OPAQUE);
+    geo_append_display_list(obj_save_gfx_state, LAYER_OPAQUE_DECAL);
+    geo_append_display_list(obj_save_gfx_state, LAYER_OPAQUE_INTER);
+    geo_append_display_list(obj_save_gfx_state, LAYER_ALPHA);
+    geo_append_display_list(obj_save_gfx_state, LAYER_TRANSPARENT);
+    geo_append_display_list(obj_save_gfx_state, LAYER_TRANSPARENT_DECAL);
+    geo_append_display_list(obj_save_gfx_state, LAYER_TRANSPARENT_INTER);
 }
 
 static struct MarioBodyState *get_mario_body_state_from_mario_object(struct Object *marioObj) {
@@ -1707,6 +1759,10 @@ void geo_process_held_object(struct GraphNodeHeldObject *node) {
             dynos_gfx_swap_animations(node->objNode);
         }
 
+        // The held object is going to change the gfx state before
+        // the holder finishes rendering, so let's save the state now
+        geo_save_object_gfx_state();
+
         geo_sanitize_object_gfx();
         geo_process_node_and_siblings(node->objNode->header.gfx.sharedChild);
         gCurGraphNodeHeldObject = NULL;
@@ -1718,6 +1774,9 @@ void geo_process_held_object(struct GraphNodeHeldObject *node) {
         gCurAnim = gGeoTempState.anim;
         gPrevAnimFrame = gGeoTempState.prevFrame;
         gMatStackIndex--;
+
+        // Restore the previously saved state before continuing
+        geo_load_object_gfx_state();
     }
 
     if (node->fnNode.node.children != NULL) {
