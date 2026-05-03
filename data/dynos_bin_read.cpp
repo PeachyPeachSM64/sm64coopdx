@@ -32,8 +32,8 @@ static IfDefPtr GetNearestIfDefPointer(char *pFileBuffer) {
 char *DynOS_Read_Buffer(FILE* aFile, GfxData* aGfxData) {
     fseek(aFile, 0, SEEK_END);
     s32 _Length = ftell(aFile);
-    if (aGfxData && aGfxData->mModelIdentifier == 0) {
-        aGfxData->mModelIdentifier = (u32) _Length;
+    if (aGfxData && aGfxData->mDataIdentifier == 0) {
+        aGfxData->mDataIdentifier = (u32) _Length;
     }
 
     char *_OrigFileBuffer = New<char>(_Length + 1);
@@ -119,7 +119,7 @@ template <typename T>
 static void AppendNewNode(GfxData *aGfxData, DataNodes<T> &aNodes, const String &aName, String *&aDataName, Array<String> *&aDataTokens) {
     DataNode<T> *_Node = New<DataNode<T>>();
     _Node->mName = aName;
-    _Node->mModelIdentifier = aGfxData->mModelIdentifier;
+    _Node->mDataIdentifier = aGfxData->mDataIdentifier;
     aNodes.Add(_Node);
     aDataName = &_Node->mName;
     aDataTokens = &_Node->mTokens;
