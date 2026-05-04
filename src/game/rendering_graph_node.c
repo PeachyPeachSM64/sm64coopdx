@@ -581,6 +581,16 @@ static void geo_append_display_list(void *displayList, s16 layer) {
     }
 }
 
+static void geo_append_display_list_to_all_layers(void *displayList) {
+    geo_append_display_list(displayList, LAYER_OPAQUE);
+    geo_append_display_list(displayList, LAYER_OPAQUE_DECAL);
+    geo_append_display_list(displayList, LAYER_OPAQUE_INTER);
+    geo_append_display_list(displayList, LAYER_ALPHA);
+    geo_append_display_list(displayList, LAYER_TRANSPARENT);
+    geo_append_display_list(displayList, LAYER_TRANSPARENT_DECAL);
+    geo_append_display_list(displayList, LAYER_TRANSPARENT_INTER);
+}
+
 /**
  * Process the master list node.
  */
@@ -1447,33 +1457,15 @@ static s32 obj_is_in_view(struct GraphNodeObject *node, Mat4 matrix) {
 }
 
 static void geo_sanitize_object_gfx(void) {
-    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE);
-    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE_DECAL);
-    geo_append_display_list(obj_sanitize_gfx, LAYER_OPAQUE_INTER);
-    geo_append_display_list(obj_sanitize_gfx, LAYER_ALPHA);
-    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT);
-    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT_DECAL);
-    geo_append_display_list(obj_sanitize_gfx, LAYER_TRANSPARENT_INTER);
+    geo_append_display_list_to_all_layers(obj_sanitize_gfx);
 }
 
 static void geo_load_object_gfx_state(void) {
-    geo_append_display_list(obj_load_gfx_state, LAYER_OPAQUE);
-    geo_append_display_list(obj_load_gfx_state, LAYER_OPAQUE_DECAL);
-    geo_append_display_list(obj_load_gfx_state, LAYER_OPAQUE_INTER);
-    geo_append_display_list(obj_load_gfx_state, LAYER_ALPHA);
-    geo_append_display_list(obj_load_gfx_state, LAYER_TRANSPARENT);
-    geo_append_display_list(obj_load_gfx_state, LAYER_TRANSPARENT_DECAL);
-    geo_append_display_list(obj_load_gfx_state, LAYER_TRANSPARENT_INTER);
+    geo_append_display_list_to_all_layers(obj_load_gfx_state);
 }
 
 static void geo_save_object_gfx_state(void) {
-    geo_append_display_list(obj_save_gfx_state, LAYER_OPAQUE);
-    geo_append_display_list(obj_save_gfx_state, LAYER_OPAQUE_DECAL);
-    geo_append_display_list(obj_save_gfx_state, LAYER_OPAQUE_INTER);
-    geo_append_display_list(obj_save_gfx_state, LAYER_ALPHA);
-    geo_append_display_list(obj_save_gfx_state, LAYER_TRANSPARENT);
-    geo_append_display_list(obj_save_gfx_state, LAYER_TRANSPARENT_DECAL);
-    geo_append_display_list(obj_save_gfx_state, LAYER_TRANSPARENT_INTER);
+    geo_append_display_list_to_all_layers(obj_save_gfx_state);
 }
 
 static struct MarioBodyState *get_mario_body_state_from_mario_object(struct Object *marioObj) {

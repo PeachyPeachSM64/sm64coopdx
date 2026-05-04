@@ -2259,7 +2259,10 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
 
     // Load state
     if (cmd == G_STATE_LOAD) {
-        SUPPORT_CHECK(num_gfx_states > 0);
+        if (num_gfx_states == 0) {
+            return;
+        }
+
         num_gfx_states--;
         struct GfxState *gfx_state = &gfx_states[num_gfx_states];
 
@@ -2332,7 +2335,10 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
 
     // Save state
     if (cmd == G_STATE_SAVE) {
-        SUPPORT_CHECK(num_gfx_states < MAX_GFX_STATES);
+        if (num_gfx_states == MAX_GFX_STATES) {
+            return;
+        }
+
         struct GfxState *gfx_state = &gfx_states[num_gfx_states];
         num_gfx_states++;
 
