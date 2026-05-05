@@ -760,8 +760,8 @@ void DynOS_Col_Generate(const SysPath &aPackFolder, Array<Pair<u64, String>> _Ac
         _GfxData->mLoadIndex = 0;
 
         // Parse data
-        PrintNoNewLine("%s.col: Collision identifier: %X - Processing... ", _ColRootName.begin(), _GfxData->mDataIdentifier);
-        PrintConsole(CONSOLE_MESSAGE_INFO, "%s.col: Collision identifier: %X - Processing... ", _ColRootName.begin(), _GfxData->mDataIdentifier);
+        PrintNoNewLine("%s.col: Collision identifier: %llX - Processing... ", _ColRootName.begin(), _GfxData->mDataIdentifier);
+        PrintConsole(CONSOLE_MESSAGE_INFO, "%s.col: Collision identifier: %llX - Processing... ", _ColRootName.begin(), _GfxData->mDataIdentifier);
         DynOS_Col_Parse(_GfxData, _ColNode, true);
 
         // Write if no error

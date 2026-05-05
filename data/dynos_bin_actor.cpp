@@ -177,8 +177,8 @@ static void DynOS_Actor_Generate(const SysPath &aPackFolder, Array<Pair<u64, Str
         _GfxData->mGeoNodeStack.Clear();
 
         // Parse data
-        PrintNoNewLine("%s.bin: Model identifier: %X - Processing... ", _GeoRootName.begin(), _GfxData->mDataIdentifier);
-        PrintConsole(CONSOLE_MESSAGE_INFO, "%s.bin: Model identifier: %X - Processing... ", _GeoRootName.begin(), _GfxData->mDataIdentifier);
+        PrintNoNewLine("%s.bin: Model identifier: %llX - Processing... ", _GeoRootName.begin(), _GfxData->mDataIdentifier);
+        PrintConsole(CONSOLE_MESSAGE_INFO, "%s.bin: Model identifier: %llX - Processing... ", _GeoRootName.begin(), _GfxData->mDataIdentifier);
         DynOS_Geo_Parse(_GfxData, _GeoNode, true);
 
         // Init animation data

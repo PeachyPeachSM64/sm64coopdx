@@ -8,6 +8,11 @@ enum {
     COMMENT_BLOCK_END,   // slash-star-star, set to comment none if / is hit, else return to COMMENT_BLOCK
 };
 
+u64 DynOS_NewDataIdentifier() {
+    static u64 sDataIdentifier = 0;
+    return ++sDataIdentifier;
+}
+
 struct IfDefPtr { const char *mPtr; u64 mSize; bool mErase; };
 static IfDefPtr GetNearestIfDefPointer(char *pFileBuffer) {
     static const IfDefPtr sIfDefs[] = {
@@ -33,7 +38,7 @@ char *DynOS_Read_Buffer(FILE* aFile, GfxData* aGfxData) {
     fseek(aFile, 0, SEEK_END);
     s32 _Length = ftell(aFile);
     if (aGfxData && aGfxData->mDataIdentifier == 0) {
-        aGfxData->mDataIdentifier = (u32) _Length;
+        aGfxData->mDataIdentifier = DynOS_NewDataIdentifier();
     }
 
     char *_OrigFileBuffer = New<char>(_Length + 1);
@@ -117,6 +122,11 @@ char *DynOS_Read_Buffer(FILE* aFile, GfxData* aGfxData) {
 
 template <typename T>
 static void AppendNewNode(GfxData *aGfxData, DataNodes<T> &aNodes, const String &aName, String *&aDataName, Array<String> *&aDataTokens) {
+    if (aNodes.FindExact(aName, aGfxData->mDataIdentifier)) {
+        PrintDataError("  ERROR: Node \"%s\" already exists for data identifier: %llX", aName.begin(), aGfxData->mDataIdentifier);
+        return;
+    }
+
     DataNode<T> *_Node = New<DataNode<T>>();
     _Node->mName = aName;
     _Node->mDataIdentifier = aGfxData->mDataIdentifier;

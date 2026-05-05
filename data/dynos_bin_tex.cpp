@@ -440,7 +440,7 @@ static void DynOS_Tex_GeneratePack_Recursive(const SysPath &aPackFolder, SysPath
         }
 
         // read the file
-        aGfxData->mDataIdentifier++;
+        aGfxData->mDataIdentifier = DynOS_NewDataIdentifier();
         TexData* _TexData = LoadTextureFromFile(aGfxData, _Path.c_str());
         if (_TexData == NULL) {
             PrintDataError("Error reading texture from file: %s", _Path.c_str());

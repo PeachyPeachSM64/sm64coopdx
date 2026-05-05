@@ -1131,8 +1131,8 @@ static bool DynOS_Lvl_GeneratePack_Internal(const SysPath &aPackFolder, Array<Pa
         _GfxData->mGeoNodeStack.Clear();
 
         // Parse data
-        PrintNoNewLine("%s.lvl: Level identifier: %X - Processing... ", _LvlRootName.begin(), _GfxData->mDataIdentifier);
-        PrintConsole(CONSOLE_MESSAGE_INFO, "%s.lvl: Level identifier: %X - Processing... ", _LvlRootName.begin(), _GfxData->mDataIdentifier);
+        PrintNoNewLine("%s.lvl: Level identifier: %llX - Processing... ", _LvlRootName.begin(), _GfxData->mDataIdentifier);
+        PrintConsole(CONSOLE_MESSAGE_INFO, "%s.lvl: Level identifier: %llX - Processing... ", _LvlRootName.begin(), _GfxData->mDataIdentifier);
         DynOS_Lvl_Parse(_GfxData, _LvlRoot, true);
 
         // Force all of the movtexs, collisions, and trajectories into the compiled lvl
@@ -1268,7 +1268,7 @@ void DynOS_Lvl_GeneratePack(const SysPath &aPackFolder) {
                 continue;
             }
 
-            _GfxData->mDataIdentifier++;
+            _GfxData->mDataIdentifier = DynOS_NewDataIdentifier();
             DynOS_Lvl_GeneratePack_Recursive(_Folder, _GfxData);
 
         }
