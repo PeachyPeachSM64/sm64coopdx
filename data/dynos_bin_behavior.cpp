@@ -12,6 +12,7 @@ extern "C" {
 #include "game/area.h"
 #include "game/object_list_processor.h"
 #include "game/interaction.h"
+#include "pc/lua/smlua_hooks.h"
 #include "pc/lua/utils/smlua_anim_utils.h"
 #include "pc/lua/utils/smlua_collision_utils.h"
 
@@ -780,7 +781,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found) {
     bhv_constant(id_bhvPointLight);
 
     // Define a special type for new ids that don't override.
-    if (_Arg == "id_bhvNewId") { return (BehaviorScript) (0xFFFF); }
+    if (_Arg == "id_bhvNewId") { return (BehaviorScript) LUA_BEHAVIOR_NEW_ID; }
 
     // Legacy behavior ids
     bhv_legacy_constant(id_bhvFish2, id_bhvManyBlueFishSpawner);

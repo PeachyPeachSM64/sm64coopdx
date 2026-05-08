@@ -555,6 +555,8 @@ enum BehaviorId get_id_from_behavior(const BehaviorScript* behavior);
 enum BehaviorId get_id_from_vanilla_behavior(const BehaviorScript* behavior);
 /* |description|Gets a behavior script from a behavior ID|descriptionEnd| */
 const BehaviorScript* get_behavior_from_id(enum BehaviorId id);
+/* |description|Gets a vanilla behavior script only from a behavior ID|descriptionEnd| */
+const BehaviorScript* get_vanilla_behavior_from_id(enum BehaviorId id);
 /* |description|Gets a behavior name from a behavior ID (bhvMyGreatMODCustom004)|descriptionEnd| */
 const char* get_behavior_name_from_id(enum BehaviorId id);
 /* |description|Gets a behavior ID from a behavior name|descriptionEnd| */

@@ -235,6 +235,29 @@ Gets a behavior script from a behavior ID
 
 <br />
 
+## [get_vanilla_behavior_from_id](#get_vanilla_behavior_from_id)
+
+### Description
+Gets a vanilla behavior script only from a behavior ID
+
+### Lua Example
+`local pointerValue = get_vanilla_behavior_from_id(id)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| id | [enum BehaviorId](constants.md#enum-BehaviorId) |
+
+### Returns
+- `Pointer` <`BehaviorScript`>
+
+### C Prototype
+`const BehaviorScript* get_vanilla_behavior_from_id(enum BehaviorId id);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [get_behavior_name_from_id](#get_behavior_name_from_id)
 
 ### Description

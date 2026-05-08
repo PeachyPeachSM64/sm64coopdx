@@ -25,6 +25,7 @@ struct Mod* gLuaLastHookMod = NULL;
 
 void smlua_mod_error(void) {
     struct Mod* mod = gLuaActiveMod;
+    if (mod == NULL) { mod = gLuaLoadingMod; }
     if (mod == NULL) { mod = gLuaLastHookMod; }
     if (mod == NULL) { return; }
     char txt[255] = { 0 };
@@ -35,6 +36,7 @@ void smlua_mod_error(void) {
 
 void smlua_mod_warning(void) {
     struct Mod* mod = gLuaActiveMod;
+    if (mod == NULL) { mod = gLuaLoadingMod; }
     if (mod == NULL) { mod = gLuaLastHookMod; }
     if (mod == NULL) { return; }
     if (mod->ignoreScriptWarnings) { return; }

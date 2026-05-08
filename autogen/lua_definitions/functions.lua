@@ -3022,6 +3022,13 @@ function get_behavior_from_id(id)
 end
 
 --- @param id BehaviorId
+--- @return Pointer_BehaviorScript
+--- Gets a vanilla behavior script only from a behavior ID
+function get_vanilla_behavior_from_id(id)
+    -- ...
+end
+
+--- @param id BehaviorId
 --- @return string
 --- Gets a behavior name from a behavior ID (bhvMyGreatMODCustom004)
 function get_behavior_name_from_id(id)
