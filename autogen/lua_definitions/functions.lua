@@ -3002,42 +3002,42 @@ end
 
 --- @param behavior Pointer_BehaviorScript
 --- @return BehaviorId
---- Gets a behavior ID from a behavior script
+--- Gets the behavior ID of the provided `behavior`
 function get_id_from_behavior(behavior)
     -- ...
 end
 
 --- @param behavior Pointer_BehaviorScript
 --- @return BehaviorId
---- Gets a behavior ID from only vanilla behavior scripts
+--- Gets the behavior ID of the provided `behavior` if it's a vanilla behavior, `id_bhv_max_count` otherwise
 function get_id_from_vanilla_behavior(behavior)
     -- ...
 end
 
 --- @param id BehaviorId
 --- @return Pointer_BehaviorScript
---- Gets a behavior script from a behavior ID
+--- Gets the behavior script corresponding to the provided `id`
 function get_behavior_from_id(id)
     -- ...
 end
 
 --- @param id BehaviorId
 --- @return Pointer_BehaviorScript
---- Gets a vanilla behavior script only from a behavior ID
+--- Gets the behavior script corresponding to the provided `id` if it's a vanilla behavior, `nil` otherwise
 function get_vanilla_behavior_from_id(id)
     -- ...
 end
 
 --- @param id BehaviorId
 --- @return string
---- Gets a behavior name from a behavior ID (bhvMyGreatMODCustom004)
+--- Gets the behavior name from the provided `id` (bhvMyGreatMODCustom004)
 function get_behavior_name_from_id(id)
     -- ...
 end
 
 --- @param name string
 --- @return BehaviorId
---- Gets a behavior ID from a behavior name
+--- Gets the behavior ID corresponding to the provided `name`
 function get_id_from_behavior_name(name)
     -- ...
 end

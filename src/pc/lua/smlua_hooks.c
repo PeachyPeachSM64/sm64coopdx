@@ -761,7 +761,7 @@ const BehaviorScript *smlua_get_behavior_command(const BehaviorScript *behavior)
 const char* smlua_get_behavior_name_from_id(enum BehaviorId id) {
     struct LuaHookedBehavior *hooked = smlua_find_hooked_behavior(id);
     if (hooked) {
-        return (const char *) hooked->bhvNames->buffer[0]; // return the first name registered
+        return (const char *) hooked->bhvNames->buffer[hooked->bhvNames->count - 1]; // return the last name registered
     }
     return NULL;
 }
@@ -804,7 +804,7 @@ int smlua_hook_custom_bhv(BehaviorScript *bhvScript, const char *bhvName) {
             hooked->script = bhvScript;
             hooked->script[1] = (BehaviorScript) ID(hooked->customId);
         } else {
-            LOG_LUA_WARNING("Hook behavior: the behavior script for the behavior %s is custom and cannot be changed", (const char *) hooked->bhvNames->buffer[0]);
+            LOG_LUA_WARNING("Hook behavior: the behavior script for the behavior %s is custom and cannot be changed", (const char *) hooked->bhvNames->buffer[hooked->bhvNames->count - 1]);
         }
     }
 
@@ -966,7 +966,7 @@ int smlua_hook_behavior(lua_State *L) {
                 } break;
 
                 case LUA_BEHAVIOR_TYPE_CUSTOM: {
-                    LOG_LUA_WARNING("Hook behavior: the behavior script for the behavior %s is custom and cannot be changed", (const char *) hooked->bhvNames->buffer[0]);
+                    LOG_LUA_WARNING("Hook behavior: the behavior script for the behavior %s is custom and cannot be changed", (const char *) hooked->bhvNames->buffer[hooked->bhvNames->count - 1]);
                 } break;
             }
         }
@@ -974,15 +974,15 @@ int smlua_hook_behavior(lua_State *L) {
         // Warn user if trying to change the object list
         enum ObjectList hookedObjectList = get_object_list_from_behavior(hooked->script);
         if (hookedObjectList != objectList) {
-            LOG_LUA_WARNING("Hook behavior: trying to change the object list of the existing hooked behavior %s: %d (should be %d)", (const char *) hooked->bhvNames->buffer[0], objectList, hookedObjectList);
+            LOG_LUA_WARNING("Hook behavior: trying to change the object list of the existing hooked behavior %s: %d (should be %d)", (const char *) hooked->bhvNames->buffer[hooked->bhvNames->count - 1], objectList, hookedObjectList);
         }
     }
 
-    // If not provided, generate generic behavior name: bhv<ModName>Custom<Index>
+    // If not provided and the hooked behavior has no name yet, generate generic behavior name: bhv<ModName>Custom<Index>
     // - <ModName> is the mod name in CamelCase format, alphanumeric chars only
     // - <Index> is in 3-digit numeric format (from 001 to 999, no longer applies for index greater than 1000)
     // For example, the 4th unnamed behavior of the mod "my-great_MOD" will be named "bhvMyGreatMODCustom004"
-    if (!bhvName) {
+    if (!bhvName && hooked->bhvNames->count == 0) {
         static char sGenericBhvName[MOD_NAME_MAX_LENGTH + 16];
         s32 i = 3;
         snprintf(sGenericBhvName, 4, "bhv");
@@ -1005,8 +1005,10 @@ int smlua_hook_behavior(lua_State *L) {
     }
 
     // Add name
-    char *name = growing_array_alloc(hooked->bhvNames, strlen(bhvName) + 1);
-    strcpy(name, bhvName);
+    if (bhvName) {
+        char *name = growing_array_alloc(hooked->bhvNames, strlen(bhvName) + 1);
+        strcpy(name, bhvName);
+    }
 
     // Add init function
     if (initReference) {
