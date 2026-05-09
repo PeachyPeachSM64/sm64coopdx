@@ -201,8 +201,8 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
     struct CustomFieldItem customFields[OBJECT_NUM_CUSTOM_FIELDS] = { 0 };
     u16 customFieldCount = 0;
 
-    // get _custom_object_fields
-    lua_getglobal(L, "_custom_object_fields"); // get global custom object fields table
+    // get custom object fields tables
+    lua_getglobal(L, "_global_custom_object_fields"); // get global custom object fields table
     lua_getglobal(L, "_G"); // get global table
     lua_getfield(L, LUA_REGISTRYINDEX, gLuaLoadingMod->relativePath); // push file's "global" table
     int fileGlobalIndex = lua_gettop(L);
@@ -304,7 +304,7 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
             return 0;
         }
 
-        // push to file _custom_object_fields, then to global _custom_object_fields if needed
+        // push to file _custom_object_fields, then to _global_custom_object_fields if needed
         for (s32 i = 0; i != (node->global ? 2 : 1); ++i) {
             lua_pushvalue(L, customObjectFieldsIndex[i]);
             lua_pushstring(L, node->key);
@@ -320,7 +320,7 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
                 lua_pushinteger(L, node->lvt);
                 lua_rawset(L, -3);
             }
-            lua_settable(L, -3); // set _custom_object_fields
+            lua_settable(L, -3); // add custom object field
         }
 
         LOG_INFO("Registered %scustom object field: 0x%02X as %s - %s", (node->global ? "globally " : ""), fieldIndex, smlua_get_custom_field_type_name(node->lvt), node->key);
@@ -333,7 +333,7 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
 
     lua_pop(L, 1); // pop key
     lua_pop(L, 1); // pop _custom_object_fields
-    lua_pop(L, 1); // pop global _custom_object_fields
+    lua_pop(L, 1); // pop _global_custom_object_fields
 
     LUA_STACK_CHECK_END(L);
     return 1;
@@ -349,8 +349,8 @@ struct LuaObjectField* smlua_get_custom_field(lua_State* L, u32 lot, int keyInde
         return NULL;
     }
 
-    // get _custom_object_fields
-    lua_getglobal(L, "_custom_object_fields"); // get global custom object fields table
+    // get custom object fields tables
+    lua_getglobal(L, "_global_custom_object_fields"); // get global custom object fields table
     lua_getglobal(L, "_G"); // get global table
     lua_getfield(L, LUA_REGISTRYINDEX, gLuaActiveMod->relativePath); // push file's "global" table
     int fileGlobalIndex = lua_gettop(L);
@@ -407,14 +407,14 @@ struct LuaObjectField* smlua_get_custom_field(lua_State* L, u32 lot, int keyInde
         lua_pop(L, 1); // pop value table
         lua_pop(L, 1); // pop table
         lua_pop(L, 1); // pop _custom_object_fields
-        lua_pop(L, 1); // pop global _custom_object_fields
+        lua_pop(L, 1); // pop _global_custom_object_fields
 
         LUA_STACK_CHECK_END(L);
         return &lof;
     }
 
     lua_pop(L, 1); // pop _custom_object_fields
-    lua_pop(L, 1); // pop global _custom_object_fields
+    lua_pop(L, 1); // pop _global_custom_object_fields
 
     LUA_STACK_CHECK_END(L);
     return NULL;
@@ -840,7 +840,7 @@ void smlua_cobject_init_globals(void) {
 
     // Create global custom object fields table
     lua_newtable(L);
-    lua_setglobal(L, "_custom_object_fields");
+    lua_setglobal(L, "_global_custom_object_fields");
 
 #define EXPOSE_GLOBAL_ARRAY(lot, ptr, iterator) \
     { \
