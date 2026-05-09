@@ -784,13 +784,41 @@ int smlua__iter(lua_State *L) {
     lua_rawgeti(L, 1, 2);
     const CObject *cobj = lua_touserdata(L, -1);
     lua_pop(L, 1);
-    
+
+    struct LuaObjectField *data = NULL;
+
+    // Regular fields
     extern struct LuaObjectTable sLuaObjectAutogenTable[];
     struct LuaObjectTable* ot = &sLuaObjectAutogenTable[cobj->lot - LOT_AUTOGEN_MIN - 1];
-    if (i >= ot->fieldCount) { return 0; }
-    
-    u8* pointer = (u8*)(intptr_t) cobj->pointer;
-    struct LuaObjectField* data = &ot->fields[i];
+    if (i < ot->fieldCount) {
+        data = &ot->fields[i];
+    }
+
+    // Custom object fields
+    if (data == NULL && cobj->lot == LOT_OBJECT) {
+        int j = i - ot->fieldCount;
+
+        // Mod fields
+        struct Mod *mod = gLuaActiveMod;
+        if (mod != NULL && mod->customObjectTable != NULL) {
+            if (j < mod->customObjectTable->fieldCount) {
+                data = &mod->customObjectTable->fields[j];
+            } else {
+                j -= mod->customObjectTable->fieldCount;
+            }
+        }
+
+        // Global fields
+        if (data == NULL && sGlobalCustomObjectTable != NULL && j < sGlobalCustomObjectTable->fieldCount) {
+            data = &sGlobalCustomObjectTable->fields[j];
+        }
+    }
+
+    if (data == NULL) {
+        return 0;
+    }
+
+    u8* pointer = ((u8*)(intptr_t)cobj->pointer) + data->valueOffset;
     lua_pushstring(L, data->key);
     smlua_push_field(L, pointer, data);
 
@@ -883,10 +911,6 @@ void smlua_cobject_init_globals(void) {
     luaL_setfuncs(L, cPointerMethods, 0);
     gSmLuaCPointerMetatable = luaL_ref(L, LUA_REGISTRYINDEX);
 
-    // Create global custom object fields table
-    lua_newtable(L);
-    lua_setglobal(L, "_global_custom_object_fields");
-
 #define EXPOSE_GLOBAL_ARRAY(lot, ptr, iterator) \
     { \
         lua_newtable(L); \
@@ -957,12 +981,6 @@ void smlua_cobject_init_per_file_globals(const char* path) {
     lua_State* L = gLuaState;
 
     lua_getfield(L, LUA_REGISTRYINDEX, path); // push per-file globals
-
-    {
-        lua_pushstring(L, "_custom_object_fields");
-        lua_newtable(L);
-        lua_settable(L, -3);
-    }
 
     lua_pop(L, 1); // pop per-file globals
 }
