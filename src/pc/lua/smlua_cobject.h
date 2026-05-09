@@ -90,6 +90,8 @@ const char *smlua_get_lvt_name(u16 lvt);
 struct LuaObjectField* smlua_get_object_field_from_ot(struct LuaObjectTable* ot, const char* key);
 struct LuaObjectField* smlua_get_object_field(u16 lot, const char* key);
 struct LuaObjectField* smlua_get_custom_field(lua_State* L, u32 lot, int keyIndex);
+void smlua_init_custom_fields();
+void smlua_assign_custom_fields();
 void smlua_cobject_init_globals(void);
 void smlua_cobject_init_per_file_globals(const char* path);
 void smlua_bind_cobject(void);

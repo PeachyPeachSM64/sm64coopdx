@@ -8,6 +8,7 @@
 #include "pc/utils/md5.h"
 #include "pc/debuglog.h"
 #include "pc/fs/fmem.h"
+#include "pc/lua/smlua_cobject.h"
 #include <stdint.h>
 
 #ifdef _WIN32
@@ -215,6 +216,18 @@ void mod_clear(struct Mod* mod) {
     if (mod->files != NULL) {
         free(mod->files);
         mod->files = NULL;
+    }
+
+    if (mod->customObjectFields != NULL) {
+        growing_array_free(&mod->customObjectFields);
+    }
+
+    if (mod->customObjectTable != NULL) {
+        if (mod->customObjectTable->fields != NULL) {
+            free(mod->customObjectTable->fields);
+        }
+        free(mod->customObjectTable);
+        mod->customObjectTable = NULL;
     }
 
     mod->fileCount = 0;

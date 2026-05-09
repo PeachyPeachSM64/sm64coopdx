@@ -120,51 +120,6 @@ static const struct { enum LuaValueType lvt; const char *name; } sCustomFieldVal
     { LVT_F32, "f32" },
 };
 
-#define CUSTOM_FIELD_ITEM_LEN 48
-struct CustomFieldItem {
-    char key[CUSTOM_FIELD_ITEM_LEN];
-    enum LuaValueType lvt;
-    bool global;
-    struct CustomFieldItem* next;
-};
-
-static void smlua_add_custom_field_linked(struct CustomFieldItem** head, struct CustomFieldItem* item, const char* key, enum LuaValueType lvt, bool global) {
-    snprintf(item->key, CUSTOM_FIELD_ITEM_LEN, "%s", key);
-    item->lvt = lvt;
-    item->global = global;
-    item->next = NULL;
-
-    if (*head == NULL) {
-        item->next = *head;
-        *head = item;
-        return;
-    }
-
-    struct CustomFieldItem* prev = NULL;
-    struct CustomFieldItem* node = *head;
-    while (node != NULL) {
-        if (strcmp(node->key, item->key) > 0) {
-            if (prev == NULL) {
-                item->next = *head;
-                *head = item;
-                return;
-            } else {
-                item->next = prev->next;
-                prev->next = item;
-                return;
-            }
-        }
-
-        prev = node;
-        node = node->next;
-    }
-
-    if (prev != NULL) {
-        item->next = prev->next;
-        prev->next = item;
-    }
-}
-
 static enum LuaValueType smlua_get_custom_field_type(const char *name) {
     for (s32 i = 0; i != ARRAY_COUNT(sCustomFieldValidTypes); ++i) {
         if (strcmp(name, sCustomFieldValidTypes[i].name) == 0) {
@@ -183,12 +138,169 @@ static const char *smlua_get_custom_field_type_name(enum LuaValueType lvt) {
     return NULL;
 }
 
+#define CUSTOM_FIELD_ITEM_LEN 48
+struct CustomObjectField {
+    char key[CUSTOM_FIELD_ITEM_LEN];
+    enum LuaValueType lvt;
+    struct Mod *mod;
+    u32 fieldIndex;
+};
+
+struct ModCustomObjectFields {
+    struct CustomObjectField *fields[OBJECT_NUM_CUSTOM_FIELDS];
+    u16 count;
+};
+
+static struct GrowingArray *sCustomObjectFields = NULL;
+static struct LuaObjectTable *sGlobalCustomObjectTable = NULL;
+
+static struct CustomObjectField *smlua_find_custom_field(const char *key, struct Mod *mod) {
+    growing_array_for_each_(sCustomObjectFields, struct CustomObjectField, cof) {
+        if (strcmp(cof->key, key) == 0) {
+            if (cof->mod == mod) {
+                return cof;
+            }
+        }
+    }
+    return NULL;
+}
+
+static struct CustomObjectField *smlua_create_custom_field(const char *key, enum LuaValueType lvt, struct Mod *mod) {
+    struct CustomObjectField *cof = growing_array_alloc(sCustomObjectFields, sizeof(struct CustomObjectField));
+    strncpy(cof->key, key, CUSTOM_FIELD_ITEM_LEN);
+    cof->lvt = lvt;
+    cof->mod = mod;
+    cof->fieldIndex = 0;
+    return cof;
+}
+
+static u16 smlua_count_custom_fields(struct Mod *mod) {
+    u16 count = 0;
+    growing_array_for_each_(sCustomObjectFields, struct CustomObjectField, cof) {
+        if (cof->mod == mod) {
+            count++;
+        }
+    }
+    return count;
+}
+
+static int smlua_sort_custom_fields(const void *l, const void *r) {
+    const struct CustomObjectField *lcof = *((const struct CustomObjectField **) l);
+    const struct CustomObjectField *rcof = *((const struct CustomObjectField **) r);
+    return strcmp(lcof->key, rcof->key);
+}
+
+static int smlua_sort_lua_object_fields(const void *l, const void *r) {
+    const struct LuaObjectField *llof = (const struct LuaObjectField *) l;
+    const struct LuaObjectField *rlof = (const struct LuaObjectField *) r;
+    return strcmp(llof->key, rlof->key);
+}
+
+static struct LuaObjectTable *smlua_create_custom_object_table(struct Mod *mod) {
+    struct LuaObjectTable *ot = NULL;
+    u16 customFieldsCount = smlua_count_custom_fields(mod);
+    if (customFieldsCount > 0) {
+        ot = malloc(sizeof(struct LuaObjectTable));
+        ot->lot = LOT_OBJECT;
+        ot->fieldCount = customFieldsCount;
+        ot->fields = malloc(sizeof(struct LuaObjectField) * customFieldsCount);
+        u16 index = 0;
+        growing_array_for_each_(sCustomObjectFields, struct CustomObjectField, cof) {
+            if (cof->mod == mod) {
+                struct LuaObjectField *lof = &ot->fields[index];
+                lof->key = cof->key;
+                lof->valueType = cof->lvt;
+                lof->immutable = false;
+                lof->lot = LOT_NONE;
+                lof->count = 1;
+                lof->size = sizeof(u32);
+                lof->valueOffset = offsetof(struct Object, rawData) + sizeof(u32) * cof->fieldIndex;
+                index++;
+            }
+        }
+
+        // Sort it for binary search to work properly
+        qsort(ot->fields, customFieldsCount, sizeof(struct LuaObjectField), smlua_sort_lua_object_fields);
+
+        if (mod) {
+            LOG_INFO("Registered custom object fields for mod: %s", mod->relativePath);
+        } else {
+            LOG_INFO("Registered global custom object fields:");
+        }
+        for (u16 j = 0; j != ot->fieldCount; ++j) {
+            struct LuaObjectField *lof = &ot->fields[j];
+            u32 fieldIndex = (lof->valueOffset - offsetof(struct Object, rawData)) / sizeof(u32);
+            LOG_INFO("    %s: 0x%02X as %s", lof->key, fieldIndex, smlua_get_custom_field_type_name(lof->valueType));
+        }
+    }
+    return ot;
+}
+
+void smlua_init_custom_fields() {
+    sCustomObjectFields = growing_array_init(sCustomObjectFields, 32, malloc, free);
+    if (sGlobalCustomObjectTable) {
+        if (sGlobalCustomObjectTable->fields != NULL) {
+            free(sGlobalCustomObjectTable->fields);
+        }
+        free(sGlobalCustomObjectTable);
+        sGlobalCustomObjectTable = NULL;
+    }
+}
+
+void smlua_assign_custom_fields() {
+
+    // First, sort all custom object fields per define per mod, because that's how they were registered before
+    for (u16 i = 0; i < gActiveMods.entryCount; ++i) {
+        struct Mod *mod = gActiveMods.entries[i];
+        growing_array_for_each_(mod->customObjectFields, struct ModCustomObjectFields, modFields) {
+            qsort(modFields->fields, modFields->count, sizeof(struct CustomObjectField *), smlua_sort_custom_fields);
+        }
+    }
+
+    // Next, assign a fieldIndex for each custom object field defined in sCustomObjectFields
+    // Do two passes per mod to avoid collisions between custom fields
+    for (u16 i = 0; i < gActiveMods.entryCount; ++i) {
+        struct Mod *mod = gActiveMods.entries[i];
+        growing_array_for_each_(mod->customObjectFields, struct ModCustomObjectFields, modFields) {
+
+            // Register all already taken slots (fieldIndex != 0)
+            bool alreadyTakenSlots[OBJECT_NUM_CUSTOM_FIELDS + 1] = {0};
+            for (u16 j = 0; j != modFields->count; ++j) {
+                if (modFields->fields[j]->fieldIndex != 0) {
+                    alreadyTakenSlots[modFields->fields[j]->fieldIndex - OBJECT_CUSTOM_FIELDS_START] = true;
+                }
+            }
+
+            // Assign a unique slot for each remaining custom field
+            s32 freeIndex = 0;
+            for (u16 j = 0; j != modFields->count; ++j) {
+                while (alreadyTakenSlots[freeIndex]) {
+                    freeIndex++;
+                }
+                if (modFields->fields[j]->fieldIndex == 0) {
+                    modFields->fields[j]->fieldIndex = OBJECT_CUSTOM_FIELDS_START + freeIndex;
+                    alreadyTakenSlots[freeIndex] = true;
+                }
+            }
+        }
+    }
+
+    // Now, create a custom object table for each mod
+    for (u16 i = 0; i < gActiveMods.entryCount; ++i) {
+        struct Mod *mod = gActiveMods.entries[i];
+        mod->customObjectTable = smlua_create_custom_object_table(mod);
+    }
+
+    // Finally, create the global custom object table
+    sGlobalCustomObjectTable = smlua_create_custom_object_table(NULL);
+}
+
 static int smlua_func_define_custom_obj_fields(lua_State* L) {
     LUA_STACK_CHECK_BEGIN(L);
     if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
 
     if (lua_type(L, 1) != LUA_TTABLE) {
-        LOG_LUA_LINE("Invalid parameter for define_custom_obj_fields()");
+        LOG_LUA_LINE("Invalid parameter passed to define_custom_obj_fields(), it must be a table");
         return 0;
     }
 
@@ -197,51 +309,49 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
         return 0;
     }
 
-    struct CustomFieldItem* customFieldsHead = NULL;
-    struct CustomFieldItem customFields[OBJECT_NUM_CUSTOM_FIELDS] = { 0 };
-    u16 customFieldCount = 0;
-
-    // get custom object fields tables
-    lua_getglobal(L, "_global_custom_object_fields"); // get global custom object fields table
-    lua_getglobal(L, "_G"); // get global table
-    lua_getfield(L, LUA_REGISTRYINDEX, gLuaLoadingMod->relativePath); // push file's "global" table
-    int fileGlobalIndex = lua_gettop(L);
-    lua_getfield(L, fileGlobalIndex, "_custom_object_fields");
-    lua_remove(L, -2); // remove file's "global" table
-    lua_remove(L, -2); // remove global table
-    const int customObjectFieldsIndex[2] = {
-        lua_gettop(L),     // file custom object fields table
-        lua_gettop(L) - 1, // global custom object fields table
-    };
+    // create new mod fields for the loading mod
+    struct ModCustomObjectFields *modFields = growing_array_alloc(gLuaLoadingMod->customObjectFields, sizeof(struct ModCustomObjectFields));
 
     // table is in the stack at index 't'
     lua_pushnil(L);  // first key
     s32 iterationTop = lua_gettop(L);
     while (lua_next(L, 1) != 0) {
+        if (modFields->count >= OBJECT_NUM_CUSTOM_FIELDS) {
+            LOG_LUA_LINE("Ran out of custom fields!");
+            return 0;
+        }
+
         int keyIndex = lua_gettop(L) - 1;
         int valueIndex = lua_gettop(L) - 0;
         // uses 'key' (at index -2) and 'value' (at index -1)
         if (lua_type(L, keyIndex) != LUA_TSTRING) {
-            LOG_LUA_LINE("Invalid key type for define_custom_obj_fields() : %u", lua_type(L, keyIndex));
+            LOG_LUA_LINE("define_custom_obj_fields: Invalid key type: %u", lua_type(L, keyIndex));
             lua_settop(L, iterationTop);
             continue;
         }
 
         int valueType = lua_type(L, valueIndex);
         if (valueType != LUA_TSTRING && valueType != LUA_TTABLE) {
-            LOG_LUA_LINE("Invalid value type for define_custom_obj_fields() : %u", lua_type(L, valueIndex));
+            LOG_LUA_LINE("define_custom_obj_fields: Invalid value type: %u", lua_type(L, valueIndex));
             lua_settop(L, iterationTop);
             continue;
         }
 
         const char* key = smlua_to_string(L, keyIndex);
         if (key[0] != 'o') {
-            LOG_LUA_LINE("Invalid key name for define_custom_obj_fields(): %s", key);
+            LOG_LUA_LINE("define_custom_obj_fields: Invalid key name: %s", key);
             lua_settop(L, iterationTop);
             continue;
         }
         if (strlen(key) >= CUSTOM_FIELD_ITEM_LEN) {
-            LOG_LUA_LINE("Too long of key name for define_custom_obj_fields(): %s", key);
+            LOG_LUA_LINE("define_custom_obj_fields: Too long of key name: %s", key);
+            lua_settop(L, iterationTop);
+            continue;
+        }
+
+        // check if key is a regular object field
+        if (smlua_get_object_field(LOT_OBJECT, key)) {
+            LOG_LUA_LINE("define_custom_obj_fields: Key name cannot be a regular object field: %s", key);
             lua_settop(L, iterationTop);
             continue;
         }
@@ -254,8 +364,14 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
             // get type
             lua_pushstring(L, "type");
             lua_rawget(L, -2);
+            if (lua_type(L, -1) != LUA_TSTRING) {
+                LOG_LUA_LINE("define_custom_obj_fields: Invalid type for 'type' of key %s: %u", key, lua_type(L, -1));
+                lua_settop(L, iterationTop);
+                continue;
+            }
             value = smlua_to_string(L, -1);
             if (!gSmLuaConvertSuccess || !value) {
+                LOG_LUA_LINE("define_custom_obj_fields: Could not convert to string 'type' of key %s", key);
                 lua_settop(L, iterationTop);
                 continue;
             }
@@ -265,8 +381,14 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
             lua_pushstring(L, "global");
             lua_rawget(L, -2);
             if (lua_type(L, -1) != LUA_TNIL) {
+                if (lua_type(L, -1) != LUA_TBOOLEAN) {
+                    LOG_LUA_LINE("define_custom_obj_fields: Invalid type for 'global' of key %s: %u", key, lua_type(L, -1));
+                    lua_settop(L, iterationTop);
+                    continue;
+                }
                 global = smlua_to_boolean(L, -1);
                 if (!gSmLuaConvertSuccess) {
+                    LOG_LUA_LINE("define_custom_obj_fields: Could not convert to boolean 'global' of key %s: %u", key, lua_type(L, -1));
                     lua_settop(L, iterationTop);
                     continue;
                 }
@@ -279,69 +401,41 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
         }
         enum LuaValueType lvt = smlua_get_custom_field_type(value);
         if (lvt == LVT_MAX) {
-            LOG_LUA_LINE("Invalid value name for define_custom_obj_fields(): %s", value);
+            LOG_LUA_LINE("define_custom_obj_fields: Invalid value name: %s", value);
             return 0;
         }
 
-        if (customFieldCount >= OBJECT_NUM_CUSTOM_FIELDS) {
-            LOG_LUA_LINE("Ran out of custom fields!");
-            return 0;
+        // Get existing or create new custom field
+        struct Mod *mod = global ? NULL : gLuaLoadingMod;
+        struct CustomObjectField *cof = smlua_find_custom_field(key, mod);
+        if (!cof) {
+            cof = smlua_create_custom_field(key, lvt, mod);
+        } else {
+
+            // Raise error if LVTs don't match
+            if (cof->lvt != lvt) {
+                LOG_LUA_LINE("define_custom_obj_fields: Key %s already exists with type %s", key, smlua_get_custom_field_type_name(cof->lvt));
+                lua_settop(L, iterationTop);
+                continue;
+            }
         }
 
-        smlua_add_custom_field_linked(&customFieldsHead, &customFields[customFieldCount], key, lvt, global);
-        customFieldCount++;
+        // Add to mod fields
+        modFields->fields[modFields->count] = cof;
+        modFields->count++;
 
         lua_settop(L, iterationTop);
     }
 
     lua_settop(L, iterationTop);
 
-    struct CustomFieldItem* node = customFieldsHead;
-    u32 fieldIndex = OBJECT_CUSTOM_FIELDS_START;
-    while (node != NULL) {
-        if (fieldIndex >= OBJECT_NUM_FIELDS) {
-            LOG_LUA_LINE("Ran out of custom fields!");
-            return 0;
-        }
-
-        // push to file _custom_object_fields, then to _global_custom_object_fields if needed
-        for (s32 i = 0; i != (node->global ? 2 : 1); ++i) {
-            lua_pushvalue(L, customObjectFieldsIndex[i]);
-            lua_pushstring(L, node->key);
-            lua_newtable(L);
-            {
-                // set fieldIndex
-                lua_pushstring(L, "_fieldIndex");
-                lua_pushinteger(L, fieldIndex);
-                lua_rawset(L, -3);
-
-                // set lvt
-                lua_pushstring(L, "_lvt");
-                lua_pushinteger(L, node->lvt);
-                lua_rawset(L, -3);
-            }
-            lua_settable(L, -3); // add custom object field
-        }
-
-        LOG_INFO("Registered %scustom object field: 0x%02X as %s - %s", (node->global ? "globally " : ""), fieldIndex, smlua_get_custom_field_type_name(node->lvt), node->key);
-
-        fieldIndex++;
-
-        node = node->next;
-        lua_settop(L, iterationTop);
-    }
-
     lua_pop(L, 1); // pop key
-    lua_pop(L, 1); // pop _custom_object_fields
-    lua_pop(L, 1); // pop _global_custom_object_fields
 
     LUA_STACK_CHECK_END(L);
     return 1;
 }
 
 struct LuaObjectField* smlua_get_custom_field(lua_State* L, u32 lot, int keyIndex) {
-    LUA_STACK_CHECK_BEGIN(L);
-    static struct LuaObjectField lof = { 0 };
     if (lot != LOT_OBJECT) { return NULL; }
 
     if (gLuaActiveMod == NULL) {
@@ -349,74 +443,25 @@ struct LuaObjectField* smlua_get_custom_field(lua_State* L, u32 lot, int keyInde
         return NULL;
     }
 
-    // get custom object fields tables
-    lua_getglobal(L, "_global_custom_object_fields"); // get global custom object fields table
-    lua_getglobal(L, "_G"); // get global table
-    lua_getfield(L, LUA_REGISTRYINDEX, gLuaActiveMod->relativePath); // push file's "global" table
-    int fileGlobalIndex = lua_gettop(L);
-    lua_getfield(L, fileGlobalIndex, "_custom_object_fields");
-    lua_remove(L, -2); // remove file's "global" table
-    lua_remove(L, -2); // remove global table
-    const int customObjectFieldsIndex[2] = {
-        lua_gettop(L),     // file custom object fields table
-        lua_gettop(L) - 1, // global custom object fields table
-    };
+    const char *key = smlua_to_string(L, keyIndex);
 
-    for (s32 i = 0; i != 2; ++i) {
-        lua_pushvalue(L, customObjectFieldsIndex[i]); // push table
-
-        // get value table from key
-        lua_pushvalue(L, keyIndex);
-        lua_rawget(L, -2);
-        if (lua_type(L, -1) != LUA_TTABLE) {
-            lua_pop(L, 1); // pop value table
-            lua_pop(L, 1); // pop table
-            continue;
+    // Search in mod custom object table
+    if (gLuaActiveMod->customObjectTable != NULL) {
+        struct LuaObjectField *lof = smlua_get_object_field_from_ot(gLuaActiveMod->customObjectTable, key);
+        if (lof != NULL) {
+            return lof;
         }
-
-        // get _fieldIndex
-        lua_pushstring(L, "_fieldIndex");
-        lua_rawget(L, -2);
-        u32 fieldIndex = smlua_to_integer(L, -1);
-        lua_pop(L, 1);
-        bool validFieldIndex = (fieldIndex >= OBJECT_CUSTOM_FIELDS_START && fieldIndex < OBJECT_NUM_FIELDS);
-        if (!gSmLuaConvertSuccess || !validFieldIndex) {
-            lua_pop(L, 1); // pop value table
-            lua_pop(L, 1); // pop table
-            continue;
-        }
-
-        // get _lvt
-        lua_pushstring(L, "_lvt");
-        lua_rawget(L, -2);
-        u32 lvt = smlua_to_integer(L, -1);
-        lua_pop(L, 1);
-        if (!gSmLuaConvertSuccess || smlua_get_custom_field_type_name(lvt) == NULL) {
-            lua_pop(L, 1); // pop value table
-            lua_pop(L, 1); // pop table
-            continue;
-        }
-
-        lof.immutable = false;
-        //lof.key = key;
-        lof.lot = LOT_NONE;
-        lof.valueOffset = offsetof(struct Object, rawData.asU32[fieldIndex]);
-        lof.valueType = lvt;
-        lof.count = 1;
-
-        lua_pop(L, 1); // pop value table
-        lua_pop(L, 1); // pop table
-        lua_pop(L, 1); // pop _custom_object_fields
-        lua_pop(L, 1); // pop _global_custom_object_fields
-
-        LUA_STACK_CHECK_END(L);
-        return &lof;
     }
 
-    lua_pop(L, 1); // pop _custom_object_fields
-    lua_pop(L, 1); // pop _global_custom_object_fields
+    // Search in global custom object table
+    if (sGlobalCustomObjectTable) {
+        struct LuaObjectField *lof = smlua_get_object_field_from_ot(sGlobalCustomObjectTable, key);
+        if (lof != NULL) {
+            return lof;
+        }
+    }
 
-    LUA_STACK_CHECK_END(L);
+    // Not found
     return NULL;
 }
 

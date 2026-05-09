@@ -339,6 +339,7 @@ void smlua_init(void) {
 
     smlua_cobject_init_globals();
     smlua_model_util_initialize();
+    smlua_init_custom_fields();
 
     // load scripts
     mods_size_enforce(&gActiveMods);
@@ -350,6 +351,7 @@ void smlua_init(void) {
         gLuaActiveMod = mod;
         gLuaLastHookMod = mod;
         gLuaLoadingMod->customBehaviorIndex = 0;
+        gLuaLoadingMod->customObjectFields = growing_array_init(NULL, 4, malloc, free);
         gPcDebug.lastModRun = gLuaActiveMod;
         for (int j = 0; j < mod->fileCount; j++) {
             struct ModFile* file = &mod->files[j];
@@ -383,6 +385,8 @@ void smlua_init(void) {
         gLuaActiveModFile = NULL;
         gLuaLoadingMod = NULL;
     }
+
+    smlua_assign_custom_fields();
 
     smlua_call_event_hooks(HOOK_ON_MODS_LOADED);
 }
