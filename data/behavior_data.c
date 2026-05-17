@@ -2773,7 +2773,7 @@ const BehaviorScript bhvInSunkenShip2[] = {
     // Sunken ship - common:
     OR_INT(oFlags, OBJ_FLAG_UPDATE_GFX_POS_AND_ANGLE),
     SET_FLOAT(oCollisionDistance, 4000),
-    CALL(bhvSunkenShipSetRotation),
+    CALL(bhvSunkenShipSetRotation + 2),
     BEGIN_LOOP(),
         CALL_NATIVE(load_object_collision_model),
     END_LOOP(),

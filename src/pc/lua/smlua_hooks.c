@@ -701,10 +701,6 @@ u32 smlua_get_action_interaction_type(struct MarioState* m) {
 
 struct GrowingArray *gHookedBehaviors = NULL;
 
-AT_STARTUP static void smlua_init_hooked_behaviors() {
-    gHookedBehaviors = growing_array_init(NULL, 16, malloc, free);
-}
-
 static struct LuaHookedBehavior *smlua_find_hooked_behavior(enum BehaviorId id) {
     growing_array_for_each_(gHookedBehaviors, struct LuaHookedBehavior, hooked) {
         if (hooked->behaviorId == id || hooked->customId == id) {
@@ -882,7 +878,7 @@ int smlua_hook_behavior(lua_State *L) {
         } break;
 
         default: {
-            LOG_LUA_LINE("Hook behavior: invalid type passed for argument initFunction: %d, should be %d", initReferenceType, LUA_TFUNCTION);
+            LOG_LUA_LINE("Hook behavior: invalid type passed for argument initFunction: '%s', should be '%s'", lua_typename(L, initReferenceType), lua_typename(L, LUA_TFUNCTION));
         } return 0;
     }
 
@@ -898,7 +894,7 @@ int smlua_hook_behavior(lua_State *L) {
         } break;
 
         default: {
-            LOG_LUA_LINE("Hook behavior: invalid type passed for argument loopFunction: %d, should be %d", loopReferenceType, LUA_TFUNCTION);
+            LOG_LUA_LINE("Hook behavior: invalid type passed for argument loopFunction: '%s', should be '%s'", lua_typename(L, loopReferenceType), lua_typename(L, LUA_TFUNCTION));
         } return 0;
     }
 
@@ -918,7 +914,7 @@ int smlua_hook_behavior(lua_State *L) {
             } break;
 
             default: {
-                LOG_LUA_LINE("Hook behavior: invalid type passed for argument bhvName: %d, should be %d", bhvNameType, LUA_TSTRING);
+                LOG_LUA_LINE("Hook behavior: invalid type passed for argument bhvName: '%s', should be '%s'", lua_typename(L, bhvNameType), lua_typename(L, LUA_TSTRING));
             } return 0;
         }
     }
@@ -1028,8 +1024,12 @@ int smlua_hook_behavior(lua_State *L) {
 
     // We want to push the behavior into the global LUA state. So mods can access it.
     // It's also used for some things that would normally access a LUA behavior instead.
-    lua_pushinteger(L, hooked->behaviorId);
-    lua_setglobal(L, bhvName);
+    if (bhvName) {
+        lua_pushinteger(L, hooked->behaviorId);
+        lua_setglobal(L, bhvName);
+    } else {
+        bhvName = hooked->bhvNames->buffer[hooked->bhvNames->count - 1]; // log with last registered name
+    }
     LOG_INFO("Registered Lua behavior for behavior id 0x%04hX (custom id: 0x%04hX, custom name: %s)", hooked->behaviorId, hooked->customId, bhvName);
 
     // return behavior ID

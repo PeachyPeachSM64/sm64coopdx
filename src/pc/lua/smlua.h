@@ -58,7 +58,7 @@
 }
 
 #define LOG_LUA_WARNING_ONCE(...) { \
-    if (!gLuaActiveMod || !gLuaActiveMod->showedScriptWarning) { \
+    if (!gSmLuaSuppressErrors && (!gLuaActiveMod || !gLuaActiveMod->showedScriptWarning)) { \
         if (gLuaActiveMod) { \
             gLuaActiveMod->showedScriptWarning = true; \
         } \
