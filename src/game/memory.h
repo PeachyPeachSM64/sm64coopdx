@@ -86,9 +86,9 @@ void growing_array_debug_print(struct GrowingArray *array, const char *name, s32
 #define growing_array_for_each_(array, type, item) \
     for (type **_head_ = (type **)((array) != NULL ? (array)->buffer : NULL), \
               **_tail_ = _head_ + ((array) != NULL ? (array)->count : 0), \
-               * item  = (_head_ != NULL ? *_head_ : NULL); \
-        _head_ != NULL && _head_ != _tail_; \
-        _head_++, item = *_head_)
+               * item  = NULL; \
+        _head_ != NULL && _head_ != _tail_ && (item = *_head_, TRUE); \
+        _head_++)
 
 void alloc_display_list_reset(void);
 void *alloc_display_list(u32 size);
