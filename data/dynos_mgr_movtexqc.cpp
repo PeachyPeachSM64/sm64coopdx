@@ -34,6 +34,7 @@ void DynOS_MovtexQC_Register(const char* name, s16 level, s16 area, s16 type) {
                 .area     = area,
                 .type     = type
             });
+            return;
         }
     }
 }

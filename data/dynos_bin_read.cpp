@@ -122,15 +122,16 @@ char *DynOS_Read_Buffer(FILE* aFile, GfxData* aGfxData) {
 
 template <typename T>
 static void AppendNewNode(GfxData *aGfxData, DataNodes<T> &aNodes, const String &aName, String *&aDataName, Array<String> *&aDataTokens) {
-    if (aNodes.FindExact(aName, aGfxData->mDataIdentifier)) {
+    DataNode<T> *_Node = aNodes.FindExact(aName, aGfxData->mDataIdentifier);
+    if (_Node != NULL) {
         PrintDataError("  ERROR: Node \"%s\" already exists for data identifier: %llX", aName.begin(), aGfxData->mDataIdentifier);
-        return;
+    } else {
+        _Node = New<DataNode<T>>();
+        _Node->mName = aName;
+        _Node->mDataIdentifier = aGfxData->mDataIdentifier;
+        aNodes.Add(_Node);
     }
 
-    DataNode<T> *_Node = New<DataNode<T>>();
-    _Node->mName = aName;
-    _Node->mDataIdentifier = aGfxData->mDataIdentifier;
-    aNodes.Add(_Node);
     aDataName = &_Node->mName;
     aDataTokens = &_Node->mTokens;
 }
