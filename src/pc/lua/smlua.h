@@ -43,7 +43,7 @@
         printf("[LUA] Warning: "); \
         printf(__VA_ARGS__); \
         printf("\n"); \
-        smlua_mod_warning(); \
+        smlua_mod_warning(false); \
         snprintf(gDjuiConsoleTmpBuffer, CONSOLE_MAX_TMP_BUFFER, __VA_ARGS__); \
         sys_swap_backslashes(gDjuiConsoleTmpBuffer); \
         djui_console_message_create(gDjuiConsoleTmpBuffer, CONSOLE_MESSAGE_WARNING); \
@@ -58,14 +58,10 @@
 }
 
 #define LOG_LUA_WARNING_ONCE(...) { \
-    if (!gSmLuaSuppressErrors && (!gLuaActiveMod || !gLuaActiveMod->showedScriptWarning)) { \
-        if (gLuaActiveMod) { \
-            gLuaActiveMod->showedScriptWarning = true; \
-        } \
+    if (!gSmLuaSuppressErrors && smlua_mod_warning(true)) { \
         printf("[LUA] Warning: "); \
         printf(__VA_ARGS__); \
         printf("\n"); \
-        smlua_mod_warning(); \
         snprintf(gDjuiConsoleTmpBuffer, CONSOLE_MAX_TMP_BUFFER, __VA_ARGS__); \
         sys_swap_backslashes(gDjuiConsoleTmpBuffer); \
         djui_console_message_create(gDjuiConsoleTmpBuffer, CONSOLE_MESSAGE_WARNING); \
@@ -91,7 +87,7 @@ extern struct ModFile* gLuaActiveModFile;
 extern struct Mod* gLuaLastHookMod;
 
 void smlua_mod_error(void);
-void smlua_mod_warning(void);
+bool smlua_mod_warning(bool once);
 int smlua_error_handler(UNUSED lua_State* L);
 int smlua_pcall(lua_State* L, int nargs, int nresults, int errfunc);
 void smlua_exec_file(const char* path);

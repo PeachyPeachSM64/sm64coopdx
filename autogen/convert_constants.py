@@ -55,6 +55,7 @@ in_files = [
     "src/engine/lighting_engine.h",
     "include/PR/gbi.h",
     "include/PR/gbi_extension.h",
+    "src/pc/gfx/gfx_pc.h",
     "src/engine/surface_load.h",
     "src/pc/lua/utils/smlua_audio_utils.h",
 ]
@@ -118,7 +119,8 @@ include_constants = {
     "include/PR/gbi_extension.h": [
         "^G_VTX_EXT$",
         "^G_PPARTTOCOLOR$",
-        "^G_SETENVRGB$"
+        "^G_SETENVRGB$",
+        "^G_STATE_EXT$",
     ],
 }
 

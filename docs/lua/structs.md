@@ -781,6 +781,7 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | textColor | [DjuiColor](structs.md#DjuiColor) | read-only |
+| disabledTextColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | defaultRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | cursorDownRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | hoveredRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
@@ -2828,10 +2829,10 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | enable | [enum RomhackCameraOverride](constants.md#enum-RomhackCameraOverride) |  |
-| centering | `integer` |  |
+| switchable | `integer` |  |
 | dpad | `integer` |  |
 | collisions | `integer` |  |
-| slowFall | `integer` |  |
+| following | `integer` |  |
 | zoomedInDist | `integer` |  |
 | zoomedOutDist | `integer` |  |
 | zoomedInHeight | `integer` |  |
