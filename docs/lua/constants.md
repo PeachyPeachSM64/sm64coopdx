@@ -29,6 +29,8 @@
 - [gbi_extension.h](#gbi_extensionh)
 - [geo_commands.h](#geo_commandsh)
     - [enum SkyBackgroundParams](#enum-SkyBackgroundParams)
+- [gfx_pc.h](#gfx_pch)
+    - [enum ShaderFlag](#enum-ShaderFlag)
 - [graph_node.h](#graph_nodeh)
 - [interaction.c](#interactionc)
 - [interaction.h](#interactionh)
@@ -82,9 +84,6 @@
 - [smlua_audio_utils.h](#smlua_audio_utilsh)
 - [smlua_hooks.h](#smlua_hooksh)
     - [enum LuaHookedEventType](#enum-LuaHookedEventType)
-    - [enum LuaHookedEventReturn](#enum-LuaHookedEventReturn)
-    - [enum LuaActionHookType](#enum-LuaActionHookType)
-    - [enum LuaModMenuElementType](#enum-LuaModMenuElementType)
 - [smlua_misc_utils.h](#smlua_misc_utilsh)
     - [enum HudDisplayValue](#enum-HudDisplayValue)
     - [enum HudDisplayFlags](#enum-HudDisplayFlags)
@@ -1338,6 +1337,25 @@
 | BACKGROUND_ABOVE_CLOUDS | 8 |
 | BACKGROUND_PURPLE_SKY | 9 |
 | BACKGROUND_CUSTOM | 10 |
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_pc.h](#gfx_pc.h)
+
+### [enum ShaderFlag](#ShaderFlag)
+| Identifier | Value |
+| :--------- | :---- |
+| SHADER_FLAG_HUE | 0 |
+| SHADER_FLAG_SATURATION | 1 |
+| SHADER_FLAG_BRIGHTNESS | 2 |
+| SHADER_FLAG_CONTRAST | 3 |
+| SHADER_FLAG_EXPOSURE | 4 |
+| SHADER_FLAG_DITHERING | 5 |
+| SHADER_FLAG_POSTERIZATION | 6 |
+| SHADER_FLAG_SCANLINES | 7 |
+| SHADER_FLAG_MAX | 8 |
 
 [:arrow_up_small:](#)
 
@@ -3573,7 +3591,6 @@
 | HOOK_BEFORE_PLAY_MODE_UPDATE | 67 |
 | HOOK_ON_PLAY_MODE_UPDATE | 68 |
 | HOOK_MAX | 69 |
-- MAX_HOOKED_BEHAVIORS
 
 [:arrow_up_small:](#)
 

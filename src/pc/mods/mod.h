@@ -48,9 +48,7 @@ struct Mod {
     bool ignoreScriptWarnings;
     bool showedScriptWarning;
     size_t size;
-    u8 customBehaviorIndex;
-    struct GrowingArray *customObjectFields;
-    struct LuaObjectTable *customObjectTable;
+    u16 customBehaviorIndex;
 };
 
 size_t mod_get_lua_size(struct Mod* mod);

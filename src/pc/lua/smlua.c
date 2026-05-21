@@ -25,6 +25,7 @@ struct Mod* gLuaLastHookMod = NULL;
 
 void smlua_mod_error(void) {
     struct Mod* mod = gLuaActiveMod;
+    if (mod == NULL) { mod = gLuaLoadingMod; }
     if (mod == NULL) { mod = gLuaLastHookMod; }
     if (mod == NULL) { return; }
     char txt[255] = { 0 };
@@ -33,15 +34,19 @@ void smlua_mod_error(void) {
     djui_lua_error(txt, color);
 }
 
-void smlua_mod_warning(void) {
+bool smlua_mod_warning(bool once) {
     struct Mod* mod = gLuaActiveMod;
+    if (mod == NULL) { mod = gLuaLoadingMod; }
     if (mod == NULL) { mod = gLuaLastHookMod; }
-    if (mod == NULL) { return; }
-    if (mod->ignoreScriptWarnings) { return; }
+    if (mod == NULL) { return true; }
+    if (mod->ignoreScriptWarnings) { return false; }
+    if (once && mod->showedScriptWarning) { return false; }
+    if (once) { mod->showedScriptWarning = true; }
     char txt[255] = { 0 };
     snprintf(txt, 254, "'%s\\#ffe600\\' has script warnings!", mod->name);
     static const struct DjuiColor color = { 255, 230, 0, 255 };
     djui_lua_error(txt, color);
+    return true;
 }
 
 int smlua_error_handler(lua_State* L) {

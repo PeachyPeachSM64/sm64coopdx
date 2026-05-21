@@ -395,7 +395,7 @@ void audio_stream_destroy(struct ModAudio* audio) {
 void audio_stream_play(struct ModAudio* audio, bool restart, f32 volume) {
     if (!audio_sanity_check(audio, true, "play")) { return; }
     
-    if (configMuteFocusLoss && !WAPI.has_focus()) {
+    if (configMuteFocusLoss && !gWindowApi->has_focus()) {
         ma_sound_set_volume(&audio->sound, 0);
     } else {
         f32 musicVolume = (f32)configMusicVolume / 127.0f * (f32)gLuaVolumeLevel / 127.0f;
@@ -630,21 +630,23 @@ void audio_sample_play(struct ModAudio* audio, Vec3f position, f32 volume) {
     }
 
     f32 dist = 0;
-    f32 pan = 0.5f;
+    f32 pan = 0;
     if (gCamera) {
         f32 dX = position[0] - gCamera->pos[0];
         f32 dY = position[1] - gCamera->pos[1];
         f32 dZ = position[2] - gCamera->pos[2];
         dist = sqrtf(dX * dX + dY * dY + dZ * dZ);
 
-        Mat4 mtx;
-        mtxf_translate(mtx, position);
-        mtxf_mul(mtx, mtx, gCamera->mtx);
-        f32 factor = 10;
-        pan = (get_sound_pan(mtx[3][0] * factor, mtx[3][2] * factor) - 0.5f) * 2.0f;
+        if (configSoundOutput != SOUND_MODE_MONO) {
+            Mat4 mtx;
+            mtxf_translate(mtx, position);
+            mtxf_mul(mtx, mtx, gCamera->mtx);
+            f32 factor = 10;
+            pan = (get_sound_pan(mtx[3][0] * factor, mtx[3][2] * factor) - 0.5f) * 2.0f;
+        }
     }
 
-    if (configMuteFocusLoss && !WAPI.has_focus()) {
+    if (configMuteFocusLoss && !gWindowApi->has_focus()) {
         ma_sound_set_volume(sound, 0);
     } else {
         f32 intensity = sound_get_level_intensity(dist);
@@ -665,7 +667,7 @@ void audio_custom_update_volume(void) {
     while (node) {
         struct DynamicPoolNode* prev = node->prev;
         struct ModAudio* audio = node->ptr;
-        if (configMuteFocusLoss && !WAPI.has_focus()) {
+        if (configMuteFocusLoss && !gWindowApi->has_focus()) {
             ma_sound_set_volume(&audio->sound, 0);
         } else if (audio->isStream) {
             ma_sound_set_volume(&audio->sound, gMasterVolume * musicVolume * audio->baseVolume);
