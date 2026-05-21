@@ -2146,6 +2146,7 @@
    - [obj_set_field_s32](functions-7.md#obj_set_field_s32)
    - [obj_set_field_f32](functions-7.md#obj_set_field_f32)
    - [obj_set_field_s16](functions-7.md#obj_set_field_s16)
+   - [obj_get_field_info_from_name](functions-7.md#obj_get_field_info_from_name)
    - [obj_get_temp_spawn_particles_info](functions-7.md#obj_get_temp_spawn_particles_info)
    - [obj_get_temp_water_droplet_params](functions-7.md#obj_get_temp_water_droplet_params)
    - [get_temp_object_hitbox](functions-7.md#get_temp_object_hitbox)

@@ -222,14 +222,6 @@ void mod_clear(struct Mod* mod) {
         growing_array_free(&mod->customObjectFields);
     }
 
-    if (mod->customObjectTable != NULL) {
-        if (mod->customObjectTable->fields != NULL) {
-            free(mod->customObjectTable->fields);
-        }
-        free(mod->customObjectTable);
-        mod->customObjectTable = NULL;
-    }
-
     mod->fileCount = 0;
     mod->fileCapacity = 0;
     mod->size = 0;

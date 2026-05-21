@@ -35508,6 +35508,36 @@ int smlua_func_obj_set_field_s16(lua_State* L) {
     return 1;
 }
 
+int smlua_func_obj_get_field_info_from_name(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "obj_get_field_info_from_name", 1, 2, top);
+        return 0;
+    }
+
+    const char* fieldName = smlua_to_string(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_field_info_from_name"); return 0; }
+    struct Mod* mod = (struct Mod*) NULL;
+    if (top >= 2) {
+        mod = (struct Mod*)smlua_to_cobject(L, 2, LOT_MOD);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_get_field_info_from_name"); return 0; }
+    }
+
+    s32 fieldIndex;
+    s32 fieldSubIndex;
+    const char* fieldType;
+
+    lua_pushboolean(L, obj_get_field_info_from_name(fieldName, mod, &fieldIndex, &fieldSubIndex, &fieldType));
+
+    lua_pushinteger(L, fieldIndex);
+    lua_pushinteger(L, fieldSubIndex);
+    lua_pushstring(L, fieldType);
+
+    return 4;
+}
+
 int smlua_func_obj_get_temp_spawn_particles_info(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -39154,6 +39184,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "obj_set_field_s32", smlua_func_obj_set_field_s32);
     smlua_bind_function(L, "obj_set_field_f32", smlua_func_obj_set_field_f32);
     smlua_bind_function(L, "obj_set_field_s16", smlua_func_obj_set_field_s16);
+    smlua_bind_function(L, "obj_get_field_info_from_name", smlua_func_obj_get_field_info_from_name);
     smlua_bind_function(L, "obj_get_temp_spawn_particles_info", smlua_func_obj_get_temp_spawn_particles_info);
     smlua_bind_function(L, "obj_get_temp_water_droplet_params", smlua_func_obj_get_temp_water_droplet_params);
     smlua_bind_function(L, "get_temp_object_hitbox", smlua_func_get_temp_object_hitbox);

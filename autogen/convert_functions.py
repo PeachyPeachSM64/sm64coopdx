@@ -1193,7 +1193,7 @@ def process_function(fname, line, description):
 
             if 'OPTIONAL' in param:
                 last_param_optional = param['identifier']
-            elif last_param_optional is not None:
+            elif 'RET' not in param and last_param_optional is not None:
                 print(f"REJECTED: {function['identifier']} -> mandatory parameter `{param['identifier']}` is following optional parameter `{last_param_optional}`")
                 return None
 
