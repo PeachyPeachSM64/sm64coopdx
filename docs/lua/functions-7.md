@@ -4419,7 +4419,7 @@ Sets the signed 16-bit integer value of the object field and sub field correspon
 ### Description
 Gets the object field info (index, sub-index and type) from a field name and a specific mod (if provided). Returns `true` if the field is found, `false` otherwise.
 Supported types are `s32`, `u32`, `f32`, `s16`.
-This function works with custom object fields as well and is meant to be used with functions that take a field index as paramater, like `obj_get_first_with_behavior_id_and_field_s32` or `obj_get_field_s32`
+This function works with custom object fields as well and is meant to be used with functions that take a field index as parameter, like `obj_get_first_with_behavior_id_and_field_s32` or `obj_get_field_s32`
 
 ### Lua Example
 `local booleanValue, fieldIndex, fieldSubIndex, fieldType = obj_get_field_info_from_name(fieldName, mod)`
