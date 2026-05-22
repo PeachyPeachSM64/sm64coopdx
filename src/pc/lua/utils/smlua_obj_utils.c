@@ -185,7 +185,7 @@ struct Object *obj_get_first_with_behavior_id(enum BehaviorId behaviorId) {
 }
 
 struct Object *obj_get_first_with_behavior_id_and_field_s32(enum BehaviorId behaviorId, s32 fieldIndex, s32 value) {
-    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS) { return NULL; }
+    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS + gNumCustomObjectFields) { return NULL; }
     const BehaviorScript* behavior = get_behavior_from_id(behaviorId);
     u32 sanityDepth = 0;
     behavior = smlua_override_behavior(behavior);
@@ -202,7 +202,7 @@ struct Object *obj_get_first_with_behavior_id_and_field_s32(enum BehaviorId beha
 }
 
 struct Object *obj_get_first_with_behavior_id_and_field_f32(enum BehaviorId behaviorId, s32 fieldIndex, f32 value) {
-    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS) { return NULL; }
+    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS + gNumCustomObjectFields) { return NULL; }
     const BehaviorScript* behavior = get_behavior_from_id(behaviorId);
     behavior = smlua_override_behavior(behavior);
     if (behavior) {
@@ -265,7 +265,7 @@ struct Object *obj_get_next_with_same_behavior_id(struct Object *o) {
 }
 
 struct Object *obj_get_next_with_same_behavior_id_and_field_s32(struct Object *o, s32 fieldIndex, s32 value) {
-    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS) { return NULL; }
+    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS + gNumCustomObjectFields) { return NULL; }
     if (o) {
         enum ObjectList objList = get_object_list_from_behavior(o->behavior);
         for (struct Object *obj = obj_get_next_internal(o, objList); obj != NULL; obj = obj_get_next_internal(obj, objList)) {
@@ -278,7 +278,7 @@ struct Object *obj_get_next_with_same_behavior_id_and_field_s32(struct Object *o
 }
 
 struct Object *obj_get_next_with_same_behavior_id_and_field_f32(struct Object *o, s32 fieldIndex, f32 value) {
-    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS) { return NULL; }
+    if (fieldIndex < 0 || fieldIndex >= OBJECT_NUM_FIELDS + gNumCustomObjectFields) { return NULL; }
     if (o) {
         enum ObjectList objList = get_object_list_from_behavior(o->behavior);
         for (struct Object *obj = obj_get_next_internal(o, objList); obj != NULL; obj = obj_get_next_internal(obj, objList)) {
