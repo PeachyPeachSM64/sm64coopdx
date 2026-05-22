@@ -159,12 +159,18 @@ static int smlua_cmp_custom_fields(const void *l, const void *r) {
 }
 
 static struct CustomObjectField *smlua_create_custom_field(struct GrowingArray *customObjectFields, const char *key, enum LuaValueType lvt, struct Mod *mod) {
-    struct CustomObjectField *cof = growing_array_alloc(customObjectFields, sizeof(struct CustomObjectField));
-    if (!cof) {
+    const char *name = strdup(key);
+    if (!name) {
         return NULL;
     }
 
-    cof->name = strdup(key);
+    struct CustomObjectField *cof = growing_array_alloc(customObjectFields, sizeof(struct CustomObjectField));
+    if (!cof) {
+        free((void *) name);
+        return NULL;
+    }
+
+    cof->name = name;
     cof->lvt = lvt;
     cof->mod = mod;
     growing_array_sort(customObjectFields, smlua_cmp_custom_fields);
@@ -214,6 +220,7 @@ void smlua_clear_custom_fields() {
     }
     hmap_destroy(sObjectCustomFields);
     sObjectCustomFields = NULL;
+    gNumCustomObjectFields = 0;
 }
 
 static int smlua_func_define_custom_obj_fields(lua_State* L) {
@@ -375,7 +382,7 @@ static int smlua_func_define_custom_obj_fields(lua_State* L) {
 }
 
 static void *smlua_get_object_custom_fields(struct Object *o) {
-    if (!sObjectCustomFields) {
+    if (!sObjectCustomFields || gNumCustomObjectFields == 0) {
         return NULL;
     }
 
@@ -386,7 +393,7 @@ static void *smlua_get_object_custom_fields(struct Object *o) {
     }
 
     // Allocate new fields
-    objCustomFields = malloc(OBJECT_CUSTOM_FIELD_SIZE * gNumCustomObjectFields);
+    objCustomFields = calloc(gNumCustomObjectFields, OBJECT_CUSTOM_FIELD_SIZE);
     if (!objCustomFields) {
         LOG_ERROR("Could not create custom fields for object %p", o);
         return NULL;
@@ -418,7 +425,7 @@ struct LuaObjectField *smlua_get_custom_field(struct Object *o, const char *key,
 
     // Retrieve object custom fields
     void *objCustomFields = NULL;
-    if (o) {
+    if (o && sObjectCustomFields) {
         objCustomFields = o->customFields;
         if (!objCustomFields) {
             objCustomFields = o->customFields = smlua_get_object_custom_fields(o);
@@ -789,7 +796,7 @@ int smlua__iter(lua_State *L) {
     }
 
     // Custom object fields
-    if (data == NULL && cobj->lot == LOT_OBJECT && cobj->pointer != NULL) {
+    if (data == NULL && cobj->lot == LOT_OBJECT && cobj->pointer != NULL && sObjectCustomFields != NULL) {
         int j = i - ot->fieldCount;
         struct Object *obj = cobj->pointer;
         void *objCustomFields = obj->customFields;
