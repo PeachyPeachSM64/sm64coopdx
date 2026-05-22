@@ -379,6 +379,7 @@ void obj_set_field_s16(struct Object *o, s32 fieldIndex, s32 fieldSubIndex, s16 
 
 bool obj_get_field_info_from_name(const char *fieldName, OPTIONAL struct Mod *mod, RET s32 *fieldIndex, RET s32 *fieldSubIndex, RET const char **fieldType) {
     struct LuaObjectField *lof = NULL;
+    size_t objectFieldsOffset = 0;
     *fieldIndex = 0;
     *fieldSubIndex = 0;
     *fieldType = "";
@@ -392,7 +393,7 @@ bool obj_get_field_info_from_name(const char *fieldName, OPTIONAL struct Mod *mo
     lof = smlua_get_object_field(LOT_OBJECT, fieldName);
     if (lof) {
         // adjust offset
-        lof->valueOffset -= offsetof(struct Object, rawData);
+        objectFieldsOffset = offsetof(struct Object, rawData);
     }
 
     // Check custom fields
@@ -413,25 +414,25 @@ bool obj_get_field_info_from_name(const char *fieldName, OPTIONAL struct Mod *mo
     switch (lof->valueType) {
         case LVT_S32: {
             *fieldType = "s32";
-            *fieldIndex += lof->valueOffset / sizeof(s32);
+            *fieldIndex += (lof->valueOffset - objectFieldsOffset) / sizeof(s32);
             *fieldSubIndex = 0;
         } return true;
 
         case LVT_U32: {
             *fieldType = "u32";
-            *fieldIndex += lof->valueOffset / sizeof(u32);
+            *fieldIndex += (lof->valueOffset - objectFieldsOffset) / sizeof(u32);
             *fieldSubIndex = 0;
         } return true;
 
         case LVT_F32: {
             *fieldType = "f32";
-            *fieldIndex += lof->valueOffset / sizeof(f32);
+            *fieldIndex += (lof->valueOffset - objectFieldsOffset) / sizeof(f32);
             *fieldSubIndex = 0;
         } return true;
 
         case LVT_S16: {
             *fieldType = "s16";
-            s32 shortIndex = lof->valueOffset / sizeof(s16);
+            s32 shortIndex = (lof->valueOffset - objectFieldsOffset) / sizeof(s16);
             *fieldIndex += shortIndex / 2;
             *fieldSubIndex = shortIndex % 2;
         } return true;
