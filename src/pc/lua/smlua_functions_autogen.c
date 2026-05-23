@@ -27867,15 +27867,15 @@ int smlua_func_obj_set_hitbox_radius_and_height(lua_State* L) {
         return 0;
     }
 
-    struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
+    struct Object* obj = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_set_hitbox_radius_and_height"); return 0; }
     f32 radius = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_set_hitbox_radius_and_height"); return 0; }
     f32 height = smlua_to_number(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "obj_set_hitbox_radius_and_height"); return 0; }
 
-    extern void obj_set_hitbox_radius_and_height(struct Object *o, f32 radius, f32 height);
-    obj_set_hitbox_radius_and_height(o, radius, height);
+    extern void obj_set_hitbox_radius_and_height(struct Object *obj, f32 radius, f32 height);
+    obj_set_hitbox_radius_and_height(obj, radius, height);
 
     return 1;
 }
@@ -27889,15 +27889,15 @@ int smlua_func_obj_set_hurtbox_radius_and_height(lua_State* L) {
         return 0;
     }
 
-    struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
+    struct Object* obj = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_set_hurtbox_radius_and_height"); return 0; }
     f32 radius = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_set_hurtbox_radius_and_height"); return 0; }
     f32 height = smlua_to_number(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "obj_set_hurtbox_radius_and_height"); return 0; }
 
-    extern void obj_set_hurtbox_radius_and_height(struct Object *o, f32 radius, f32 height);
-    obj_set_hurtbox_radius_and_height(o, radius, height);
+    extern void obj_set_hurtbox_radius_and_height(struct Object *obj, f32 radius, f32 height);
+    obj_set_hurtbox_radius_and_height(obj, radius, height);
 
     return 1;
 }
@@ -32271,6 +32271,38 @@ int smlua_func_clear_all_shader_flags(UNUSED lua_State* L) {
 
 
     clear_all_shader_flags();
+
+    return 1;
+}
+
+int smlua_func_get_shading_fullbright_enabled(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "get_shading_fullbright_enabled", 0, top);
+        return 0;
+    }
+
+
+    lua_pushboolean(L, get_shading_fullbright_enabled());
+
+    return 1;
+}
+
+int smlua_func_set_shading_fullbright_enabled(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "set_shading_fullbright_enabled", 1, top);
+        return 0;
+    }
+
+    bool enabled = smlua_to_boolean(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "set_shading_fullbright_enabled"); return 0; }
+
+    set_shading_fullbright_enabled(enabled);
 
     return 1;
 }
@@ -38992,6 +39024,8 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "get_global_shader_flags_enabled", smlua_func_get_global_shader_flags_enabled);
     smlua_bind_function(L, "set_global_shader_flags_enabled", smlua_func_set_global_shader_flags_enabled);
     smlua_bind_function(L, "clear_all_shader_flags", smlua_func_clear_all_shader_flags);
+    smlua_bind_function(L, "get_shading_fullbright_enabled", smlua_func_get_shading_fullbright_enabled);
+    smlua_bind_function(L, "set_shading_fullbright_enabled", smlua_func_set_shading_fullbright_enabled);
     smlua_bind_function(L, "set_override_fov", smlua_func_set_override_fov);
     smlua_bind_function(L, "set_override_near", smlua_func_set_override_near);
     smlua_bind_function(L, "set_override_far", smlua_func_set_override_far);

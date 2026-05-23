@@ -85,7 +85,7 @@ struct Object *try_allocate_object(struct ObjectNode *destList, struct ObjectNod
     struct ObjectNode *nextObj = NULL;
 
     if (destList == NULL || freeList == NULL) {
-        fprintf(stderr, "FATAL ERROR: Failed to try and allocate a object because either the destList %p or freeList %p was NULL!\n", destList, freeList);
+        LOG_ERROR("Failed to try and allocate a object because either the destList %p or freeList %p was NULL!", destList, freeList);
         return NULL;
     }
 
@@ -99,7 +99,7 @@ struct Object *try_allocate_object(struct ObjectNode *destList, struct ObjectNod
         if (destList->prev != NULL) {
             destList->prev->next = nextObj;
         } else {
-            fprintf(stderr, "ERROR: The previous object in the destination list %p was NULL! Unexpected errors may occur.\n", destList);
+            LOG_ERROR("The previous object in the destination list %p was NULL! Unexpected errors may occur.", destList);
         }
         destList->prev = nextObj;
     } else {
@@ -313,6 +313,7 @@ struct Object *allocate_object(struct ObjectNode *objList) {
     obj->oIntangibleTimer = -1;
     obj->oDamageOrCoinValue = 0;
     obj->oHealth = 2048;
+    obj->oLightID = -1;
 
     obj->oCollisionDistance = 1000.0f;
     if (gCurrLevelNum == LEVEL_TTC) {
@@ -386,7 +387,7 @@ struct Object *create_object(const BehaviorScript *bhvScript) {
     }
 
     if (objListIndex >= NUM_OBJ_LISTS) {
-        fprintf(stderr, "Failed to create object with non-existent object list index %i with behavior script %p.\n", objListIndex, bhvScript);
+        LOG_ERROR("Failed to create object with non-existent object list index %i with behavior script %p.", objListIndex, bhvScript);
         return NULL;
     }
 
