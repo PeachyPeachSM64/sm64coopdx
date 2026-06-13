@@ -55,7 +55,7 @@ void bhv_respawner_loop(void) {
     }
 }
 
-void create_respawner(s32 model, const BehaviorScript *behToSpawn, s32 minSpawnDist) {
+void create_respawner(enum ModelExtendedId modelId, const BehaviorScript *behToSpawn, s32 minSpawnDist) {
     if ((o->coopFlags & (COOP_OBJ_FLAG_LUA | COOP_OBJ_FLAG_NETWORK))) {
         return;
     }
@@ -65,7 +65,7 @@ void create_respawner(s32 model, const BehaviorScript *behToSpawn, s32 minSpawnD
     u32 syncID = o->oSyncID;
     if (respawner != NULL) {
         respawner->oBehParams = o->oBehParams;
-        respawner->oRespawnerModelToRespawn = model;
+        respawner->oRespawnerModelToRespawn = modelId;
         respawner->oRespawnerMinSpawnDist = minSpawnDist;
         respawner->oRespawnerBehaviorToRespawn = behToSpawn;
         respawner->oSyncID = syncID;

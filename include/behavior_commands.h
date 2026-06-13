@@ -133,13 +133,13 @@
     BC_BB(0x1A, field)
 
 // Sets the current model ID of the object.
-#define SET_MODEL(modelID) \
-    BC_B0H(0x1B, modelID)
+#define SET_MODEL(modelId) \
+    BC_B0H(0x1B, modelId)
 
 // Spawns a child object with the specified model and behavior.
-#define SPAWN_CHILD(modelID, behavior) \
+#define SPAWN_CHILD(modelId, behavior) \
     BC_B(0x1C), \
-    BC_W(modelID), \
+    BC_W(modelId), \
     BC_PTR(behavior)
 
 // Exits the behavior script and despawns the object.
@@ -198,9 +198,9 @@
     BC_BB(0x28, animIndex)
 
 // Spawns a child object with the specified model and behavior, plus a behavior param.
-#define SPAWN_CHILD_WITH_PARAM(bhvParam, modelID, behavior) \
+#define SPAWN_CHILD_WITH_PARAM(bhvParam, modelId, behavior) \
     BC_B0H(0x29, bhvParam), \
-    BC_W(modelID), \
+    BC_W(modelId), \
     BC_PTR(behavior)
 
 // Loads collision data for the object.
@@ -215,9 +215,9 @@
     BC_H(downOffset)
 
 // Spawns a new object with the specified model and behavior.
-#define SPAWN_OBJ(modelID, behavior) \
+#define SPAWN_OBJ(modelId, behavior) \
     BC_B(0x2C), \
-    BC_W(modelID), \
+    BC_W(modelId), \
     BC_PTR(behavior)
 
 // Sets the home position of the object to its current position.
@@ -297,21 +297,21 @@
     BC_PTR(func)
 
 // Spawns a child object with the specified model and behavior.
-#define SPAWN_CHILD_EXT(modelID, behavior) \
+#define SPAWN_CHILD_EXT(modelId, behavior) \
     BC_B(0x3D), \
-    BC_W(modelID), \
+    BC_W(modelId), \
     BC_PTR(behavior)
 
 // Spawns a child object with the specified model and behavior, plus a behavior param.
-#define SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelID, behavior) \
+#define SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelId, behavior) \
     BC_B0H(0x3E, bhvParam), \
-    BC_W(modelID), \
+    BC_W(modelId), \
     BC_PTR(behavior)
 
 // Spawns a new object with the specified model and behavior.
-#define SPAWN_OBJ_EXT(modelID, behavior) \
+#define SPAWN_OBJ_EXT(modelId, behavior) \
     BC_B(0x3F), \
-    BC_W(modelID), \
+    BC_W(modelId), \
     BC_PTR(behavior)
 
 // Loads the animations for the object. <field> is always set to oAnimations.

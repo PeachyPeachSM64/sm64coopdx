@@ -416,8 +416,8 @@ void mario_blow_off_cap(struct MarioState *m, f32 capSpeed) {
 
     m->flags &= ~(MARIO_NORMAL_CAP | MARIO_CAP_ON_HEAD);
 
-    u8 capModel = m->character->capModelId;
-    struct Object *capObject = spawn_object(m->marioObj, capModel, bhvNormalCap);
+    enum ModelExtendedId capModelId = m->character->capModelId;
+    struct Object *capObject = spawn_object(m->marioObj, capModelId, bhvNormalCap);
     if (capObject == NULL) { return; }
     capObject->globalPlayerIndex = gNetworkPlayers[m->playerIndex].globalIndex;
     capObject->oBehParams = m->playerIndex + 1;
@@ -434,7 +434,7 @@ void mario_blow_off_cap(struct MarioState *m, f32 capSpeed) {
     capObject->parentObj = capObject;
 
     struct Object* spawn_objects[] = { capObject };
-    u32 models[] = { capModel };
+    u32 models[] = { capModelId };
     network_send_spawn_objects(spawn_objects, models, 1);
 }
 

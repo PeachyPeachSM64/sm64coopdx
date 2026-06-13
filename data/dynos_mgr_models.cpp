@@ -2,291 +2,383 @@
 #include "dynos.cpp.h"
 
 extern "C" {
-#include "engine/geo_layout.h"
-#include "engine/graph_node.h"
-#include "model_ids.h"
-#include "pc/lua/utils/smlua_model_utils.h"
+#include "pc/debuglog.h"
 }
 
-enum ModelLoadType {
-    MLT_GEO,
-    MLT_DL,
-    MLT_STORE,
-};
+enum ModelLoadType { MLT_GEO_LAYOUT, MLT_DISPLAY_LIST, MLT_GRAPH_NODE };
 
-struct ModelInfo {
-    u32 id;
-    void* asset;
-    struct GraphNode* graphNode;
-    enum ModelPool modelPool;
-};
+struct ModelExtendedData {
+    enum ModelExtendedId modelId;
+    const char *name;
+    const void *asset;
+    u8 layer;
+    struct GraphNode *nodes[MODEL_POOL_MAX];
 
-static struct DynamicPool* sModelPools[MODEL_POOL_MAX] = { 0 };
-
-static std::map<void*, struct ModelInfo> sAssetMap[MODEL_POOL_MAX];
-static std::map<u32, std::vector<struct ModelInfo>> sIdMap;
-static std::map<u32, u32> sOverwriteMap;
-
-static u32 find_empty_id(bool aIsPermanent) {
-    u32 id = aIsPermanent ? 9999 : VANILLA_ID_END + 1;
-    s8 dir = aIsPermanent ? -1 : 1;
-    while (true) {
-        if (id != 9999) {
-            if (sIdMap.count(id) == 0)  { return id; }
-            if (sIdMap[id].size() == 0) { return id; }
+public:
+    inline ~ModelExtendedData() {
+        if (modelId >= E_MODEL_CUSTOM_START) {
+            free((void *) name);
         }
-        id += dir;
     }
-}
 
-void DynOS_Model_Dump() {
-    for (auto& it : sIdMap) {
-        if (it.second.size() == 0 || it.second.empty()) { continue; }
-        printf(">> [%03x] ", it.first);
-        for (auto& it2 : it.second) {
-            switch (it2.modelPool) {
-                case MODEL_POOL_PERMANENT: printf("P "); break;
-                case MODEL_POOL_SESSION:   printf("S "); break;
-                case MODEL_POOL_LEVEL:     printf("L "); break;
-                case MODEL_POOL_MAX:       printf("M "); break;
+    struct GraphNode *GetGraphNode(enum ModelPool aModelPoolMax = MODEL_POOL_MAX) {
+        for (size_t poolIndex = 0; poolIndex < (size_t) aModelPoolMax; ++poolIndex) {
+            if (nodes[poolIndex]) {
+                return nodes[poolIndex];
             }
-            printf("%p ", it2.graphNode);
         }
-        printf("\n");
+        return NULL;
     }
-}
+};
 
-static struct GraphNode *DynOS_Model_CheckMap(int index, u32* aId, void* aAsset, bool aDeDuplicate) {
-    auto& map = sAssetMap[index];
-    if (aDeDuplicate) {
-        auto it = map.find(aAsset);
-        if (it != map.end()) {
-            auto& found = it->second;
+#include "dynos_models_builtin.inl"
 
-            if (index != MODEL_POOL_PERMANENT) {
-                if (*aId && *aId != found.id) {
-                    sOverwriteMap[*aId] = found.id;
+class ModelExtendedManager : NoCopy {
+
+public:
+    inline ModelExtendedManager() {
+        DynOS_Model_InitModelsData(mData, mAssetToId);
+    }
+
+public:
+    template <typename EqualFunc>
+    struct ModelExtendedData *GetData(const EqualFunc& aEqualFunc, enum ModelExtendedId aModelIdStart, enum ModelExtendedId aModelIdEnd) {
+        for (auto &kv : mData) {
+            enum ModelExtendedId modelId = kv.first;
+            if (modelId < aModelIdStart) { continue; }
+            if (modelId >= aModelIdEnd) { break; }
+
+            auto &data = kv.second;
+            if (aEqualFunc(data)) {
+                return &data;
+            }
+        }
+        return NULL;
+    }
+
+    struct ModelExtendedData *GetData(enum ModelExtendedId aModelId) {
+        // Convert vanilla id to extended id
+        if (aModelId > E_MODEL_NONE && aModelId < E_MODEL_VANILLA_END) {
+            aModelId = mLoadedModelIds[aModelId];
+        }
+        auto itData = mData.find(aModelId);
+        if (itData != mData.end()) {
+            return &itData->second;
+        }
+        return NULL;
+    }
+
+    struct ModelExtendedData *GetData(const void *aAsset) {
+        auto itId = mAssetToId.find(aAsset);
+        if (itId != mAssetToId.end()) {
+            return GetData(itId->second);
+        }
+        return NULL;
+    }
+
+    struct ModelExtendedData *GetData(struct GraphNode *aNode) {
+        auto itId = mNodeToIdPool.find(aNode);
+        if (itId != mNodeToIdPool.end()) {
+            return GetData(itId->second.first);
+        }
+        return NULL;
+    }
+
+    enum ModelPool GetModelPool(struct GraphNode *aNode) {
+        auto itPool = mNodeToIdPool.find(aNode);
+        if (itPool != mNodeToIdPool.end()) {
+            return itPool->second.second;
+        }
+        return MODEL_POOL_MAX;
+    }
+
+private:
+    void LoadVanillaId(enum ModelExtendedId aVanillaId, enum ModelExtendedId aModelId) {
+        if (aVanillaId > E_MODEL_NONE && aVanillaId < E_MODEL_VANILLA_END) {
+            mLoadedModelIds[aVanillaId] = aModelId;
+        } else if (aVanillaId != E_MODEL_NONE) {
+            LOG_WARNING("[Models] LoadVanillaId: Loading an asset with a model extended id outside of the vanilla model slot range [%u, %u] has no effect: %u", E_MODEL_NONE + 1, E_MODEL_VANILLA_END - 1, aVanillaId);
+        }
+    }
+
+    struct ModelExtendedData *LoadData(struct ModelExtendedData *aData, enum ModelExtendedId aModelId, const void *aAsset, const char *aName, u8 aLayer, bool isAreaLayout) {
+
+        // Area layout
+        // Always load in specific ids
+        if (isAreaLayout) {
+            if (aModelId >= E_MODEL_LEVEL_AREA_START && aModelId < E_MODEL_LEVEL_AREA_END) {
+                return &mData[aModelId];
+            }
+            LOG_ERROR("[Models] LoadData: Trying to load an area geo layout with a model extended id outside of the range [%u, %u]: %u", E_MODEL_LEVEL_AREA_START, E_MODEL_LEVEL_AREA_END - 1, aModelId);
+            return NULL;
+        }
+
+        // No existing data for this asset, create a new entry
+        if (!aData) {
+            enum ModelExtendedId customId = E_MODEL_CUSTOM_START;
+            while (mData.find(customId) != mData.end()) {
+                customId = (enum ModelExtendedId) ((size_t) customId + 1);
+            }
+
+            mData[customId] = {
+                .modelId = customId,
+                .name = aName ? strdup(aName) : NULL,
+                .asset = aAsset,
+                .layer = aLayer,
+            };
+            aData = &mData[customId];
+
+            LOG_INFO("[Models] LoadData: Created new entry [ ID: %04u | ASSET: %016llX | NAME: %s ]",
+                aData->modelId,
+                (uintptr_t) aData->asset,
+                aData->name
+            );
+        }
+
+        // Load id in vanilla slot
+        LoadVanillaId(aModelId, aData->modelId);
+
+        return aData;
+    }
+
+public:
+    struct GraphNode *Load(enum ModelLoadType aModelLoadType, enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, const char *aName, u8 aLayer, struct GraphNode *aGraphNode, bool isAreaLayout) {
+        if (!aAsset) { return NULL; }
+
+        // Sanity check pool
+        if (aModelPool >= MODEL_POOL_MAX) { return NULL; }
+
+        // Check pools to see if there already is a graph node for this asset
+        // Can only check pools with lower indices, starting from permanent
+        // Ignore this for area layouts (they are always reloaded)
+        struct ModelExtendedData *data = GetData(aAsset);
+        if (data && !isAreaLayout) {
+            enum ModelPool modelPoolMax = (enum ModelPool) ((size_t) aModelPool + 1);
+            struct GraphNode *node = data->GetGraphNode(modelPoolMax);
+            if (node) {
+                LoadVanillaId(aModelId, data->modelId);
+                return node;
+            }
+        }
+
+        // Load model data
+        data = LoadData(data, aModelId, aAsset, aName, aLayer, isAreaLayout);
+        if (!data) {
+            return NULL;
+        }
+
+        // Allocate model pool
+        if (!mPools[aModelPool]) {
+            mPools[aModelPool] = dynamic_pool_init();
+        }
+
+        // Load graph node
+        struct GraphNode *node = NULL;
+        switch (aModelLoadType) {
+            case MLT_GEO_LAYOUT:
+                node = process_geo_layout(mPools[aModelPool], (void *) aAsset);
+                break;
+            case MLT_DISPLAY_LIST:
+                node = (struct GraphNode *) init_graph_node_display_list(mPools[aModelPool], NULL, aLayer, (void *) aAsset);
+                break;
+            case MLT_GRAPH_NODE:
+                node = aGraphNode;
+                break;
+        }
+        if (!node) { return NULL; }
+
+        // Store graph node
+        data->nodes[aModelPool] = node;
+        mNodeToIdPool[node] = { data->modelId, aModelPool };
+
+        LOG_INFO("[Models] Load: Successfully loaded model [ %016llX | ID: %04u | POOL: %c | ASSET: %016llX | NAME: %s ]",
+            (uintptr_t) node,
+            data->modelId,
+            ((char[]){ 'P', 'S', 'L' })[aModelPool],
+            (uintptr_t) data->asset,
+            data->name
+        );
+
+        return node;
+    }
+
+public:
+    void ClearPool(enum ModelPool aModelPool) {
+        if (aModelPool >= MODEL_POOL_MAX || !mPools[aModelPool]) {
+            return;
+        }
+
+        // Schedule pool to be freed
+        dynamic_pool_free_pool(mPools[aModelPool]);
+
+        // Clear maps
+        std::vector<enum ModelExtendedId> modelIdsToRemove;
+        std::vector<const void *> assetsToRemove;
+        for (auto &kv : mData) {
+            struct ModelExtendedData &data = kv.second;
+            struct GraphNode *node = data.nodes[aModelPool];
+            if (node) {
+
+                // Remove reference from node to id/pool look up
+                mNodeToIdPool.erase(node);
+
+                // Remove graph node pointer from data
+                data.nodes[aModelPool] = NULL;
+
+                // Schedule a removal of the whole data entry if it's custom and there is no graph node loaded anymore
+                if (data.modelId >= E_MODEL_CUSTOM_START && !data.GetGraphNode()) {
+                    modelIdsToRemove.push_back(data.modelId);
+                    for (const auto &assetId : mAssetToId) {
+                        if (assetId.second == data.modelId) {
+                            assetsToRemove.push_back(assetId.first);
+                        }
+                    }
                 }
-                *aId = found.id;
-                return found.graphNode;
-            }
-
-            if (!*aId || *aId == found.id) {
-                if (!*aId) { *aId = found.id; }
-                return found.graphNode;
             }
         }
+
+        // Remove ids from data
+        // Remove all asset to id entries for these ids
+        for (const auto &modelId : modelIdsToRemove) { mData.erase(modelId); }
+        for (const auto &asset : assetsToRemove) { mAssetToId.erase(asset); }
+    }
+
+private:
+    std::map<enum ModelExtendedId, struct ModelExtendedData> mData;
+    std::map<const void *, enum ModelExtendedId> mAssetToId;
+    std::map<struct GraphNode *, std::pair<enum ModelExtendedId, enum ModelPool>> mNodeToIdPool;
+    enum ModelExtendedId mLoadedModelIds[E_MODEL_VANILLA_END];
+    struct DynamicPool *mPools[MODEL_POOL_MAX];
+};
+
+static ModelExtendedManager sModels;
+
+  //////////////
+ // Built-in //
+//////////////
+
+const GeoLayout *DynOS_Builtin_Actor_GetFromName(const char *aDataName) {
+    const struct ModelExtendedData *data = sModels.GetData(
+        [aDataName](const struct ModelExtendedData &data) { return strcmp(data.name, aDataName) == 0; },
+        E_MODEL_EXTENDED_START,
+        E_MODEL_EXTENDED_END
+    );
+    if (data) {
+        return (const GeoLayout *) data->asset;
     }
     return NULL;
 }
 
-static struct GraphNode* DynOS_Model_LoadCommonInternal(u32* aId, enum ModelPool aModelPool, void* aAsset, u8 aLayer, struct GraphNode* aGraphNode, bool aDeDuplicate, enum ModelLoadType mlt) {
-    // sanity check pool
-    if (aModelPool >= MODEL_POOL_MAX) { return NULL; }
-
-    // allocate pool
-    if (!sModelPools[aModelPool]) {
-        sModelPools[aModelPool] = dynamic_pool_init();
+const char *DynOS_Builtin_Actor_GetFromData(const GeoLayout *aData) {
+    const struct ModelExtendedData *data = sModels.GetData(
+        [aData](const struct ModelExtendedData &data) { return data.asset == (const void *) aData; },
+        E_MODEL_EXTENDED_START,
+        E_MODEL_EXTENDED_END
+    );
+    if (data) {
+        return data->name;
     }
+    return NULL;
+}
 
-    // check maps, permanent pool is always checked
-    struct GraphNode *node = NULL;
-    #define CHECK_POOL(pool) if ((node = DynOS_Model_CheckMap(pool, aId, aAsset, aDeDuplicate)) != NULL) { return node; }
-    CHECK_POOL(MODEL_POOL_PERMANENT);
-    if (aModelPool == MODEL_POOL_SESSION) {
-        CHECK_POOL(MODEL_POOL_SESSION);
-        CHECK_POOL(MODEL_POOL_LEVEL);
+const GeoLayout *DynOS_Builtin_LvlGeo_GetFromName(const char *aDataName) {
+    const struct ModelExtendedData *data = sModels.GetData(
+        [aDataName](const struct ModelExtendedData &data) { return strcmp(data.name, aDataName) == 0; },
+        E_MODEL_LEVEL_GEO_START,
+        E_MODEL_LEVEL_GEO_END
+    );
+    if (data) {
+        return (const GeoLayout *) data->asset;
     }
-    if (aModelPool == MODEL_POOL_LEVEL) {
-        CHECK_POOL(MODEL_POOL_LEVEL);
+    return NULL;
+}
+
+const char *DynOS_Builtin_LvlGeo_GetFromData(const GeoLayout *aData) {
+    const struct ModelExtendedData *data = sModels.GetData(
+        [aData](const struct ModelExtendedData &data) { return data.asset == (const void *) aData; },
+        E_MODEL_LEVEL_GEO_START,
+        E_MODEL_LEVEL_GEO_END
+    );
+    if (data) {
+        return data->name;
     }
+    return NULL;
+}
 
-    // load geo
-    auto& map = sAssetMap[aModelPool];
-    switch (mlt) {
-        case MLT_GEO:
-            node = process_geo_layout(sModelPools[aModelPool], aAsset);
-            break;
-        case MLT_DL:
-            node = (struct GraphNode *) init_graph_node_display_list(sModelPools[aModelPool], NULL, aLayer, aAsset);
-            break;
-        case MLT_STORE:
-            node = aGraphNode;
-            break;
+  //////////
+ // Load //
+//////////
+
+struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, const char *aName, bool isAreaLayout) {
+    return sModels.Load(MLT_GEO_LAYOUT, aModelId, aModelPool, aAsset, aName, 0xFF, NULL, isAreaLayout);
+}
+
+struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, u8 aLayer) {
+    return sModels.Load(MLT_DISPLAY_LIST, aModelId, aModelPool, aAsset, NULL, aLayer, NULL, false);
+}
+
+struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, struct GraphNode *aNode) {
+    return sModels.Load(MLT_GRAPH_NODE, aModelId, aModelPool, aAsset, NULL, 0xFF, aNode, false);
+}
+
+  /////////
+ // Get //
+/////////
+
+static struct GraphNode *DynOS_Model_GetErrorModel() {
+    struct ModelExtendedData *data = sModels.GetData(E_MODEL_ERROR_MODEL);
+    if (data) {
+        return data->GetGraphNode();
     }
-    if (!node) { return NULL; }
-
-    // figure out id
-    if (!*aId) { *aId = find_empty_id(aModelPool == MODEL_POOL_PERMANENT); }
-
-    // create model info
-    struct ModelInfo info = {
-        .id = *aId,
-        .asset = aAsset,
-        .graphNode = node,
-        .modelPool = aModelPool,
-    };
-
-    // store in maps
-    sIdMap[*aId].push_back(info);
-    map[aAsset] = info;
-
-    return node;
+    return NULL;
 }
 
-static struct GraphNode* DynOS_Model_LoadCommon(u32* aId, enum ModelPool aModelPool, void* aAsset, u8 aLayer, struct GraphNode* aGraphNode, bool aDeDuplicate, enum ModelLoadType mlt) {
-    struct GraphNode* node = DynOS_Model_LoadCommonInternal(aId, aModelPool, aAsset, aLayer, aGraphNode, aDeDuplicate, mlt);
-    smlua_model_util_register_model_id(*aId, aAsset);
-    return node;
-}
-
-struct GraphNode* DynOS_Model_LoadGeo(u32* aId, enum ModelPool aModelPool, void* aAsset, bool aDeDuplicate) {
-    return DynOS_Model_LoadCommon(aId, aModelPool, aAsset, 0, NULL, aDeDuplicate, MLT_GEO);
-}
-
-struct GraphNode* DynOS_Model_LoadDl(u32* aId, enum ModelPool aModelPool, u8 aLayer, void* aAsset) {
-    return DynOS_Model_LoadCommon(aId, aModelPool, aAsset, aLayer, NULL, true, MLT_DL);
-}
-
-struct GraphNode* DynOS_Model_StoreGeo(u32* aId, enum ModelPool aModelPool, void* aAsset, struct GraphNode* aGraphNode) {
-    return DynOS_Model_LoadCommon(aId, aModelPool, aAsset, 0, aGraphNode, true, MLT_STORE);
-}
-
-struct GraphNode* DynOS_Model_GetErrorGeo() {
-    auto it = sIdMap.find(MODEL_ERROR_MODEL);
-    if (it == sIdMap.end()) { return NULL; }
-    auto& vec = it->second;
-    if (vec.size() == 0 || vec.empty()) {
+struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId) {
+    if (aModelId == E_MODEL_NONE) {
         return NULL;
     }
-    return vec.back().graphNode;
-}
 
-struct GraphNode* DynOS_Model_GetGeo(u32 aId) {
-    if (!aId) { return NULL; }
-
-    auto overwriteIt = sOverwriteMap.find(aId);
-    if (overwriteIt != sOverwriteMap.end()) {
-        aId = overwriteIt->second;
-    }
-
-    auto idIt = sIdMap.find(aId);
-    if (idIt == sIdMap.end()) {
-        return DynOS_Model_GetErrorGeo();
-    }
-
-    auto& vec = idIt->second;
-    if (vec.size() == 0 || vec.empty()) {
-        return DynOS_Model_GetErrorGeo();
-    }
-
-    return vec.back().graphNode;
-}
-
-static u32 DynOS_Model_GetIdFromGeoRef(u32 aIndex, void* aGeoRef) {
-    u32 lowest = 9999;
-    for (auto& it : sIdMap) {
-        u32 id = it.first;
-        if (id > lowest) { continue; }
-        if (!it.second.size() || it.second.empty()) { continue; }
-        auto& node = it.second.back();
-        if (aGeoRef == node.graphNode->georef) {
-            lowest = id;
+    struct ModelExtendedData *data = sModels.GetData(aModelId);
+    if (data) {
+        struct GraphNode *node = data->GetGraphNode();
+        if (node) {
+            return node;
         }
+
+        // Try to load it
+        LOG_WARNING("DynOS_Model_GetGraphNode: Trying to load model with existing data now: %u", data->modelId);
+        return sModels.Load(data->layer != 0xFF ? MLT_DISPLAY_LIST : MLT_GEO_LAYOUT, E_MODEL_NONE, MODEL_POOL_SESSION, data->asset, data->name, data->layer, NULL, false);
     }
-    if (lowest < 9999) { return lowest; }
-    return aIndex;
+
+    // Default: valid id but no model loaded
+    return DynOS_Model_GetErrorModel();
 }
 
-u32 DynOS_Model_GetIdFromGraphNode(struct GraphNode* aNode) {
-    u32 lowest = 9999;
-    void* georef = NULL;
-    for (auto& it : sIdMap) {
-        u32 id = it.first;
-        if (id > lowest) { continue; }
-        if (!it.second.size() || it.second.empty()) { continue; }
-        auto& node = it.second.back();
-        if (aNode == node.graphNode) {
-            lowest = id;
-            georef = (void*)node.graphNode->georef;
-        }
+enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode) {
+    if (!aNode) {
+        return E_MODEL_NONE;
     }
-    if (georef) {
-        lowest = DynOS_Model_GetIdFromGeoRef(lowest, georef);
+
+    struct ModelExtendedData *data = (
+        aNode->georef ?
+        sModels.GetData(aNode->georef) :
+        sModels.GetData(aNode)
+    );
+    if (data) {
+        return data->modelId;
     }
-    if (lowest < 9999) { return lowest; }
-    return MODEL_ERROR_MODEL;
+
+    return E_MODEL_NONE;
 }
 
-u32 DynOS_Model_GetIdFromAsset(void* asset) {
-    if (!asset) { return MODEL_NONE; }
-    u32 lowest = 9999;
-    for (int i = 0; i < MODEL_POOL_MAX; i++) {
-        auto& map = sAssetMap[i];
-        auto assetIt = map.find(asset);
-        if (assetIt == map.end()) { continue; }
-        u32 id = assetIt->second.id;
-        if (id < lowest) { lowest = id; }
-        auto idIt = sOverwriteMap.find(id);
-        if (idIt != sOverwriteMap.end()) {
-            id = idIt->second;
-            if (id < lowest) { lowest = id; }
-        }
+enum ModelPool DynOS_Model_GetModelPool(struct GraphNode *aNode) {
+    if (!aNode) {
+        return MODEL_POOL_MAX;
     }
-    if (lowest < 9999) { return lowest; }
-    return MODEL_ERROR_MODEL;
-}
 
-enum ModelPool DynOS_Model_GetModelPoolFromGraphNode(struct GraphNode* aNode) {
-    for (auto& it : sIdMap) {
-        if (!it.second.size() || it.second.empty()) { continue; }
-        auto& node = it.second.back();
-        if (aNode == node.graphNode) {
-            return node.modelPool;
-        }
-    }
-    return MODEL_POOL_MAX;
-}
-
-void DynOS_Model_OverwriteSlot(u32 srcSlot, u32 dstSlot) {
-    sOverwriteMap[srcSlot] = dstSlot;
+    return sModels.GetModelPool(aNode);
 }
 
 void DynOS_Model_ClearPool(enum ModelPool aModelPool) {
-    if (!sModelPools[aModelPool]) { return; }
-
-    // schedule pool to be freed
-    dynamic_pool_free_pool(sModelPools[aModelPool]);
-
-    // clear overwrite
-    if (aModelPool == MODEL_POOL_LEVEL) {
-        sOverwriteMap.clear();
-    }
-
-    // clear maps
-    auto& assetMap = sAssetMap[aModelPool];
-    for (auto& asset : assetMap) {
-        auto& info = asset.second;
-        auto idIt = sIdMap.find(info.id);
-        if (idIt == sIdMap.end()) { continue; }
-        auto& idMap = idIt->second;
-
-        // preventing clearing permanent vanilla model slot
-        if (info.id <= VANILLA_ID_END && idMap.size() <= 1) {
-            if (sAssetMap[MODEL_POOL_PERMANENT].count(info.asset) > 0) {
-                continue;
-            }
-        }
-
-        // erase from id map
-        for (auto info2 = idMap.begin(); info2 != idMap.end(); ) {
-            if (info.id == info2->id && info2->modelPool == aModelPool) {
-                info2 = idMap.erase(info2);
-            } else {
-                info2++;
-            }
-        }
-    }
-
-    assetMap.clear();
+    sModels.ClearPool(aModelPool);
 }

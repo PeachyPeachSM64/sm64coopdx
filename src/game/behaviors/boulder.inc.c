@@ -76,7 +76,7 @@ void bhv_big_boulder_generator_loop(void) {
                     sp1C->oMoveAngleYaw = random_float() * 4096.0f;
 
                     struct Object* spawn_objects[] = { sp1C };
-                    u32 models[] = { MODEL_HMC_ROLLING_ROCK };
+                    u32 models[] = { E_MODEL_HMC_ROLLING_ROCK };
                     network_send_spawn_objects(spawn_objects, models, 1);
                 }
             }
@@ -87,7 +87,7 @@ void bhv_big_boulder_generator_loop(void) {
                     sp1C->oMoveAngleYaw = random_float() * 4096.0f;
 
                     struct Object* spawn_objects[] = { sp1C };
-                    u32 models[] = { MODEL_HMC_ROLLING_ROCK };
+                    u32 models[] = { E_MODEL_HMC_ROLLING_ROCK };
                     network_send_spawn_objects(spawn_objects, models, 1);
                 }
             }

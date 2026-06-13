@@ -29,9 +29,9 @@ static void fire_spitter_act_spit_fire(void) {
             if (sync_object_is_owned_locally(o->oSyncID)) {
                 cur_obj_play_sound_2(SOUND_OBJ_FLAME_BLOWN);
 
-                struct Object* fire = obj_spit_fire(0, 0, 0, 5.0f, MODEL_RED_FLAME_SHADOW, 20.0f, 15.0f, 0x1000);
+                struct Object* fire = obj_spit_fire(0, 0, 0, 5.0f, E_MODEL_RED_FLAME_SHADOW, 20.0f, 15.0f, 0x1000);
                 struct Object* spawn_objects[] = { fire };
-                u32 models[] = { MODEL_RED_FLAME_SHADOW };
+                u32 models[] = { E_MODEL_RED_FLAME_SHADOW };
                 network_send_spawn_objects(spawn_objects, models, 1);
 
                 network_send_object(o);

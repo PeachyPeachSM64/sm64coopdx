@@ -165,7 +165,7 @@ void bhv_scuttlebug_spawn_loop(void) {
 
                 sync_object_set_id(scuttlebug);
                 struct Object *spawn_objects[] = { scuttlebug };
-                u32 models[] = { MODEL_SCUTTLEBUG };
+                u32 models[] = { E_MODEL_SCUTTLEBUG };
                 network_send_spawn_objects(spawn_objects, models, 1);
             }
 

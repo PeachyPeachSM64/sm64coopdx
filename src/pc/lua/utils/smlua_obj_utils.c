@@ -25,8 +25,7 @@ static struct Object* spawn_object_internal(enum BehaviorId behaviorId, enum Mod
         return NULL;
     }
 
-    u16 loadedModelId = smlua_model_util_load(modelId);
-    struct Object* obj = spawn_object(gMarioStates[0].marioObj, loadedModelId, behavior);
+    struct Object* obj = spawn_object(gMarioStates[0].marioObj, modelId, behavior);
 
     if (obj == NULL) {
         LOG_ERROR("failed to allocate object");
@@ -64,12 +63,11 @@ static struct Object* spawn_object_internal(enum BehaviorId behaviorId, enum Mod
 
     struct SyncObject* so = sync_object_get(obj->oSyncID);
     if (doSync && so) {
-        so->extendedModelId = modelId;
         so->o = obj;
         so->behavior = (BehaviorScript*) behavior;
 
         struct Object* spawn_objects[] = { obj };
-        u32 models[] = { loadedModelId };
+        u32 models[] = { modelId };
         network_send_spawn_objects(spawn_objects, models, 1);
     }
 
@@ -361,8 +359,7 @@ struct SpawnParticlesInfo* obj_get_temp_spawn_particles_info(enum ModelExtendedI
     static struct SpawnParticlesInfo sTmpSpi = { 0 };
     memset(&sTmpSpi, 0, sizeof(struct SpawnParticlesInfo));
 
-    u16 loadedModelId = smlua_model_util_load(modelId);
-    sTmpSpi.model = loadedModelId;
+    sTmpSpi.model = modelId;
 
     return &sTmpSpi;
 }
@@ -371,8 +368,7 @@ struct WaterDropletParams* obj_get_temp_water_droplet_params(enum ModelExtendedI
     static struct WaterDropletParams sTmpWdp = { 0 };
     memset(&sTmpWdp, 0, sizeof(struct WaterDropletParams));
 
-    s16 loadedModelId = smlua_model_util_load(modelId);
-    sTmpWdp.model = loadedModelId;
+    sTmpWdp.model = modelId;
 
     const BehaviorScript *behavior = get_behavior_from_id(behaviorId);
     behavior = smlua_override_behavior(behavior);

@@ -178,9 +178,6 @@ struct SyncObject* sync_object_init(struct Object *o, float maxSyncDistance) {
     so->on_forget = NULL;
     so->syncDeathEvent = true;
     so->ctx = 0;
-    if (!hadSyncId) {
-        so->extendedModelId = 0xFFFF;
-    }
     so->randomSeed = (u16)(o->oSyncID * 7951);
     memset(so->extraFields, 0, sizeof(so->extraFields));
     memset(so->extraFieldsSizeBytes, 0, sizeof(so->extraFieldsSizeBytes));
@@ -385,7 +382,6 @@ bool sync_object_set_id(struct Object* o) {
 
     if (!so) {
         so = calloc(1, sizeof(struct SyncObject));
-        so->extendedModelId = 0xFFFF;
         hmap_put(sSoMap, syncId, so);
         //LOG_INFO("Allocated sync object @ %u, size %ld", syncId, (long int)hmap_len(sSoMap));
     } else if (so->o != o) {

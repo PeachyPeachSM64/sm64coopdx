@@ -179,13 +179,13 @@ static void fly_guy_act_shoot_fire(void) {
                     struct Object* fire = obj_spit_fire(
                         /*relativePos*/ 0, 38, 20,
                         /*scale      */ 2.5f,
-                        /*model      */ MODEL_RED_FLAME_SHADOW,
+                        /*model      */ E_MODEL_RED_FLAME_SHADOW,
                         /*startSpeed */ 25.0f,
                         /*endSpeed   */ 20.0f,
                         /*movePitch  */ fireMovePitch);
 
                     struct Object* spawn_objects[] = { fire };
-                    u32 models[] = { MODEL_RED_FLAME_SHADOW };
+                    u32 models[] = { E_MODEL_RED_FLAME_SHADOW };
                     network_send_spawn_objects(spawn_objects, models, 1);
                 }
             }

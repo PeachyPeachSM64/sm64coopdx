@@ -1,5 +1,5 @@
 struct TripletButterflyActivationData {
-    s32 model;
+    enum ModelExtendedId modelId;
     const BehaviorScript *behavior;
     f32 scale;
 };
@@ -17,8 +17,8 @@ static struct ObjectHitbox sTripletButterflyExplodeHitbox = {
 };
 
 static struct TripletButterflyActivationData sTripletButterflyActivationData[] = {
-    { MODEL_BOWLING_BALL, NULL, 0.5f },
-    { MODEL_1UP, bhv1upWalking, 1.0f },
+    { E_MODEL_BOWLING_BALL, NULL, 0.5f },
+    { E_MODEL_1UP, bhv1upWalking, 1.0f },
 };
 
 static void triplet_butterfly_act_init(void) {
@@ -88,7 +88,7 @@ static void triplet_butterfly_act_activate(void) {
     if (o->oTimer > 20) {
         if (o->oTripletButterflyModel == 0) {
             spawn_object_relative_with_scale(0, 0, -40, 0, 1.5f, o, MODEL_SMOKE, bhvWhitePuffSmoke2);
-            o->oTripletButterflyModel = sTripletButterflyActivationData[o->oTripletButterflyType].model;
+            o->oTripletButterflyModel = sTripletButterflyActivationData[o->oTripletButterflyType].modelId;
             cur_obj_set_model(o->oTripletButterflyModel);
             obj_set_billboard(o);
             o->oTripletButterflyScale = 0.0f;

@@ -58,8 +58,7 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     }
 
     // Load the graph node
-    u32 id = 0;
-    GraphNode *graphNode = (GraphNode *) DynOS_Model_LoadGeo(&id, MODEL_POOL_SESSION, geoLayout, true);
+    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_NONE, MODEL_POOL_SESSION, geoLayout, aActorName, false);
     if (!graphNode) {
         PrintError("  ERROR: Couldn't load graph node for \"%s\"", actorName.c_str());
         return false;
@@ -82,51 +81,6 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     // Add to list
     DynOS_Actor_Valid(georef, actorGfx);
     return true;
-}
-
-const void *DynOS_Actor_GetLayoutFromName(const char *aActorName) {
-    if (aActorName == NULL) { return NULL; }
-
-    // check levels
-    auto& levelsArray = DynOS_Lvl_GetArray();
-    for (auto& lvl : levelsArray) {
-        auto geo = lvl.second->mGeoLayouts.Find(aActorName);
-        if (geo) {
-            return geo->mData;
-        }
-    }
-
-    // check custom actors
-    for (auto& pair : DynosCustomActors()) {
-        if (pair.first == aActorName) {
-            return pair.second;
-        }
-    }
-
-    // check loaded actors
-    for (auto& pair : DynosValidActors()) {
-        auto geo = pair.second.mGfxData->mGeoLayouts.Find(aActorName);
-        if (geo) {
-            return geo->mData;
-        }
-    }
-
-    // check built in actors
-    for (s32 i = 0; i < DynOS_Builtin_Actor_GetCount(); ++i) {
-        auto name = DynOS_Builtin_Actor_GetNameFromIndex(i);
-        if (!strcmp(aActorName, name)) {
-            return DynOS_Builtin_Actor_GetFromIndex(i);
-        }
-    }
-
-    // check modfs file
-    if (is_mod_fs_file(aActorName)) {
-        if (DynOS_Actor_AddCustom(gLuaActiveMod->index, -1, aActorName, aActorName)) {
-            return DynOS_Actor_GetLayoutFromName(aActorName);
-        }
-    }
-
-    return NULL;
 }
 
 bool DynOS_Actor_GetModIndexAndTokenFromGfxData(const GfxData *aGfxData, u32 aTokenIndex, s32 *outModIndex, s32 *outModFileIndex, const char **outToken) {
@@ -232,9 +186,8 @@ void DynOS_Actor_Override_All(void) {
         for (struct Object *_Object = (struct Object *) _Head->header.next; _Object != _Head; _Object = (struct Object *) _Object->header.next) {
             if (_Object->activeFlags && _Object->header.gfx.sharedChild != NULL) {
                 if (_Object->header.gfx.sharedChild->georef != NULL) {
-                    GraphNode* georef = (GraphNode*)_Object->header.gfx.sharedChild->georef;
-                    u32 id = 0;
-                    _Object->header.gfx.sharedChild = DynOS_Model_LoadGeo(&id, MODEL_POOL_PERMANENT, georef, true);
+                    const void *georef = _Object->header.gfx.sharedChild->georef;
+                    _Object->header.gfx.sharedChild = DynOS_Model_LoadGeoLayout(E_MODEL_NONE, MODEL_POOL_PERMANENT, georef, NULL, false);
                 }
                 DynOS_Actor_Override(_Object, (void**)&_Object->header.gfx.sharedChild);
             }
@@ -276,7 +229,7 @@ size_t get_graph_node_size(s16 nodeType) {
 void DynOS_Actor_RegisterModifiedGraphNode(GraphNode *aNode) {
     if (sModifiedGraphNodes.find(aNode) == sModifiedGraphNodes.end()) {
         struct GraphNode *sharedChild = geo_find_shared_child(aNode);
-        if (DynOS_Model_GetModelPoolFromGraphNode(sharedChild) != MODEL_POOL_PERMANENT) { return; } // Only need to reset permanent models
+        if (DynOS_Model_GetModelPool(sharedChild) != MODEL_POOL_PERMANENT) { return; } // Only need to reset permanent models
         size_t size = get_graph_node_size(aNode->type);
         if (size == 0) { return; } // Unexpected
         GraphNode *graphNodeCopy = (GraphNode *) malloc(size);
@@ -313,4 +266,57 @@ void DynOS_Actor_ModShutdown() {
         free(node.second);
     }
     sModifiedGraphNodes.clear();
+}
+
+const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName) {
+    if (aGeoName == NULL) { return NULL; }
+
+    // check levels
+    auto& levelsArray = DynOS_Lvl_GetArray();
+    for (auto& lvl : levelsArray) {
+        auto geo = lvl.second->mGeoLayouts.Find(aGeoName);
+        if (geo) {
+            return geo->mData;
+        }
+    }
+
+    // check custom actors
+    for (auto& pair : DynosCustomActors()) {
+        if (pair.first == aGeoName) {
+            return (const GeoLayout *) pair.second;
+        }
+    }
+
+    // check loaded actors
+    for (auto& pair : DynosValidActors()) {
+        auto geo = pair.second.mGfxData->mGeoLayouts.Find(aGeoName);
+        if (geo) {
+            return geo->mData;
+        }
+    }
+
+    // check built in actors
+    {
+        const GeoLayout *geoLayout = DynOS_Builtin_Actor_GetFromName(aGeoName);
+        if (geoLayout) {
+            return geoLayout;
+        }
+    }
+
+    // check built in level geos
+    {
+        const GeoLayout *geoLayout = DynOS_Builtin_LvlGeo_GetFromName(aGeoName);
+        if (geoLayout) {
+            return geoLayout;
+        }
+    }
+
+    // check modfs file
+    if (is_mod_fs_file(aGeoName)) {
+        if (DynOS_Actor_AddCustom(gLuaActiveMod->index, -1, aGeoName, aGeoName)) {
+            return DynOS_Geo_GetLayoutFromName(aGeoName);
+        }
+    }
+
+    return NULL;
 }

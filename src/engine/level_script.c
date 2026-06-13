@@ -26,7 +26,6 @@
 #include "surface_collision.h"
 #include "surface_load.h"
 #include "level_table.h"
-#include "pc/lua/utils/smlua_model_utils.h"
 #include "pc/lua/smlua.h"
 #include "pc/djui/djui.h"
 #include "pc/debug_context.h"
@@ -434,8 +433,8 @@ static void level_cmd_begin_area(void) {
     void *geoLayoutAddr = CMD_GET(void *, 4);
 
     if (areaIndex < MAX_AREAS) {
-        u32 id = 0;
-        struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo(&id, MODEL_POOL_LEVEL, geoLayoutAddr, false);
+        enum ModelExtendedId modelId = E_MODEL_LEVEL_AREA_START + areaIndex;
+        struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo_layout(modelId, MODEL_POOL_LEVEL, geoLayoutAddr, NULL, true);
         struct GraphNodeCamera *node = (struct GraphNodeCamera *) screenArea->views[0];
 
         sCurrAreaIndex = areaIndex;
@@ -461,22 +460,24 @@ static void level_cmd_end_area(void) {
 }
 
 static void level_cmd_load_model_from_dl(void) {
-    s16 val1 = CMD_GET(s16, 2) & 0x0FFF;
-    s16 val2 = ((u16)CMD_GET(s16, 2)) >> 12;
-    void *val3 = CMD_GET(void *, 4);
+    u8 modelId = CMD_GET(s16, 2) & 0xFF;
+    u8 layer = ((u16)CMD_GET(s16, 2)) >> 12;
+    void *displayList = CMD_GET(void *, 4);
 
-    u32 id = val1;
-    dynos_model_load_dl(&id, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, val2, val3);
+    if (displayList != NULL && modelId != MODEL_NONE) {
+        dynos_model_load_display_list(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, displayList, layer);
+    }
 
     sCurrentCmd = CMD_NEXT;
 }
 
 static void level_cmd_load_model_from_geo(void) {
-    s16 arg0 = CMD_GET(s16, 2);
-    void *arg1 = CMD_GET(void *, 4);
+    u8 modelId = CMD_GET(s16, 2) & 0xFF;
+    void *geoLayout = CMD_GET(void *, 4);
 
-    u32 id = arg0;
-    dynos_model_load_geo(&id, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, arg1, true);
+    if (geoLayout != NULL && modelId != MODEL_NONE) {
+        dynos_model_load_geo_layout(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, geoLayout, NULL, false);
+    }
 
     sCurrentCmd = CMD_NEXT;
 }
@@ -485,18 +486,19 @@ static void level_cmd_23(void) {
     union {
         s32 i;
         f32 f;
-    } arg2;
+    } scale;
 
-    s16 model = CMD_GET(s16, 2) & 0x0FFF;
-    s16 arg0H = ((u16)CMD_GET(s16, 2)) >> 12;
-    void *arg1 = CMD_GET(void *, 4);
+    u8 modelId = CMD_GET(s16, 2) & 0xFF;
+    u8 layer = ((u16)CMD_GET(s16, 2)) >> 12;
+    void *displayList = CMD_GET(void *, 4);
     // load an f32, but using an integer load instruction for some reason (hence the union)
-    arg2.i = CMD_GET(s32, 8);
+    scale.i = CMD_GET(s32, 8);
 
     // GraphNodeScale has a GraphNode at the top. This
     // is being stored to the array, so cast the pointer.
-    u32 id = model;
-    dynos_model_store_geo(&id, MODEL_POOL_LEVEL, arg1, (struct GraphNode*)init_graph_node_scale(gLevelPool, 0, arg0H, arg1, arg2.f));
+    if (displayList != NULL && modelId != MODEL_NONE) {
+        dynos_model_load_graph_node(modelId, MODEL_POOL_LEVEL, displayList, (struct GraphNode*) init_graph_node_scale(gLevelPool, NULL, layer, displayList, scale.f));
+    }
 
     sCurrentCmd = CMD_NEXT;
 }
@@ -504,8 +506,8 @@ static void level_cmd_23(void) {
 static void level_cmd_init_mario(void) {
     UNUSED u32 behaviorArg = CMD_GET(u32, 4);
     void* behaviorScript = CMD_GET(void*, 8);
-    u16 slot = CMD_GET(u8, 3);
-    struct GraphNode* unk18 = dynos_model_get_geo(slot);
+    u8 modelId = CMD_GET(u8, 3);
+    struct GraphNode* node = dynos_model_get_graph_node(modelId);
 
     struct SpawnInfo* lastSpawnInfo = NULL;
     for (s32 i = 0; i < MAX_PLAYERS; i++) {
@@ -517,7 +519,7 @@ static void level_cmd_init_mario(void) {
         spawnInfo->areaIndex = 0;
         spawnInfo->behaviorArg = (u32)i | ((u32)1 << 31);
         spawnInfo->behaviorScript = behaviorScript;
-        spawnInfo->unk18 = unk18;
+        spawnInfo->unk18 = node;
         spawnInfo->next = NULL;
         spawnInfo->syncID = 0;
 
@@ -532,11 +534,11 @@ static void level_cmd_init_mario(void) {
 
 static void level_cmd_place_object(void) {
     u8 val7 = 1 << (gCurrActNum - 1);
-    u16 model;
+    u8 modelId;
     struct SpawnInfo *spawnInfo;
 
     if (sCurrAreaIndex != -1 && (gLevelValues.disableActs || (CMD_GET(u8, 2) & val7) || CMD_GET(u8, 2) == 0x1F)) {
-        model = CMD_GET(u8, 3);
+        modelId = CMD_GET(u8, 3);
         spawnInfo = dynamic_pool_alloc(gLevelPool, sizeof(struct SpawnInfo));
 
         spawnInfo->startPos[0] = CMD_GET(s16, 4);
@@ -552,7 +554,7 @@ static void level_cmd_place_object(void) {
 
         spawnInfo->behaviorArg = CMD_GET(u32, 16);
         spawnInfo->behaviorScript = CMD_GET(void *, 20);
-        spawnInfo->unk18 = dynos_model_get_geo(model);
+        spawnInfo->unk18 = dynos_model_get_graph_node(modelId);
         spawnInfo->next = gAreas[sCurrAreaIndex].objectSpawnInfos;
 
         spawnInfo->syncID = gAreas[sCurrAreaIndex].nextSyncID;
@@ -993,12 +995,7 @@ static void level_cmd_place_object_ext_lua_params(void) {
 
         spawnInfo->behaviorArg = behParam;
 
-        if (luaParams & OBJECT_EXT_LUA_MODEL) {
-            u16 slot = smlua_model_util_load((enum ModelExtendedId) modelId);
-            spawnInfo->unk18 = dynos_model_get_geo(slot);
-        } else {
-            spawnInfo->unk18 = dynos_model_get_geo(modelId);
-        }
+        spawnInfo->unk18 = dynos_model_get_graph_node(modelId);
 
         if (luaParams & OBJECT_EXT_LUA_BEHAVIOR) {
             spawnInfo->behaviorScript = (BehaviorScript *) get_behavior_from_id((enum BehaviorId) behavior);
@@ -1019,9 +1016,13 @@ static void level_cmd_place_object_ext_lua_params(void) {
 }
 
 static void level_cmd_load_model_from_geo_ext(void) {
-    s16 modelSlot = CMD_GET(s16, 2);
+    u8 modelId = CMD_GET(s16, 2) & 0xFF;
     const char* geoName = dynos_level_get_token(CMD_GET(u32, 4));
-    smlua_model_util_store_in_slot(modelSlot, geoName);
+
+    if (geoName != NULL && modelId != MODEL_NONE) {
+        dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, dynos_geolayout_get(geoName), geoName, false);
+    }
+
     sCurrentCmd = CMD_NEXT;
 }
 

@@ -343,7 +343,6 @@ void smlua_init(void) {
     smlua_exec_str(gSmluaConstants);
 
     smlua_cobject_init_globals();
-    smlua_model_util_initialize();
 
     // load scripts
     mods_size_enforce(&gActiveMods);
@@ -422,7 +421,6 @@ void smlua_shutdown(void) {
     smlua_audio_utils_reset_all();
     smlua_audio_custom_deinit();
     smlua_clear_hooks();
-    smlua_model_util_clear();
     smlua_level_util_reset();
     smlua_anim_util_reset();
     mod_storage_shutdown();

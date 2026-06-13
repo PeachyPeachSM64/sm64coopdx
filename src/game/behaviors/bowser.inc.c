@@ -101,7 +101,7 @@ void bhv_bowser_flame_spawn_loop(void) {
                     struct Object* flame = spawn_object(o, MODEL_RED_FLAME, bhvFlameMovingForwardGrowing);
                     if (flame != NULL) {
                         struct Object* spawn_objects[] = { flame };
-                        u32 models[] = { MODEL_RED_FLAME };
+                        u32 models[] = { E_MODEL_RED_FLAME };
                         network_send_spawn_objects(spawn_objects, models, 1);
                     }
                 }
@@ -154,7 +154,7 @@ s32 bowser_spawn_shockwave(void) {
                 wave->oPosY = o->oFloorHeight;
 
                 struct Object* spawn_objects[] = { wave };
-                u32 models[] = { MODEL_BOWSER_WAVE };
+                u32 models[] = { E_MODEL_BOWSER_WAVE };
                 network_send_spawn_objects(spawn_objects, models, 1);
             }
         }
@@ -510,7 +510,7 @@ void bowser_act_spit_fire_into_sky(void) // only in sky
             }
             if (flame != NULL) {
                 struct Object* spawn_objects[] = { flame };
-                u32 models[] = { MODEL_RED_FLAME };
+                u32 models[] = { E_MODEL_RED_FLAME };
                 network_send_spawn_objects(spawn_objects, models, 1);
             }
         }
@@ -663,7 +663,7 @@ void bowser_act_spit_fire_onto_floor(void) {
         o->oBowserUnk108 = random_float() * 3.0f + 1.0f;
     cur_obj_init_animation_with_sound(22);
     if (cur_obj_check_anim_frame(5))
-        obj_spit_fire(0, 200, 180, 7.0f, MODEL_RED_FLAME, 30.0f, 10.0f, 0x1000);
+        obj_spit_fire(0, 200, 180, 7.0f, E_MODEL_RED_FLAME, 30.0f, 10.0f, 0x1000);
     if (cur_obj_check_if_near_animation_end())
         o->oSubAction++;
     if (o->oSubAction >= o->oBowserUnk108)
@@ -891,7 +891,7 @@ void bowser_spawn_grand_star_key(void) {
             sync_object_set_id(reward);
 
             struct Object* spawn_objects[] = { reward };
-            u32 models[] = { MODEL_STAR };
+            u32 models[] = { E_MODEL_STAR };
             network_send_spawn_objects(spawn_objects, models, 1);
         }
     } else {
@@ -906,7 +906,7 @@ void bowser_spawn_grand_star_key(void) {
             reward->oHomeY = reward->oPosY;
             reward->oHomeZ = reward->oPosZ;
             struct Object* spawn_objects[] = { reward };
-            u32 models[] = { MODEL_BOWSER_KEY };
+            u32 models[] = { E_MODEL_BOWSER_KEY };
             network_send_spawn_objects(spawn_objects, models, 1);
         }
     }

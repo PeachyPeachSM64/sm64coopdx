@@ -33,7 +33,6 @@ struct SyncObject {
     u8 extraFieldsSizeBytes[MAX_SYNC_OBJECT_FIELDS];
     bool rememberLastReliablePacket;
     bool lastReliablePacketIsStale;
-    u16 extendedModelId;
     struct Packet lastReliablePacket;
     u8 forgetting;
     u8 ctx;

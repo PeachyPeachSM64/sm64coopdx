@@ -820,6 +820,8 @@ s32 DynOS_String_Width(const u8 *aStr64);
 // Geo
 //
 
+const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName);
+
 //
 // Levels
 //
@@ -858,9 +860,6 @@ const void*      DynOS_Builtin_ScriptPtr_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_ScriptPtr_GetFromData(const void* aData);
 const GeoLayout* DynOS_Builtin_Actor_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_Actor_GetFromData(const GeoLayout* aData);
-const GeoLayout* DynOS_Builtin_Actor_GetFromIndex(s32 aIndex);
-const char*      DynOS_Builtin_Actor_GetNameFromIndex(s32 aIndex);
-s32              DynOS_Builtin_Actor_GetCount();
 const MacroObject* DynOS_Builtin_LvlMacro_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_LvlMacro_GetFromData(const MacroObject* aData);
 const GeoLayout* DynOS_Builtin_LvlGeo_GetFromName(const char* aDataName);
@@ -876,7 +875,6 @@ const struct TextureInfo* DynOS_Builtin_Tex_GetInfoFromName(const char* aDataNam
 const struct TextureInfo* DynOS_Builtin_Tex_GetInfoFromData(const Texture* aData);
 const void*      DynOS_Builtin_Func_GetFromName(const char* aDataName, u8 aFuncType);
 const void*      DynOS_Builtin_Func_GetFromIndex(s32 aIndex, u8 aFuncType);
-const char *     DynOS_Builtin_Func_GetNameFromIndex(s32 aIndex, u8 aFuncType);
 s32              DynOS_Builtin_Func_GetIndexFromData(const void* aData, u8 aFuncType);
 String           DynOS_Builtin_Func_CheckMisuse(s32 aIndex, u8 aFuncType);
 String           DynOS_Builtin_Func_CheckMisuse(const char* aDataName, u8 aFuncType);
@@ -904,7 +902,6 @@ void DynOS_Pack_AddTex(PackData* aPackData, DataNode<TexData>* aTexData);
 
 std::map<const void *, ActorGfx> &DynOS_Actor_GetValidActors();
 bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFilename, const char *aActorName);
-const void *DynOS_Actor_GetLayoutFromName(const char *aActorName);
 bool DynOS_Actor_GetModIndexAndToken(const GraphNode *aGraphNode, u32 aTokenIndex, s32 *outModIndex, s32 *outModFileIndex, const char **outToken);
 ActorGfx* DynOS_Actor_GetActorGfx(const GraphNode* aGraphNode);
 void DynOS_Actor_Valid(const void* aGeoref, ActorGfx& aActorGfx);
@@ -986,14 +983,12 @@ void DynOS_MovtexQC_ModShutdown();
 // Model Manager
 //
 
-struct GraphNode* DynOS_Model_LoadGeo(u32* aId, enum ModelPool aModelPool, void* aAsset, bool aDeDuplicate);
-struct GraphNode* DynOS_Model_LoadDl(u32* aId, enum ModelPool aModelPool, u8 aLayer, void* aAsset);
-struct GraphNode* DynOS_Model_StoreGeo(u32* aId, enum ModelPool aModelPool, void* aAsset, struct GraphNode* aGraphNode);
-struct GraphNode* DynOS_Model_GetGeo(u32 aId);
-u32 DynOS_Model_GetIdFromAsset(void* asset);
-u32 DynOS_Model_GetIdFromGraphNode(struct GraphNode* aNode);
-enum ModelPool DynOS_Model_GetModelPoolFromGraphNode(struct GraphNode* aNode);
-void DynOS_Model_OverwriteSlot(u32 srcSlot, u32 dstSlot);
+struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, const char *aName, bool isAreaLayout);
+struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, u8 aLayer);
+struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, struct GraphNode *aNode);
+struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId);
+enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode);
+enum ModelPool DynOS_Model_GetModelPool(struct GraphNode *aNode);
 void DynOS_Model_ClearPool(enum ModelPool aModelPool);
 
 //

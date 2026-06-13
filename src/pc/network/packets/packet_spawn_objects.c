@@ -19,13 +19,13 @@
 struct SpawnObjectData {
     u8 ctx;
     u32 parentId;
-    u32 model;
+    u32 modelId;
     u32 behaviorId;
     s16 activeFlags;
     s32 rawData[OBJECT_NUM_FIELDS];
     u8 setHome;
     u8 globalPlayerIndex;
-    u16 extendedModelId;
+    u16 extendedModelId; // unused
     u8 extraFieldCount;
 };
 #pragma pack()
@@ -90,16 +90,14 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
             return;
         }
 
-        u32 model = models[i];
+        u32 modelId = models[i];
         u32 parentId = generate_parent_id(objects, i, true);
         u32 behaviorId = get_id_from_behavior(o->behavior);
         struct SyncObject* so = sync_object_get(o->oSyncID);
-        u16 extendedModelId = (so && so->o == o)
-                            ? so->extendedModelId
-                            : 0xFFFF;
+        u16 extendedModelId = 0; // unused
         packet_write(&p, &o->ctx, sizeof(u8));
         packet_write(&p, &parentId, sizeof(u32));
-        packet_write(&p, &model, sizeof(u32));
+        packet_write(&p, &modelId, sizeof(u32));
         packet_write(&p, &behaviorId, sizeof(u32));
         packet_write(&p, &o->activeFlags, sizeof(s16));
         packet_write(&p, o->rawData.asU32, sizeof(u32) * OBJECT_NUM_FIELDS);
@@ -141,7 +139,7 @@ void network_receive_spawn_objects(struct Packet* p) {
         u8 ctx = 0;
         packet_read(p, &ctx, sizeof(u8));
         packet_read(p, &data.parentId, sizeof(u32));
-        packet_read(p, &data.model, sizeof(u32));
+        packet_read(p, &data.modelId, sizeof(u32));
         packet_read(p, &data.behaviorId, sizeof(u32));
         packet_read(p, &data.activeFlags, sizeof(s16));
         packet_read(p, &data.rawData, sizeof(u32) * OBJECT_NUM_FIELDS);
@@ -210,15 +208,9 @@ void network_receive_spawn_objects(struct Packet* p) {
             return;
         }
 
-        // load extended model
-        if (data.extendedModelId != 0xFFFF) {
-            u16 loadedModelId = smlua_model_util_load(data.extendedModelId);
-            data.model = loadedModelId;
-        }
-
         void* behavior = (void*)get_behavior_from_id(data.behaviorId);
         struct Object* o = NULL;
-        if (ctx) { o = spawn_object(parentObj, data.model, behavior); }
+        if (ctx) { o = spawn_object(parentObj, data.modelId, behavior); }
         if (o == NULL) {
             LOG_ERROR("ERROR: failed to allocate object!");
             return;
@@ -248,7 +240,6 @@ void network_receive_spawn_objects(struct Packet* p) {
             if (so) {
                 so->o = o;
                 so->behavior = behavior;
-                so->extendedModelId = data.extendedModelId;
                 so->txEventId = 0;
                 for (s32 j = 0; j < MAX_PLAYERS; j++) {
                     so->rxEventId[j] = 0;

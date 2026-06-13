@@ -47,10 +47,10 @@ static struct Object* eyerok_nearest_targetable_player_to_object(s32 zDist) {
     return nearest;
 }
 
-static struct Object* eyerok_spawn_hand(s16 side, s32 model, const BehaviorScript *behavior) {
+static struct Object* eyerok_spawn_hand(s16 side, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
     struct Object *hand;
 
-    hand = spawn_object_relative_with_scale(side, -500 * side, 0, 300, 1.5f, o, model, behavior);
+    hand = spawn_object_relative_with_scale(side, -500 * side, 0, 300, 1.5f, o, modelId, behavior);
     if (hand != NULL) {
         hand->oFaceAngleYaw -= 0x4000 * side;
     }
@@ -69,8 +69,8 @@ u8 bhv_eyerok_boss_ignore_if_true(void) {
 
 void bhv_eyerok_boss_init(void) {
     struct Object* hands[2];
-    hands[0] = eyerok_spawn_hand(-1, MODEL_EYEROK_LEFT_HAND, bhvEyerokHand);
-    hands[1] = eyerok_spawn_hand(1, MODEL_EYEROK_RIGHT_HAND, bhvEyerokHand);
+    hands[0] = eyerok_spawn_hand(-1, E_MODEL_EYEROK_LEFT_HAND, bhvEyerokHand);
+    hands[1] = eyerok_spawn_hand(1, E_MODEL_EYEROK_RIGHT_HAND, bhvEyerokHand);
 
     struct SyncObject* so = sync_object_init(o, 4000.0f);
     if (!so) { return; }

@@ -35,13 +35,6 @@ extern "C" {
 #define DYNOS_AT_STARTUP        __attribute__((constructor))
 #define DYNOS_AT_EXIT           __attribute__((destructor))
 
-enum ModelPool {
-    MODEL_POOL_PERMANENT,
-    MODEL_POOL_SESSION,
-    MODEL_POOL_LEVEL,
-    MODEL_POOL_MAX,
-};
-
 enum {
     DYNOS_MOD_DATA_ERROR_NAME_IS_NULL = 1,
     DYNOS_MOD_DATA_ERROR_NAME_IS_EMPTY,
@@ -53,5 +46,7 @@ enum {
     DYNOS_MOD_DATA_ERROR_ALREADY_EXISTS,
     DYNOS_MOD_DATA_ERROR_POOL_IS_FULL,
 };
+
+#include "dynos_models.h"
 
 #endif

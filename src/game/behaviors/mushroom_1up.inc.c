@@ -396,12 +396,12 @@ void bhv_1up_hidden_in_pole_spawner_loop(void) {
         struct Object* spawn_objects[3];
         u32 models[3];
 
-        spawn_objects[0] = spawn_object_relative(2, 0, 50, 0, o, MODEL_1UP, bhvHidden1upInPole);
-        models[0] = MODEL_1UP;
+        spawn_objects[0] = spawn_object_relative(2, 0, 50, 0, o, E_MODEL_1UP, bhvHidden1upInPole);
+        models[0] = E_MODEL_1UP;
 
         for (s8 sp2F = 0; sp2F < 2; sp2F++) {
-            spawn_objects[1 + sp2F] = spawn_object_relative(0, 0, sp2F * -200, 0, o, MODEL_NONE, bhvHidden1upInPoleTrigger);
-            models[1 + sp2F] = MODEL_NONE;
+            spawn_objects[1 + sp2F] = spawn_object_relative(0, 0, sp2F * -200, 0, o, E_MODEL_NONE, bhvHidden1upInPoleTrigger);
+            models[1 + sp2F] = E_MODEL_NONE;
         }
 
         for (s32 i = 0; i < 3; i++) {

@@ -26,7 +26,7 @@ SMLUA_EVENT_HOOK(HOOK_ON_CHANGE_CAMERA_ANGLE, HOOK_RETURN_NEVER, s32 camAngleTyp
 SMLUA_EVENT_HOOK(HOOK_ON_SCREEN_TRANSITION, HOOK_RETURN_NEVER, s32 transitionType, OUTPUT bool *allowPlayTransition)
 SMLUA_EVENT_HOOK(HOOK_ALLOW_HAZARD_SURFACE, HOOK_RETURN_NEVER, struct MarioState *m, s32 hazardType, OUTPUT bool *allowHazard)
 SMLUA_EVENT_HOOK(HOOK_ON_CHAT_MESSAGE, HOOK_RETURN_NEVER, struct MarioState *m, const char *message, OUTPUT bool *allowMessage)
-SMLUA_EVENT_HOOK(HOOK_OBJECT_SET_MODEL, HOOK_RETURN_NEVER, struct Object *obj, s32 modelID, enum ModelExtendedId modelExtendedId)
+SMLUA_EVENT_HOOK(HOOK_OBJECT_SET_MODEL, HOOK_RETURN_NEVER, struct Object *obj, enum ModelExtendedId modelId, enum ModelExtendedId modelExtendedId)
 SMLUA_EVENT_HOOK(HOOK_CHARACTER_SOUND, HOOK_RETURN_ON_OUTPUT_SET, struct MarioState *m, enum CharacterSound characterSound, OUTPUT s32 *soundOverride)
 SMLUA_EVENT_HOOK(HOOK_BEFORE_SET_MARIO_ACTION, HOOK_RETURN_NEVER, struct MarioState *m, u32 action, u32 actionArg, OUTPUT u32 *actionOverride)
 SMLUA_EVENT_HOOK(HOOK_JOINED_GAME, HOOK_RETURN_NEVER)

@@ -171,7 +171,7 @@ s8 sObjectListUpdateOrder[] = { OBJ_LIST_SPAWNER,
 struct ParticleProperties {
     u32 particleFlag;
     u32 activeParticleFlag;
-    u8 model;
+    enum ModelExtendedId modelId;
     const BehaviorScript *behavior;
 };
 
@@ -179,25 +179,25 @@ struct ParticleProperties {
  * A table mapping particle flags to various properties use when spawning a particle.
  */
 struct ParticleProperties sParticleTypes[] = {
-    { PARTICLE_DUST,                 ACTIVE_PARTICLE_DUST,                 MODEL_MIST,                 bhvMistParticleSpawner },
-    { PARTICLE_VERTICAL_STAR,        ACTIVE_PARTICLE_V_STAR,               MODEL_NONE,                 bhvVertStarParticleSpawner },
-    { PARTICLE_HORIZONTAL_STAR,      ACTIVE_PARTICLE_H_STAR,               MODEL_NONE,                 bhvHorStarParticleSpawner },
-    { PARTICLE_SPARKLES,             ACTIVE_PARTICLE_SPARKLES,             MODEL_SPARKLES,             bhvSparkleParticleSpawner },
-    { PARTICLE_BUBBLE,               ACTIVE_PARTICLE_BUBBLE,               MODEL_BUBBLE,               bhvBubbleParticleSpawner },
-    { PARTICLE_WATER_SPLASH,         ACTIVE_PARTICLE_WATER_SPLASH,         MODEL_WATER_SPLASH,         bhvWaterSplash },
-    { PARTICLE_IDLE_WATER_WAVE,      ACTIVE_PARTICLE_IDLE_WATER_WAVE,      MODEL_IDLE_WATER_WAVE,      bhvIdleWaterWave },
-    { PARTICLE_PLUNGE_BUBBLE,        ACTIVE_PARTICLE_PLUNGE_BUBBLE,        MODEL_WHITE_PARTICLE_SMALL, bhvPlungeBubble },
-    { PARTICLE_WAVE_TRAIL,           ACTIVE_PARTICLE_WAVE_TRAIL,           MODEL_WAVE_TRAIL,           bhvWaveTrail },
-    { PARTICLE_FIRE,                 ACTIVE_PARTICLE_FIRE,                 MODEL_RED_FLAME,            bhvFireParticleSpawner },
-    { PARTICLE_SHALLOW_WATER_WAVE,   ACTIVE_PARTICLE_SHALLOW_WATER_WAVE,   MODEL_NONE,                 bhvShallowWaterWave },
-    { PARTICLE_SHALLOW_WATER_SPLASH, ACTIVE_PARTICLE_SHALLOW_WATER_SPLASH, MODEL_NONE,                 bhvShallowWaterSplash },
-    { PARTICLE_LEAF,                 ACTIVE_PARTICLE_LEAF,                 MODEL_NONE,                 bhvLeafParticleSpawner },
-    { PARTICLE_SNOW,                 ACTIVE_PARTICLE_SNOW,                 MODEL_NONE,                 bhvSnowParticleSpawner },
-    { PARTICLE_BREATH,               ACTIVE_PARTICLE_BREATH,               MODEL_NONE,                 bhvBreathParticleSpawner },
-    { PARTICLE_DIRT,                 ACTIVE_PARTICLE_DIRT,                 MODEL_NONE,                 bhvDirtParticleSpawner },
-    { PARTICLE_MIST_CIRCLE,          ACTIVE_PARTICLE_MIST_CIRCLE,          MODEL_NONE,                 bhvMistCircParticleSpawner },
-    { PARTICLE_TRIANGLE,             ACTIVE_PARTICLE_TRIANGLE,             MODEL_NONE,                 bhvTriangleParticleSpawner },
-    { 0, 0, MODEL_NONE, NULL },
+    { PARTICLE_DUST,                 ACTIVE_PARTICLE_DUST,                 E_MODEL_MIST,                 bhvMistParticleSpawner },
+    { PARTICLE_VERTICAL_STAR,        ACTIVE_PARTICLE_V_STAR,               E_MODEL_NONE,                 bhvVertStarParticleSpawner },
+    { PARTICLE_HORIZONTAL_STAR,      ACTIVE_PARTICLE_H_STAR,               E_MODEL_NONE,                 bhvHorStarParticleSpawner },
+    { PARTICLE_SPARKLES,             ACTIVE_PARTICLE_SPARKLES,             E_MODEL_SPARKLES,             bhvSparkleParticleSpawner },
+    { PARTICLE_BUBBLE,               ACTIVE_PARTICLE_BUBBLE,               E_MODEL_BUBBLE,               bhvBubbleParticleSpawner },
+    { PARTICLE_WATER_SPLASH,         ACTIVE_PARTICLE_WATER_SPLASH,         E_MODEL_WATER_SPLASH,         bhvWaterSplash },
+    { PARTICLE_IDLE_WATER_WAVE,      ACTIVE_PARTICLE_IDLE_WATER_WAVE,      E_MODEL_IDLE_WATER_WAVE,      bhvIdleWaterWave },
+    { PARTICLE_PLUNGE_BUBBLE,        ACTIVE_PARTICLE_PLUNGE_BUBBLE,        E_MODEL_WHITE_PARTICLE_SMALL, bhvPlungeBubble },
+    { PARTICLE_WAVE_TRAIL,           ACTIVE_PARTICLE_WAVE_TRAIL,           E_MODEL_WAVE_TRAIL,           bhvWaveTrail },
+    { PARTICLE_FIRE,                 ACTIVE_PARTICLE_FIRE,                 E_MODEL_RED_FLAME,            bhvFireParticleSpawner },
+    { PARTICLE_SHALLOW_WATER_WAVE,   ACTIVE_PARTICLE_SHALLOW_WATER_WAVE,   E_MODEL_NONE,                 bhvShallowWaterWave },
+    { PARTICLE_SHALLOW_WATER_SPLASH, ACTIVE_PARTICLE_SHALLOW_WATER_SPLASH, E_MODEL_NONE,                 bhvShallowWaterSplash },
+    { PARTICLE_LEAF,                 ACTIVE_PARTICLE_LEAF,                 E_MODEL_NONE,                 bhvLeafParticleSpawner },
+    { PARTICLE_SNOW,                 ACTIVE_PARTICLE_SNOW,                 E_MODEL_NONE,                 bhvSnowParticleSpawner },
+    { PARTICLE_BREATH,               ACTIVE_PARTICLE_BREATH,               E_MODEL_NONE,                 bhvBreathParticleSpawner },
+    { PARTICLE_DIRT,                 ACTIVE_PARTICLE_DIRT,                 E_MODEL_NONE,                 bhvDirtParticleSpawner },
+    { PARTICLE_MIST_CIRCLE,          ACTIVE_PARTICLE_MIST_CIRCLE,          E_MODEL_NONE,                 bhvMistCircParticleSpawner },
+    { PARTICLE_TRIANGLE,             ACTIVE_PARTICLE_TRIANGLE,             E_MODEL_NONE,                 bhvTriangleParticleSpawner },
+    { 0, 0, E_MODEL_NONE, NULL },
 };
 
 /**
@@ -229,11 +229,11 @@ void copy_mario_state_to_object(struct MarioState* m) {
 /**
  * Spawn a particle at gCurrentObject's location.
  */
-void spawn_particle(u32 activeParticleFlag, s16 model, const BehaviorScript *behavior) {
+void spawn_particle(u32 activeParticleFlag, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
     if (!(gCurrentObject->oActiveParticleFlags & activeParticleFlag)) {
         struct Object *particle;
         gCurrentObject->oActiveParticleFlags |= activeParticleFlag;
-        particle = spawn_object_at_origin(gCurrentObject, 0, model, behavior);
+        particle = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
         if (particle == NULL) { return; }
         obj_copy_pos_and_angle(particle, gCurrentObject);
     }
@@ -283,7 +283,7 @@ void bhv_mario_update(void) {
 
     for (s32 i = 0; sParticleTypes[i].particleFlag != 0; i++) {
         if (particleFlags & sParticleTypes[i].particleFlag) {
-            spawn_particle(sParticleTypes[i].activeParticleFlag, sParticleTypes[i].model, sParticleTypes[i].behavior);
+            spawn_particle(sParticleTypes[i].activeParticleFlag, sParticleTypes[i].modelId, sParticleTypes[i].behavior);
         }
     }
 

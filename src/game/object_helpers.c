@@ -631,11 +631,11 @@ void obj_set_gfx_scale(struct Object *obj, f32 x, f32 y, f32 z) {
 /*
  * Spawns an object at an absolute location with a specified angle.
  */
-struct Object *spawn_object_abs_with_rot(struct Object *parent, s16 uselessArg, u32 model,
+struct Object *spawn_object_abs_with_rot(struct Object *parent, s16 uselessArg, enum ModelExtendedId modelId,
                                          const BehaviorScript *behavior,
                                          s16 x, s16 y, s16 z, s16 rx, s16 ry, s16 rz) {
     // 'uselessArg' is unused in the function spawn_object_at_origin()
-    struct Object *newObj = spawn_object_at_origin(parent, uselessArg, model, behavior);
+    struct Object *newObj = spawn_object_at_origin(parent, uselessArg, modelId, behavior);
     if (newObj == NULL) { return NULL; }
     obj_set_pos(newObj, x, y, z);
     obj_set_angle(newObj, rx, ry, rz);
@@ -648,9 +648,9 @@ struct Object *spawn_object_abs_with_rot(struct Object *parent, s16 uselessArg, 
  * The rz argument is never used, and the z offset is used for z-rotation instead. This is most likely
  * a copy-paste typo by one of the programmers.
  */
-struct Object *spawn_object_rel_with_rot(struct Object *parent, u32 model, const BehaviorScript *behavior,
+struct Object *spawn_object_rel_with_rot(struct Object *parent, enum ModelExtendedId modelId, const BehaviorScript *behavior,
                                          s16 xOff, s16 yOff, s16 zOff, s16 rx, s16 ry, UNUSED s16 rz) {
-    struct Object *newObj = spawn_object_at_origin(parent, 0, model, behavior);
+    struct Object *newObj = spawn_object_at_origin(parent, 0, modelId, behavior);
     if (newObj == NULL) { return NULL; }
     newObj->oFlags |= OBJ_FLAG_TRANSFORM_RELATIVE_TO_PARENT;
     obj_set_parent_relative_pos(newObj, xOff, yOff, zOff);
@@ -659,11 +659,11 @@ struct Object *spawn_object_rel_with_rot(struct Object *parent, u32 model, const
     return newObj;
 }
 
-struct Object *spawn_obj_with_transform_flags(struct Object *sp20, s32 model, const BehaviorScript *sp28) {
-    struct Object *sp1C = spawn_object(sp20, model, sp28);
-    if (sp1C == NULL) { return NULL; }
-    sp1C->oFlags |= OBJ_FLAG_0020 | OBJ_FLAG_SET_THROW_MATRIX_FROM_TRANSFORM;
-    return sp1C;
+struct Object *spawn_obj_with_transform_flags(struct Object *parent, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
+    struct Object *newObj = spawn_object(parent, modelId, behavior);
+    if (newObj == NULL) { return NULL; }
+    newObj->oFlags |= OBJ_FLAG_0020 | OBJ_FLAG_SET_THROW_MATRIX_FROM_TRANSFORM;
+    return newObj;
 }
 
 /* |description|Spawns a water droplet object with the specified parameters|descriptionEnd| */
@@ -707,8 +707,7 @@ struct Object *spawn_water_droplet(struct Object *parent, struct WaterDropletPar
     return newObj;
 }
 
-struct Object *spawn_object_at_origin(struct Object *parent, UNUSED s32 unusedArg, u32 model,
-                                      const BehaviorScript *behavior) {
+struct Object *spawn_object_at_origin(struct Object *parent, UNUSED s32 unusedArg, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
     struct Object *obj;
     const BehaviorScript *behaviorAddr;
 
@@ -723,14 +722,15 @@ struct Object *spawn_object_at_origin(struct Object *parent, UNUSED s32 unusedAr
     }
     obj->globalPlayerIndex = 0;
 
-    geo_obj_init((struct GraphNodeObject *) &obj->header.gfx, dynos_model_get_geo(model), gVec3fZero, gVec3sZero);
-    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, model, smlua_model_util_id_to_ext_id(model));
+    struct GraphNode *node = dynos_model_get_graph_node(modelId);
+    geo_obj_init((struct GraphNodeObject *) &obj->header.gfx, node, gVec3fZero, gVec3sZero);
+    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, dynos_model_get_id(node));
 
     return obj;
 }
 
-struct Object *spawn_object(struct Object *parent, s32 model, const BehaviorScript *behavior) {
-    struct Object *obj = spawn_object_at_origin(parent, 0, model, behavior);
+struct Object *spawn_object(struct Object *parent, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
+    struct Object *obj = spawn_object_at_origin(parent, 0, modelId, behavior);
     if (obj == NULL) { return NULL; }
 
     obj_copy_pos_and_angle(obj, parent);
@@ -738,12 +738,11 @@ struct Object *spawn_object(struct Object *parent, s32 model, const BehaviorScri
     return obj;
 }
 
-struct Object *try_to_spawn_object(s16 offsetY, f32 scale, struct Object *parent, s32 model,
-                                   const BehaviorScript *behavior) {
+struct Object *try_to_spawn_object(s16 offsetY, f32 scale, struct Object *parent, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
     struct Object *obj;
 
     if (gFreeObjectList.next != NULL) {
-        obj = spawn_object(parent, model, behavior);
+        obj = spawn_object(parent, modelId, behavior);
         if (obj == NULL) { return NULL; }
         obj->oPosY += offsetY;
         obj_scale(obj, scale);
@@ -753,8 +752,8 @@ struct Object *try_to_spawn_object(s16 offsetY, f32 scale, struct Object *parent
     }
 }
 
-struct Object *spawn_object_with_scale(struct Object *parent, s32 model, const BehaviorScript *behavior, f32 scale) {
-    struct Object *obj = spawn_object_at_origin(parent, 0, model, behavior);
+struct Object *spawn_object_with_scale(struct Object *parent, enum ModelExtendedId modelId, const BehaviorScript *behavior, f32 scale) {
+    struct Object *obj = spawn_object_at_origin(parent, 0, modelId, behavior);
     if (obj == NULL) { return NULL; }
 
     obj_copy_pos_and_angle(obj, parent);
@@ -770,8 +769,8 @@ void obj_build_relative_transform(struct Object *obj) {
 }
 
 struct Object *spawn_object_relative(s16 behaviorParam, s16 relativePosX, s16 relativePosY, s16 relativePosZ,
-                                     struct Object *parent, s32 model, const BehaviorScript *behavior) {
-    struct Object *obj = spawn_object_at_origin(parent, 0, model, behavior);
+                                     struct Object *parent, enum ModelExtendedId modelId, const BehaviorScript *behavior) {
+    struct Object *obj = spawn_object_at_origin(parent, 0, modelId, behavior);
     if (obj == NULL) { return NULL; }
 
     obj_copy_pos_and_angle(obj, parent);
@@ -786,9 +785,9 @@ struct Object *spawn_object_relative(s16 behaviorParam, s16 relativePosX, s16 re
 
 struct Object *spawn_object_relative_with_scale(s16 behaviorParam, s16 relativePosX, s16 relativePosY,
                                                 s16 relativePosZ, f32 scale, struct Object *parent,
-                                                s32 model, const BehaviorScript *behavior) {
+                                                enum ModelExtendedId modelId, const BehaviorScript *behavior) {
     struct Object *obj = spawn_object_relative(behaviorParam, relativePosX, relativePosY, relativePosZ,
-                                               parent, model, behavior);
+                                               parent, modelId, behavior);
     if (obj == NULL) { return NULL; }
     obj_scale(obj, scale);
 
@@ -1515,15 +1514,16 @@ void cur_obj_get_dropped(void) {
 }
 
 /* |description|Sets the model of the current object|descriptionEnd| */
-void cur_obj_set_model(s32 modelID) {
-    obj_set_model(o, modelID);
+void cur_obj_set_model(enum ModelExtendedId modelId) {
+    obj_set_model(o, modelId);
 }
 
 /* |description|Sets the model for an object|descriptionEnd| */
-void obj_set_model(struct Object* obj, s32 modelID) {
-    obj->header.gfx.sharedChild = dynos_model_get_geo(modelID);
+void obj_set_model(struct Object* obj, enum ModelExtendedId modelId) {
+    struct GraphNode *node = dynos_model_get_graph_node(modelId);;
+    obj->header.gfx.sharedChild = node;
     dynos_actor_override(obj, (void*)&obj->header.gfx.sharedChild);
-    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelID, smlua_model_util_id_to_ext_id(modelID));
+    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, dynos_model_get_id(node));
 }
 
 /* |description|Sets a flag on Mario's state|descriptionEnd| */
@@ -2104,7 +2104,7 @@ void cur_obj_set_hurtbox_radius_and_height(f32 radius, f32 height) {
 }
 
 /* |description|Spawns loot coins from an object using the specified behavior, jitter, and model|descriptionEnd| */
-void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 sp30, const BehaviorScript *coinBehavior, s16 posJitter, s16 model) {
+void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 sp30, const BehaviorScript *coinBehavior, s16 posJitter, enum ModelExtendedId modelId) {
     if (obj == NULL) { return; }
     s32 i;
     f32 spawnHeight;
@@ -2123,7 +2123,7 @@ void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 sp30, const Beha
 
         obj->oNumLootCoins--;
 
-        coin = spawn_object(obj, model, coinBehavior);
+        coin = spawn_object(obj, modelId, coinBehavior);
         if (coin == NULL) { return; }
         obj_translate_xz_random(coin, posJitter);
         coin->oPosY = spawnHeight;
@@ -3482,9 +3482,12 @@ s32 cur_obj_update_dialog_with_cutscene(struct MarioState* m, s32 actionArg, s32
 }
 
 /* |description|Checks whether the current object uses the specified model geometry|descriptionEnd| */
-s32 cur_obj_has_model(u16 modelID) {
+s32 cur_obj_has_model(enum ModelExtendedId modelId) {
     if (!o) { return 0; }
-    struct GraphNode* node = dynos_model_get_geo(modelID);
+    if (dynos_model_get_id(o->header.gfx.sharedChild) == modelId) {
+        return TRUE;
+    }
+    struct GraphNode *node = dynos_model_get_graph_node(modelId);
     if (o->header.gfx.sharedChild == node) {
         return TRUE;
     } else if (o->header.gfx.sharedChild && node && o->header.gfx.sharedChild->georef == node->georef) {

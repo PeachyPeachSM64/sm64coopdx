@@ -1037,14 +1037,14 @@ void treat_far_home_as_mario(f32 threshold, RET s32* distanceToPlayer, RET s32* 
 #include "behaviors/flying_bookend_switch.inc.c"
 
 /* |description|Spawns a small piranha flame object with the given parameters. Used by Bowser, Fly Guy, Piranha Plant, and Fire Spitters|descriptionEnd| */
-struct Object* obj_spit_fire(s16 relativePosX, s16 relativePosY, s16 relativePosZ, f32 scale, s32 model, f32 startSpeed, f32 endSpeed, s16 movePitch) {
+struct Object* obj_spit_fire(s16 relativePosX, s16 relativePosY, s16 relativePosZ, f32 scale, enum ModelExtendedId modelId, f32 startSpeed, f32 endSpeed, s16 movePitch) {
     struct Object *obj = spawn_object_relative_with_scale(1, relativePosX, relativePosY, relativePosZ,
-                                                           scale, o, model, bhvSmallPiranhaFlame);
+                                                           scale, o, modelId, bhvSmallPiranhaFlame);
 
     if (obj != NULL) {
         obj->oSmallPiranhaFlameStartSpeed = startSpeed;
         obj->oSmallPiranhaFlameEndSpeed = endSpeed;
-        obj->oSmallPiranhaFlameModel = model;
+        obj->oSmallPiranhaFlameModel = modelId;
         obj->oMoveAnglePitch = movePitch;
     }
     return obj;

@@ -126,7 +126,7 @@ void monty_mole_spawn_dirt_particles(s8 offsetY, s8 velYBase) {
     static struct SpawnParticlesInfo sMontyMoleRiseFromGroundParticles = {
         /* behParam:        */ 0,
         /* count:           */ 3,
-        /* model:           */ MODEL_SAND_DUST,
+        /* model:           */ E_MODEL_SAND_DUST,
         /* offsetY:         */ 0,
         /* forwardVelBase:  */ 4,
         /* forwardVelRange: */ 4,
@@ -282,7 +282,7 @@ static void monty_mole_act_spawn_rock(void) {
             && (rock = spawn_object(o, MODEL_PEBBLE, bhvMontyMoleRock)) != NULL) {
 
             struct Object* spawn_objects[] = { rock };
-            u32 models[] = { MODEL_PEBBLE };
+            u32 models[] = { E_MODEL_PEBBLE };
             network_send_spawn_objects(spawn_objects, models, 1);
 
             o->prevObj = rock;
@@ -465,7 +465,7 @@ void bhv_monty_mole_update(void) {
                     struct Object* oneUp = spawn_object(o, MODEL_1UP, bhv1upWalking);
                     if (oneUp != NULL) {
                         struct Object* spawn_objects[] = { oneUp };
-                        u32 models[] = { MODEL_1UP };
+                        u32 models[] = { E_MODEL_1UP };
                         network_send_spawn_objects(spawn_objects, models, 1);
                     }
                 }
@@ -541,7 +541,7 @@ static struct ObjectHitbox sMontyMoleRockHitbox = {
 static struct SpawnParticlesInfo sMontyMoleRockBreakParticles = {
     /* behParam:        */ 0,
     /* count:           */ 2,
-    /* model:           */ MODEL_PEBBLE,
+    /* model:           */ E_MODEL_PEBBLE,
     /* offsetY:         */ 10,
     /* forwardVelBase:  */ 4,
     /* forwardVelRange: */ 4,

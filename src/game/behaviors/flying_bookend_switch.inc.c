@@ -149,7 +149,7 @@ void bhv_bookend_spawn_loop(void) {
                 book->oAction = 3;
 
                 struct Object* spawn_objects[] = { book };
-                u32 models[] = { MODEL_BOOKEND };
+                u32 models[] = { E_MODEL_BOOKEND };
                 network_send_spawn_objects(spawn_objects, models, 1);
 
                 cur_obj_play_sound_2(SOUND_OBJ_DEFAULT_DEATH);
@@ -396,7 +396,7 @@ void bhv_book_switch_loop(void) {
                             if (book != NULL) {
                                 book->oAction = 3;
                                 struct Object* spawn_objects[] = { book };
-                                u32 models[] = { MODEL_BOOKEND };
+                                u32 models[] = { E_MODEL_BOOKEND };
                                 network_send_spawn_objects(spawn_objects, models, 1);
                             }
                         }

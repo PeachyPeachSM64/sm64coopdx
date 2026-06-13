@@ -208,7 +208,7 @@ void bhv_generic_bowling_ball_spawner_loop(void) {
 
                     // send out the bowlingBall object
                     struct Object* spawn_objects[] = { bowlingBall };
-                    u32 models[] = { MODEL_BOWLING_BALL };
+                    u32 models[] = { E_MODEL_BOWLING_BALL };
                     network_send_spawn_objects(spawn_objects, models, 1);
                 }
             }
@@ -242,7 +242,7 @@ void bhv_thi_bowling_ball_spawner_loop(void) {
 
                     // send out the bowlingBall object
                     struct Object* spawn_objects[] = { bowlingBall };
-                    u32 models[] = { MODEL_BOWLING_BALL };
+                    u32 models[] = { E_MODEL_BOWLING_BALL };
                     network_send_spawn_objects(spawn_objects, models, 1);
                 }
             }

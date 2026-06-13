@@ -93,14 +93,14 @@ void exclamation_box_act_3(void) {
         o->oAction = 4;
 }
 
-static s32 exclamation_replace_model(struct MarioState* m, s32 model) {
-    if (!m) { return model; }
-    switch (model) {
-        case MODEL_MARIOS_CAP:              return m->character->capModelId;
-        case MODEL_MARIOS_METAL_CAP:        return m->character->capMetalModelId;
-        case MODEL_MARIOS_WING_CAP:         return m->character->capWingModelId;
-        case MODEL_MARIOS_WINGED_METAL_CAP: return m->character->capMetalWingModelId;
-        default:                            return model;
+static enum ModelExtendedId exclamation_replace_model(struct MarioState* m, enum ModelExtendedId modelId) {
+    if (!m) { return modelId; }
+    switch (modelId) {
+        case E_MODEL_MARIOS_CAP:              return m->character->capModelId;
+        case E_MODEL_MARIOS_METAL_CAP:        return m->character->capMetalModelId;
+        case E_MODEL_MARIOS_WING_CAP:         return m->character->capWingModelId;
+        case E_MODEL_MARIOS_WINGED_METAL_CAP: return m->character->capMetalWingModelId;
+        default:                              return modelId;
     }
 }
 
@@ -116,9 +116,9 @@ void exclamation_box_spawn_contents(struct ExclamationBoxContent *content, u8 it
 
     for (u8 i = 0; i < gExclamationBoxSize; i++) {
         if (itemId == content->id) {
-            s32 model = exclamation_replace_model(marioState, smlua_model_util_load(content->model));
+            enum ModelExtendedId modelId = exclamation_replace_model(marioState, smlua_model_util_load(content->model));
 
-            spawnedObject = spawn_object(o, model, get_behavior_from_id(content->behavior));
+            spawnedObject = spawn_object(o, modelId, get_behavior_from_id(content->behavior));
             if (spawnedObject != NULL) {
                 spawnedObject->oVelY = 20.0f;
                 spawnedObject->oForwardVel = 3.0f;
@@ -128,7 +128,7 @@ void exclamation_box_spawn_contents(struct ExclamationBoxContent *content, u8 it
                 }
             }
             o->oBehParams |= content->firstByte << 24;
-            if (content->model == E_MODEL_STAR)
+            if (content->modelId == E_MODEL_STAR)
                 o->oFlags |= OBJ_FLAG_PERSISTENT_RESPAWN;
 
             // send non-star spawn events
@@ -137,10 +137,9 @@ void exclamation_box_spawn_contents(struct ExclamationBoxContent *content, u8 it
                 // hack: Sync everything
                 sync_object_set_id(spawnedObject);
                 struct SyncObject* so = sync_object_get(spawnedObject->oSyncID);
-                so->extendedModelId = content->model;
 
                 struct Object* spawn_objects[] = { spawnedObject };
-                u32 models[] = { model };
+                u32 models[] = { modelId };
                 network_send_spawn_objects(spawn_objects, models, 1);
             }
             break;

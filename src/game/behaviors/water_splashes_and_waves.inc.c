@@ -3,7 +3,7 @@
 // Water droplets from Mario jumping in a pool of water.
 struct WaterDropletParams sWaterSplashDropletParams = {
     /* Flags */ WATER_DROPLET_FLAG_RAND_ANGLE,
-    /* Model */ MODEL_WHITE_PARTICLE_SMALL,
+    /* Model */ E_MODEL_WHITE_PARTICLE_SMALL,
     /* Behavior */ bhvWaterDroplet,
     /* Unused (flag-specific) */ 0, 0,
     /* Random fvel offset, scale */ 5.0f, 3.0f,
@@ -14,7 +14,7 @@ struct WaterDropletParams sWaterSplashDropletParams = {
 // Water droplets from Mario jumping in shallow water.
 struct WaterDropletParams gShallowWaterSplashDropletParams = {
     /* Flags */ WATER_DROPLET_FLAG_RAND_ANGLE | WATER_DROPLET_FLAG_SET_Y_TO_WATER_LEVEL,
-    /* Model */ MODEL_WHITE_PARTICLE_SMALL,
+    /* Model */ E_MODEL_WHITE_PARTICLE_SMALL,
     /* Behavior */ bhvWaterDroplet,
     /* Unused (flag-specific) */ 0, 0,
     /* Random fvel offset, scale */ 2.0f, 3.0f,
@@ -25,7 +25,7 @@ struct WaterDropletParams gShallowWaterSplashDropletParams = {
 // The fish particle easter egg from Mario jumping in shallow water.
 struct WaterDropletParams sWaterDropletFishParams = {
     /* Flags */ WATER_DROPLET_FLAG_RAND_ANGLE | WATER_DROPLET_FLAG_SET_Y_TO_WATER_LEVEL,
-    /* Model */ MODEL_FISH,
+    /* Model */ E_MODEL_FISH,
     /* Behavior */ bhvWaterDroplet,
     /* Unused (flag-specific) */ 0, 0,
     /* Random fvel offset, scale */ 2.0f, 3.0f,
@@ -36,7 +36,7 @@ struct WaterDropletParams sWaterDropletFishParams = {
 // Water droplets from Mario running in shallow water.
 struct WaterDropletParams gShallowWaterWaveDropletParams = {
     /* Flags */ WATER_DROPLET_FLAG_RAND_ANGLE_INCR_PLUS_8000 | WATER_DROPLET_FLAG_RAND_ANGLE | WATER_DROPLET_FLAG_SET_Y_TO_WATER_LEVEL,
-    /* Model */ MODEL_WHITE_PARTICLE_SMALL,
+    /* Model */ E_MODEL_WHITE_PARTICLE_SMALL,
     /* Behavior */ bhvWaterDroplet,
     /* Move angle range */ 0x6000,
     /* Unused (flag-specific) */ 0,

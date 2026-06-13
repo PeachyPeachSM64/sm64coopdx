@@ -6,10 +6,10 @@
 #include "levels/bitfs/header.h"
 
 struct Struct8032F34C sTumblingBridgeParams[] = {
-    { 9, -512, 0x80, MODEL_WF_TUMBLING_BRIDGE_PART, wf_seg7_collision_tumbling_bridge },
-    { 9, -412, 103, MODEL_BBH_TUMBLING_PLATFORM_PART, bbh_seg7_collision_07026B1C },
-    { 9, -512, 0x80, MODEL_LLL_FALLING_PLATFORM, lll_seg7_collision_0701D21C },
-    { 9, -512, 0x80, MODEL_BITFS_TUMBLING_PLATFORM_PART, bitfs_seg7_collision_07015288 }
+    { 9, -512, 0x80, E_MODEL_WF_TUMBLING_BRIDGE_PART, wf_seg7_collision_tumbling_bridge },
+    { 9, -412, 103, E_MODEL_BBH_TUMBLING_PLATFORM_PART, bbh_seg7_collision_07026B1C },
+    { 9, -512, 0x80, E_MODEL_LLL_FALLING_PLATFORM, lll_seg7_collision_0701D21C },
+    { 9, -512, 0x80, E_MODEL_BITFS_TUMBLING_PLATFORM_PART, bitfs_seg7_collision_07015288 }
 };
 
 void bhv_tumbling_bridge_platform_loop(void) {
@@ -115,7 +115,7 @@ void tumbling_bridge_act_1(void) {
 
         platformObj = spawn_object_relative(
             0, relativePlatformX, relativePlatformY + relativeInitialPlatformY, relativePlatformZ, o,
-            sTumblingBridgeParams[bridgeID].model, bhvTumblingBridgePlatform);
+            sTumblingBridgeParams[bridgeID].modelId, bhvTumblingBridgePlatform);
         if (platformObj == NULL) { continue; }
         obj_set_collision_data(platformObj, sTumblingBridgeParams[bridgeID].segAddr);
     }

@@ -66,7 +66,7 @@ void bhv_snow_mound_spawn_loop(void) {
 
     if (sp1C != NULL) {
         struct Object* spawn_objects[] = { sp1C };
-        u32 models[] = { MODEL_SL_SNOW_TRIANGLE };
+        u32 models[] = { E_MODEL_SL_SNOW_TRIANGLE };
         network_send_spawn_objects(spawn_objects, models, 1);
     }
 

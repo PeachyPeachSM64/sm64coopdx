@@ -43,10 +43,10 @@ s16 convert_rotation(s16 inRotation) {
  * parameters filling up the upper 2 bytes of newObj->oBehParams.
  * The object will not spawn if 'behavior' is NULL.
  */
-struct Object* spawn_macro_abs_yrot_2params(s32 model, const BehaviorScript *behavior, s16 x, s16 y, s16 z, s16 ry, s16 params) {
+struct Object* spawn_macro_abs_yrot_2params(enum ModelExtendedId modelId, const BehaviorScript *behavior, s16 x, s16 y, s16 z, s16 ry, s16 params) {
     if (behavior != NULL) {
         struct Object *newObj = spawn_object_abs_with_rot(
-            &gMacroObjectDefaultParent, 0, model, behavior, x, y, z, 0, convert_rotation(ry), 0);
+            &gMacroObjectDefaultParent, 0, modelId, behavior, x, y, z, 0, convert_rotation(ry), 0);
         if (newObj != NULL) {
             newObj->oBehParams = ((u32) params) << 16;
         }
@@ -60,10 +60,10 @@ struct Object* spawn_macro_abs_yrot_2params(s32 model, const BehaviorScript *beh
  * a single parameter filling up the upper byte of newObj->oBehParams.
  * The object will not spawn if 'behavior' is NULL.
  */
-struct Object*  spawn_macro_abs_yrot_param1(s32 model, const BehaviorScript *behavior, s16 x, s16 y, s16 z, s16 ry, s16 param) {
+struct Object*  spawn_macro_abs_yrot_param1(enum ModelExtendedId modelId, const BehaviorScript *behavior, s16 x, s16 y, s16 z, s16 ry, s16 param) {
     if (behavior != NULL) {
         struct Object *newObj = spawn_object_abs_with_rot(
-            &gMacroObjectDefaultParent, 0, model, behavior, x, y, z, 0, convert_rotation(ry), 0);
+            &gMacroObjectDefaultParent, 0, modelId, behavior, x, y, z, 0, convert_rotation(ry), 0);
         if (newObj != NULL) {
             newObj->oBehParams = ((u32) param) << 24;
         }
@@ -76,10 +76,10 @@ struct Object*  spawn_macro_abs_yrot_param1(s32 model, const BehaviorScript *beh
  * Spawns an object at an absolute location with currently 3 unknown variables that get converted to
  * floats. Oddly enough, this function doesn't care if 'behavior' is NULL or not.
  */
-struct Object* spawn_macro_abs_special(s32 model, const BehaviorScript *behavior, s16 x, s16 y, s16 z, s16 unkA, s16 unkB,
+struct Object* spawn_macro_abs_special(enum ModelExtendedId modelId, const BehaviorScript *behavior, s16 x, s16 y, s16 z, s16 unkA, s16 unkB,
                              s16 unkC) {
     struct Object *newObj =
-        spawn_object_abs_with_rot(&gMacroObjectDefaultParent, 0, model, behavior, x, y, z, 0, 0, 0);
+        spawn_object_abs_with_rot(&gMacroObjectDefaultParent, 0, modelId, behavior, x, y, z, 0, 0, 0);
     if (newObj == NULL) { return NULL; }
 
     // Are all three of these values unused?
@@ -92,11 +92,11 @@ struct Object* spawn_macro_abs_special(s32 model, const BehaviorScript *behavior
 
 UNUSED static void spawn_macro_coin_unknown(const BehaviorScript *behavior, s16 a1[]) {
     struct Object *sp3C;
-    s16 model;
+    enum ModelExtendedId modelId;
 
-    model = bhvYellowCoin == behavior ? MODEL_YELLOW_COIN : MODEL_NONE;
+    modelId = bhvYellowCoin == behavior ? E_MODEL_YELLOW_COIN : E_MODEL_NONE;
 
-    sp3C = spawn_object_abs_with_rot(&gMacroObjectDefaultParent, 0, model, behavior,
+    sp3C = spawn_object_abs_with_rot(&gMacroObjectDefaultParent, 0, modelId, behavior,
                                      a1[1], a1[2], a1[3], 0, convert_rotation(a1[0]), 0);
     if (sp3C == NULL) { return; }
 
@@ -107,7 +107,7 @@ UNUSED static void spawn_macro_coin_unknown(const BehaviorScript *behavior, s16 
 struct LoadedPreset {
     /*0x00*/ const BehaviorScript *behavior;
     /*0x04*/ s16 param; // huh? why does the below function swap these.. just use the struct..
-    /*0x06*/ s16 model;
+    /*0x06*/ enum ModelExtendedId modelId;
 };
 
 #define MACRO_OBJ_Y_ROT 0
@@ -146,7 +146,7 @@ void spawn_macro_objects(s16 areaIndex, s16 *macroObjList) {
         macroObject[MACRO_OBJ_PARAMS] = *macroObjList++;                     // Behavior params
 
         // Get the preset values from the MacroObjectPresets list.
-        preset.model = MacroObjectPresets[presetID].model;
+        preset.modelId = MacroObjectPresets[presetID].modelId;
         preset.behavior = MacroObjectPresets[presetID].behavior;
         preset.param = MacroObjectPresets[presetID].param;
 
@@ -162,7 +162,7 @@ void spawn_macro_objects(s16 areaIndex, s16 *macroObjList) {
             newObj =
                 spawn_object_abs_with_rot(&gMacroObjectDefaultParent, // Parent object
                                           0,                          // Unused
-                                          preset.model,               // Model ID
+                                          preset.modelId,             // Model ID
                                           preset.behavior,            // Behavior address
                                           macroObject[MACRO_OBJ_X],   // X-position
                                           macroObject[MACRO_OBJ_Y],   // Y-position
@@ -271,7 +271,7 @@ void spawn_special_objects(s16 areaIndex, s16 **specialObjList) {
     s16 y;
     s16 z;
     s16 extraParams[4];
-    u8 model;
+    enum ModelExtendedId modelId;
     u8 type;
     u8 presetID;
     u8 defaultParam;
@@ -305,7 +305,7 @@ void spawn_special_objects(s16 areaIndex, s16 **specialObjList) {
             offset++;
         }
 
-        model = SpecialObjectPresets[offset].model;
+        modelId = SpecialObjectPresets[offset].modelId;
         behavior = SpecialObjectPresets[offset].behavior;
         type = SpecialObjectPresets[offset].type;
         defaultParam = SpecialObjectPresets[offset].defParam;
@@ -313,19 +313,19 @@ void spawn_special_objects(s16 areaIndex, s16 **specialObjList) {
         struct Object* obj = NULL;
         switch (type) {
             case SPTYPE_NO_YROT_OR_PARAMS:
-                obj = spawn_macro_abs_yrot_2params(model, behavior, x, y, z, 0, 0);
+                obj = spawn_macro_abs_yrot_2params(modelId, behavior, x, y, z, 0, 0);
                 break;
             case SPTYPE_YROT_NO_PARAMS:
                 extraParams[0] = **specialObjList; // Y-rotation
                 (*specialObjList)++;
-                obj = spawn_macro_abs_yrot_2params(model, behavior, x, y, z, extraParams[0], 0);
+                obj = spawn_macro_abs_yrot_2params(modelId, behavior, x, y, z, extraParams[0], 0);
                 break;
             case SPTYPE_PARAMS_AND_YROT:
                 extraParams[0] = **specialObjList; // Y-rotation
                 (*specialObjList)++;
                 extraParams[1] = **specialObjList; // Params
                 (*specialObjList)++;
-                obj = spawn_macro_abs_yrot_2params(model, behavior, x, y, z, extraParams[0], extraParams[1]);
+                obj = spawn_macro_abs_yrot_2params(modelId, behavior, x, y, z, extraParams[0], extraParams[1]);
                 break;
             case SPTYPE_UNKNOWN:
                 extraParams[0] =
@@ -337,13 +337,13 @@ void spawn_special_objects(s16 areaIndex, s16 **specialObjList) {
                 extraParams[2] =
                     **specialObjList; // Unknown, gets put into obj->oMacroUnk110 as a float
                 (*specialObjList)++;
-                obj = spawn_macro_abs_special(model, behavior, x, y, z, extraParams[0], extraParams[1],
+                obj = spawn_macro_abs_special(modelId, behavior, x, y, z, extraParams[0], extraParams[1],
                                               extraParams[2]);
                 break;
             case SPTYPE_DEF_PARAM_AND_YROT:
                 extraParams[0] = **specialObjList; // Y-rotation
                 (*specialObjList)++;
-                obj = spawn_macro_abs_yrot_param1(model, behavior, x, y, z, extraParams[0], defaultParam);
+                obj = spawn_macro_abs_yrot_param1(modelId, behavior, x, y, z, extraParams[0], defaultParam);
                 break;
             default:
                 break;

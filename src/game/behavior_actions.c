@@ -63,7 +63,7 @@ struct Struct8032F34C {
     s16 numBridgeSections;
     s16 bridgeRelativeStartingXorZ;
     s16 platformWidth;
-    s16 model;
+    enum ModelExtendedId modelId;
     const void *segAddr;
 };
 
@@ -83,7 +83,7 @@ struct Struct8032F754 {
 
 struct OpenableGrill {
     s16 halfWidth;
-    s16 modelID;
+    enum ModelExtendedId modelId;
     const Collision *collision;
 };
 
@@ -113,7 +113,7 @@ s16 D_8032F0CC[] = { 6047, 5664, 5292, 4934, 4587, 4254, 3933, 3624, 3329, 3046,
 #include "behaviors/white_puff_explode.inc.c"
 
 // not in behavior file
-struct SpawnParticlesInfo D_8032F270 = { 2, 20, MODEL_MIST, 0, 40, 5, 30, 20, 252, 30, 330.0f, 10.0f };
+struct SpawnParticlesInfo D_8032F270 = { 2, 20, E_MODEL_MIST, 0, 40, 5, 30, 20, 252, 30, 330.0f, 10.0f };
 
 // generate_wind_puffs/dust (something like that)
 void spawn_mist_particles_variable(s32 count, s32 offsetY, f32 size) {
@@ -192,7 +192,7 @@ void spawn_sparkle_particles(s32 n, s32 a1, s32 a2, s32 r) {
     s16 separation = 0x10000 / n; // Evenly spread around a circle
     for (i = 0; i < n; i++) {
         spawn_object_relative(0, sins(D_8035FF10 + i * separation) * a1, (i + 1) * a2,
-                              coss(D_8035FF10 + i * separation) * a1, o, MODEL_NONE, bhvSparkleSpawn);
+                              coss(D_8035FF10 + i * separation) * a1, o, E_MODEL_NONE, bhvSparkleSpawn);
     }
 
     D_8035FF10 += r * 0x100;

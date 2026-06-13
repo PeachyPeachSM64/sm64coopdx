@@ -30,7 +30,7 @@ void bhv_spawned_star_init(void) {
         o->oStarSpawnExtCutsceneFlags = 1;
         o->parentObj = o;
         struct Object* spawn_objects[] = { o };
-        u32 models[] = { MODEL_STAR };
+        u32 models[] = { E_MODEL_STAR };
         network_send_spawn_objects(spawn_objects, models, 1);
     }
     spawn_star_number();

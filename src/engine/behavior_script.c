@@ -183,23 +183,23 @@ static s32 bhv_cmd_cylboard(void) {
 }
 
 // Command 0x1B: Sets the current model ID of the object.
-// Usage: SET_MODEL(modelID)
+// Usage: SET_MODEL(modelId)
 static s32 bhv_cmd_set_model(void) {
-    s32 modelID = BHV_CMD_GET_2ND_S16(0);
+    u32 modelId = BHV_CMD_GET_2ND_S16(0);
 
-    obj_set_model(gCurrentObject, modelID);
+    obj_set_model(gCurrentObject, modelId);
 
     gCurBhvCommand++;
     return BHV_PROC_CONTINUE;
 }
 
 // Command 0x1C: Spawns a child object with the specified model and behavior.
-// Usage: SPAWN_CHILD(modelID, behavior)
+// Usage: SPAWN_CHILD(modelId, behavior)
 static s32 bhv_cmd_spawn_child(void) {
-    u32 model = BHV_CMD_GET_U32(1);
+    u32 modelId = BHV_CMD_GET_U32(1);
     const BehaviorScript *behavior = BHV_CMD_GET_VPTR(2);
 
-    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, model, behavior);
+    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
     if (child != NULL) {
         obj_copy_pos_and_angle(child, gCurrentObject);
     }
@@ -209,12 +209,12 @@ static s32 bhv_cmd_spawn_child(void) {
 }
 
 // Command 0x2C: Spawns a new object with the specified model and behavior.
-// Usage: SPAWN_OBJ(modelID, behavior)
+// Usage: SPAWN_OBJ(modelId, behavior)
 static s32 bhv_cmd_spawn_obj(void) {
-    u32 model = BHV_CMD_GET_U32(1);
+    u32 modelId = BHV_CMD_GET_U32(1);
     const BehaviorScript *behavior = BHV_CMD_GET_VPTR(2);
 
-    struct Object *object = spawn_object_at_origin(gCurrentObject, 0, model, behavior);
+    struct Object *object = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
     if (object != NULL) {
         obj_copy_pos_and_angle(object, gCurrentObject);
         // TODO: Does this cmd need renaming? This line is the only difference between this and the above func.
@@ -226,13 +226,13 @@ static s32 bhv_cmd_spawn_obj(void) {
 }
 
 // Command 0x29: Spawns a child object with the specified model and behavior, plus a behavior param.
-// Usage: SPAWN_CHILD_WITH_PARAM(bhvParam, modelID, behavior)
+// Usage: SPAWN_CHILD_WITH_PARAM(bhvParam, modelId, behavior)
 static s32 bhv_cmd_spawn_child_with_param(void) {
     u32 bhvParam = BHV_CMD_GET_2ND_S16(0);
-    u32 modelID = BHV_CMD_GET_U32(1);
+    u32 modelId = BHV_CMD_GET_U32(1);
     const BehaviorScript *behavior = BHV_CMD_GET_VPTR(2);
 
-    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelID, behavior);
+    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
     if (child != NULL) {
         obj_copy_pos_and_angle(child, gCurrentObject);
         child->oBehParams2ndByte = bhvParam;
@@ -1042,9 +1042,9 @@ static s32 bhv_cmd_call_native_ext(void) {
 }
 
 // Command 0x3D: Spawns a child object with the specified model and behavior.
-// Usage: SPAWN_CHILD_EXT(modelID, behavior)
+// Usage: SPAWN_CHILD_EXT(modelId, behavior)
 static s32 bhv_cmd_spawn_child_ext(void) {
-    u32 model = BHV_CMD_GET_U32(1);
+    u32 modelId = BHV_CMD_GET_U32(1);
 
     BehaviorScript *behavior = (BehaviorScript *)gCurrentObject->behavior;
 
@@ -1079,7 +1079,7 @@ static s32 bhv_cmd_spawn_child_ext(void) {
         return BHV_PROC_CONTINUE;
     }
 
-    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, model, childBhvScript);
+    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelId, childBhvScript);
     if (child != NULL) {
         obj_copy_pos_and_angle(child, gCurrentObject);
     }
@@ -1089,10 +1089,10 @@ static s32 bhv_cmd_spawn_child_ext(void) {
 }
 
 // Command 0x3E: Spawns a child object with the specified model and behavior, plus a behavior param.
-// Usage: SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelID, behavior)
+// Usage: SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelId, behavior)
 static s32 bhv_cmd_spawn_child_with_param_ext(void) {
     u32 bhvParam = BHV_CMD_GET_2ND_S16(0);
-    u32 modelID = BHV_CMD_GET_U32(1);
+    u32 modelId = BHV_CMD_GET_U32(1);
 
     BehaviorScript *behavior = (BehaviorScript *)gCurrentObject->behavior;
 
@@ -1127,7 +1127,7 @@ static s32 bhv_cmd_spawn_child_with_param_ext(void) {
         return BHV_PROC_CONTINUE;
     }
 
-    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelID, childBhvScript);
+    struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelId, childBhvScript);
     if (child != NULL) {
         obj_copy_pos_and_angle(child, gCurrentObject);
         child->oBehParams2ndByte = bhvParam;
@@ -1138,9 +1138,9 @@ static s32 bhv_cmd_spawn_child_with_param_ext(void) {
 }
 
 // Command 0x3F: Spawns a new object with the specified model and behavior.
-// Usage: SPAWN_OBJ_EXT(modelID, behavior)
+// Usage: SPAWN_OBJ_EXT(modelId, behavior)
 static s32 bhv_cmd_spawn_obj_ext(void) {
-    u32 modelID = BHV_CMD_GET_U32(1);
+    u32 modelId = BHV_CMD_GET_U32(1);
 
     BehaviorScript *behavior = (BehaviorScript *)gCurrentObject->behavior;
 
@@ -1175,7 +1175,7 @@ static s32 bhv_cmd_spawn_obj_ext(void) {
         return BHV_PROC_CONTINUE;
     }
 
-    struct Object *object = spawn_object_at_origin(gCurrentObject, 0, modelID, objBhvScript);
+    struct Object *object = spawn_object_at_origin(gCurrentObject, 0, modelId, objBhvScript);
     if (object != NULL) {
         obj_copy_pos_and_angle(object, gCurrentObject);
         gCurrentObject->prevObj = object;

@@ -119,8 +119,8 @@ bool dynos_add_actor_custom(s32 modIndex, s32 modFileIndex, const char *filePath
     return DynOS_Actor_AddCustom(modIndex, modFileIndex, filePath, geoName);
 }
 
-const void* dynos_geolayout_get(const char *name) {
-    return DynOS_Actor_GetLayoutFromName(name);
+const GeoLayout *dynos_geolayout_get(const char *name) {
+    return DynOS_Geo_GetLayoutFromName(name);
 }
 
 bool dynos_actor_get_mod_index_and_token(struct GraphNode *graphNode, u32 tokenIndex, s32 *modIndex, s32 *modFileIndex, const char **token) {
@@ -260,36 +260,28 @@ void dynos_behavior_hook_all_custom_behaviors(void) {
 
 // -- models -- //
 
-struct GraphNode* dynos_model_load_geo(u32* aId, enum ModelPool aModelPool, void* aAsset, bool aDeDuplicate) {
-    return DynOS_Model_LoadGeo(aId, aModelPool, aAsset, aDeDuplicate);
+struct GraphNode *dynos_model_load_geo_layout(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, const char *name, bool isAreaLayout) {
+    return DynOS_Model_LoadGeoLayout(modelId, modelPool, asset, name, isAreaLayout);
 }
 
-struct GraphNode* dynos_model_load_dl(u32* aId, enum ModelPool aModelPool, u8 aLayer, void* aAsset) {
-    return DynOS_Model_LoadDl(aId, aModelPool, aLayer, aAsset);
+struct GraphNode *dynos_model_load_display_list(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, u8 layer) {
+    return DynOS_Model_LoadDisplayList(modelId, modelPool, asset, layer);
 }
 
-struct GraphNode* dynos_model_store_geo(u32* aId, enum ModelPool aModelPool, void* aAsset, struct GraphNode* aGraphNode) {
-    return DynOS_Model_StoreGeo(aId, aModelPool, aAsset, aGraphNode);
+struct GraphNode *dynos_model_load_graph_node(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, struct GraphNode *node) {
+    return DynOS_Model_LoadGraphNode(modelId, modelPool, asset, node);
 }
 
-u32 dynos_model_get_id_from_asset(void* aAsset) {
-    return DynOS_Model_GetIdFromAsset(aAsset);
+struct GraphNode *dynos_model_get_graph_node(enum ModelExtendedId modelId) {
+    return DynOS_Model_GetGraphNode(modelId);
 }
 
-u32 dynos_model_get_id_from_graph_node(struct GraphNode* aGraphNode) {
-    return DynOS_Model_GetIdFromGraphNode(aGraphNode);
+enum ModelExtendedId dynos_model_get_id(struct GraphNode *node) {
+    return DynOS_Model_GetId(node);
 }
 
-void dynos_model_clear_pool(enum ModelPool aModelPool) {
-    DynOS_Model_ClearPool(aModelPool);
-}
-
-struct GraphNode* dynos_model_get_geo(u32 aId) {
-    return DynOS_Model_GetGeo(aId);
-}
-
-void dynos_model_overwrite_slot(u32 srcSlot, u32 dstSlot) {
-    DynOS_Model_OverwriteSlot(srcSlot, dstSlot);
+void dynos_model_clear_pool(enum ModelPool modelPool) {
+    return DynOS_Model_ClearPool(modelPool);
 }
 
 // -- gfx -- //

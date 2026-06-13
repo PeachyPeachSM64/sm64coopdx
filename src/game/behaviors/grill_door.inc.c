@@ -1,7 +1,7 @@
 // grill_door.c.inc
 
-struct OpenableGrill gOpenableGrills[] = { { 320, MODEL_BOB_BARS_GRILLS, bob_seg7_collision_gate },
-                                           { 410, MODEL_HMC_RED_GRILLS,  hmc_seg7_collision_0702B65C } };
+struct OpenableGrill gOpenableGrills[] = { { 320, E_MODEL_BOB_BARS_GRILLS, bob_seg7_collision_gate },
+                                           { 410, E_MODEL_HMC_RED_GRILLS,  hmc_seg7_collision_0702B65C } };
 
 void bhv_openable_cage_door_loop(void) {
     if (gCurrentObject->oAction == 0) {
@@ -22,13 +22,13 @@ void bhv_openable_grill_loop(void) {
         case 0:
             grillIdx = o->oBehParams2ndByte;
             if (BHV_ARR_CHECK(gOpenableGrills, grillIdx, struct OpenableGrill)) {
-                grillObj = spawn_object_relative(-1, gOpenableGrills[grillIdx].halfWidth, 0, 0, o, gOpenableGrills[grillIdx].modelID,
+                grillObj = spawn_object_relative(-1, gOpenableGrills[grillIdx].halfWidth, 0, 0, o, gOpenableGrills[grillIdx].modelId,
                                                 bhvOpenableCageDoor);
                 if (grillObj != NULL) {
                     grillObj->oMoveAngleYaw += 0x8000;
                     obj_set_collision_data(grillObj, gOpenableGrills[grillIdx].collision);
                 }
-                grillObj = spawn_object_relative(1, -gOpenableGrills[grillIdx].halfWidth, 0, 0, o, gOpenableGrills[grillIdx].modelID,
+                grillObj = spawn_object_relative(1, -gOpenableGrills[grillIdx].halfWidth, 0, 0, o, gOpenableGrills[grillIdx].modelId,
                                                 bhvOpenableCageDoor);
                 if (grillObj != NULL) {
                     obj_set_collision_data(grillObj, gOpenableGrills[grillIdx].collision);

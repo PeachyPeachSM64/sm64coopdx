@@ -99,13 +99,8 @@ void network_send_area(struct NetworkPlayer* toNp) {
             if (so->o->behavior == smlua_override_behavior(bhvRespawner)) { continue; }
             if (so->id < SYNC_ID_BLOCK_SIZE) { continue; }
             struct Object* spawn_objects[] = { so->o };
-
-            // TODO: move find model to a utility file/function
-            // find model
-            u32 model = dynos_model_get_id_from_graph_node(so->o->header.gfx.sharedChild);
-
-            u32 models[] = { model };
-            network_send_spawn_objects_to(toNp->localIndex, spawn_objects, models, 1);
+            enum ModelExtendedId modelIds[] = { dynos_model_get_id(so->o->header.gfx.sharedChild) };
+            network_send_spawn_objects_to(toNp->localIndex, spawn_objects, modelIds, 1);
             LOG_INFO("tx non-static");
         }
 

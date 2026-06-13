@@ -91,8 +91,8 @@ void bhv_water_bomb_spawner_update(void) {
                         waterBombShadow
                     };
                     u32 models[] = {
-                        MODEL_WATER_BOMB,
-                        MODEL_WATER_BOMB_SHADOW
+                        E_MODEL_WATER_BOMB,
+                        E_MODEL_WATER_BOMB_SHADOW
                     };
                     network_send_spawn_objects(spawn_objects, models, 2);
                 }
@@ -108,7 +108,7 @@ void water_bomb_spawn_explode_particles(s8 offsetY, s8 forwardVelRange, s8 velYB
     static struct SpawnParticlesInfo sWaterBombExplodeParticles = {
         /* behParam:        */ 0,
         /* count:           */ 5,
-        /* model:           */ MODEL_BUBBLE,
+        /* model:           */ E_MODEL_BUBBLE,
         /* offsetY:         */ 20,
         /* forwardVelBase:  */ 20,
         /* forwardVelRange: */ 60,
@@ -220,7 +220,7 @@ static void water_bomb_act_shot_from_cannon(void) {
     static struct SpawnParticlesInfo sWaterBombCannonParticle = {
         /* behParam:        */ 0,
         /* count:           */ 1,
-        /* model:           */ MODEL_BUBBLE,
+        /* model:           */ E_MODEL_BUBBLE,
         /* offsetY:         */ 236,
         /* forwardVelBase:  */ 20,
         /* forwardVelRange: */ 5,

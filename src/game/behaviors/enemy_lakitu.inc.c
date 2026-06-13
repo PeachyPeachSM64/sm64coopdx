@@ -138,7 +138,7 @@ static void enemy_lakitu_sub_act_no_spiny(void) {
 
                 sync_object_set_id(spiny);
                 struct Object* spawn_objects[] = { spiny };
-                u32 models[] = { MODEL_SPINY_BALL };
+                u32 models[] = { E_MODEL_SPINY_BALL };
                 network_send_spawn_objects(spawn_objects, models, 1);
             }
         }

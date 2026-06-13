@@ -144,14 +144,13 @@ void bhv_elevator_init(void) {
 void (*sElevatorActions[])(void) = { elevator_act_0, elevator_act_1, elevator_act_2, elevator_act_3,
                                      elevator_act_4 };
 
-struct SpawnParticlesInfo D_8032F3CC = { 3, 20, MODEL_MIST, 20, 10, 5, 0, 0, 0, 30, 30.0f, 1.5f };
+struct SpawnParticlesInfo D_8032F3CC = { 3, 20, E_MODEL_MIST, 20, 10, 5, 0, 0, 0, 30, 30.0f, 1.5f };
 
-struct SpawnParticlesInfo D_8032F3E0 = { 0, 5, MODEL_SAND_DUST, 0, 0, 20, 20, 0, 252, 30, 5.0f, 2.0f };
+struct SpawnParticlesInfo D_8032F3E0 = { 0, 5, E_MODEL_SAND_DUST, 0, 0, 20, 20, 0, 252, 30, 5.0f, 2.0f };
 
 s16 D_8032F3F4[] = { 2, -8, 1, 4 };
 
-struct SpawnParticlesInfo D_8032F3FC = { 0,    5,   MODEL_WHITE_PARTICLE_DL, 0, 0, 20, 20, 0, 252, 30,
-                                         2.0f, 2.0f };
+struct SpawnParticlesInfo D_8032F3FC = { 0, 5, E_MODEL_WHITE_PARTICLE_DL, 0, 0, 20, 20, 0, 252, 30, 2.0f, 2.0f };
 
 void bhv_elevator_loop(void) {
     CUR_OBJ_CALL_ACTION_FUNCTION(sElevatorActions);

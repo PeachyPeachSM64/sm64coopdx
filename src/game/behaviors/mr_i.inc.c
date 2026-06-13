@@ -46,7 +46,7 @@ void spawn_mr_i_particle(void) {
         particle->oPosZ += coss(o->oMoveAngleYaw) * 90.0f * sp18;
 
         struct Object* spawn_objects[] = { particle };
-        u32 models[] = { MODEL_PURPLE_MARBLE };
+        u32 models[] = { E_MODEL_PURPLE_MARBLE };
         network_send_spawn_objects(spawn_objects, models, 1);
     }
 

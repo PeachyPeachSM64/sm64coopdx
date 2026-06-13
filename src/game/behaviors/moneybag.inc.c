@@ -248,7 +248,7 @@ void bhv_moneybag_hidden_loop(void) {
                     if (moneyBag != NULL) {
                         sync_object_set_id(moneyBag);
                         struct Object* spawn_objects[] = { moneyBag };
-                        u32 models[] = { MODEL_MONEYBAG };
+                        u32 models[] = { E_MODEL_MONEYBAG };
                         network_send_spawn_objects(spawn_objects, models, 1);
                     }
                 }

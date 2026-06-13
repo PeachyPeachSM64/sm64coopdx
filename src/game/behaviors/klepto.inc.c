@@ -416,16 +416,16 @@ void bhv_klepto_update(void) {
                 struct NetworkPlayer* np = network_player_from_global_index(o->globalPlayerIndex);
                 if (np == NULL) { np = gNetworkPlayerLocal; }
                 u8 modelIndex = (np->overrideModelIndex < CT_MAX) ? np->overrideModelIndex : 0;
-                u32 capModel = gCharacters[modelIndex].capModelId;
+                enum ModelExtendedId capModelId = gCharacters[modelIndex].capModelId;
 
                 gMarioStates[0].cap &= ~SAVE_FLAG_CAP_ON_KLEPTO;
 
-                struct Object* cap = spawn_object(o, capModel, bhvNormalCap);
+                struct Object* cap = spawn_object(o, capModelId, bhvNormalCap);
                 if (cap != NULL) {
                     cap->globalPlayerIndex = o->globalPlayerIndex;
 
                     struct Object* spawn_objects[] = { cap };
-                    u32 models[] = { capModel };
+                    u32 models[] = { capModelId };
                     network_send_spawn_objects(spawn_objects, models, 1);
                 }
 

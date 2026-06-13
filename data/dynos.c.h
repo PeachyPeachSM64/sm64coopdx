@@ -38,7 +38,7 @@ void dynos_generate_packs(const char* directory);
 // -- geos -- //
 void dynos_actor_override(struct Object* obj, void** aSharedChild);
 bool dynos_add_actor_custom(s32 modIndex, s32 modFileIndex, const char *filePath, const char* geoName);
-const void* dynos_geolayout_get(const char *name);
+const GeoLayout *dynos_geolayout_get(const char *name);
 bool dynos_actor_get_mod_index_and_token(struct GraphNode *graphNode, u32 tokenIndex, s32 *modIndex, s32 *modFileIndex, const char **token);
 void dynos_actor_register_modified_graph_node(struct GraphNode *node);
 
@@ -79,14 +79,12 @@ const char *dynos_behavior_get_token(BehaviorScript *bhvScript, u32 index);
 void dynos_behavior_hook_all_custom_behaviors(void);
 
 // -- models -- //
-struct GraphNode* dynos_model_load_geo(u32* aId, enum ModelPool aModelPool, void* aAsset, bool aDeDuplicate);
-struct GraphNode* dynos_model_load_dl(u32* aId, enum ModelPool aModelPool, u8 aLayer, void* aAsset);
-struct GraphNode* dynos_model_store_geo(u32* aId, enum ModelPool aModelPool, void* aAsset, struct GraphNode* aGraphNode);
-struct GraphNode* dynos_model_get_geo(u32 aId);
-void dynos_model_overwrite_slot(u32 srcSlot, u32 dstSlot);
-u32 dynos_model_get_id_from_asset(void* aAsset);
-u32 dynos_model_get_id_from_graph_node(struct GraphNode* aGraphNode);
-void dynos_model_clear_pool(enum ModelPool aModelPool);
+struct GraphNode *dynos_model_load_geo_layout(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, const char *name, bool isAreaLayout);
+struct GraphNode *dynos_model_load_display_list(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, u8 layer);
+struct GraphNode *dynos_model_load_graph_node(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, struct GraphNode *node);
+struct GraphNode *dynos_model_get_graph_node(enum ModelExtendedId modelId);
+enum ModelExtendedId dynos_model_get_id(struct GraphNode *node);
+void dynos_model_clear_pool(enum ModelPool modelPool);
 
 // -- gfx -- //
 Gfx *dynos_gfx_get_writable_display_list(Gfx* gfx);

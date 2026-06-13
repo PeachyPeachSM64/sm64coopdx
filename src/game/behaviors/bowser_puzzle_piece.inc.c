@@ -42,7 +42,7 @@ static s8 sPieceActions14[] = { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
                                 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1 };
 
 struct BowserPuzzlePiece {
-    u8 model;
+    enum ModelExtendedId modelId;
     s8 xOffset;
     s8 zOffset;
     s8 initialAction;
@@ -65,29 +65,29 @@ struct BowserPuzzlePiece {
  * (* = star platform)
  */
 static struct BowserPuzzlePiece sBowserPuzzlePieces[] = {
-    { MODEL_LLL_BOWSER_PIECE_1, -5, -15, 1, sPieceActions01 },
-    { MODEL_LLL_BOWSER_PIECE_2, 5, -15, 0, sPieceActions02 },
-    { MODEL_LLL_BOWSER_PIECE_3, -15, -5, 0, sPieceActions03 },
-    { MODEL_LLL_BOWSER_PIECE_4, -5, -5, 0, sPieceActions04 },
-    { MODEL_LLL_BOWSER_PIECE_5, 5, -5, 0, sPieceActions05 },
-    { MODEL_LLL_BOWSER_PIECE_6, 15, -5, 0, sPieceActions06 },
-    { MODEL_LLL_BOWSER_PIECE_7, -15, 5, 0, sPieceActions07 },
-    { MODEL_LLL_BOWSER_PIECE_8, -5, 5, 0, sPieceActions08 },
-    { MODEL_LLL_BOWSER_PIECE_9, 5, 5, 0, sPieceActions09 },
-    { MODEL_LLL_BOWSER_PIECE_10, 15, 5, 0, sPieceActions10 },
-    { MODEL_LLL_BOWSER_PIECE_11, -15, 15, 0, sPieceActions11 },
-    { MODEL_LLL_BOWSER_PIECE_12, -5, 15, 0, sPieceActions12 },
-    { MODEL_LLL_BOWSER_PIECE_13, 5, 15, 0, sPieceActions13 },
-    { MODEL_LLL_BOWSER_PIECE_14, 15, 15, 0, sPieceActions14 }
+    { E_MODEL_LLL_BOWSER_PIECE_1, -5, -15, 1, sPieceActions01 },
+    { E_MODEL_LLL_BOWSER_PIECE_2, 5, -15, 0, sPieceActions02 },
+    { E_MODEL_LLL_BOWSER_PIECE_3, -15, -5, 0, sPieceActions03 },
+    { E_MODEL_LLL_BOWSER_PIECE_4, -5, -5, 0, sPieceActions04 },
+    { E_MODEL_LLL_BOWSER_PIECE_5, 5, -5, 0, sPieceActions05 },
+    { E_MODEL_LLL_BOWSER_PIECE_6, 15, -5, 0, sPieceActions06 },
+    { E_MODEL_LLL_BOWSER_PIECE_7, -15, 5, 0, sPieceActions07 },
+    { E_MODEL_LLL_BOWSER_PIECE_8, -5, 5, 0, sPieceActions08 },
+    { E_MODEL_LLL_BOWSER_PIECE_9, 5, 5, 0, sPieceActions09 },
+    { E_MODEL_LLL_BOWSER_PIECE_10, 15, 5, 0, sPieceActions10 },
+    { E_MODEL_LLL_BOWSER_PIECE_11, -15, 15, 0, sPieceActions11 },
+    { E_MODEL_LLL_BOWSER_PIECE_12, -5, 15, 0, sPieceActions12 },
+    { E_MODEL_LLL_BOWSER_PIECE_13, 5, 15, 0, sPieceActions13 },
+    { E_MODEL_LLL_BOWSER_PIECE_14, 15, 15, 0, sPieceActions14 }
 };
 
 /**
  * Spawn a single puzzle piece.
  */
-void bhv_lll_bowser_puzzle_spawn_piece(s16 model, const BehaviorScript *behavior,
+void bhv_lll_bowser_puzzle_spawn_piece(enum ModelExtendedId modelId, const BehaviorScript *behavior,
                                        f32 xOffset, f32 zOffset,
                                        s8 initialAction, s8 *actionList) {
-    struct Object *puzzlePiece = spawn_object(o, model, behavior);
+    struct Object *puzzlePiece = spawn_object(o, modelId, behavior);
     if (puzzlePiece == NULL) { return; }
     puzzlePiece->oPosX += xOffset;
     puzzlePiece->oPosY += 50.0f;
@@ -110,7 +110,7 @@ void bhv_lll_bowser_puzzle_spawn_pieces(f32 pieceWidth) {
 
     // Spawn all 14 puzzle pieces.
     for (i = 0; i < 14; i++)
-        bhv_lll_bowser_puzzle_spawn_piece(sBowserPuzzlePieces[i].model, bhvLllBowserPuzzlePiece,
+        bhv_lll_bowser_puzzle_spawn_piece(sBowserPuzzlePieces[i].modelId, bhvLllBowserPuzzlePiece,
                                           sBowserPuzzlePieces[i].xOffset * pieceWidth / 10.0f,
                                           sBowserPuzzlePieces[i].zOffset * pieceWidth / 10.0f,
                                           sBowserPuzzlePieces[i].initialAction,

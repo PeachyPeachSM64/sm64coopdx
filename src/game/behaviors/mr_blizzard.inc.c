@@ -17,7 +17,7 @@ void mr_blizzard_spawn_white_particles(s8 count, s8 offsetY, s8 forwardVelBase, 
     static struct SpawnParticlesInfo D_80331A00 = {
         /* behParam:        */ 0,
         /* count:           */ 6,
-        /* model:           */ MODEL_WHITE_PARTICLE,
+        /* model:           */ E_MODEL_WHITE_PARTICLE,
         /* offsetY:         */ 0,
         /* forwardVelBase:  */ 5,
         /* forwardVelRange: */ 5,

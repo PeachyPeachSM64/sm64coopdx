@@ -47,7 +47,7 @@ void bhv_flamethrower_loop(void) {
     struct Object *flame;
     f32 flameVel;
     s32 sp34;
-    s32 model;
+    enum ModelExtendedId modelId;
     UNUSED u8 pad[8];
     if (o->oAction == 0) {
         if (gCurrLevelNum != LEVEL_BBH || gMarioOnMerryGoRound == TRUE) {
@@ -57,10 +57,10 @@ void bhv_flamethrower_loop(void) {
             }
         }
     } else if (o->oAction == 1) {
-        model = MODEL_RED_FLAME;
+        modelId = E_MODEL_RED_FLAME;
         flameVel = 95.0f;
         if (o->oBehParams2ndByte == 1)
-            model = MODEL_BLUE_FLAME;
+            modelId = E_MODEL_BLUE_FLAME;
         if (o->oBehParams2ndByte == 2)
             flameVel = 50.0f;
         sp34 = 1;
@@ -71,7 +71,7 @@ void bhv_flamethrower_loop(void) {
         else
             o->oAction++;
         o->oFlameThowerUnk110 = sp34;
-        flame = spawn_object_relative(o->oBehParams2ndByte, 0, 0, 0, o, model, bhvFlamethrowerFlame);
+        flame = spawn_object_relative(o->oBehParams2ndByte, 0, 0, 0, o, modelId, bhvFlamethrowerFlame);
         if (flame != NULL) { flame->oForwardVel = flameVel; }
         cur_obj_play_sound_1(SOUND_AIR_BLOW_FIRE);
     } else if (o->oTimer > 60)

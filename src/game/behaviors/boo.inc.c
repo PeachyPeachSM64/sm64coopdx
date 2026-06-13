@@ -873,7 +873,7 @@ void bhv_merry_go_round_boo_manager_loop(void) {
                             if (boo != NULL) {
                                 sync_object_set_id(boo);
                                 struct Object* spawn_objects[] = { boo };
-                                u32 models[] = { MODEL_BOO };
+                                u32 models[] = { E_MODEL_BOO };
                                 network_send_spawn_objects(spawn_objects, models, 1);
                             }
 
@@ -893,7 +893,7 @@ void bhv_merry_go_round_boo_manager_loop(void) {
 
                             sync_object_set_id(boo);
                             struct Object* spawn_objects[] = { boo };
-                            u32 models[] = { MODEL_BOO };
+                            u32 models[] = { E_MODEL_BOO };
                             network_send_spawn_objects(spawn_objects, models, 1);
                         }
 

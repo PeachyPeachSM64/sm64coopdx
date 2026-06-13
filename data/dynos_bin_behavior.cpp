@@ -2209,17 +2209,17 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
 
         bool foundBeh = true;
 
-        BehaviorScript modelID = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
+        BehaviorScript modelId = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
             aGfxData->mPointerList.Add(aHead + 2);
-            BehaviorScript _Bs[] = { SPAWN_CHILD(modelID, behavior) };
+            BehaviorScript _Bs[] = { SPAWN_CHILD(modelId, behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         } else {
             u32 behIndex = DynOS_Lua_RememberVariable(aGfxData, aHead + 2, aNode->mTokens[topTokenIndex + 1]);
-            BehaviorScript _Bs[] = { SPAWN_CHILD_EXT(modelID, behIndex) };
+            BehaviorScript _Bs[] = { SPAWN_CHILD_EXT(modelId, behIndex) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         }
@@ -2233,17 +2233,17 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         bool foundBeh = true;
 
         BehaviorScript bhvParam = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
-        BehaviorScript modelID = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
+        BehaviorScript modelId = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
             aGfxData->mPointerList.Add(aHead + 2);
-            BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM(bhvParam, modelID, behavior) };
+            BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM(bhvParam, modelId, behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         } else {
             u32 behIndex = DynOS_Lua_RememberVariable(aGfxData, aHead + 2, aNode->mTokens[topTokenIndex + 2]);
-            BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelID, behIndex) };
+            BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelId, behIndex) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         }
@@ -2256,17 +2256,17 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
 
         bool foundBeh = true;
 
-        BehaviorScript modelID = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
+        BehaviorScript modelId = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
             aGfxData->mPointerList.Add(aHead + 2);
-            BehaviorScript _Bs[] = { SPAWN_OBJ(modelID, behavior) };
+            BehaviorScript _Bs[] = { SPAWN_OBJ(modelId, behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         } else {
             u32 behIndex = DynOS_Lua_RememberVariable(aGfxData, aHead + 2, aNode->mTokens[topTokenIndex + 1]);
-            BehaviorScript _Bs[] = { SPAWN_OBJ_EXT(modelID, behIndex) };
+            BehaviorScript _Bs[] = { SPAWN_OBJ_EXT(modelId, behIndex) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         }
@@ -2363,11 +2363,11 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         u64 topTokenIndex = aTokenIndex;
 
         bool foundBeh = true;
-        BehaviorScript modelID = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
+        BehaviorScript modelId = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
         ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         u32 behIndex = DynOS_Lua_RememberVariable(aGfxData, aHead + 2, aNode->mTokens[topTokenIndex + 1]);
-        BehaviorScript _Bs[] = { SPAWN_CHILD_EXT(modelID, behIndex) };
+        BehaviorScript _Bs[] = { SPAWN_CHILD_EXT(modelId, behIndex) };
         memcpy(aHead, _Bs, sizeof(_Bs));
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         return;
@@ -2378,11 +2378,11 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
 
         bool foundBeh = true;
         BehaviorScript bhvParam = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
-        BehaviorScript modelID = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
+        BehaviorScript modelId = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
         ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         u32 behIndex = DynOS_Lua_RememberVariable(aGfxData, aHead + 2, aNode->mTokens[topTokenIndex + 2]);
-        BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelID, behIndex) };
+        BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelId, behIndex) };
         memcpy(aHead, _Bs, sizeof(_Bs));
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         return;
@@ -2392,11 +2392,11 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         u64 topTokenIndex = aTokenIndex;
 
         bool foundBeh = true;
-        BehaviorScript modelID = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
+        BehaviorScript modelId = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
         ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         u32 behIndex = DynOS_Lua_RememberVariable(aGfxData, aHead + 2, aNode->mTokens[topTokenIndex + 1]);
-        BehaviorScript _Bs[] = { SPAWN_OBJ_EXT(modelID, behIndex) };
+        BehaviorScript _Bs[] = { SPAWN_OBJ_EXT(modelId, behIndex) };
         memcpy(aHead, _Bs, sizeof(_Bs));
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
         return;

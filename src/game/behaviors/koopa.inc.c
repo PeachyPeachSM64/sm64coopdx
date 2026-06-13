@@ -364,7 +364,7 @@ void shelled_koopa_attack_handler(s32 attackType) {
                 sync_object_set_id(shell);
 
                 struct Object* spawn_objects[] = { shell };
-                u32 models[] = { MODEL_KOOPA_SHELL };
+                u32 models[] = { E_MODEL_KOOPA_SHELL };
                 network_send_spawn_objects(spawn_objects, models, 1);
             }
         }

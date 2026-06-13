@@ -119,7 +119,7 @@ static void fire_piranha_plant_act_grow(void) {
                     cur_obj_play_sound_2(SOUND_OBJ_FLAME_BLOWN);
                     obj_spit_fire(0, (s32)(30.0f * o->oFirePiranhaPlantNeutralScale),
                                   (s32)(140.0f * o->oFirePiranhaPlantNeutralScale),
-                                  2.5f * o->oFirePiranhaPlantNeutralScale, MODEL_RED_FLAME_SHADOW,
+                                  2.5f * o->oFirePiranhaPlantNeutralScale, E_MODEL_RED_FLAME_SHADOW,
                                   20.0f, 15.0f, 0x1000);
                 }
             }

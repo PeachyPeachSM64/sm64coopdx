@@ -113,7 +113,7 @@ static void manta_ray_act_spawn_ring(void) {
 
         if (ring != NULL) {
             struct Object *spawn_objects[] = { ring };
-            u32 models[] = { MODEL_WATER_RING };
+            u32 models[] = { E_MODEL_WATER_RING };
             network_send_spawn_objects(spawn_objects, models, 1);
         }
 
