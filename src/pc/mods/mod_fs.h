@@ -33,7 +33,7 @@ enum ModFsErrorCode {
     MOD_FS_ERR_FILEPATH_EMPTY,              // Empty filepath
     MOD_FS_ERR_FILEPATH_LEN_EXCEEDED,       // Filepath too long
     MOD_FS_ERR_FILEPATH_RESERVED,           // Filepath is reserved and cannot be used for ModFS files
-    MOD_FS_ERR_FILEPATH_INVALID_CHAR,       // Filepath contains invalid characters (not ascii, control, star or backslash)
+    MOD_FS_ERR_FILEPATH_INVALID_CHAR,       // Filepath contains invalid characters (non-ASCII, control characters, asterisk or backslash)
     MOD_FS_ERR_FILEPATH_MALFORMED,          // Filepath is malformed (leading/trailing whitespaces/slashes, consecutive slashes)
     MOD_FS_ERR_FILEPATH_INVALID_EXTENSION,  // Filepath extension is not in whitelist
 

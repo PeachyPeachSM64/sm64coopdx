@@ -181,7 +181,7 @@ static bool mod_fs_check_filepath(struct ModFs *modFs, const char *filepath, enu
     }
 
     // check character validity
-    // only ascii chars, no control chars, no star, no backslash
+    // only ascii chars, no control chars, no asterisk, no backslash
     for (u32 i = 0; i != filepathLength; ++i) {
         char c = filepath[i];
         if (!isascii(c) || iscntrl(c) || c == '*' || c == '\\') {
@@ -774,11 +774,11 @@ static bool mod_fs_file_check_file_type(struct ModFsFile *file, bool isText, boo
     return true;
 }
 
-static bool mod_fs_file_check_parameter(struct ModFsFile *file, u8 parameter, u8 parameterMin, u8 parameterMax, const char *parameterName, enum ModFsErrorCode *err) {
+static bool mod_fs_file_check_parameter(struct ModFsFile *file, int parameter, int parameterMin, int parameterMax, const char *parameterName, enum ModFsErrorCode *err) {
     if (parameter < parameterMin || parameter > parameterMax) {
         mod_fs_raise_error(
             MOD_FS_ERR_INVALID_PARAMETER,
-            "modPath: %s, filepath: %s - Invalid %s: %u (must be between %u and %u inclusive)", file->modFs->modPath, file->filepath,
+            "modPath: %s, filepath: %s - Invalid %s: %d (must be between %d and %d inclusive)", file->modFs->modPath, file->filepath,
             parameterName,
             parameter,
             parameterMin,
@@ -1037,6 +1037,11 @@ static bool mod_fs_move_file(struct ModFs *modFs, const char *oldpath, const cha
         return false;
     }
 
+    // Do nothing if old and new paths are the same
+    if (strcmp(oldpath, newpath) == 0) {
+        return true;
+    }
+
     // get file
     struct ModFsFile *oldfile = modfs::mod_fs_get_file(modFs, oldpath, err);
     if (!oldfile) {
@@ -1080,6 +1085,11 @@ static bool mod_fs_copy_file(struct ModFs *modFs, const char *srcpath, const cha
         return false;
     }
 
+    // Do nothing if src and dst paths are the same
+    if (strcmp(srcpath, dstpath) == 0) {
+        return true;
+    }
+
     // get file
     struct ModFsFile *srcfile = modfs::mod_fs_get_file(modFs, srcpath, err);
     if (!srcfile) {
@@ -1112,7 +1122,6 @@ static bool mod_fs_copy_file(struct ModFs *modFs, const char *srcpath, const cha
         );
         return false;
     }
-    modFs->totalSize = newTotalSize;
 
     // copy file
     u8 *buffer = (u8 *) malloc(srcfile->size);
@@ -1138,6 +1147,7 @@ static bool mod_fs_copy_file(struct ModFs *modFs, const char *srcpath, const cha
     dstfile->size = dstfile->capacity = srcfile->size;
     dstfile->data.bin = buffer;
     dstfile->offset = 0;
+    modFs->totalSize = newTotalSize;
     return true;
 }
 
