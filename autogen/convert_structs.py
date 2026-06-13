@@ -836,22 +836,22 @@ def get_function_signature(function):
         with open('autogen/lua_definitions/functions.lua') as f:
             lines = f.readlines()
         function_params = []
-        function_return = None
+        function_returns = []
         for line in lines:
             if line.startswith('--- @param'):
                 function_params.append(line.split()[2:4])
             elif line.startswith('--- @return'):
-                function_return = line.split()[2]
+                function_returns.append(line.split()[2])
             elif line.startswith('function'):
                 sig = 'fun('
                 sig += ', '.join(['%s: %s' % (param_name, param_type) for param_name, param_type in function_params])
                 sig += ')'
-                if function_return:
-                    sig += ': %s' % (function_return)
+                if function_returns:
+                    sig += ': %s' % (", ".join(function_returns))
                 function_name = line.replace('(', ' ').split()[1]
                 function_signatures[function_name] = sig
                 function_params.clear()
-                function_return = None
+                function_returns = []
     return function_signatures.get(function, 'function')
 
 def def_struct(struct):
