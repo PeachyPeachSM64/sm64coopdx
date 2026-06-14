@@ -9966,7 +9966,7 @@ int smlua_func_get_behavior_from_id(lua_State* L) {
         return 0;
     }
 
-    int id = smlua_to_integer(L, 1);
+    enum BehaviorId id = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_behavior_from_id"); return 0; }
 
     smlua_push_pointer(L, LVT_BEHAVIORSCRIPT_P, (void*)get_behavior_from_id(id), NULL);
@@ -9983,7 +9983,7 @@ int smlua_func_get_vanilla_behavior_from_id(lua_State* L) {
         return 0;
     }
 
-    int id = smlua_to_integer(L, 1);
+    enum BehaviorId id = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_vanilla_behavior_from_id"); return 0; }
 
     smlua_push_pointer(L, LVT_BEHAVIORSCRIPT_P, (void*)get_vanilla_behavior_from_id(id), NULL);
@@ -10000,7 +10000,7 @@ int smlua_func_get_behavior_name_from_id(lua_State* L) {
         return 0;
     }
 
-    int id = smlua_to_integer(L, 1);
+    enum BehaviorId id = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_behavior_name_from_id"); return 0; }
 
     lua_pushstring(L, get_behavior_name_from_id(id));
@@ -12054,7 +12054,7 @@ int smlua_func_play_character_sound(lua_State* L) {
 
     struct MarioState* m = (struct MarioState*)smlua_to_cobject(L, 1, LOT_MARIOSTATE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "play_character_sound"); return 0; }
-    int characterSound = smlua_to_integer(L, 2);
+    enum CharacterSound characterSound = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "play_character_sound"); return 0; }
 
     play_character_sound(m, characterSound);
@@ -12073,7 +12073,7 @@ int smlua_func_play_character_sound_offset(lua_State* L) {
 
     struct MarioState* m = (struct MarioState*)smlua_to_cobject(L, 1, LOT_MARIOSTATE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "play_character_sound_offset"); return 0; }
-    int characterSound = smlua_to_integer(L, 2);
+    enum CharacterSound characterSound = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "play_character_sound_offset"); return 0; }
     u32 offset = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "play_character_sound_offset"); return 0; }
@@ -12094,7 +12094,7 @@ int smlua_func_play_character_sound_if_no_flag(lua_State* L) {
 
     struct MarioState* m = (struct MarioState*)smlua_to_cobject(L, 1, LOT_MARIOSTATE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "play_character_sound_if_no_flag"); return 0; }
-    int characterSound = smlua_to_integer(L, 2);
+    enum CharacterSound characterSound = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "play_character_sound_if_no_flag"); return 0; }
     u32 flags = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "play_character_sound_if_no_flag"); return 0; }
@@ -12132,7 +12132,7 @@ int smlua_func_get_character_anim(lua_State* L) {
 
     struct MarioState* m = (struct MarioState*)smlua_to_cobject(L, 1, LOT_MARIOSTATE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_character_anim"); return 0; }
-    int characterAnim = smlua_to_integer(L, 2);
+    enum CharacterAnimID characterAnim = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "get_character_anim"); return 0; }
 
     lua_pushinteger(L, get_character_anim(m, characterAnim));
@@ -12259,7 +12259,7 @@ int smlua_func_djui_hud_set_resolution(lua_State* L) {
         return 0;
     }
 
-    int resolutionType = smlua_to_integer(L, 1);
+    enum HudUtilsResolution resolutionType = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_set_resolution"); return 0; }
 
     djui_hud_set_resolution(resolutionType);
@@ -12291,7 +12291,7 @@ int smlua_func_djui_hud_set_filter(lua_State* L) {
         return 0;
     }
 
-    int filterType = smlua_to_integer(L, 1);
+    enum HudUtilsFilter filterType = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_set_filter"); return 0; }
 
     djui_hud_set_filter(filterType);
@@ -13199,7 +13199,7 @@ int smlua_func_djui_menu_get_rainbow_string_color(lua_State* L) {
         return 0;
     }
 
-    int color = smlua_to_integer(L, 1);
+    enum DjuiRainbowColor color = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_menu_get_rainbow_string_color"); return 0; }
 
     lua_pushstring(L, djui_menu_get_rainbow_string_color(color));
@@ -15572,7 +15572,7 @@ int smlua_func_le_set_mode(lua_State* L) {
         return 0;
     }
 
-    int mode = smlua_to_integer(L, 1);
+    enum LEMode mode = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "le_set_mode"); return 0; }
 
     le_set_mode(mode);
@@ -15604,7 +15604,7 @@ int smlua_func_le_set_tone_mapping(lua_State* L) {
         return 0;
     }
 
-    int toneMapping = smlua_to_integer(L, 1);
+    enum LEToneMapping toneMapping = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "le_set_tone_mapping"); return 0; }
 
     le_set_tone_mapping(toneMapping);
@@ -16161,7 +16161,7 @@ int smlua_func_set_character_animation(lua_State* L) {
 
     struct MarioState* m = (struct MarioState*)smlua_to_cobject(L, 1, LOT_MARIOSTATE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "set_character_animation"); return 0; }
-    int targetAnimID = smlua_to_integer(L, 2);
+    enum CharacterAnimID targetAnimID = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "set_character_animation"); return 0; }
 
     lua_pushinteger(L, set_character_animation(m, targetAnimID));
@@ -16180,7 +16180,7 @@ int smlua_func_set_character_anim_with_accel(lua_State* L) {
 
     struct MarioState* m = (struct MarioState*)smlua_to_cobject(L, 1, LOT_MARIOSTATE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "set_character_anim_with_accel"); return 0; }
-    int targetAnimID = smlua_to_integer(L, 2);
+    enum CharacterAnimID targetAnimID = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "set_character_anim_with_accel"); return 0; }
     s32 accel = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "set_character_anim_with_accel"); return 0; }
@@ -22764,7 +22764,7 @@ int smlua_func_mod_fs_file_read_integer(lua_State* L) {
 
     struct ModFsFile* file = (struct ModFsFile*)smlua_to_cobject(L, 1, LOT_MODFSFILE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_fs_file_read_integer"); return 0; }
-    int intType = smlua_to_integer(L, 2);
+    enum ModFsFileIntType intType = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_fs_file_read_integer"); return 0; }
 
     lua_pushinteger(L, mod_fs_file_read_integer(file, intType));
@@ -22783,7 +22783,7 @@ int smlua_func_mod_fs_file_read_number(lua_State* L) {
 
     struct ModFsFile* file = (struct ModFsFile*)smlua_to_cobject(L, 1, LOT_MODFSFILE);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_fs_file_read_number"); return 0; }
-    int floatType = smlua_to_integer(L, 2);
+    enum ModFsFileFloatType floatType = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_fs_file_read_number"); return 0; }
 
     lua_pushnumber(L, mod_fs_file_read_number(file, floatType));
@@ -22876,7 +22876,7 @@ int smlua_func_mod_fs_file_write_integer(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_fs_file_write_integer"); return 0; }
     lua_Integer value = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_fs_file_write_integer"); return 0; }
-    int intType = smlua_to_integer(L, 3);
+    enum ModFsFileIntType intType = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "mod_fs_file_write_integer"); return 0; }
 
     lua_pushboolean(L, mod_fs_file_write_integer(file, value, intType));
@@ -22897,7 +22897,7 @@ int smlua_func_mod_fs_file_write_number(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_fs_file_write_number"); return 0; }
     lua_Number value = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_fs_file_write_number"); return 0; }
-    int floatType = smlua_to_integer(L, 3);
+    enum ModFsFileFloatType floatType = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "mod_fs_file_write_number"); return 0; }
 
     lua_pushboolean(L, mod_fs_file_write_number(file, value, floatType));
@@ -22975,7 +22975,7 @@ int smlua_func_mod_fs_file_seek(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_fs_file_seek"); return 0; }
     s32 offset = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_fs_file_seek"); return 0; }
-    int origin = smlua_to_integer(L, 3);
+    enum ModFsFileSeek origin = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "mod_fs_file_seek"); return 0; }
 
     lua_pushboolean(L, mod_fs_file_seek(file, offset, origin));
@@ -23530,7 +23530,7 @@ int smlua_func_network_player_get_palette_color_channel(lua_State* L) {
 
     struct NetworkPlayer* np = (struct NetworkPlayer*)smlua_to_cobject(L, 1, LOT_NETWORKPLAYER);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "network_player_get_palette_color_channel"); return 0; }
-    int part = smlua_to_integer(L, 2);
+    enum PlayerPart part = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "network_player_get_palette_color_channel"); return 0; }
     u8 index = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "network_player_get_palette_color_channel"); return 0; }
@@ -23551,7 +23551,7 @@ int smlua_func_network_player_get_override_palette_color_channel(lua_State* L) {
 
     struct NetworkPlayer* np = (struct NetworkPlayer*)smlua_to_cobject(L, 1, LOT_NETWORKPLAYER);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "network_player_get_override_palette_color_channel"); return 0; }
-    int part = smlua_to_integer(L, 2);
+    enum PlayerPart part = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "network_player_get_override_palette_color_channel"); return 0; }
     u8 index = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "network_player_get_override_palette_color_channel"); return 0; }
@@ -23572,7 +23572,7 @@ int smlua_func_network_player_set_override_palette_color(lua_State* L) {
 
     struct NetworkPlayer* np = (struct NetworkPlayer*)smlua_to_cobject(L, 1, LOT_NETWORKPLAYER);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "network_player_set_override_palette_color"); return 0; }
-    int part = smlua_to_integer(L, 2);
+    enum PlayerPart part = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "network_player_set_override_palette_color"); return 0; }
 
     Color color;
@@ -31055,7 +31055,7 @@ int smlua_func_camera_set_romhack_override(lua_State* L) {
         return 0;
     }
 
-    int rco = smlua_to_integer(L, 1);
+    enum RomhackCameraOverride rco = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "camera_set_romhack_override"); return 0; }
 
     camera_set_romhack_override(rco);
@@ -32179,7 +32179,7 @@ int smlua_func_network_player_color_to_palette(lua_State* L) {
 
     struct NetworkPlayer* np = (struct NetworkPlayer*)smlua_to_cobject(L, 1, LOT_NETWORKPLAYER);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "network_player_color_to_palette"); return 0; }
-    int part = smlua_to_integer(L, 2);
+    enum PlayerPart part = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "network_player_color_to_palette"); return 0; }
 
     Color color;
@@ -32202,7 +32202,7 @@ int smlua_func_network_player_palette_to_color(lua_State* L) {
 
     struct NetworkPlayer* np = (struct NetworkPlayer*)smlua_to_cobject(L, 1, LOT_NETWORKPLAYER);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "network_player_palette_to_color"); return 0; }
-    int part = smlua_to_integer(L, 2);
+    enum PlayerPart part = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "network_player_palette_to_color"); return 0; }
 
     Color out;
@@ -32229,7 +32229,7 @@ int smlua_func_get_shader_flag_enabled(lua_State* L) {
         return 0;
     }
 
-    int flag = smlua_to_integer(L, 1);
+    enum ShaderFlag flag = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_shader_flag_enabled"); return 0; }
 
     lua_pushboolean(L, get_shader_flag_enabled(flag));
@@ -32246,7 +32246,7 @@ int smlua_func_set_shader_flag_enabled(lua_State* L) {
         return 0;
     }
 
-    int flag = smlua_to_integer(L, 1);
+    enum ShaderFlag flag = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "set_shader_flag_enabled"); return 0; }
     bool enabled = smlua_to_boolean(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "set_shader_flag_enabled"); return 0; }
@@ -32265,7 +32265,7 @@ int smlua_func_get_shader_flag_value(lua_State* L) {
         return 0;
     }
 
-    int flag = smlua_to_integer(L, 1);
+    enum ShaderFlag flag = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_shader_flag_value"); return 0; }
 
     lua_pushnumber(L, get_shader_flag_value(flag));
@@ -32282,7 +32282,7 @@ int smlua_func_set_shader_flag_value(lua_State* L) {
         return 0;
     }
 
-    int flag = smlua_to_integer(L, 1);
+    enum ShaderFlag flag = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "set_shader_flag_value"); return 0; }
     f32 value = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "set_shader_flag_value"); return 0; }
@@ -33881,7 +33881,7 @@ int smlua_func_hud_get_value(lua_State* L) {
         return 0;
     }
 
-    int type = smlua_to_integer(L, 1);
+    enum HudDisplayValue type = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "hud_get_value"); return 0; }
 
     lua_pushinteger(L, hud_get_value(type));
@@ -33898,7 +33898,7 @@ int smlua_func_hud_set_value(lua_State* L) {
         return 0;
     }
 
-    int type = smlua_to_integer(L, 1);
+    enum HudDisplayValue type = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "hud_set_value"); return 0; }
     s32 value = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "hud_set_value"); return 0; }
@@ -34007,7 +34007,7 @@ int smlua_func_act_select_hud_hide(lua_State* L) {
         return 0;
     }
 
-    int part = smlua_to_integer(L, 1);
+    enum ActSelectHudPart part = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "act_select_hud_hide"); return 0; }
 
     act_select_hud_hide(part);
@@ -34024,7 +34024,7 @@ int smlua_func_act_select_hud_show(lua_State* L) {
         return 0;
     }
 
-    int part = smlua_to_integer(L, 1);
+    enum ActSelectHudPart part = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "act_select_hud_show"); return 0; }
 
     act_select_hud_show(part);
@@ -34041,7 +34041,7 @@ int smlua_func_act_select_hud_is_hidden(lua_State* L) {
         return 0;
     }
 
-    int part = smlua_to_integer(L, 1);
+    enum ActSelectHudPart part = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "act_select_hud_is_hidden"); return 0; }
 
     lua_pushboolean(L, act_select_hud_is_hidden(part));
@@ -35018,9 +35018,9 @@ int smlua_func_spawn_sync_object(lua_State* L) {
         return 0;
     }
 
-    int behaviorId = smlua_to_integer(L, 1);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "spawn_sync_object"); return 0; }
-    int modelId = smlua_to_integer(L, 2);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "spawn_sync_object"); return 0; }
     f32 x = smlua_to_number(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "spawn_sync_object"); return 0; }
@@ -35045,9 +35045,9 @@ int smlua_func_spawn_non_sync_object(lua_State* L) {
         return 0;
     }
 
-    int behaviorId = smlua_to_integer(L, 1);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "spawn_non_sync_object"); return 0; }
-    int modelId = smlua_to_integer(L, 2);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "spawn_non_sync_object"); return 0; }
     f32 x = smlua_to_number(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "spawn_non_sync_object"); return 0; }
@@ -35074,7 +35074,7 @@ int smlua_func_obj_has_behavior_id(lua_State* L) {
 
     struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_has_behavior_id"); return 0; }
-    int behaviorId = smlua_to_integer(L, 2);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_has_behavior_id"); return 0; }
 
     lua_pushinteger(L, obj_has_behavior_id(o, behaviorId));
@@ -35093,7 +35093,7 @@ int smlua_func_obj_has_model_extended(lua_State* L) {
 
     struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_has_model_extended"); return 0; }
-    int modelId = smlua_to_integer(L, 2);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_has_model_extended"); return 0; }
 
     lua_pushinteger(L, obj_has_model_extended(o, modelId));
@@ -35129,7 +35129,7 @@ int smlua_func_obj_set_model_extended(lua_State* L) {
 
     struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_set_model_extended"); return 0; }
-    int modelId = smlua_to_integer(L, 2);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_set_model_extended"); return 0; }
 
     obj_set_model_extended(o, modelId);
@@ -35272,7 +35272,7 @@ int smlua_func_obj_get_first(lua_State* L) {
         return 0;
     }
 
-    int objList = smlua_to_integer(L, 1);
+    enum ObjectList objList = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_first"); return 0; }
 
     smlua_push_object(L, LOT_OBJECT, obj_get_first(objList), NULL);
@@ -35289,7 +35289,7 @@ int smlua_func_obj_get_first_with_behavior_id(lua_State* L) {
         return 0;
     }
 
-    int behaviorId = smlua_to_integer(L, 1);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_first_with_behavior_id"); return 0; }
 
     smlua_push_object(L, LOT_OBJECT, obj_get_first_with_behavior_id(behaviorId), NULL);
@@ -35306,7 +35306,7 @@ int smlua_func_obj_get_first_with_behavior_id_and_field_s32(lua_State* L) {
         return 0;
     }
 
-    int behaviorId = smlua_to_integer(L, 1);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_first_with_behavior_id_and_field_s32"); return 0; }
     s32 fieldIndex = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_get_first_with_behavior_id_and_field_s32"); return 0; }
@@ -35327,7 +35327,7 @@ int smlua_func_obj_get_first_with_behavior_id_and_field_f32(lua_State* L) {
         return 0;
     }
 
-    int behaviorId = smlua_to_integer(L, 1);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_first_with_behavior_id_and_field_f32"); return 0; }
     s32 fieldIndex = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_get_first_with_behavior_id_and_field_f32"); return 0; }
@@ -35426,7 +35426,7 @@ int smlua_func_obj_get_nearest_object_with_behavior_id(lua_State* L) {
 
     struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_nearest_object_with_behavior_id"); return 0; }
-    int behaviorId = smlua_to_integer(L, 2);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_get_nearest_object_with_behavior_id"); return 0; }
 
     smlua_push_object(L, LOT_OBJECT, obj_get_nearest_object_with_behavior_id(o, behaviorId), NULL);
@@ -35443,7 +35443,7 @@ int smlua_func_obj_count_objects_with_behavior_id(lua_State* L) {
         return 0;
     }
 
-    int behaviorId = smlua_to_integer(L, 1);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_count_objects_with_behavior_id"); return 0; }
 
     lua_pushinteger(L, obj_count_objects_with_behavior_id(behaviorId));
@@ -35643,7 +35643,7 @@ int smlua_func_obj_get_temp_spawn_particles_info(lua_State* L) {
         return 0;
     }
 
-    int modelId = smlua_to_integer(L, 1);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_temp_spawn_particles_info"); return 0; }
 
     smlua_push_object(L, LOT_SPAWNPARTICLESINFO, obj_get_temp_spawn_particles_info(modelId), NULL);
@@ -35660,9 +35660,9 @@ int smlua_func_obj_get_temp_water_droplet_params(lua_State* L) {
         return 0;
     }
 
-    int modelId = smlua_to_integer(L, 1);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_temp_water_droplet_params"); return 0; }
-    int behaviorId = smlua_to_integer(L, 2);
+    enum BehaviorId behaviorId = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_get_temp_water_droplet_params"); return 0; }
 
     smlua_push_object(L, LOT_WATERDROPLETPARAMS, obj_get_temp_water_droplet_params(modelId, behaviorId), NULL);
@@ -36021,7 +36021,7 @@ int smlua_func_smlua_text_utils_dialog_get(lua_State* L) {
         return 0;
     }
 
-    int dialogId = smlua_to_integer(L, 1);
+    enum DialogId dialogId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "smlua_text_utils_dialog_get"); return 0; }
 
     smlua_push_object(L, LOT_DIALOGENTRY, smlua_text_utils_dialog_get(dialogId), NULL);
@@ -36038,7 +36038,7 @@ int smlua_func_smlua_text_utils_dialog_replace(lua_State* L) {
         return 0;
     }
 
-    int dialogId = smlua_to_integer(L, 1);
+    enum DialogId dialogId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "smlua_text_utils_dialog_replace"); return 0; }
     u32 unused = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "smlua_text_utils_dialog_replace"); return 0; }
@@ -36065,7 +36065,7 @@ int smlua_func_smlua_text_utils_dialog_restore(lua_State* L) {
         return 0;
     }
 
-    int dialogId = smlua_to_integer(L, 1);
+    enum DialogId dialogId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "smlua_text_utils_dialog_restore"); return 0; }
 
     smlua_text_utils_dialog_restore(dialogId);
@@ -36082,7 +36082,7 @@ int smlua_func_smlua_text_utils_dialog_is_replaced(lua_State* L) {
         return 0;
     }
 
-    int dialogId = smlua_to_integer(L, 1);
+    enum DialogId dialogId = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "smlua_text_utils_dialog_is_replaced"); return 0; }
 
     lua_pushboolean(L, smlua_text_utils_dialog_is_replaced(dialogId));
