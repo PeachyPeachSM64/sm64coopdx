@@ -1752,7 +1752,6 @@
 | pausable | `boolean` | read-only |
 | ignoreScriptWarnings | `boolean` | read-only |
 | size | `integer` | read-only |
-| customBehaviorIndex | `integer` | read-only |
 
 [:arrow_up_small:](#)
 

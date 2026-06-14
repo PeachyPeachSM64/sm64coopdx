@@ -1203,7 +1203,6 @@
 --- @field public pausable boolean
 --- @field public ignoreScriptWarnings boolean
 --- @field public size integer
---- @field public customBehaviorIndex integer
 
 --- @class ModAudio
 --- @field public filepath string

@@ -250,10 +250,20 @@ manual_documentation = """
 
 Defines a custom set of overlapping object fields.
 
-The `fieldTable` table's keys must start with the letter `o` and the values must be either `u32`, `s32`, or `f32`.
+The `fieldTable` table's keys must start with the letter `o` and the values must be either `"u32"`, `"s32"`, `"f32"` or a table with fields `type` and `global`, for example `{ type = "u32", global = true }`.
+If, for a field, `global` is `true`, the field will be defined for all mods.
 
 ### Lua Example
-`define_custom_obj_fields({ oCustomField1 = 'u32', oCustomField2 = 's32', oCustomField3 = 'f32' })`
+```lua
+define_custom_obj_fields({
+    oCustomField1 = 'u32',
+    oCustomField2 = 's32',
+    oCustomField3 = 'f32',
+    oCustomField4 = { type = 'u32', global = true },
+    oCustomField5 = { type = 's32', global = true },
+    oCustomField6 = { type = 'f32', global = true },
+})
+```
 
 ### Parameters
 | Field | Type |
