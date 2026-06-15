@@ -10,14 +10,12 @@ Autogen is the system in place to allow C functions to be generated into Lua fun
 
 Autogen can be ran by running `autogen/autogen.sh` in the root directory of your project.
 
-Autogen needs to be ran for a variety of reasons:
-
-- Anytime a function's name, parameter, or description is changed
-- Anytime a struct's name, or variable is changed
-- Anytime a enum's name, or contents is changed
-- Anytime a new function or struct is added
-- Anytime a hook event is added or modified
-- And much more
+Autogen may need a rerun when changes are made to:
+- Functions
+- Structs
+- Enums
+- Hooks
+- etc.
 
 ## Adding functions, structs, and constants to autogen
 
