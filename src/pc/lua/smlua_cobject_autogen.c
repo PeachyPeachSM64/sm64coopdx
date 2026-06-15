@@ -2508,7 +2508,7 @@ static struct LuaObjectField sServerSettingsFields[LUA_SERVER_SETTINGS_FIELD_COU
     { "stayInLevelAfterStar",        LVT_S32, offsetof(struct ServerSettings, stayInLevelAfterStar),        false, LOT_NONE },
 };
 
-#define LUA_SPAWN_INFO_FIELD_COUNT 7
+#define LUA_SPAWN_INFO_FIELD_COUNT 8
 static struct LuaObjectField sSpawnInfoFields[LUA_SPAWN_INFO_FIELD_COUNT] = {
     { "activeAreaIndex", LVT_S8,        offsetof(struct SpawnInfo, activeAreaIndex), false, LOT_NONE      },
     { "areaIndex",       LVT_S8,        offsetof(struct SpawnInfo, areaIndex),       false, LOT_NONE      },
@@ -2518,6 +2518,7 @@ static struct LuaObjectField sSpawnInfoFields[LUA_SPAWN_INFO_FIELD_COUNT] = {
     { "startAngle",      LVT_COBJECT,   offsetof(struct SpawnInfo, startAngle),      true,  LOT_VEC3S     },
     { "startPos",        LVT_COBJECT,   offsetof(struct SpawnInfo, startPos),        true,  LOT_VEC3S     },
     { "syncID",          LVT_U32,       offsetof(struct SpawnInfo, syncID),          true,  LOT_NONE      },
+    { "unk18",           LVT_COBJECT_P, offsetof(struct SpawnInfo, unk18),           true,  LOT_GRAPHNODE },
 };
 
 #define LUA_SPAWN_PARTICLES_INFO_FIELD_COUNT 12

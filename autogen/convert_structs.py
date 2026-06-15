@@ -102,7 +102,6 @@ override_field_invisible = {
     "GraphNodeObject": [ "unk4C" ],
     "FnGraphNode": [ "luaTokenIndex" ],
     "Object": [ "firstSurface", "customFields", "bhvStack", "bhvStackIndex" ],
-    "SpawnInfo": [ "unk18" ],
     "Animation": [ "unusedBoneCount" ],
     "ModAudio": [ "alive", "sound", "decoder", "buffer", "bufferSize", "sampleCopiesTail", "volChannel" ],
     "Painting": [ "normalDisplayList", "textureMaps", "rippleDisplayList", "ripples" ],

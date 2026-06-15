@@ -2858,6 +2858,7 @@
 | areaIndex | `integer` |  |
 | activeAreaIndex | `integer` |  |
 | behaviorArg | `integer` |  |
+| unk18 | [GraphNode](structs.md#GraphNode) | read-only |
 | next | [SpawnInfo](structs.md#SpawnInfo) | read-only |
 | syncID | `integer` | read-only |
 
