@@ -2172,7 +2172,6 @@
 --- @field public areaIndex integer
 --- @field public activeAreaIndex integer
 --- @field public behaviorArg integer
---- @field public unk18 GraphNode
 --- @field public next SpawnInfo
 --- @field public syncID integer
 

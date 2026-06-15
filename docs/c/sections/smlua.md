@@ -68,8 +68,8 @@ Structs have the most options, so let's go through it:
 
 - `override_field_types` changes the type of a field in a struct to something else. It pretty much lies to lua about what it actually is. This usually isn't useful, but in specific scenarios it can be.
 - `override_field_mutable` tells autogen to make a specific field mutable and also make every other field immutable.
-- `override_field_invisible` tells autogen to hide a field from Lua. Unlike `override_hide_functions`, it makes the value not accessible at all.
-- `override_field_deprecated` tells autogen to mark certain fields as deprecated.
+- `override_field_invisible` tells autogen to remove a field from Lua. Unlike `override_hide_functions`, it makes the value not accessible at all.
+- `override_field_hidden` tells autogen to mark certain fields as deprecated/hidden. They do not appear in the docs, but mods can still use them.
 - `override_field_immutable` tells autogen to make certain fields immutable.
 - `override_field_version_excludes` tells autogen to exclude specific fields depending on your version. Similarly to `override_function_version_excludes`, it doesn't have too much of a use anymore, so you can ignore it.
 - `override_allowed_structs` tells autogen to make specific structs visible and tangible to Lua, but remove all other structs from Lua.
