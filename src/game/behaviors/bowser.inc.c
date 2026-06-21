@@ -98,7 +98,7 @@ void bhv_bowser_flame_spawn_loop(void) {
             if (!(sp30 & 1)) {
                 struct MarioState* marioState = nearest_mario_state_to_object(o);
                 if (marioState && marioState->playerIndex == 0) {
-                    struct Object* flame = spawn_object(o, MODEL_RED_FLAME, bhvFlameMovingForwardGrowing);
+                    struct Object* flame = spawn_object(o, E_MODEL_RED_FLAME, bhvFlameMovingForwardGrowing);
                     if (flame != NULL) {
                         struct Object* spawn_objects[] = { flame };
                         u32 models[] = { E_MODEL_RED_FLAME };
@@ -149,7 +149,7 @@ s32 bowser_spawn_shockwave(void) {
     if (o->oBehParams2ndByte == 2) {
         struct MarioState* marioState = nearest_mario_state_to_object(o);
         if (marioState && marioState->playerIndex == 0) {
-            wave = spawn_object(o, MODEL_BOWSER_WAVE, bhvBowserShockWave);
+            wave = spawn_object(o, E_MODEL_BOWSER_WAVE, bhvBowserShockWave);
             if (wave != NULL) {
                 wave->oPosY = o->oFloorHeight;
 
@@ -504,9 +504,9 @@ void bowser_act_spit_fire_into_sky(void) // only in sky
         if (marioState && marioState->playerIndex == 0) {
             struct Object* flame = NULL;
             if (frame == 35) {
-                flame = spawn_object_relative(1, 0, 0x190, 0x64, o, MODEL_RED_FLAME, bhvBlueBowserFlame);
+                flame = spawn_object_relative(1, 0, 0x190, 0x64, o, E_MODEL_RED_FLAME, bhvBlueBowserFlame);
             } else {
-                flame = spawn_object_relative(0, 0, 0x190, 0x64, o, MODEL_RED_FLAME, bhvBlueBowserFlame);
+                flame = spawn_object_relative(0, 0, 0x190, 0x64, o, E_MODEL_RED_FLAME, bhvBlueBowserFlame);
             }
             if (flame != NULL) {
                 struct Object* spawn_objects[] = { flame };
@@ -721,8 +721,8 @@ void bowser_act_charge_mario(void) {
         case 3:
             o->oBowserUnkF8 = 0;
             cur_obj_init_animation_with_sound(21);
-            spawn_object_relative_with_scale(0, 100, -50, 0, 3.0f, o, MODEL_SMOKE, bhvWhitePuffSmoke2);
-            spawn_object_relative_with_scale(0, -100, -50, 0, 3.0f, o, MODEL_SMOKE,
+            spawn_object_relative_with_scale(0, 100, -50, 0, 3.0f, o, E_MODEL_SMOKE, bhvWhitePuffSmoke2);
+            spawn_object_relative_with_scale(0, -100, -50, 0, 3.0f, o, E_MODEL_SMOKE,
                                              bhvWhitePuffSmoke2);
             if (approach_f32_signed(&o->oForwardVel, 0, -1.0f))
                 o->oSubAction = 2;
@@ -879,7 +879,7 @@ void bowser_spawn_grand_star_key(void) {
     struct Object* reward = NULL;
     if (BITS) {
         struct Object* prevReward = cur_obj_nearest_object_with_behavior(bhvGrandStar);
-        reward = (prevReward != NULL) ? prevReward : spawn_object(o, MODEL_STAR, bhvGrandStar);
+        reward = (prevReward != NULL) ? prevReward : spawn_object(o, E_MODEL_STAR, bhvGrandStar);
         gSecondCameraFocus = reward;
 
         if (sync_object_is_owned_locally(o->oSyncID) && prevReward == NULL && reward != NULL) {
@@ -896,7 +896,7 @@ void bowser_spawn_grand_star_key(void) {
         }
     } else {
         struct Object* prevReward = cur_obj_nearest_object_with_behavior(bhvBowserKey);
-        reward = (prevReward != NULL) ? prevReward : spawn_object(o, MODEL_BOWSER_KEY, bhvBowserKey);
+        reward = (prevReward != NULL) ? prevReward : spawn_object(o, E_MODEL_BOWSER_KEY, bhvBowserKey);
         gSecondCameraFocus = reward;
         cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL2_BOWSER_KEY);
 
@@ -1026,7 +1026,7 @@ s32 bowser_dead_bits_end(void) {
             o->oBowserUnkF8++;
         }
         if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, dialogID, 0, bowser_dead_bits_end_continue_dialog)) {
-            cur_obj_set_model(smlua_model_util_load(E_MODEL_BOWSER2));
+            cur_obj_set_model(E_MODEL_BOWSER2);
             seq_player_unlower_volume(SEQ_PLAYER_LEVEL, 60);
             seq_player_fade_out(SEQ_PLAYER_LEVEL, 1);
             bowser_spawn_grand_star_key();
@@ -1703,9 +1703,9 @@ void bhv_falling_bowser_platform_loop(void) {
 
 void bowser_flame_despawn(void) {
     obj_mark_for_deletion(o);
-    spawn_object_with_scale(o, MODEL_NONE, bhvBlackSmokeUpward, 1.0f);
+    spawn_object_with_scale(o, E_MODEL_NONE, bhvBlackSmokeUpward, 1.0f);
     if (random_float() < 0.1) {
-        spawn_object(o, MODEL_YELLOW_COIN, bhvTemporaryYellowCoin);
+        spawn_object(o, E_MODEL_YELLOW_COIN, bhvTemporaryYellowCoin);
     }
 }
 
@@ -1798,7 +1798,7 @@ void bhv_flame_moving_forward_growing_loop(void) {
         obj_mark_for_deletion(o);
     if (o->oPosY < o->oFloorHeight) {
         o->oPosY = o->oFloorHeight;
-        sp18 = spawn_object(o, MODEL_RED_FLAME, bhvFlameBowser);
+        sp18 = spawn_object(o, E_MODEL_RED_FLAME, bhvFlameBowser);
         obj_mark_for_deletion(o);
     }
 }
@@ -1832,9 +1832,9 @@ void bhv_flame_floating_landing_loop(void) {
 
     if (o->oMoveFlags & OBJ_MOVE_LANDED) {
         if (o->oBehParams2ndByte == 0)
-            spawn_object(o, MODEL_RED_FLAME, bhvFlameLargeBurningOut);
+            spawn_object(o, E_MODEL_RED_FLAME, bhvFlameLargeBurningOut);
         else
-            spawn_object(o, MODEL_NONE, bhvBlueFlamesGroup); //? wonder if they meant MODEL_BLUE_FLAME?
+            spawn_object(o, E_MODEL_NONE, bhvBlueFlamesGroup); //? wonder if they meant E_MODEL_BLUE_FLAME?
         obj_mark_for_deletion(o);
     }
     o->oGraphYOffset = o->header.gfx.scale[1] * 14.0f;
@@ -1862,12 +1862,12 @@ void bhv_blue_bowser_flame_loop(void) {
     if (o->oTimer > 0x14) {
         if (o->oBehParams2ndByte == 0)
             for (i = 0; i < 3; i++)
-                spawn_object_relative_with_scale(0, 0, 0, 0, 5.0f, o, MODEL_RED_FLAME,
+                spawn_object_relative_with_scale(0, 0, 0, 0, 5.0f, o, E_MODEL_RED_FLAME,
                                                  bhvFlameFloatingLanding);
         else {
-            spawn_object_relative_with_scale(1, 0, 0, 0, 8.0f, o, MODEL_BLUE_FLAME,
+            spawn_object_relative_with_scale(1, 0, 0, 0, 8.0f, o, E_MODEL_BLUE_FLAME,
                                              bhvFlameFloatingLanding);
-            spawn_object_relative_with_scale(2, 0, 0, 0, 8.0f, o, MODEL_BLUE_FLAME,
+            spawn_object_relative_with_scale(2, 0, 0, 0, 8.0f, o, E_MODEL_BLUE_FLAME,
                                              bhvFlameFloatingLanding);
         }
         obj_mark_for_deletion(o);
@@ -1914,7 +1914,7 @@ void bhv_blue_flames_group_loop(void) {
     if (o->oTimer < 16) {
         if ((o->oTimer & 1) == 0) {
             for (i = 0; i < 3; i++) {
-                flame = spawn_object(o, MODEL_BLUE_FLAME, bhvFlameBouncing);
+                flame = spawn_object(o, E_MODEL_BLUE_FLAME, bhvFlameBouncing);
                 if (flame != NULL) {
                     flame->oMoveAngleYaw += i * 0x5555;
                     flame->header.gfx.scale[0] = o->oBlueFlameNextScale;

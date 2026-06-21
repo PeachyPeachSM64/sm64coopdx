@@ -4848,7 +4848,7 @@ Treats far home as Mario. Returns the distance and angle to the nearest player
 Spawns a small piranha flame object with the given parameters. Used by Bowser, Fly Guy, Piranha Plant, and Fire Spitters
 
 ### Lua Example
-`local objectValue = obj_spit_fire(relativePosX, relativePosY, relativePosZ, scale, model, startSpeed, endSpeed, movePitch)`
+`local objectValue = obj_spit_fire(relativePosX, relativePosY, relativePosZ, scale, modelId, startSpeed, endSpeed, movePitch)`
 
 ### Parameters
 | Field | Type |
@@ -4857,7 +4857,7 @@ Spawns a small piranha flame object with the given parameters. Used by Bowser, F
 | relativePosY | `integer` |
 | relativePosZ | `integer` |
 | scale | `number` |
-| model | `integer` |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
 | startSpeed | `number` |
 | endSpeed | `number` |
 | movePitch | `integer` |
@@ -4866,7 +4866,7 @@ Spawns a small piranha flame object with the given parameters. Used by Bowser, F
 - [Object](structs.md#Object)
 
 ### C Prototype
-`struct Object* obj_spit_fire(s16 relativePosX, s16 relativePosY, s16 relativePosZ, f32 scale, s32 model, f32 startSpeed, f32 endSpeed, s16 movePitch);`
+`struct Object* obj_spit_fire(s16 relativePosX, s16 relativePosY, s16 relativePosZ, f32 scale, enum ModelExtendedId modelId, f32 startSpeed, f32 endSpeed, s16 movePitch);`
 
 [:arrow_up_small:](#)
 

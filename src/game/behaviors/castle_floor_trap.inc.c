@@ -16,8 +16,8 @@ void bhv_floor_trap_in_castle_loop(void) {
 
 void bhv_castle_floor_trap_init(void) {
     struct Object *sp2C;
-    sp2C = spawn_object_relative(0, -358, 0, 0, o, MODEL_CASTLE_BOWSER_TRAP, bhvFloorTrapInCastle);
-    sp2C = spawn_object_relative(0, 358, 0, 0, o, MODEL_CASTLE_BOWSER_TRAP, bhvFloorTrapInCastle);
+    sp2C = spawn_object_relative(0, -358, 0, 0, o, E_MODEL_CASTLE_BOWSER_TRAP, bhvFloorTrapInCastle);
+    sp2C = spawn_object_relative(0, 358, 0, 0, o, E_MODEL_CASTLE_BOWSER_TRAP, bhvFloorTrapInCastle);
     if (sp2C == NULL) { return; }
     sp2C->oMoveAngleYaw += 0x8000;
 }

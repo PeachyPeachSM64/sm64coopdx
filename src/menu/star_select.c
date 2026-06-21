@@ -104,7 +104,7 @@ void bhv_act_selector_star_type_loop(void) {
 void render_100_coin_star(u8 stars) {
     if ((stars & (1 << 6))) {
         // If the 100 coin star has been collected, create a new star selector next to the coin score.
-        sStarSelectorModels[6] = spawn_object_abs_with_rot(gCurrentObject, 0, MODEL_STAR,
+        sStarSelectorModels[6] = spawn_object_abs_with_rot(gCurrentObject, 0, E_MODEL_STAR,
                                                         bhvActSelectorStarType, 370, 24, -300, 0, 0, 0);
         if (sStarSelectorModels[6] == NULL) { return; }
         sStarSelectorModels[6]->oStarSelectorSize = 0.8;
@@ -122,16 +122,16 @@ void bhv_act_selector_init(void) {
     if (gCurrCourseNum == 0) { return; }
 
     s16 i = 0;
-    s32 selectorModelIDs[10] = { 0 };
+    enum ModelExtendedId selectorModelIDs[10] = { 0 };
     u8 stars = save_file_get_star_flags(gCurrSaveFileNum - 1, gCurrCourseNum - 1);
 
     sVisibleStars = 0;
     while (i != sObtainedStars) {
         if (stars & (1 << sVisibleStars)) { // Star has been collected
-            selectorModelIDs[sVisibleStars] = MODEL_STAR;
+            selectorModelIDs[sVisibleStars] = E_MODEL_STAR;
             i++;
         } else { // Star has not been collected
-            selectorModelIDs[sVisibleStars] = MODEL_TRANSPARENT_STAR;
+            selectorModelIDs[sVisibleStars] = E_MODEL_TRANSPARENT_STAR;
             // If this is the first star that has not been collected, set
             // the default selection to this star.
             if (sInitSelectedActNum == 0) {
@@ -144,7 +144,7 @@ void bhv_act_selector_init(void) {
 
     // If the stars have been collected in order so far, show the next star.
     if (sVisibleStars == sObtainedStars && sVisibleStars != 6) {
-        selectorModelIDs[sVisibleStars] = MODEL_TRANSPARENT_STAR;
+        selectorModelIDs[sVisibleStars] = E_MODEL_TRANSPARENT_STAR;
         sInitSelectedActNum = sVisibleStars + 1;
         sSelectableStarIndex = sVisibleStars;
         sVisibleStars++;

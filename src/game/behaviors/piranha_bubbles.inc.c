@@ -102,7 +102,7 @@ void bhv_piranha_plant_bubble_loop(void) {
 
             // Spawn 15 small bubbles to make it look like this bubble burst.
             for (i = 0; i < 15; i++) {
-                try_to_spawn_object(0, 1.0f, o, MODEL_BUBBLE, bhvPiranhaPlantWakingBubbles);
+                try_to_spawn_object(0, 1.0f, o, E_MODEL_BUBBLE, bhvPiranhaPlantWakingBubbles);
             }
 
             o->oAction = PIRANHA_PLANT_BUBBLE_ACT_IDLE;

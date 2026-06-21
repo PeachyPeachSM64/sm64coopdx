@@ -5,7 +5,7 @@ extern "C" {
 }
 
 #define common_constant(x) if (_Arg == #x) { return (s64) (x); }
-#define common_legacy_constant(x, y) if (_Arg == #x) { return (BehaviorScript) (y); }
+#define common_legacy_constant(x, y) if (_Arg == #x) { return (s64) (y); }
 
 s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found) {
     *found = true;
@@ -567,7 +567,7 @@ s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found) {
     return 0;
 }
 
-s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool *found) {
+s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool allowExtendedModels, bool *found) {
     *found = true;
 
     common_constant(ACT_1);
@@ -1031,6 +1031,16 @@ s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool *found) {
     common_constant(MODEL_WARIOS_WING_CAP);
     common_constant(MODEL_WARIOS_WINGED_METAL_CAP);
     common_constant(MODEL_ERROR_MODEL);
+
+    if (allowExtendedModels) {
+#define MODEL_EXTENDED_GEO(_modelId_, ...) if (_Arg == #_modelId_) { return (s64) (_modelId_); }
+#define MODEL_EXTENDED_DL(_modelId_, ...) if (_Arg == #_modelId_) { return (s64) (_modelId_); }
+#define MODEL_EXTENDED_LVL(...)
+#include "dynos_models_builtin.inl"
+#undef MODEL_EXTENDED_GEO
+#undef MODEL_EXTENDED_DL
+#undef MODEL_EXTENDED_LVL
+    }
 
     *found = false;
     return 0;

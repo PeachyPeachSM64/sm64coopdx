@@ -22,7 +22,7 @@ void bhv_bubble_cannon_barrel_loop(void) {
                 if (o->oForwardVel == 0.0f) {
                     o->oForwardVel = 35.0f;
 
-                    val04 = spawn_object(o, MODEL_WATER_BOMB, bhvWaterBomb);
+                    val04 = spawn_object(o, E_MODEL_WATER_BOMB, bhvWaterBomb);
                     if (val04 != NULL) {
                         val04->oForwardVel = -100.0f;
                         val04->header.gfx.scale[1] = 1.7f;
@@ -38,7 +38,7 @@ void bhv_bubble_cannon_barrel_loop(void) {
 }
 
 void water_bomb_cannon_act_0(void) {
-    spawn_object(o, MODEL_CANNON_BARREL, bhvCannonBarrelBubbles);
+    spawn_object(o, E_MODEL_CANNON_BARREL, bhvCannonBarrelBubbles);
     cur_obj_unhide();
 
     o->oAction = 1;

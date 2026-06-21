@@ -53,6 +53,7 @@ constants_files = [
     "src/pc/gfx/gfx_pc.h",
     "src/engine/surface_load.h",
     "src/pc/lua/utils/smlua_audio_utils.h",
+    "data/dynos_models.h",
 ]
 
 # For each file, expose only these constants
@@ -119,11 +120,26 @@ constants_blacklist = { "__name__": "constants_blacklist",
     "src/pc/mods/mod_fs.h": [ "INT_TYPE_MAX", "FLOAT_TYPE_MAX", "FILE_SEEK_MAX" ],
     "src/engine/surface_load.h": [ "NUM_CELLS" ],
     "src/pc/network/version.h": [ "VERSION_OFFSET" ],
+    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_DYNOS_PACK", "E_MODEL_MOD_ACTOR", "MAX_BUILTIN_LEVEL_GEOS", "MODEL_POOL_" ],
 }
 
 # For each file, expose these constants, but hide them from the documentation or VSCode autocomplete
 constants_hidden = { "__name__": "constants_hidden",
     "interaction.h": [ "INTERACT_UNKNOWN_08" ],
+}
+
+# Enums that rely on an included file to define them fully
+# Format is:
+# - filename
+#   - struct name
+#     - macro name: constant position in macro (starts at 1)
+constants_enums_with_include = {
+    "data/dynos_models.h": {
+        "ModelExtendedId": {
+            "MODEL_EXTENDED_GEO": 1,
+            "MODEL_EXTENDED_DL": 1,
+        }
+    },
 }
 
 #############
@@ -245,7 +261,7 @@ functions_blacklist = { "__name__": "functions_blacklist",
     "src/game/sound_init.h":                    [ "_loop_", "thread4_", "set_sound_mode" ],
     "src/pc/network/network_utils.h":           [ "network_get_player_text_color[^_]" ],
     "src/pc/network/network_player.h":          [ "_init", "_connected[^_]", "_shutdown", "_disconnected", "_update", "construct_player_popup", "network_player_name_valid" ],
-    "src/game/object_helpers.c":                [ "spawn_obj", "^bhv_", "geo_", "abs[fi]", "^bit_shift", "_debug$", "stub_", "_set_model", "cur_obj_set_direction_table", "cur_obj_progress_direction_table", "bit_shift_left" ],
+    "src/game/object_helpers.c":                [ "spawn_obj", "^bhv_", "geo_", "abs[fi]", "^bit_shift", "_debug$", "stub_", "cur_obj_set_direction_table", "cur_obj_progress_direction_table", "bit_shift_left" ],
     "src/game/obj_behaviors.c":                 [ "debug_", "geo_", "turn_obj_away_from_surface"],
     "src/game/obj_behaviors_2.c":               [ "wiggler_jumped_on_attack_handler", "huge_goomba_weakly_attacked" ],
     "src/game/spawn_sound.h":                   [ "exec_anim_sound_state", "calc_dist_to_volume_range" ],

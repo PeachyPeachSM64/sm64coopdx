@@ -170,7 +170,7 @@ void bhv_unagi_loop(void) {
         o->oUnagiUnk1AC = 99999.0f;
         if (distanceToPlayer < 3000.0f) {
             for (val04 = -4; val04 < 4; val04++) {
-                spawn_object_relative(val04, 0, 0, 0, o, MODEL_NONE, bhvUnagiSubobject);
+                spawn_object_relative(val04, 0, 0, 0, o, E_MODEL_NONE, bhvUnagiSubobject);
             }
             o->oUnagiUnk1B2 = 1;
         }

@@ -88,7 +88,7 @@ static void mr_blizzard_act_spawn_snowball(void) {
     if (o->oMrBlizzardHeldObj == NULL && cur_obj_init_anim_check_frame(0, 5)) {
         o->oMrBlizzardHeldObj =
             spawn_object_relative(0, -70, (s32)(o->oMrBlizzardGraphYOffset + 153.0f), 0, o,
-                                  MODEL_WHITE_PARTICLE, bhvMrBlizzardSnowball);
+                                  E_MODEL_WHITE_PARTICLE, bhvMrBlizzardSnowball);
     } else if (cur_obj_check_anim_frame(10)) {
         o->prevObj = o->oMrBlizzardHeldObj;
     } else if (cur_obj_check_if_near_animation_end()) {

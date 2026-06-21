@@ -27,7 +27,7 @@ void bhv_water_air_bubble_loop(void) {
         cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_QUIET_BUBBLE);
         obj_mark_for_deletion(o);
         for (i = 0; i < 30; i++)
-            spawn_object(o, MODEL_BUBBLE, bhvBubbleMaybe);
+            spawn_object(o, E_MODEL_BUBBLE, bhvBubbleMaybe);
     }
     if (find_water_level(o->oPosX, o->oPosZ) < o->oPosY)
         obj_mark_for_deletion(o);
@@ -64,7 +64,7 @@ void bhv_small_water_wave_loop(void) {
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
         o->oPosY += 5.0f;
         if (gFreeObjectList.next != NULL)
-            spawn_object(o, MODEL_SMALL_WATER_SPLASH, bhvObjectWaterSplash);
+            spawn_object(o, E_MODEL_SMALL_WATER_SPLASH, bhvObjectWaterSplash);
     }
     if (o->oInteractStatus & INT_STATUS_INTERACTED)
         obj_mark_for_deletion(o);
@@ -122,7 +122,7 @@ void bhv_particle_loop() {
     scale_bubble_sin();
     if (o->oPosY > sp24 && o->oTimer) {
         obj_mark_for_deletion(o);
-        try_to_spawn_object(5, 0, o, MODEL_SMALL_WATER_SPLASH, bhvObjectWaterSplash);
+        try_to_spawn_object(5, 0, o, E_MODEL_SMALL_WATER_SPLASH, bhvObjectWaterSplash);
     }
 }
 
@@ -135,11 +135,11 @@ void bhv_small_bubbles_loop(void) {
 void bhv_fish_group_loop(void) {
     if (gMarioCurrentRoom == 15 || gMarioCurrentRoom == 7)
         if (gGlobalTimer & 1)
-            spawn_object(o, MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticleBubbles);
+            spawn_object(o, E_MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticleBubbles);
 }
 
 void bhv_water_waves_init(void) {
     s32 sp1C;
     for (sp1C = 0; sp1C < 3; sp1C++)
-        spawn_object(o, MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticle);
+        spawn_object(o, E_MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticle);
 }

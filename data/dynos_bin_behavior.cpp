@@ -789,7 +789,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found) {
     bhv_legacy_constant(id_bhvLargeFishGroup, id_bhvFishSpawner);
 
     // Model constants
-    s64 cModelConstant = DynOS_Common_ParseModelConstants(_Arg, found);
+    s64 cModelConstant = DynOS_Common_ParseModelConstants(_Arg, true, found);
     if (*found) { return cModelConstant; }
     *found = true; // reset found value
 

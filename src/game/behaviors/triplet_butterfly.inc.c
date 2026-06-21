@@ -29,7 +29,7 @@ static void triplet_butterfly_act_init(void) {
     if (butterflyNum != 0 || o->oDistanceToMario < 200.0f) {
         if (butterflyNum == 0) {
             for (i = 1; i <= 2; i++) {
-                spawn_object_relative(i, 0, 0, 0, o, MODEL_BUTTERFLY, bhvTripletButterfly);
+                spawn_object_relative(i, 0, 0, 0, o, E_MODEL_BUTTERFLY, bhvTripletButterfly);
             }
 
             o->oTripletButterflySelectedButterfly = random_u16() % 3;
@@ -87,7 +87,7 @@ static void triplet_butterfly_act_activate(void) {
     if (!BHV_ARR_CHECK(sTripletButterflyActivationData, o->oTripletButterflyType, struct TripletButterflyActivationData)) { return; }
     if (o->oTimer > 20) {
         if (o->oTripletButterflyModel == 0) {
-            spawn_object_relative_with_scale(0, 0, -40, 0, 1.5f, o, MODEL_SMOKE, bhvWhitePuffSmoke2);
+            spawn_object_relative_with_scale(0, 0, -40, 0, 1.5f, o, E_MODEL_SMOKE, bhvWhitePuffSmoke2);
             o->oTripletButterflyModel = sTripletButterflyActivationData[o->oTripletButterflyType].modelId;
             cur_obj_set_model(o->oTripletButterflyModel);
             obj_set_billboard(o);
@@ -119,7 +119,7 @@ static void triplet_butterfly_act_explode(void) {
 
     if (o->oAction == -1 || (o->oMoveFlags & OBJ_MOVE_HIT_WALL) || o->oTimer >= 158) {
         o->oPosY += o->oGraphYOffset;
-        spawn_object(o, MODEL_EXPLOSION, bhvExplosion);
+        spawn_object(o, E_MODEL_EXPLOSION, bhvExplosion);
         obj_mark_for_deletion(o);
     } else {
         if (o->oTimer > 120) {

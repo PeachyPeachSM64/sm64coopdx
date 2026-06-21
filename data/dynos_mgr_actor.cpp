@@ -58,7 +58,7 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     }
 
     // Load the graph node
-    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_NONE, MODEL_POOL_SESSION, geoLayout, aActorName, false);
+    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_MOD_ACTOR, MODEL_POOL_SESSION, geoLayout, aActorName, false);
     if (!graphNode) {
         PrintError("  ERROR: Couldn't load graph node for \"%s\"", actorName.c_str());
         return false;

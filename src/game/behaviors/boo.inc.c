@@ -126,7 +126,7 @@ void bhv_courtyard_boo_triplet_init(void) {
             sCourtyardBooTripletPositions[i][1],
             sCourtyardBooTripletPositions[i][2],
             o,
-            MODEL_BOO,
+            E_MODEL_BOO,
             bhvGhostHuntBoo
         );
         if (boo == NULL) { continue; }
@@ -707,9 +707,9 @@ static void big_boo_act_4(void) {
 
             struct Object* spawnedBridge = cur_obj_nearest_object_with_behavior(bhvBooBossSpawnedBridge);
             if (spawnedBridge == NULL) {
-                spawn_object_relative(0, 0, 0, 0, o, MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
-                spawn_object_relative(1, 0, 0, -200, o, MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
-                spawn_object_relative(2, 0, 0, 200, o, MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
+                spawn_object_relative(0, 0, 0, 0, o, E_MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
+                spawn_object_relative(1, 0, 0, -200, o, E_MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
+                spawn_object_relative(2, 0, 0, 200, o, E_MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
             }
 
             obj_mark_for_deletion(o);
@@ -739,9 +739,9 @@ void big_boo_on_forget(void) {
         obj_set_pos(o, 973, 0, 717);
         obj_set_angle(o, 0, 0, 0);
 
-        spawn_object_relative(0, 0, 0, 0, o, MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
-        spawn_object_relative(1, 0, 0, -200, o, MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
-        spawn_object_relative(2, 0, 0, 200, o, MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
+        spawn_object_relative(0, 0, 0, 0, o, E_MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
+        spawn_object_relative(1, 0, 0, -200, o, E_MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
+        spawn_object_relative(2, 0, 0, 200, o, E_MODEL_BBH_STAIRCASE_STEP, bhvBooBossSpawnedBridge);
     }
 }
 
@@ -828,7 +828,7 @@ void bhv_boo_with_cage_init(void) {
         return;
     }
 
-    struct Object *cage = spawn_object(o, MODEL_HAUNTED_CAGE, bhvBooCage);
+    struct Object *cage = spawn_object(o, E_MODEL_HAUNTED_CAGE, bhvBooCage);
     if (cage == NULL) { return; }
 
     cage->oBehParams = o->oBehParams;
@@ -869,7 +869,7 @@ void bhv_merry_go_round_boo_manager_loop(void) {
                 if (player == gMarioObjects[0] && o->oMerryGoRoundBooManagerNumBoosKilled < 5) {
                     if (o->oMerryGoRoundBooManagerNumBoosSpawned < 5) {
                         if (o->oMerryGoRoundBooManagerNumBoosSpawned - o->oMerryGoRoundBooManagerNumBoosKilled < 2) {
-                            struct Object* boo = spawn_object(o, MODEL_BOO, bhvMerryGoRoundBoo);
+                            struct Object* boo = spawn_object(o, E_MODEL_BOO, bhvMerryGoRoundBoo);
                             if (boo != NULL) {
                                 sync_object_set_id(boo);
                                 struct Object* spawn_objects[] = { boo };
@@ -887,7 +887,7 @@ void bhv_merry_go_round_boo_manager_loop(void) {
 
                 if (o->oMerryGoRoundBooManagerNumBoosKilled > 4) {
                     if (player == gMarioObjects[0]) {
-                        struct Object* boo = spawn_object(o, MODEL_BOO, bhvMerryGoRoundBigBoo);
+                        struct Object* boo = spawn_object(o, E_MODEL_BOO, bhvMerryGoRoundBigBoo);
                         if (boo != NULL) {
                             obj_copy_behavior_params(boo, o);
 

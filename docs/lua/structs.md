@@ -391,11 +391,11 @@
 | hudHead | `integer` | read-only |
 | hudHeadTexture | [TextureInfo](structs.md#TextureInfo) | read-only |
 | cameraHudHead | `integer` | read-only |
-| modelId | `integer` | read-only |
-| capModelId | `integer` | read-only |
-| capMetalModelId | `integer` | read-only |
-| capWingModelId | `integer` | read-only |
-| capMetalWingModelId | `integer` | read-only |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
+| capModelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
+| capMetalModelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
+| capWingModelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
+| capMetalWingModelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
 | capEnemyLayer | `integer` | read-only |
 | capEnemyGfx | `Pointer` <`Gfx`> | read-only |
 | capEnemyDecalGfx | `Pointer` <`Gfx`> | read-only |
@@ -2872,7 +2872,7 @@
 | ----- | ---- | ------ |
 | behParam | `integer` |  |
 | count | `integer` |  |
-| model | `integer` | read-only |
+| model | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
 | offsetY | `integer` |  |
 | forwardVelBase | `integer` |  |
 | forwardVelRange | `integer` |  |
@@ -3157,7 +3157,7 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | flags | `integer` |  |
-| model | `integer` | read-only |
+| model | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) | read-only |
 | behavior | `Pointer` <`BehaviorScript`> | read-only |
 | moveAngleRange | `integer` |  |
 | moveRange | `integer` |  |

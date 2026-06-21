@@ -20,7 +20,7 @@ void bhv_lll_floating_wood_bridge_loop(void) {
     switch (o->oAction) {
         case 0:
             for (i = 1; i < 4; i++) {
-                sp3C = spawn_object_relative(0, (i - 2) * 300, 0, 0, o, MODEL_LLL_WOOD_BRIDGE,
+                sp3C = spawn_object_relative(0, (i - 2) * 300, 0, 0, o, E_MODEL_LLL_WOOD_BRIDGE,
                                                 bhvLllWoodPiece);
                 if (sp3C == NULL) { continue; }
                 sp3C->oLllWoodPieceOscillationTimer = i * 4096;

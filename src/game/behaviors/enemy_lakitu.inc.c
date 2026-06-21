@@ -28,7 +28,7 @@ static void enemy_lakitu_act_uninitialized(void) {
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 25000;
 
     if (distanceToPlayer < 2000.0f) {
-        spawn_object_relative_with_scale(CLOUD_BP_LAKITU_CLOUD, 0, 0, 0, 2.0f, o, MODEL_MIST, bhvCloud);
+        spawn_object_relative_with_scale(CLOUD_BP_LAKITU_CLOUD, 0, 0, 0, 2.0f, o, E_MODEL_MIST, bhvCloud);
 
         cur_obj_unhide();
         o->oAction = ENEMY_LAKITU_ACT_MAIN;
@@ -125,7 +125,7 @@ static void enemy_lakitu_sub_act_no_spiny(void) {
                && abs_angle_diff(angleToPlayer, o->oFaceAngleYaw) < 0x4000) {
 
         if (marioState && marioState->playerIndex == 0) {
-            struct Object* spiny = spawn_object(o, MODEL_SPINY_BALL, bhvSpiny);
+            struct Object* spiny = spawn_object(o, E_MODEL_SPINY_BALL, bhvSpiny);
             if (spiny != NULL) {
                 o->prevObj = spiny;
                 spiny->oAction = SPINY_ACT_HELD_BY_LAKITU;

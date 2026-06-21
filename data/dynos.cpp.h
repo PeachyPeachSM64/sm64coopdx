@@ -990,6 +990,7 @@ struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enu
 struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, struct GraphNode *aNode);
 struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId);
 enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode);
+const char *DynOS_Model_GetName(enum ModelExtendedId aModelId);
 enum ModelPool DynOS_Model_GetModelPool(struct GraphNode *aNode);
 void DynOS_Model_ClearPool(enum ModelPool aModelPool);
 
@@ -1137,7 +1138,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found);
 s64 DynOS_Bhv_ParseBehaviorIntegerScriptConstants(const String &_Arg, bool *found);
 
 s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found);
-s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool *found);
+s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool allowExtendedModels, bool *found);
 
 bool DynOS_Bin_IsCompressed(const SysPath &aFilename);
 bool DynOS_Bin_Compress(const SysPath &aFilename);

@@ -12,7 +12,7 @@
  */
 void bhv_beta_chest_bottom_init(void) {
     // Set the object's model
-    cur_obj_set_model(smlua_model_util_load(E_MODEL_TREASURE_CHEST_BASE));
+    cur_obj_set_model(E_MODEL_TREASURE_CHEST_BASE);
 
     // ??? Pointless code?
     // Maybe chests were originally intended to have random yaws.
@@ -24,7 +24,7 @@ void bhv_beta_chest_bottom_init(void) {
     o->oMoveAngleYaw = 0;
 
     // Spawn the chest lid 97 units in the +Y direction and 77 units in the -Z direction.
-    spawn_object_relative(0, 0, 97, -77, o, MODEL_TREASURE_CHEST_LID, bhvBetaChestLid);
+    spawn_object_relative(0, 0, 97, -77, o, E_MODEL_TREASURE_CHEST_LID, bhvBetaChestLid);
 }
 
 /**
@@ -52,7 +52,7 @@ void bhv_beta_chest_lid_loop(void) {
         case BETA_CHEST_ACT_OPENING:
             if (o->oTimer == 0) {
                 // Spawn the bubble 80 units in the -Y direction and 120 units in the +Z direction.
-                spawn_object_relative(0, 0, -80, 120, o, MODEL_BUBBLE, bhvWaterAirBubble);
+                spawn_object_relative(0, 0, -80, 120, o, E_MODEL_BUBBLE, bhvWaterAirBubble);
                 play_sound(SOUND_GENERAL_CLAM_SHELL1, o->header.gfx.cameraToObject);
             }
 

@@ -85,6 +85,7 @@ struct GraphNode *dynos_model_load_display_list(enum ModelExtendedId modelId, en
 struct GraphNode *dynos_model_load_graph_node(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, struct GraphNode *node);
 struct GraphNode *dynos_model_get_graph_node(enum ModelExtendedId modelId);
 enum ModelExtendedId dynos_model_get_id(struct GraphNode *node);
+const char *dynos_model_get_name(enum ModelExtendedId modelId);
 void dynos_model_clear_pool(enum ModelPool modelPool);
 
 // -- gfx -- //

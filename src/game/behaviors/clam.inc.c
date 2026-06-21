@@ -48,7 +48,7 @@ void clam_act_1(void) {
             val04 = (s16)(100.0f * sins(val06));
             val02 = (s16)(100.0f * coss(val06));
 
-            spawn_object_relative(0, val04, 30, val02, o, MODEL_BUBBLE, bhvBubbleMaybe);
+            spawn_object_relative(0, val04, 30, val02, o, E_MODEL_BUBBLE, bhvBubbleMaybe);
         }
     } else if (cur_obj_check_anim_frame(30)) {
         cur_obj_become_intangible();

@@ -160,7 +160,7 @@ void bhv_bubba_loop(void) {
 
     if (o->oMoveFlags & OBJ_MOVE_MASK_IN_WATER) {
         if (o->oMoveFlags & OBJ_MOVE_ENTERED_WATER) {
-            struct Object *sp38 = spawn_object(o, MODEL_WATER_SPLASH, bhvWaterSplash);
+            struct Object *sp38 = spawn_object(o, E_MODEL_WATER_SPLASH, bhvWaterSplash);
             if (sp38 != NULL) {
                 obj_scale(sp38, 3.0f);
             }
@@ -173,7 +173,7 @@ void bhv_bubba_loop(void) {
                 s16 sp36 = random_u16();
                 o->oBubbaUnk10C -= 1.0f;
                 spawn_object_relative(0, 150.0f * coss(sp36), 0x64, 150.0f * sins(sp36), o,
-                                      MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticleSnow);
+                                      E_MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticleSnow);
             }
         }
 

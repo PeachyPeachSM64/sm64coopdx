@@ -31,7 +31,7 @@ void bhv_snowmans_bottom_init(void) {
     if (sp34 != NULL) {
         o->parentObj = sp34;
     }
-    spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvSnowmansBodyCheckpoint, -402, 461, -2898, 0, 0, 0);
+    spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvSnowmansBodyCheckpoint, -402, 461, -2898, 0, 0, 0);
 
     sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS);
     sync_object_init_field(o, o->oAction);
@@ -104,7 +104,7 @@ void snowmans_bottom_act_2(void) {
     }
 
     if (o->oTimer == 200) {
-        create_respawner(MODEL_CCM_SNOWMAN_BASE, bhvSnowmansBottom, 3000);
+        create_respawner(E_MODEL_CCM_SNOWMAN_BASE, bhvSnowmansBottom, 3000);
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
@@ -189,7 +189,7 @@ void bhv_snowmans_head_init(void) {
     o->oBuoyancy = 2.0f;
 
     if ((sp37 & (1 << sp36)) && gCurrActNum != sp36 + 1) {
-        spawn_object_abs_with_rot(o, 0, MODEL_CCM_SNOWMAN_BASE, bhvBigSnowmanWhole, -4230, -1344, 1813,
+        spawn_object_abs_with_rot(o, 0, E_MODEL_CCM_SNOWMAN_BASE, bhvBigSnowmanWhole, -4230, -1344, 1813,
                                   0, 0, 0);
         o->oPosX = -4230.0f;
         o->oPosY = -994.0f;

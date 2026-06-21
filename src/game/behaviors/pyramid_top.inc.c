@@ -14,10 +14,10 @@
  * Spawn the four pillars' touch detectors.
  */
 void bhv_pyramid_top_init(void) {
-    spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvPyramidPillarTouchDetector, 1789, 1024, 764, 0, 0, 0);
-    spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvPyramidPillarTouchDetector, 1789, 896, -2579, 0, 0, 0);
-    spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvPyramidPillarTouchDetector, -5883, 1024, -2579, 0, 0, 0);
-    spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvPyramidPillarTouchDetector, -5883, 1024, 764, 0, 0, 0);
+    spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvPyramidPillarTouchDetector, 1789, 1024, 764, 0, 0, 0);
+    spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvPyramidPillarTouchDetector, 1789, 896, -2579, 0, 0, 0);
+    spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvPyramidPillarTouchDetector, -5883, 1024, -2579, 0, 0, 0);
+    spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvPyramidPillarTouchDetector, -5883, 1024, 764, 0, 0, 0);
 }
 
 /**
@@ -48,7 +48,7 @@ void bhv_pyramid_top_spinning(void) {
     // Every frame until 90 frames have passed, generate a pyramid fragment
     // with a random velocity and angle.
     if (o->oTimer < 90) {
-        pyramidFragment = spawn_object(o, MODEL_DIRT_ANIMATION, bhvPyramidTopFragment);
+        pyramidFragment = spawn_object(o, E_MODEL_DIRT_ANIMATION, bhvPyramidTopFragment);
         if (pyramidFragment != NULL) {
             pyramidFragment->oForwardVel = random_float() * 10.0f + 20.0f;
             pyramidFragment->oMoveAngleYaw = random_u16();
@@ -71,7 +71,7 @@ void bhv_pyramid_top_explode(void) {
 
     // Generate 30 pyramid fragments with random properties.
     for (s16 i = 0; i < 30; i++) {
-        struct Object *pyramidFragment = spawn_object(o, MODEL_DIRT_ANIMATION, bhvPyramidTopFragment);
+        struct Object *pyramidFragment = spawn_object(o, E_MODEL_DIRT_ANIMATION, bhvPyramidTopFragment);
         if (pyramidFragment != NULL) {
             pyramidFragment->oForwardVel = random_float() * 50 + 80;
             pyramidFragment->oVelY = random_float() * 80 + 20;

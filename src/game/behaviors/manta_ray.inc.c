@@ -34,7 +34,7 @@ static struct ObjectHitbox sMantaRayHitbox = {
  */
 void bhv_manta_ray_init(void) {
     struct Object *ringManager;
-    ringManager = spawn_object(o, MODEL_NONE, bhvMantaRayRingManager);
+    ringManager = spawn_object(o, E_MODEL_NONE, bhvMantaRayRingManager);
     if (ringManager != NULL) {
         o->parentObj = ringManager;
     }
@@ -96,7 +96,7 @@ static void manta_ray_act_spawn_ring(void) {
     }
 
     if (o->oTimer == 0 || o->oTimer == 50 || o->oTimer == 150 || o->oTimer == 200 || o->oTimer == 250) {
-        ring = spawn_object(o, MODEL_WATER_RING, bhvMantaRayWaterRing);
+        ring = spawn_object(o, E_MODEL_WATER_RING, bhvMantaRayWaterRing);
         if (ring != NULL) {
             ring->oFaceAngleYaw = o->oMoveAngleYaw;
             ring->oFaceAnglePitch = o->oMoveAnglePitch + 0x4000;

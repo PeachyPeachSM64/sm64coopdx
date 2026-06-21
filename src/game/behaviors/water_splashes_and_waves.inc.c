@@ -61,7 +61,7 @@ void bhv_water_droplet_loop(void) {
     f32 waterLevel = find_water_level(o->oPosX, o->oPosZ);
 
     if (o->oTimer == 0) {
-        if (cur_obj_has_model(MODEL_FISH))
+        if (cur_obj_has_model(E_MODEL_FISH))
             o->header.gfx.node.flags &= ~GRAPH_RENDER_BILLBOARD;
         else
             o->header.gfx.node.flags |= GRAPH_RENDER_BILLBOARD;
@@ -74,7 +74,7 @@ void bhv_water_droplet_loop(void) {
     if (o->oVelY < 0.0f) {
         if (waterLevel > o->oPosY) {
             // Create the smaller splash
-            struct Object* small = try_to_spawn_object(0, 1.0f, o, MODEL_SMALL_WATER_SPLASH, bhvWaterDropletSplash);
+            struct Object* small = try_to_spawn_object(0, 1.0f, o, E_MODEL_SMALL_WATER_SPLASH, bhvWaterDropletSplash);
 
             if (small != NULL) {
                 // immediately update render position

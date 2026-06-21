@@ -22,7 +22,7 @@ void bhv_donut_platform_spawner_update(void) {
             sDonutPlatformPositions[i][1],
             sDonutPlatformPositions[i][2],
             o,
-            MODEL_RR_DONUT_PLATFORM,
+            E_MODEL_RR_DONUT_PLATFORM,
             bhvDonutPlatform);
         if (platform == NULL) { continue; }
     }

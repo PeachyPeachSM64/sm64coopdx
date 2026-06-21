@@ -400,7 +400,7 @@ void obj_splash(s32 waterY, s32 objY) {
 
     // Spawns waves if near surface of water and plays a noise if entering.
     if ((f32)(waterY + 30) > o->oPosY && o->oPosY > (f32)(waterY - 30)) {
-        spawn_object(o, MODEL_IDLE_WATER_WAVE, bhvObjectWaterWave);
+        spawn_object(o, E_MODEL_IDLE_WATER_WAVE, bhvObjectWaterWave);
 
         if (o->oVelY < -20.0f) {
             cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_DIVING_INTO_WATER);
@@ -409,7 +409,7 @@ void obj_splash(s32 waterY, s32 objY) {
 
     // Spawns bubbles if underwater.
     if ((objY + 50) < waterY && (globalTimer & 0x1F) == 0) {
-        spawn_object(o, MODEL_WHITE_PARTICLE_SMALL, bhvObjectBubble);
+        spawn_object(o, E_MODEL_WHITE_PARTICLE_SMALL, bhvObjectBubble);
     }
 }
 
@@ -783,7 +783,7 @@ void obj_spawn_yellow_coins(struct Object *obj, s8 nCoins) {
 
     rng_position_init(obj->oPosX, obj->oPosY, obj->oPosZ);
     for (count = 0; count < nCoins; count++) {
-        coin = spawn_object(obj, MODEL_YELLOW_COIN, bhvMovingYellowCoin);
+        coin = spawn_object(obj, E_MODEL_YELLOW_COIN, bhvMovingYellowCoin);
         if (coin != NULL) {
             coin->oForwardVel = random_float() * 20;
             coin->oVelY = random_float() * 40 + 20;
@@ -910,7 +910,7 @@ s8 obj_lava_death(void) {
 
     if ((o->oTimer % 8) == 0) {
         cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BULLY_EXPLODE_2);
-        deathSmoke = spawn_object(o, MODEL_SMOKE, bhvBobombBullyDeathSmoke);
+        deathSmoke = spawn_object(o, E_MODEL_SMOKE, bhvBobombBullyDeathSmoke);
         if (deathSmoke != NULL) {
             deathSmoke->oPosX += random_float() * 20.0f;
             deathSmoke->oPosY += random_float() * 20.0f;
@@ -925,7 +925,7 @@ s8 obj_lava_death(void) {
 /* |description|Spawns an orange number object relatively, such as those that count up for secrets|descriptionEnd| */
 void spawn_orange_number(s8 behParam, s16 relX, s16 relY, s16 relZ) {
     struct Object *orangeNumber;
-    orangeNumber = spawn_object_relative(behParam, relX, relY, relZ, o, MODEL_NUMBER, bhvOrangeNumber);
+    orangeNumber = spawn_object_relative(behParam, relX, relY, relZ, o, E_MODEL_NUMBER, bhvOrangeNumber);
     if (orangeNumber == NULL) { return; }
     orangeNumber->oPosY += 25.0f;
 }

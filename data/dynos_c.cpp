@@ -284,6 +284,10 @@ enum ModelExtendedId dynos_model_get_id(struct GraphNode *node) {
     return DynOS_Model_GetId(node);
 }
 
+const char *dynos_model_get_name(enum ModelExtendedId modelId) {
+    return DynOS_Model_GetName(modelId);
+}
+
 void dynos_model_clear_pool(enum ModelPool modelPool) {
     return DynOS_Model_ClearPool(modelPool);
 }

@@ -149,7 +149,7 @@ void wiggler_init_segments(void) {
 
         // Spawn each body part
         for (s32 i = 1; i <= 3; i++) {
-            struct Object *bodyPart = spawn_object_relative(i, 0, 0, 0, o, MODEL_WIGGLER_BODY, bhvWigglerBody);
+            struct Object *bodyPart = spawn_object_relative(i, 0, 0, 0, o, E_MODEL_WIGGLER_BODY, bhvWigglerBody);
             if (bodyPart != NULL) {
                 obj_init_animation_with_sound(bodyPart, (struct AnimationTable*)&wiggler_seg5_anims_0500C874, 0);
                 bodyPart->header.gfx.animInfo.animFrame = (23 * i) % 26 - 1;

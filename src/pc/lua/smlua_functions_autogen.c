@@ -25421,7 +25421,7 @@ int smlua_func_obj_spit_fire(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "obj_spit_fire"); return 0; }
     f32 scale = smlua_to_number(L, 4);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "obj_spit_fire"); return 0; }
-    s32 model = smlua_to_integer(L, 5);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 5);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 5, "obj_spit_fire"); return 0; }
     f32 startSpeed = smlua_to_number(L, 6);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 6, "obj_spit_fire"); return 0; }
@@ -25430,8 +25430,8 @@ int smlua_func_obj_spit_fire(lua_State* L) {
     s16 movePitch = smlua_to_integer(L, 8);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 8, "obj_spit_fire"); return 0; }
 
-    extern struct Object* obj_spit_fire(s16 relativePosX, s16 relativePosY, s16 relativePosZ, f32 scale, s32 model, f32 startSpeed, f32 endSpeed, s16 movePitch);
-    smlua_push_object(L, LOT_OBJECT, obj_spit_fire(relativePosX, relativePosY, relativePosZ, scale, model, startSpeed, endSpeed, movePitch), NULL);
+    extern struct Object* obj_spit_fire(s16 relativePosX, s16 relativePosY, s16 relativePosZ, f32 scale, enum ModelExtendedId modelId, f32 startSpeed, f32 endSpeed, s16 movePitch);
+    smlua_push_object(L, LOT_OBJECT, obj_spit_fire(relativePosX, relativePosY, relativePosZ, scale, modelId, startSpeed, endSpeed, movePitch), NULL);
 
     return 1;
 }
@@ -27138,6 +27138,116 @@ int smlua_func_cur_obj_get_dropped(lua_State* L) {
     return 1;
 }
 
+int smlua_func_cur_obj_set_model(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "cur_obj_set_model", 1, top);
+        return 0;
+    }
+
+    enum ModelExtendedId modelId = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "cur_obj_set_model"); return 0; }
+
+    extern void cur_obj_set_model(enum ModelExtendedId modelId);
+    cur_obj_set_model(modelId);
+
+    return 1;
+}
+
+int smlua_func_obj_set_model(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "obj_set_model", 2, top);
+        return 0;
+    }
+
+    struct Object* obj = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_set_model"); return 0; }
+    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_set_model"); return 0; }
+
+    extern void obj_set_model(struct Object *obj, enum ModelExtendedId modelId);
+    obj_set_model(obj, modelId);
+
+    return 1;
+}
+
+int smlua_func_cur_obj_has_model(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "cur_obj_has_model", 1, top);
+        return 0;
+    }
+
+    enum ModelExtendedId modelId = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "cur_obj_has_model"); return 0; }
+
+    extern s32 cur_obj_has_model(enum ModelExtendedId modelId);
+    lua_pushinteger(L, cur_obj_has_model(modelId));
+
+    return 1;
+}
+
+int smlua_func_obj_has_model(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "obj_has_model", 2, top);
+        return 0;
+    }
+
+    struct Object* obj = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_has_model"); return 0; }
+    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_has_model"); return 0; }
+
+    extern s32 obj_has_model(struct Object *obj, enum ModelExtendedId modelId);
+    lua_pushinteger(L, obj_has_model(obj, modelId));
+
+    return 1;
+}
+
+int smlua_func_cur_obj_get_model_id(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "cur_obj_get_model_id", 0, top);
+        return 0;
+    }
+
+
+    extern enum ModelExtendedId cur_obj_get_model_id();
+    lua_pushinteger(L, cur_obj_get_model_id());
+
+    return 1;
+}
+
+int smlua_func_obj_get_model_id(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "obj_get_model_id", 1, top);
+        return 0;
+    }
+
+    struct Object* obj = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_model_id"); return 0; }
+
+    extern enum ModelExtendedId obj_get_model_id(struct Object *obj);
+    lua_pushinteger(L, obj_get_model_id(obj));
+
+    return 1;
+}
+
 int smlua_func_mario_set_flag(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -27976,11 +28086,11 @@ int smlua_func_obj_spawn_loot_coins(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "obj_spawn_loot_coins"); return 0; }
     s16 posJitter = smlua_to_integer(L, 5);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 5, "obj_spawn_loot_coins"); return 0; }
-    s16 model = smlua_to_integer(L, 6);
+    enum ModelExtendedId modelId = smlua_to_integer(L, 6);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 6, "obj_spawn_loot_coins"); return 0; }
 
-    extern void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const BehaviorScript *coinBehavior, s16 posJitter, s16 model);
-    obj_spawn_loot_coins(obj, numCoins, baseYVel, coinBehavior, posJitter, model);
+    extern void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const BehaviorScript *coinBehavior, s16 posJitter, enum ModelExtendedId modelId);
+    obj_spawn_loot_coins(obj, numCoins, baseYVel, coinBehavior, posJitter, modelId);
 
     return 1;
 }
@@ -29300,24 +29410,6 @@ int smlua_func_cur_obj_end_dialog(lua_State* L) {
 
     extern void cur_obj_end_dialog(struct MarioState* m, s32 dialogFlags, s32 dialogResult);
     cur_obj_end_dialog(m, dialogFlags, dialogResult);
-
-    return 1;
-}
-
-int smlua_func_cur_obj_has_model(lua_State* L) {
-    if (L == NULL) { return 0; }
-
-    int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "cur_obj_has_model", 1, top);
-        return 0;
-    }
-
-    u16 modelID = smlua_to_integer(L, 1);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "cur_obj_has_model"); return 0; }
-
-    extern s32 cur_obj_has_model(u16 modelID);
-    lua_pushinteger(L, cur_obj_has_model(modelID));
 
     return 1;
 }
@@ -35043,61 +35135,6 @@ int smlua_func_obj_has_behavior_id(lua_State* L) {
     return 1;
 }
 
-int smlua_func_obj_has_model_extended(lua_State* L) {
-    if (L == NULL) { return 0; }
-
-    int top = lua_gettop(L);
-    if (top != 2) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "obj_has_model_extended", 2, top);
-        return 0;
-    }
-
-    struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_has_model_extended"); return 0; }
-    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_has_model_extended"); return 0; }
-
-    lua_pushinteger(L, obj_has_model_extended(o, modelId));
-
-    return 1;
-}
-
-int smlua_func_obj_get_model_id_extended(lua_State* L) {
-    if (L == NULL) { return 0; }
-
-    int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "obj_get_model_id_extended", 1, top);
-        return 0;
-    }
-
-    struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_get_model_id_extended"); return 0; }
-
-    lua_pushinteger(L, obj_get_model_id_extended(o));
-
-    return 1;
-}
-
-int smlua_func_obj_set_model_extended(lua_State* L) {
-    if (L == NULL) { return 0; }
-
-    int top = lua_gettop(L);
-    if (top != 2) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "obj_set_model_extended", 2, top);
-        return 0;
-    }
-
-    struct Object* o = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_set_model_extended"); return 0; }
-    enum ModelExtendedId modelId = smlua_to_integer(L, 2);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_set_model_extended"); return 0; }
-
-    obj_set_model_extended(o, modelId);
-
-    return 1;
-}
-
 int smlua_func_get_trajectory(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -38739,6 +38776,12 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "cur_obj_move_after_thrown_or_dropped", smlua_func_cur_obj_move_after_thrown_or_dropped);
     smlua_bind_function(L, "cur_obj_get_thrown_or_placed", smlua_func_cur_obj_get_thrown_or_placed);
     smlua_bind_function(L, "cur_obj_get_dropped", smlua_func_cur_obj_get_dropped);
+    smlua_bind_function(L, "cur_obj_set_model", smlua_func_cur_obj_set_model);
+    smlua_bind_function(L, "obj_set_model", smlua_func_obj_set_model);
+    smlua_bind_function(L, "cur_obj_has_model", smlua_func_cur_obj_has_model);
+    smlua_bind_function(L, "obj_has_model", smlua_func_obj_has_model);
+    smlua_bind_function(L, "cur_obj_get_model_id", smlua_func_cur_obj_get_model_id);
+    smlua_bind_function(L, "obj_get_model_id", smlua_func_obj_get_model_id);
     smlua_bind_function(L, "mario_set_flag", smlua_func_mario_set_flag);
     smlua_bind_function(L, "cur_obj_clear_interact_status_flag", smlua_func_cur_obj_clear_interact_status_flag);
     smlua_bind_function(L, "obj_mark_for_deletion", smlua_func_obj_mark_for_deletion);
@@ -38856,7 +38899,6 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "clear_time_stop_flags", smlua_func_clear_time_stop_flags);
     smlua_bind_function(L, "cur_obj_can_mario_activate_textbox", smlua_func_cur_obj_can_mario_activate_textbox);
     smlua_bind_function(L, "cur_obj_end_dialog", smlua_func_cur_obj_end_dialog);
-    smlua_bind_function(L, "cur_obj_has_model", smlua_func_cur_obj_has_model);
     smlua_bind_function(L, "cur_obj_align_gfx_with_floor", smlua_func_cur_obj_align_gfx_with_floor);
     smlua_bind_function(L, "mario_is_within_rectangle", smlua_func_mario_is_within_rectangle);
     smlua_bind_function(L, "cur_obj_shake_screen", smlua_func_cur_obj_shake_screen);
@@ -39214,9 +39256,6 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "spawn_sync_object", smlua_func_spawn_sync_object);
     smlua_bind_function(L, "spawn_non_sync_object", smlua_func_spawn_non_sync_object);
     smlua_bind_function(L, "obj_has_behavior_id", smlua_func_obj_has_behavior_id);
-    smlua_bind_function(L, "obj_has_model_extended", smlua_func_obj_has_model_extended);
-    smlua_bind_function(L, "obj_get_model_id_extended", smlua_func_obj_get_model_id_extended);
-    smlua_bind_function(L, "obj_set_model_extended", smlua_func_obj_set_model_extended);
     smlua_bind_function(L, "get_trajectory", smlua_func_get_trajectory);
     smlua_bind_function(L, "geo_get_current_object", smlua_func_geo_get_current_object);
     smlua_bind_function(L, "get_current_object", smlua_func_get_current_object);

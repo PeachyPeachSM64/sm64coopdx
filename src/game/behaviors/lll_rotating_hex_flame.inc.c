@@ -24,7 +24,7 @@ void fire_bar_spawn_flames(s16 a0) {
     f32 sp18 = coss(a0) * 200.0f;
     sp20 = (o->oBehParams2ndByte == 0) ? 4 : 3;
     for (i = 0; i < sp20; i++) {
-        sp2C = spawn_object(o, MODEL_RED_FLAME, bhvLllRotatingHexFlame);
+        sp2C = spawn_object(o, E_MODEL_RED_FLAME, bhvLllRotatingHexFlame);
         if (sp2C != NULL) {
             sp2C->oLllRotatingHexFlameUnkF4 += sp1C;
             sp2C->oLllRotatingHexFlameUnkF8 = o->oPosY - 200.0f;

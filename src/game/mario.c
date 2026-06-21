@@ -2287,7 +2287,7 @@ void init_single_mario(struct MarioState* m) {
     // cap will never be lying on the ground in coop
     /* Vec3s capPos;
     if (save_file_get_cap_pos(capPos)) {
-        struct Object *capObject = spawn_object(m->marioObj, MODEL_MARIOS_CAP, bhvNormalCap);
+        struct Object *capObject = spawn_object(m->marioObj, E_MODEL_MARIOS_CAP, bhvNormalCap);
 
         capObject->oPosX = capPos[0];
         capObject->oPosY = capPos[1];

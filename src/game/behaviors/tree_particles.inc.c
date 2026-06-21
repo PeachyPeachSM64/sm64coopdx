@@ -44,7 +44,7 @@ void bhv_snow_leaf_particle_spawn_init(void) {
     }
     if (isSnow) {
         if (random_float() < 0.5) {
-            obj = spawn_object(o, MODEL_WHITE_PARTICLE_DL, bhvTreeSnow);
+            obj = spawn_object(o, E_MODEL_WHITE_PARTICLE_DL, bhvTreeSnow);
             if (obj != NULL) {
                 scale = random_float();
                 obj_scale_xyz(obj, scale, scale, scale);
@@ -55,7 +55,7 @@ void bhv_snow_leaf_particle_spawn_init(void) {
         }
     } else {
         if (random_float() < 0.3) {
-            obj = spawn_object(o, MODEL_LEAVES, bhvTreeLeaf);
+            obj = spawn_object(o, E_MODEL_LEAVES, bhvTreeLeaf);
             if (obj != NULL) {
                 scale = random_float() * 3.0f;
                 obj_scale_xyz(obj, scale, scale, scale);

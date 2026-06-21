@@ -23,7 +23,7 @@ static void cloud_act_spawn_parts(void) {
 
     // Spawn the pieces of the cloud itself
     for (i = 0; i < 5; i++) {
-        cloudPart = spawn_object_relative(i, 0, 0, 0, o, MODEL_MIST, bhvCloudPart);
+        cloudPart = spawn_object_relative(i, 0, 0, 0, o, E_MODEL_MIST, bhvCloudPart);
 
         if (cloudPart != NULL) {
             obj_set_billboard(cloudPart);
@@ -32,7 +32,7 @@ static void cloud_act_spawn_parts(void) {
 
     if (o->oBehParams2ndByte == CLOUD_BP_FWOOSH) {
         // Spawn fwoosh's face
-        spawn_object_relative(5, 0, 0, 0, o, MODEL_FWOOSH, bhvCloudPart);
+        spawn_object_relative(5, 0, 0, 0, o, E_MODEL_FWOOSH, bhvCloudPart);
 
         cur_obj_scale(3.0f);
 

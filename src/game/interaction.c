@@ -980,7 +980,7 @@ u32 interact_star_or_key(struct MarioState *m, UNUSED u32 interactType, struct O
         }
 
         if (m->marioObj != NULL) {
-            spawn_object(m->marioObj, MODEL_NONE, bhvStarKeyCollectionPuffSpawner);
+            spawn_object(m->marioObj, E_MODEL_NONE, bhvStarKeyCollectionPuffSpawner);
         }
 
         o->oInteractStatus = INT_STATUS_INTERACTED;

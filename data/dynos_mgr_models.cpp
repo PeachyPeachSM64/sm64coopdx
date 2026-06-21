@@ -2,7 +2,62 @@
 #include "dynos.cpp.h"
 
 extern "C" {
+#include <assert.h>
+#include "sm64.h"
 #include "pc/debuglog.h"
+#include "actors/group0.h"
+#include "actors/group1.h"
+#include "actors/group2.h"
+#include "actors/group3.h"
+#include "actors/group4.h"
+#include "actors/group5.h"
+#include "actors/group6.h"
+#include "actors/group7.h"
+#include "actors/group8.h"
+#include "actors/group9.h"
+#include "actors/group10.h"
+#include "actors/group11.h"
+#include "actors/group12.h"
+#include "actors/group13.h"
+#include "actors/group14.h"
+#include "actors/group15.h"
+#include "actors/group16.h"
+#include "actors/group17.h"
+#include "actors/common0.h"
+#include "actors/common1.h"
+#include "actors/custom0.h"
+#include "actors/zcustom0.h"
+#include "levels/bob/header.h"
+#include "levels/wf/header.h"
+#include "levels/jrb/header.h"
+#include "levels/ccm/header.h"
+#include "levels/bbh/header.h"
+#include "levels/hmc/header.h"
+#include "levels/lll/header.h"
+#include "levels/ssl/header.h"
+#include "levels/ddd/header.h"
+#include "levels/sl/header.h"
+#include "levels/wdw/header.h"
+#include "levels/ttm/header.h"
+#include "levels/thi/header.h"
+#include "levels/ttc/header.h"
+#include "levels/rr/header.h"
+#include "levels/bitdw/header.h"
+#include "levels/bitfs/header.h"
+#include "levels/bits/header.h"
+#include "levels/bowser_1/header.h"
+#include "levels/bowser_2/header.h"
+#include "levels/bowser_3/header.h"
+#include "levels/pss/header.h"
+#include "levels/cotmc/header.h"
+#include "levels/totwc/header.h"
+#include "levels/vcutm/header.h"
+#include "levels/wmotr/header.h"
+#include "levels/sa/header.h"
+#include "levels/castle_grounds/header.h"
+#include "levels/castle_inside/header.h"
+#include "levels/castle_courtyard/header.h"
+#include "levels/menu/header.h"
 }
 
 enum ModelLoadType { MLT_GEO_LAYOUT, MLT_DISPLAY_LIST, MLT_GRAPH_NODE };
@@ -16,7 +71,7 @@ struct ModelExtendedData {
 
 public:
     inline ~ModelExtendedData() {
-        if (modelId >= E_MODEL_CUSTOM_START) {
+        if (modelId >= E_MODEL__CUSTOM_START_) {
             free((void *) name);
         }
     }
@@ -31,22 +86,66 @@ public:
     }
 };
 
-#include "dynos_models_builtin.inl"
-
 class ModelExtendedManager : NoCopy {
 
 public:
     inline ModelExtendedManager() {
-        DynOS_Model_InitModelsData(mData, mAssetToId);
+        size_t lvlGeoIndex = E_MODEL__LEVEL_GEO_START_;
+
+#define ASSET_TO_ID(_asset_, _modelId_) { \
+    if (_asset_ && !mAssetToId.count((const void *) _asset_)) { \
+        mAssetToId[(const void *) _asset_] = _modelId_; \
+    } \
+}
+
+#define MODEL_EXTENDED_GEO(_modelId_, _vanillaId_, _asset_) { \
+    mData[_modelId_] = { \
+        .modelId = _modelId_, \
+        .name    = #_asset_, \
+        .asset   = (const void *) _asset_, \
+        .layer   = 0xFF, \
+    }; \
+    ASSET_TO_ID(_asset_, _modelId_); \
+}
+
+#define MODEL_EXTENDED_DL(_modelId_, _vanillaId_, _asset_, _layer_) { \
+    mData[_modelId_] = { \
+        .modelId = _modelId_, \
+        .name    = #_asset_, \
+        .asset   = (const void *) _asset_, \
+        .layer   = _layer_, \
+    }; \
+    ASSET_TO_ID(_asset_, _modelId_); \
+}
+
+#define MODEL_EXTENDED_LVL(_asset_) { \
+    mData[(enum ModelExtendedId) lvlGeoIndex] = { \
+        .modelId = (enum ModelExtendedId) lvlGeoIndex, \
+        .name    = #_asset_, \
+        .asset   = (const void *) _asset_, \
+        .layer   = 0xFF, \
+    }; \
+    ASSET_TO_ID(_asset_, (enum ModelExtendedId) lvlGeoIndex); \
+    lvlGeoIndex++; \
+}
+
+#include "dynos_models_builtin.inl"
+
+#undef ASSET_TO_ID
+#undef MODEL_EXTENDED_GEO
+#undef MODEL_EXTENDED_DL
+#undef MODEL_EXTENDED_LVL
+
+        assert(lvlGeoIndex <= E_MODEL__LEVEL_GEO_END_);
     }
 
 public:
     template <typename EqualFunc>
-    struct ModelExtendedData *GetData(const EqualFunc& aEqualFunc, enum ModelExtendedId aModelIdStart, enum ModelExtendedId aModelIdEnd) {
+    struct ModelExtendedData *GetData(const EqualFunc& aEqualFunc, enum ModelExtendedId aModelIdStart = E_MODEL_NONE, enum ModelExtendedId aModelIdEnd = E_MODEL_NONE) {
         for (auto &kv : mData) {
             enum ModelExtendedId modelId = kv.first;
-            if (modelId < aModelIdStart) { continue; }
-            if (modelId >= aModelIdEnd) { break; }
+            if (aModelIdStart > E_MODEL_NONE && modelId < aModelIdStart) { continue; }
+            if (aModelIdEnd > E_MODEL_NONE && modelId >= aModelIdEnd) { break; }
 
             auto &data = kv.second;
             if (aEqualFunc(data)) {
@@ -58,7 +157,7 @@ public:
 
     struct ModelExtendedData *GetData(enum ModelExtendedId aModelId) {
         // Convert vanilla id to extended id
-        if (aModelId > E_MODEL_NONE && aModelId < E_MODEL_VANILLA_END) {
+        if (aModelId >= E_MODEL__VANILLA_MIN_ && aModelId <= E_MODEL__VANILLA_MAX_) {
             aModelId = mLoadedModelIds[aModelId];
         }
         auto itData = mData.find(aModelId);
@@ -94,10 +193,10 @@ public:
 
 private:
     void LoadVanillaId(enum ModelExtendedId aVanillaId, enum ModelExtendedId aModelId) {
-        if (aVanillaId > E_MODEL_NONE && aVanillaId < E_MODEL_VANILLA_END) {
+        if (aVanillaId >= E_MODEL__VANILLA_MIN_ && aVanillaId <= E_MODEL__VANILLA_MAX_) {
             mLoadedModelIds[aVanillaId] = aModelId;
         } else if (aVanillaId != E_MODEL_NONE) {
-            LOG_WARNING("[Models] LoadVanillaId: Loading an asset with a model extended id outside of the vanilla model slot range [%u, %u] has no effect: %u", E_MODEL_NONE + 1, E_MODEL_VANILLA_END - 1, aVanillaId);
+            LOG_WARNING("[Models] LoadVanillaId: Loading an asset with a model id outside of the vanilla model slot range [%u, %u] has no effect: %u", E_MODEL__VANILLA_MIN_, E_MODEL__VANILLA_MAX_, aVanillaId);
         }
     }
 
@@ -106,18 +205,21 @@ private:
         // Area layout
         // Always load in specific ids
         if (isAreaLayout) {
-            if (aModelId >= E_MODEL_LEVEL_AREA_START && aModelId < E_MODEL_LEVEL_AREA_END) {
+            if (aModelId >= E_MODEL__LEVEL_AREA_START_ && aModelId < E_MODEL__LEVEL_AREA_END_) {
                 return &mData[aModelId];
             }
-            LOG_ERROR("[Models] LoadData: Trying to load an area geo layout with a model extended id outside of the range [%u, %u]: %u", E_MODEL_LEVEL_AREA_START, E_MODEL_LEVEL_AREA_END - 1, aModelId);
+            LOG_ERROR("[Models] LoadData: Trying to load an area geo layout with a model id outside of the range [%u, %u]: %u", E_MODEL__LEVEL_AREA_START_, E_MODEL__LEVEL_AREA_END_ - 1, aModelId);
             return NULL;
         }
 
         // No existing data for this asset, create a new entry
         if (!aData) {
-            enum ModelExtendedId customId = E_MODEL_CUSTOM_START;
+
+            // Custom ids alternate between dynos pack and mod actor, allowing the two
+            // of them to grow infinitely while being kept in sync across players
+            enum ModelExtendedId customId = (aModelId == E_MODEL_DYNOS_PACK) ? E_MODEL__DYNOS_PACK_START_ : E_MODEL__MOD_ACTOR_START_;
             while (mData.find(customId) != mData.end()) {
-                customId = (enum ModelExtendedId) ((size_t) customId + 1);
+                customId = (enum ModelExtendedId) ((size_t) customId + 2);
             }
 
             mData[customId] = {
@@ -128,7 +230,8 @@ private:
             };
             aData = &mData[customId];
 
-            LOG_INFO("[Models] LoadData: Created new entry [ ID: %04u | ASSET: %016llX | NAME: %s ]",
+            LOG_INFO("[Models] LoadData: Created new %s entry [ ID: %04u | ASSET: %016llX | NAME: %s ]",
+                ((aModelId == E_MODEL_DYNOS_PACK) ? "DynOS pack" : "mod actor"),
                 aData->modelId,
                 (uintptr_t) aData->asset,
                 aData->name
@@ -226,7 +329,7 @@ public:
                 data.nodes[aModelPool] = NULL;
 
                 // Schedule a removal of the whole data entry if it's custom and there is no graph node loaded anymore
-                if (data.modelId >= E_MODEL_CUSTOM_START && !data.GetGraphNode()) {
+                if (data.modelId >= E_MODEL__CUSTOM_START_ && !data.GetGraphNode()) {
                     modelIdsToRemove.push_back(data.modelId);
                     for (const auto &assetId : mAssetToId) {
                         if (assetId.second == data.modelId) {
@@ -247,7 +350,7 @@ private:
     std::map<enum ModelExtendedId, struct ModelExtendedData> mData;
     std::map<const void *, enum ModelExtendedId> mAssetToId;
     std::map<struct GraphNode *, std::pair<enum ModelExtendedId, enum ModelPool>> mNodeToIdPool;
-    enum ModelExtendedId mLoadedModelIds[E_MODEL_VANILLA_END];
+    enum ModelExtendedId mLoadedModelIds[E_MODEL__VANILLA_END_];
     struct DynamicPool *mPools[MODEL_POOL_MAX];
 };
 
@@ -260,8 +363,8 @@ static ModelExtendedManager sModels;
 const GeoLayout *DynOS_Builtin_Actor_GetFromName(const char *aDataName) {
     const struct ModelExtendedData *data = sModels.GetData(
         [aDataName](const struct ModelExtendedData &data) { return strcmp(data.name, aDataName) == 0; },
-        E_MODEL_EXTENDED_START,
-        E_MODEL_EXTENDED_END
+        E_MODEL__EXTENDED_START_,
+        E_MODEL__EXTENDED_END_
     );
     if (data) {
         return (const GeoLayout *) data->asset;
@@ -272,8 +375,8 @@ const GeoLayout *DynOS_Builtin_Actor_GetFromName(const char *aDataName) {
 const char *DynOS_Builtin_Actor_GetFromData(const GeoLayout *aData) {
     const struct ModelExtendedData *data = sModels.GetData(
         [aData](const struct ModelExtendedData &data) { return data.asset == (const void *) aData; },
-        E_MODEL_EXTENDED_START,
-        E_MODEL_EXTENDED_END
+        E_MODEL__EXTENDED_START_,
+        E_MODEL__EXTENDED_END_
     );
     if (data) {
         return data->name;
@@ -284,8 +387,8 @@ const char *DynOS_Builtin_Actor_GetFromData(const GeoLayout *aData) {
 const GeoLayout *DynOS_Builtin_LvlGeo_GetFromName(const char *aDataName) {
     const struct ModelExtendedData *data = sModels.GetData(
         [aDataName](const struct ModelExtendedData &data) { return strcmp(data.name, aDataName) == 0; },
-        E_MODEL_LEVEL_GEO_START,
-        E_MODEL_LEVEL_GEO_END
+        E_MODEL__LEVEL_GEO_START_,
+        E_MODEL__LEVEL_GEO_END_
     );
     if (data) {
         return (const GeoLayout *) data->asset;
@@ -296,8 +399,8 @@ const GeoLayout *DynOS_Builtin_LvlGeo_GetFromName(const char *aDataName) {
 const char *DynOS_Builtin_LvlGeo_GetFromData(const GeoLayout *aData) {
     const struct ModelExtendedData *data = sModels.GetData(
         [aData](const struct ModelExtendedData &data) { return data.asset == (const void *) aData; },
-        E_MODEL_LEVEL_GEO_START,
-        E_MODEL_LEVEL_GEO_END
+        E_MODEL__LEVEL_GEO_START_,
+        E_MODEL__LEVEL_GEO_END_
     );
     if (data) {
         return data->name;
@@ -369,6 +472,19 @@ enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode) {
     }
 
     return E_MODEL_NONE;
+}
+
+const char *DynOS_Model_GetName(enum ModelExtendedId aModelId) {
+    if (aModelId == E_MODEL_NONE) {
+        return NULL;
+    }
+
+    struct ModelExtendedData *data = sModels.GetData(aModelId);
+    if (data) {
+        return data->name;
+    }
+
+    return NULL;
 }
 
 enum ModelPool DynOS_Model_GetModelPool(struct GraphNode *aNode) {

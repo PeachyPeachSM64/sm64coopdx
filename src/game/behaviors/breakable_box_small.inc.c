@@ -28,7 +28,7 @@ void bhv_breakable_box_small_init(void) {
 }
 
 void small_breakable_box_spawn_dust(void) {
-    struct Object *sp24 = spawn_object(o, MODEL_SMOKE, bhvSmoke);
+    struct Object *sp24 = spawn_object(o, E_MODEL_SMOKE, bhvSmoke);
     if (sp24 == NULL) { return; }
     sp24->oPosX += (s32)(random_float() * 80.0f) - 40;
     sp24->oPosZ += (s32)(random_float() * 80.0f) - 40;
@@ -73,7 +73,7 @@ void breakable_box_small_released_loop(void) {
 
     // Despawn, and create a corkbox respawner
     if (o->oBreakableBoxSmallFramesSinceReleased > 900) {
-        create_respawner(MODEL_BREAKABLE_BOX_SMALL, bhvBreakableBoxSmall, 3000);
+        create_respawner(E_MODEL_BREAKABLE_BOX_SMALL, bhvBreakableBoxSmall, 3000);
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
@@ -90,7 +90,7 @@ void breakable_box_small_idle_loop(void) {
 
         case 101:
             o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
-            create_respawner(MODEL_BREAKABLE_BOX_SMALL, bhvBreakableBoxSmall, 3000);
+            create_respawner(E_MODEL_BREAKABLE_BOX_SMALL, bhvBreakableBoxSmall, 3000);
             break;
     }
 

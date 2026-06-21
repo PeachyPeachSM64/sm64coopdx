@@ -3,7 +3,7 @@
 void hexagonal_ring_spawn_flames(void) {
     struct Object *sp1C;
     f32 size;
-    sp1C = spawn_object(o, MODEL_RED_FLAME, bhvVolcanoFlames);
+    sp1C = spawn_object(o, E_MODEL_RED_FLAME, bhvVolcanoFlames);
     if (sp1C != NULL) {
         sp1C->oPosY += 550.0f;
         sp1C->oMoveAngleYaw = random_u16() << 0x10 >> 0x10;

@@ -49,7 +49,7 @@ void bhv_snow_mound_spawn_loop(void) {
 
     if (o->oTimer == 64 || o->oTimer == 128 || o->oTimer == 192 || o->oTimer == 224 || o->oTimer == 256) {
         if (sync_object_is_owned_locally(o->oSyncID)) {
-            sp1C = spawn_object(o, MODEL_SL_SNOW_TRIANGLE, bhvSlidingSnowMound);
+            sp1C = spawn_object(o, E_MODEL_SL_SNOW_TRIANGLE, bhvSlidingSnowMound);
             if (sp1C != NULL) {
                 sp1C->oHomeX = o->oPosX;
                 sp1C->oHomeY = o->oPosY;

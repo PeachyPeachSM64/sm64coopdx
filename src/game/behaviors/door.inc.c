@@ -54,7 +54,7 @@ void set_door_camera_event(void) {
 }
 
 void play_door_open_noise(void) {
-    s32 sp1C = cur_obj_has_model(MODEL_HMC_METAL_DOOR);
+    s32 sp1C = cur_obj_has_model(E_MODEL_HMC_METAL_DOOR);
     if (o->oTimer == 0) {
         cur_obj_play_sound_and_rumble_if_visible(D_8032F328[sp1C]);
         //gTimeStopState |= TIME_STOP_MARIO_OPENED_DOOR;
@@ -65,7 +65,7 @@ void play_door_open_noise(void) {
 }
 
 void play_warp_door_open_noise(void) {
-    s32 sp1C = cur_obj_has_model(MODEL_HMC_METAL_DOOR);
+    s32 sp1C = cur_obj_has_model(E_MODEL_HMC_METAL_DOOR);
     if (o->oTimer == 30)
         cur_obj_play_sound_and_rumble_if_visible(D_8032F330[sp1C]);
 }

@@ -65,7 +65,7 @@ void bhv_water_bomb_spawner_update(void) {
         } else if (sync_object_is_owned_locally(o->oSyncID)) {
             // this branch only runs for one player at a time
 
-            struct Object *waterBomb = spawn_object_relative(0, 0, 2000, 0, o, MODEL_WATER_BOMB, bhvWaterBomb);
+            struct Object *waterBomb = spawn_object_relative(0, 0, 2000, 0, o, E_MODEL_WATER_BOMB, bhvWaterBomb);
 
             if (waterBomb != NULL) {
                 // Drop farther ahead of mario when he is moving faster
@@ -76,7 +76,7 @@ void bhv_water_bomb_spawner_update(void) {
                 waterBomb->oPosX = player->oPosX + waterBombDistToMario * sins(player->oMoveAngleYaw);
                 waterBomb->oPosZ = player->oPosZ + waterBombDistToMario * coss(player->oMoveAngleYaw);
 
-                struct Object *waterBombShadow = spawn_object(waterBomb, MODEL_WATER_BOMB_SHADOW, bhvWaterBombShadow);
+                struct Object *waterBombShadow = spawn_object(waterBomb, E_MODEL_WATER_BOMB_SHADOW, bhvWaterBombShadow);
 
                 o->oWaterBombSpawnerBombActive = TRUE;
                 o->oWaterBombSpawnerTimeToSpawn = random_linear_offset(0, 50);

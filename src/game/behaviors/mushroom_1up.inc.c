@@ -20,7 +20,7 @@ void bhv_1up_interact(void) {
 }
 
 void bhv_1up_trigger_init(void) {
-    obj_set_model(o, MODEL_NONE);
+    obj_set_model(o, E_MODEL_NONE);
     cur_obj_hide();
 }
 
@@ -91,7 +91,7 @@ void bhv_1up_walking_loop(void) {
     switch (o->oAction) {
         case 0:
             if (o->oTimer >= 18)
-                spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+                spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
 
             if (o->oTimer == 0)
                 play_sound(SOUND_GENERAL2_1UP_APPEAR, gGlobalSoundSource);
@@ -128,7 +128,7 @@ void bhv_1up_running_away_loop(void) {
     switch (o->oAction) {
         case 0:
             if (o->oTimer >= 18)
-                spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+                spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
 
             if (o->oTimer == 0)
                 play_sound(SOUND_GENERAL2_1UP_APPEAR, gGlobalSoundSource);
@@ -143,7 +143,7 @@ void bhv_1up_running_away_loop(void) {
             break;
 
         case 1:
-            spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+            spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
             one_up_move_away_from_mario(sp26);
             break;
 
@@ -193,7 +193,7 @@ void bhv_1up_sliding_loop(void) {
     }
 
     bhv_1up_interact();
-    spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+    spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
 }
 
 void bhv_1up_loop(void) {
@@ -215,7 +215,7 @@ void bhv_1up_jump_on_approach_loop(void) {
         case 1:
             sp26 = object_step();
             one_up_move_away_from_mario(sp26);
-            spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+            spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
             break;
 
         case 2:
@@ -262,7 +262,7 @@ void bhv_1up_hidden_loop(void) {
         case 1:
             sp26 = object_step();
             one_up_move_away_from_mario(sp26);
-            spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+            spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
             break;
 
         case 2:
@@ -274,7 +274,7 @@ void bhv_1up_hidden_loop(void) {
         case 3:
             sp26 = object_step();
             if (o->oTimer >= 18)
-                spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+                spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
 
             one_up_loop_in_air();
 
@@ -345,7 +345,7 @@ void bhv_1up_hidden_in_pole_loop(void) {
         case 3:
             sp26 = object_step();
             if (o->oTimer >= 18)
-                spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+                spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
 
             one_up_loop_in_air();
 

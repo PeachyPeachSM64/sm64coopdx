@@ -4055,7 +4055,7 @@ Gets the name of the provided texture pointer `tex`
 ## [smlua_model_util_get_id](#smlua_model_util_get_id)
 
 ### Description
-Gets the extended model ID for the `name` of a `GeoLayout`
+Gets the model id of the geo layout `name`
 
 ### Lua Example
 `local enumValue = smlua_model_util_get_id(name)`
@@ -4069,7 +4069,7 @@ Gets the extended model ID for the `name` of a `GeoLayout`
 - [enum ModelExtendedId](constants.md#enum-ModelExtendedId)
 
 ### C Prototype
-`enum ModelExtendedId smlua_model_util_get_id(const char* name);`
+`enum ModelExtendedId smlua_model_util_get_id(const char *name);`
 
 [:arrow_up_small:](#)
 
@@ -4158,77 +4158,6 @@ Checks if an object has `behaviorId`
 
 ### C Prototype
 `s32 obj_has_behavior_id(struct Object *o, enum BehaviorId behaviorId);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [obj_has_model_extended](#obj_has_model_extended)
-
-### Description
-Checks if an object's model is equal to `modelId`
-
-### Lua Example
-`local integerValue = obj_has_model_extended(o, modelId)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| o | [Object](structs.md#Object) |
-| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
-
-### Returns
-- `integer`
-
-### C Prototype
-`s32 obj_has_model_extended(struct Object *o, enum ModelExtendedId modelId);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [obj_get_model_id_extended](#obj_get_model_id_extended)
-
-### Description
-Returns an object's extended model id
-
-### Lua Example
-`local enumValue = obj_get_model_id_extended(o)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| o | [Object](structs.md#Object) |
-
-### Returns
-- [enum ModelExtendedId](constants.md#enum-ModelExtendedId)
-
-### C Prototype
-`enum ModelExtendedId obj_get_model_id_extended(struct Object *o);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [obj_set_model_extended](#obj_set_model_extended)
-
-### Description
-Sets an object's model to `modelId`
-
-### Lua Example
-`obj_set_model_extended(o, modelId)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| o | [Object](structs.md#Object) |
-| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
-
-### Returns
-- None
-
-### C Prototype
-`void obj_set_model_extended(struct Object *o, enum ModelExtendedId modelId);`
 
 [:arrow_up_small:](#)
 

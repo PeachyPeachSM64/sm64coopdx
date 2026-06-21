@@ -157,7 +157,7 @@ void bhv_scuttlebug_spawn_loop(void) {
     if (o->oAction == 0) {
         if (o->oTimer > 30 && 500.0f < distanceToPlayer && distanceToPlayer < 1500.0f) {
             cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ2_SCUTTLEBUG_ALERT);
-            struct Object *scuttlebug = spawn_object(o, MODEL_SCUTTLEBUG, bhvScuttlebug);
+            struct Object *scuttlebug = spawn_object(o, E_MODEL_SCUTTLEBUG, bhvScuttlebug);
             if (scuttlebug != NULL) {
                 scuttlebug->oScuttlebugUnkF4 = o->oScuttlebugSpawnerUnkF4;
                 scuttlebug->oForwardVel = 30.0f;

@@ -96,7 +96,7 @@ void bhv_big_bully_init(void) {
     bhv_bully_network_init();
 
     if (gCurrCourseNum == COURSE_LLL) {
-        spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvLllTumblingBridge, 0, 154, -5631, 0, 0, 0);
+        spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvLllTumblingBridge, 0, 154, -5631, 0, 0, 0);
         struct Object* lllTumblingBridge = cur_obj_nearest_object_with_behavior(bhvLllTumblingBridge);
         if (lllTumblingBridge != NULL) { lllTumblingBridge->oIntangibleTimer = -1; }
     }
@@ -249,7 +249,7 @@ void bully_step(void) {
 }
 
 void bully_spawn_coin(void) {
-    struct Object *coin = spawn_object(o, MODEL_YELLOW_COIN, bhvMovingYellowCoin);
+    struct Object *coin = spawn_object(o, E_MODEL_YELLOW_COIN, bhvMovingYellowCoin);
 #ifdef VERSION_JP // TODO: maybe move this ifdef logic to the header?
     cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_COIN_SPURT);
 #elif defined(VERSION_EU) || defined(VERSION_SH)
@@ -346,7 +346,7 @@ void bhv_bully_loop(void) {
 
 void big_bully_spawn_minion(s32 arg0, s32 arg1, s32 arg2, s16 arg3) {
     struct Object *bully =
-        spawn_object_abs_with_rot(o, 0, MODEL_BULLY, bhvSmallBully, arg0, arg1, arg2, 0, arg3, 00);
+        spawn_object_abs_with_rot(o, 0, E_MODEL_BULLY, bhvSmallBully, arg0, arg1, arg2, 0, arg3, 00);
     if (bully != NULL) {
         bully->oBullySubtype = BULLY_STYPE_MINION;
         bully->oBehParams2ndByte = BULLY_BP_SIZE_SMALL;

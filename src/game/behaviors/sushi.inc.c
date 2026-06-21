@@ -19,7 +19,7 @@ void bhv_sushi_shark_loop(void) {
     o->oSushiSharkUnkF4 += 0x80;
     if (player && player->oPosY - sp1C > -500.0f)
         if (o->oPosY - sp1C > -200.0f)
-            spawn_object_with_scale(o, MODEL_WAVE_TRAIL, bhvObjectWaveTrail, 4.0f);
+            spawn_object_with_scale(o, E_MODEL_WAVE_TRAIL, bhvObjectWaveTrail, 4.0f);
     if ((o->oTimer & 0xF) == 0)
         cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_SUSHI_SHARK_WATER_SOUND);
     o->oInteractStatus = 0;

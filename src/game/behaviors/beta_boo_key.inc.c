@@ -1,7 +1,7 @@
 /**
  * Behavior for bhvAlphaBooKey and bhvBetaBooKey.
  * They were apparently intended to be a key that would be contained in boos
- * and would fall out, like coins do. There is a model, MODEL_BETA_BOO_KEY, that
+ * and would fall out, like coins do. There is a model, E_MODEL_BETA_BOO_KEY, that
  * is loaded in script_func_global_10, which contains boo-themed models used in
  * BBH and the castle courtyard. It is used in a macro preset with bhvAlphaBooKey,
  * which is also grouped near other boo/BBH-related macros. This is evidence that
@@ -41,7 +41,7 @@ void bhv_alpha_boo_key_loop(void) {
 
         // Delete the object and spawn sparkles
         obj_mark_for_deletion(o);
-        spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+        spawn_object(o, E_MODEL_SPARKLES, bhvGoldenCoinSparkles);
     }
 }
 
@@ -100,7 +100,7 @@ static void beta_boo_key_dropped_loop(void) {
 
             // Delete the object and spawn sparkles
             obj_mark_for_deletion(o);
-            spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+            spawn_object(o, E_MODEL_SPARKLES, bhvGoldenCoinSparkles);
         }
     }
 }

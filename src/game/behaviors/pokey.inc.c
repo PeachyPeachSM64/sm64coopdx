@@ -175,7 +175,7 @@ static void pokey_act_uninitialized(void) {
     s32 i;
     s16 partModel;
 
-    partModel = MODEL_POKEY_HEAD;
+    partModel = E_MODEL_POKEY_HEAD;
 
     for (i = 0; i < 5; i++) {
         // Spawn body parts at y offsets 480, 360, 240, 120, 0
@@ -186,7 +186,7 @@ static void pokey_act_uninitialized(void) {
             obj_scale(bodyPart, 3.0f);
         }
 
-        partModel = MODEL_POKEY_BODY_PART;
+        partModel = E_MODEL_POKEY_BODY_PART;
     }
 
     o->oPokeyAliveBodyPartFlags = 0x1F;
@@ -242,7 +242,7 @@ static void pokey_act_wander(void) {
                     // of living body parts
 
                     bodyPart = spawn_object_relative(o->oPokeyNumAliveBodyParts, 0, 0, 0, o,
-                                                     MODEL_POKEY_BODY_PART, bhvPokeyBodyPart);
+                                                     E_MODEL_POKEY_BODY_PART, bhvPokeyBodyPart);
 
                     if (bodyPart != NULL) {
                         o->oPokeyAliveBodyPartFlags =

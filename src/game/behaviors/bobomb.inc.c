@@ -36,13 +36,13 @@ void bobomb_act_explode(void) {
         return;
     }
 
-    struct Object *explosion = spawn_object(o, MODEL_EXPLOSION, bhvExplosion);
+    struct Object *explosion = spawn_object(o, E_MODEL_EXPLOSION, bhvExplosion);
     if (explosion != NULL) {
         explosion->oGraphYOffset += 100.0f;
     }
 
     bobomb_spawn_coin();
-    create_respawner(MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
+    create_respawner(E_MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
     o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
 }
 
@@ -137,12 +137,12 @@ void generic_bobomb_free_loop(void) {
 
         case BOBOMB_ACT_LAVA_DEATH:
             if (obj_lava_death() == 1)
-                create_respawner(MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
+                create_respawner(E_MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
             break;
 
         case BOBOMB_ACT_DEATH_PLANE_DEATH:
             o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
-            create_respawner(MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
+            create_respawner(E_MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
             break;
     }
 
@@ -164,12 +164,12 @@ void stationary_bobomb_free_loop(void) {
 
         case BOBOMB_ACT_LAVA_DEATH:
             if (obj_lava_death() == 1)
-                create_respawner(MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
+                create_respawner(E_MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
             break;
 
         case BOBOMB_ACT_DEATH_PLANE_DEATH:
             o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
-            create_respawner(MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
+            create_respawner(E_MODEL_BLACK_BOBOMB, bhvBobomb, 3000);
             break;
     }
 
@@ -276,7 +276,7 @@ void bhv_bobomb_loop(void) {
 
             if ((dustPeriodMinus1 & o->oBobombFuseTimer)
                 == 0) /* oBobombFuseTimer % 2 or oBobombFuseTimer % 8 */
-                spawn_object(o, MODEL_SMOKE, bhvBobombFuseSmoke);
+                spawn_object(o, E_MODEL_SMOKE, bhvBobombFuseSmoke);
 
             cur_obj_play_sound_if_visible(SOUND_AIR_BOBOMB_LIT_FUSE);
 

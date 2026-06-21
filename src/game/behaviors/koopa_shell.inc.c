@@ -15,10 +15,10 @@ struct ObjectHitbox sKoopaShellHitbox = {
 void koopa_shell_spawn_water_drop(void) {
     UNUSED s32 unused;
     struct Object *drop;
-    spawn_object(o, MODEL_WAVE_TRAIL, bhvObjectWaveTrail);
+    spawn_object(o, E_MODEL_WAVE_TRAIL, bhvObjectWaveTrail);
     if (o->heldByPlayerIndex < MAX_PLAYERS) {
         if (gMarioStates[o->heldByPlayerIndex].forwardVel > 10.0f) {
-            drop = spawn_object_with_scale(o, MODEL_WHITE_PARTICLE_SMALL, bhvWaterDroplet, 1.5f);
+            drop = spawn_object_with_scale(o, E_MODEL_WHITE_PARTICLE_SMALL, bhvWaterDroplet, 1.5f);
             if (drop != NULL) {
                 drop->oVelY = random_float() * 30.0f;
                 obj_translate_xz_random(drop, 110.0f);
@@ -47,11 +47,11 @@ void bhv_koopa_shell_flame_loop(void) {
 void bhv_koopa_shell_flame_spawn(void) {
     s32 i;
     for (i = 0; i < 2; i++)
-        spawn_object(o, MODEL_RED_FLAME, bhvKoopaShellFlame);
+        spawn_object(o, E_MODEL_RED_FLAME, bhvKoopaShellFlame);
 }
 
 void koopa_shell_spawn_sparkles(f32 a) {
-    struct Object *sp1C = spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+    struct Object *sp1C = spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
     if (sp1C == NULL) { return; }
     sp1C->oPosY += a;
 }

@@ -7,7 +7,7 @@ void bhv_water_mist_spawn_loop(void) {
         obj_mark_for_deletion(o);
         return;
     }
-    spawn_object(o->parentObj, MODEL_MIST, bhvWaterMist);
+    spawn_object(o->parentObj, E_MODEL_MIST, bhvWaterMist);
 }
 
 void bhv_water_mist_loop(void) {

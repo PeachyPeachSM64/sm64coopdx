@@ -7,7 +7,7 @@ void bhv_seaweed_init(void) {
 void bhv_seaweed_bundle_init(void) {
     struct Object *seaweed;
 
-    seaweed = spawn_object(o, MODEL_SEAWEED, bhvSeaweed);
+    seaweed = spawn_object(o, E_MODEL_SEAWEED, bhvSeaweed);
     if (seaweed != NULL) {
         seaweed->oFaceAngleYaw = 14523;
         seaweed->oFaceAnglePitch = 5500;
@@ -18,7 +18,7 @@ void bhv_seaweed_bundle_init(void) {
     }
     //! gfx.animFrame uninitialized
 
-    seaweed = spawn_object(o, MODEL_SEAWEED, bhvSeaweed);
+    seaweed = spawn_object(o, E_MODEL_SEAWEED, bhvSeaweed);
     if (seaweed != NULL) {
         seaweed->oFaceAngleYaw = 41800;
         seaweed->oFaceAnglePitch = 6102;
@@ -29,7 +29,7 @@ void bhv_seaweed_bundle_init(void) {
         seaweed->header.gfx.animInfo.animFrame = random_float() * 80.0f;
     }
 
-    seaweed = spawn_object(o, MODEL_SEAWEED, bhvSeaweed);
+    seaweed = spawn_object(o, E_MODEL_SEAWEED, bhvSeaweed);
     if (seaweed != NULL) {
         seaweed->oFaceAngleYaw = 40500;
         seaweed->oFaceAnglePitch = 8700;
@@ -40,7 +40,7 @@ void bhv_seaweed_bundle_init(void) {
         seaweed->header.gfx.animInfo.animFrame = random_float() * 80.0f;
     }
 
-    seaweed = spawn_object(o, MODEL_SEAWEED, bhvSeaweed);
+    seaweed = spawn_object(o, E_MODEL_SEAWEED, bhvSeaweed);
     if (seaweed != NULL) {
         seaweed->oFaceAngleYaw = 57236;
         seaweed->oFaceAnglePitch = 9500;

@@ -67,7 +67,7 @@ void bhv_intro_lakitu_loop(void) {
             gCurrentObject->oIntroLakituSplineSegment = 0.f;
             gCurrentObject->oIntroLakituSplineSegmentProgress = 0.f;
             gCurrentObject->oIntroLakituCloud =
-                spawn_object_relative_with_scale(1, 0, 0, 0, 2.f, gCurrentObject, MODEL_MIST, bhvCloud);
+                spawn_object_relative_with_scale(1, 0, 0, 0, 2.f, gCurrentObject, E_MODEL_MIST, bhvCloud);
             if (gCamera->cutscene == CUTSCENE_END_WAVING)
                 gCurrentObject->oAction = 100;
             else

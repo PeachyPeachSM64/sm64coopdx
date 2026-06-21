@@ -1509,17 +1509,57 @@ void cur_obj_get_dropped(void) {
     }
 }
 
-/* |description|Sets the model of the current object|descriptionEnd| */
+/* |description|Sets the model of the current object to `modelId`|descriptionEnd| */
 void cur_obj_set_model(enum ModelExtendedId modelId) {
     obj_set_model(o, modelId);
 }
 
-/* |description|Sets the model for an object|descriptionEnd| */
-void obj_set_model(struct Object* obj, enum ModelExtendedId modelId) {
-    struct GraphNode *node = dynos_model_get_graph_node(modelId);;
+/* |description|Sets the model of an object to `modelId`|descriptionEnd| */
+void obj_set_model(struct Object *obj, enum ModelExtendedId modelId) {
+    if (!obj) { return; }
+
+    struct GraphNode *node = dynos_model_get_graph_node(modelId);
     obj->header.gfx.sharedChild = node;
-    dynos_actor_override(obj, (void*)&obj->header.gfx.sharedChild);
-    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, dynos_model_get_id(node));
+    dynos_actor_override(obj, (void **) &obj->header.gfx.sharedChild);
+    enum ModelExtendedId modelId2 = dynos_model_get_id(node);
+    if (modelId != modelId2) {
+        LOG_WARNING("obj_set_model: Model id mismatch: provided %u, loaded %u", modelId, modelId2);
+    }
+    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, modelId2);
+}
+
+/* |description|Checks if the current object's model is `modelId`|descriptionEnd| */
+s32 cur_obj_has_model(enum ModelExtendedId modelId) {
+    return obj_has_model(o, modelId);
+}
+
+/* |description|Checks if an object's model is `modelId`|descriptionEnd| */
+s32 obj_has_model(struct Object *obj, enum ModelExtendedId modelId) {
+    if (!obj) { return FALSE; }
+
+    struct GraphNode *sharedChild = obj->header.gfx.sharedChild;
+    if (dynos_model_get_id(sharedChild) == modelId) {
+        return TRUE;
+    }
+
+    struct GraphNode *node = dynos_model_get_graph_node(modelId);
+    if (sharedChild == node || (node && sharedChild->georef == node->georef)) {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+/* |description|Returns the current object's model id|descriptionEnd| */
+enum ModelExtendedId cur_obj_get_model_id() {
+    return obj_get_model_id(o);
+}
+
+/* |description|Returns an object's model id|descriptionEnd| */
+enum ModelExtendedId obj_get_model_id(struct Object *obj) {
+    if (!obj) { return E_MODEL_NONE; }
+
+    return dynos_model_get_id(obj->header.gfx.sharedChild);
 }
 
 /* |description|Sets a flag on Mario's state|descriptionEnd| */
@@ -2100,7 +2140,7 @@ void cur_obj_set_hurtbox_radius_and_height(f32 radius, f32 height) {
 }
 
 /* |description|Spawns loot coins from an object using the specified behavior, jitter, and model|descriptionEnd| */
-void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const BehaviorScript *coinBehavior, s16 posJitter, enum ModelExtendedId model) {
+void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const BehaviorScript *coinBehavior, s16 posJitter, enum ModelExtendedId modelId) {
     if (obj == NULL) { return; }
     s32 i;
     f32 spawnHeight;
@@ -2129,12 +2169,12 @@ void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const 
 
 /* |description|Spawns blue loot coins from an object|descriptionEnd| */
 void obj_spawn_loot_blue_coins(struct Object *obj, s32 numCoins, f32 baseYVel, s16 posJitter) {
-    obj_spawn_loot_coins(obj, numCoins, baseYVel, bhvBlueCoinJumping, posJitter, MODEL_BLUE_COIN);
+    obj_spawn_loot_coins(obj, numCoins, baseYVel, bhvBlueCoinJumping, posJitter, E_MODEL_BLUE_COIN);
 }
 
 /* |description|Spawns yellow loot coins from an object|descriptionEnd| */
 void obj_spawn_loot_yellow_coins(struct Object *obj, s32 numCoins, f32 baseYVel) {
-    obj_spawn_loot_coins(obj, numCoins, baseYVel, bhvSingleCoinGetsSpawned, 0, MODEL_YELLOW_COIN);
+    obj_spawn_loot_coins(obj, numCoins, baseYVel, bhvSingleCoinGetsSpawned, 0, E_MODEL_YELLOW_COIN);
 }
 
 /* |description|Spawns a yellow coin at Mario's position and decrements the current object's loot count|descriptionEnd| */
@@ -2149,7 +2189,7 @@ void cur_obj_spawn_loot_coin_at_mario_pos(struct MarioState* m) {
         o->oNumLootCoins--;
     }
 
-    coin = spawn_object(o, MODEL_YELLOW_COIN, bhvSingleCoinGetsSpawned);
+    coin = spawn_object(o, E_MODEL_YELLOW_COIN, bhvSingleCoinGetsSpawned);
     if (coin == NULL) { return; }
     coin->oVelY = 30.0f;
 
@@ -3000,7 +3040,7 @@ void cur_obj_call_action_function(void (*actionFunctions[])(void), uint32_t acti
 /* |description|Spawns a star object without triggering level exit behavior|descriptionEnd| */
 struct Object *spawn_star_with_no_lvl_exit(s32 setHomeToMario, s32 unused) {
     if (!o) { return NULL; }
-    struct Object *star = spawn_object(o, MODEL_STAR, bhvSpawnedStarNoLevelExit);
+    struct Object *star = spawn_object(o, E_MODEL_STAR, bhvSpawnedStarNoLevelExit);
     if (star == NULL) { return NULL; }
     star->oSparkleSpawnUnk1B0 = unused;
     star->oBehParams = o->oBehParams;
@@ -3468,22 +3508,6 @@ s32 cur_obj_update_dialog_with_cutscene(struct MarioState* m, s32 actionArg, s32
     return dialogResponse;
 }
 
-/* |description|Checks whether the current object uses the specified model geometry|descriptionEnd| */
-s32 cur_obj_has_model(enum ModelExtendedId modelId) {
-    if (!o) { return 0; }
-    if (dynos_model_get_id(o->header.gfx.sharedChild) == modelId) {
-        return TRUE;
-    }
-    struct GraphNode *node = dynos_model_get_graph_node(modelId);
-    if (o->header.gfx.sharedChild == node) {
-        return TRUE;
-    } else if (o->header.gfx.sharedChild && node && o->header.gfx.sharedChild->georef == node->georef) {
-        return TRUE;
-    } else {
-        return FALSE;
-    }
-}
-
 /* |description|Aligns the current object's graphics with the floor normal at its position|descriptionEnd| */
 void cur_obj_align_gfx_with_floor(void) {
     if (!o) { return; }
@@ -3661,7 +3685,7 @@ s32 cur_obj_check_interacted(void) {
 /* |description|Spawns a blue coin from the current object when sufficient loot coins are available|descriptionEnd| */
 void cur_obj_spawn_loot_blue_coin(void) {
     if (o && o->oNumLootCoins >= 5) {
-        spawn_object(o, MODEL_BLUE_COIN, bhvMrIBlueCoin);
+        spawn_object(o, E_MODEL_BLUE_COIN, bhvMrIBlueCoin);
         o->oNumLootCoins -= 5;
     }
 }

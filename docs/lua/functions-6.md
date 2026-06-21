@@ -1987,6 +1987,144 @@ Handles object state when it's been dropped by a player
 
 <br />
 
+## [cur_obj_set_model](#cur_obj_set_model)
+
+### Description
+Sets the model of the current object to `modelId`
+
+### Lua Example
+`cur_obj_set_model(modelId)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
+
+### Returns
+- None
+
+### C Prototype
+`void cur_obj_set_model(enum ModelExtendedId modelId);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [obj_set_model](#obj_set_model)
+
+### Description
+Sets the model of an object to `modelId`
+
+### Lua Example
+`obj_set_model(obj, modelId)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| obj | [Object](structs.md#Object) |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
+
+### Returns
+- None
+
+### C Prototype
+`void obj_set_model(struct Object *obj, enum ModelExtendedId modelId);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [cur_obj_has_model](#cur_obj_has_model)
+
+### Description
+Checks if the current object's model is `modelId`
+
+### Lua Example
+`local integerValue = cur_obj_has_model(modelId)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 cur_obj_has_model(enum ModelExtendedId modelId);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [obj_has_model](#obj_has_model)
+
+### Description
+Checks if an object's model is `modelId`
+
+### Lua Example
+`local integerValue = obj_has_model(obj, modelId)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| obj | [Object](structs.md#Object) |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 obj_has_model(struct Object *obj, enum ModelExtendedId modelId);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [cur_obj_get_model_id](#cur_obj_get_model_id)
+
+### Description
+Returns the current object's model id
+
+### Lua Example
+`local enumValue = cur_obj_get_model_id()`
+
+### Parameters
+- None
+
+### Returns
+- [enum ModelExtendedId](constants.md#enum-ModelExtendedId)
+
+### C Prototype
+`enum ModelExtendedId cur_obj_get_model_id();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [obj_get_model_id](#obj_get_model_id)
+
+### Description
+Returns an object's model id
+
+### Lua Example
+`local enumValue = obj_get_model_id(obj)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| obj | [Object](structs.md#Object) |
+
+### Returns
+- [enum ModelExtendedId](constants.md#enum-ModelExtendedId)
+
+### C Prototype
+`enum ModelExtendedId obj_get_model_id(struct Object *obj);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [mario_set_flag](#mario_set_flag)
 
 ### Description
@@ -3003,7 +3141,7 @@ Sets the current object's hurtbox radius and height
 Spawns loot coins from an object using the specified behavior, jitter, and model
 
 ### Lua Example
-`obj_spawn_loot_coins(obj, numCoins, baseYVel, coinBehavior, posJitter, model)`
+`obj_spawn_loot_coins(obj, numCoins, baseYVel, coinBehavior, posJitter, modelId)`
 
 ### Parameters
 | Field | Type |
@@ -3013,13 +3151,13 @@ Spawns loot coins from an object using the specified behavior, jitter, and model
 | baseYVel | `number` |
 | coinBehavior | `Pointer` <`BehaviorScript`> |
 | posJitter | `integer` |
-| model | `integer` |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
 
 ### Returns
 - None
 
 ### C Prototype
-`void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const BehaviorScript *coinBehavior, s16 posJitter, s16 model);`
+`void obj_spawn_loot_coins(struct Object *obj, s32 numCoins, f32 baseYVel, const BehaviorScript *coinBehavior, s16 posJitter, enum ModelExtendedId modelId);`
 
 [:arrow_up_small:](#)
 
@@ -4633,29 +4771,6 @@ Ends dialog state for the current object and records Mario's response
 
 ### C Prototype
 `void cur_obj_end_dialog(struct MarioState* m, s32 dialogFlags, s32 dialogResult);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [cur_obj_has_model](#cur_obj_has_model)
-
-### Description
-Checks whether the current object uses the specified model geometry
-
-### Lua Example
-`local integerValue = cur_obj_has_model(modelID)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| modelID | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`s32 cur_obj_has_model(u16 modelID);`
 
 [:arrow_up_small:](#)
 

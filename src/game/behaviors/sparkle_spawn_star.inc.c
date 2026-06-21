@@ -18,7 +18,7 @@ void bhv_spawned_star_init(void) {
     }
     s32 starId = (o->oBehParams >> 24) & 0xFF;
     if (bit_shift_left(gLevelValues.useGlobalStarIds ? starId % 7 : starId) & save_file_get_star_flags(gCurrSaveFileNum - 1, (gLevelValues.useGlobalStarIds ? (starId / 7) - 1 : gCurrCourseNum - 1))) {
-        cur_obj_set_model(smlua_model_util_load(E_MODEL_TRANSPARENT_STAR));
+        cur_obj_set_model(E_MODEL_TRANSPARENT_STAR);
     }
     cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL2_STAR_APPEARS);
 
@@ -114,7 +114,7 @@ void bhv_spawned_star_loop(void) {
             spawn_mist_particles();
         }
         cur_obj_play_sound_if_visible(SOUND_ENV_STAR);
-        spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+        spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
         if (o->oVelY < 0 && o->oPosY < o->oHomeY) {
             o->oAction++;
             o->oForwardVel = 0;
@@ -138,7 +138,7 @@ void bhv_spawned_star_loop(void) {
             o->oGravity = 0;
             o->oAction++;
         }
-        spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+        spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
     } else if (o->oAction == 2) {
         if (gCamera && gCamera->cutscene == 0 && gRecentCutscene == 0) {
             gMarioStates[0].freeze = 0;
@@ -168,7 +168,7 @@ void bhv_spawn_star_no_level_exit(struct Object* object, u32 params, u8 networkS
         gSpawnedStarNLE[gSpawnedStarNLECount++] = params;
     }
 
-    struct Object *star = spawn_object(object, MODEL_STAR, bhvSpawnedStarNoLevelExit);
+    struct Object *star = spawn_object(object, E_MODEL_STAR, bhvSpawnedStarNoLevelExit);
     if (star != NULL) {
         star->oBehParams = params << 24;
         star->oInteractionSubtype = INT_SUBTYPE_NO_EXIT;

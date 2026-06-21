@@ -28,7 +28,7 @@ void bhv_bobomb_explosion_bubble_loop(void) {
     if (o->oPosY > waterY) {
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
         o->oPosY += 5.0f;
-        spawn_object(o, MODEL_SMALL_WATER_SPLASH, bhvObjectWaterSplash);
+        spawn_object(o, E_MODEL_SMALL_WATER_SPLASH, bhvObjectWaterSplash);
     }
 
     if (o->oTimer >= 61)
@@ -60,7 +60,7 @@ void create_respawner(enum ModelExtendedId modelId, const BehaviorScript *behToS
         return;
     }
 
-    struct Object *respawner = spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvRespawner, o->oHomeX,
+    struct Object *respawner = spawn_object_abs_with_rot(o, 0, E_MODEL_NONE, bhvRespawner, o->oHomeX,
                                                          o->oHomeY, o->oHomeZ, 0, 0, 0);
     u32 syncID = o->oSyncID;
     if (respawner != NULL) {

@@ -27,7 +27,7 @@ void bhv_punch_tiny_triangle_init(void) {
     UNUSED s32 unused;
     struct Object *triangle;
     for (i = 0; i < 6; i++) {
-        triangle = spawn_object(o, MODEL_DIRT_ANIMATION, bhvPunchTinyTriangle);
+        triangle = spawn_object(o, E_MODEL_DIRT_ANIMATION, bhvPunchTinyTriangle);
         if (triangle == NULL) { continue; }
         if (o->parentObj) { triangle->oMoveAngleYaw = o->parentObj->oMoveAngleYaw + D_8032F2CC[2 * i] + 0x8000; }
         triangle->oVelY = sins(D_8032F2CC[2 * i + 1]) * 25.0f;
@@ -54,7 +54,7 @@ void bhv_tiny_star_particles_init(void) {
     UNUSED s32 unused;
     struct Object *particle;
     for (i = 0; i < 7; i++) {
-        particle = spawn_object(o, MODEL_CARTOON_STAR, bhvWallTinyStarParticle);
+        particle = spawn_object(o, E_MODEL_CARTOON_STAR, bhvWallTinyStarParticle);
         if (particle == NULL) { continue; }
         if (o->parentObj) {
             particle->oMoveAngleYaw = o->parentObj->oMoveAngleYaw + D_8032F2E4[2 * i] + 0x8000;
@@ -82,7 +82,7 @@ void bhv_pound_tiny_star_particle_init(void) {
     s32 sp20 = 8;
     struct Object *particle;
     for (sp24 = 0; sp24 < sp20; sp24++) {
-        particle = spawn_object(o, MODEL_CARTOON_STAR, bhvPoundTinyStarParticle);
+        particle = spawn_object(o, E_MODEL_CARTOON_STAR, bhvPoundTinyStarParticle);
         if (particle == NULL) { continue; }
         particle->oMoveAngleYaw = (sp24 * 65536) / sp20;
     }

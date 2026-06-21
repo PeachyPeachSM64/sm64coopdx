@@ -185,7 +185,7 @@ static s32 bhv_cmd_cylboard(void) {
 // Command 0x1B: Sets the current model ID of the object.
 // Usage: SET_MODEL(modelId)
 static s32 bhv_cmd_set_model(void) {
-    u32 modelId = BHV_CMD_GET_2ND_S16(0);
+    enum ModelExtendedId modelId = BHV_CMD_GET_2ND_S16(0);
 
     obj_set_model(gCurrentObject, modelId);
 
@@ -196,7 +196,7 @@ static s32 bhv_cmd_set_model(void) {
 // Command 0x1C: Spawns a child object with the specified model and behavior.
 // Usage: SPAWN_CHILD(modelId, behavior)
 static s32 bhv_cmd_spawn_child(void) {
-    u32 modelId = BHV_CMD_GET_U32(1);
+    enum ModelExtendedId modelId = BHV_CMD_GET_U32(1);
     const BehaviorScript *behavior = BHV_CMD_GET_VPTR(2);
 
     struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
@@ -211,7 +211,7 @@ static s32 bhv_cmd_spawn_child(void) {
 // Command 0x2C: Spawns a new object with the specified model and behavior.
 // Usage: SPAWN_OBJ(modelId, behavior)
 static s32 bhv_cmd_spawn_obj(void) {
-    u32 modelId = BHV_CMD_GET_U32(1);
+    enum ModelExtendedId modelId = BHV_CMD_GET_U32(1);
     const BehaviorScript *behavior = BHV_CMD_GET_VPTR(2);
 
     struct Object *object = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
@@ -229,7 +229,7 @@ static s32 bhv_cmd_spawn_obj(void) {
 // Usage: SPAWN_CHILD_WITH_PARAM(bhvParam, modelId, behavior)
 static s32 bhv_cmd_spawn_child_with_param(void) {
     u32 bhvParam = BHV_CMD_GET_2ND_S16(0);
-    u32 modelId = BHV_CMD_GET_U32(1);
+    enum ModelExtendedId modelId = BHV_CMD_GET_U32(1);
     const BehaviorScript *behavior = BHV_CMD_GET_VPTR(2);
 
     struct Object *child = spawn_object_at_origin(gCurrentObject, 0, modelId, behavior);
@@ -1044,7 +1044,7 @@ static s32 bhv_cmd_call_native_ext(void) {
 // Command 0x3D: Spawns a child object with the specified model and behavior.
 // Usage: SPAWN_CHILD_EXT(modelId, behavior)
 static s32 bhv_cmd_spawn_child_ext(void) {
-    u32 modelId = BHV_CMD_GET_U32(1);
+    enum ModelExtendedId modelId = BHV_CMD_GET_U32(1);
 
     BehaviorScript *behavior = (BehaviorScript *)gCurrentObject->behavior;
 
@@ -1092,7 +1092,7 @@ static s32 bhv_cmd_spawn_child_ext(void) {
 // Usage: SPAWN_CHILD_WITH_PARAM_EXT(bhvParam, modelId, behavior)
 static s32 bhv_cmd_spawn_child_with_param_ext(void) {
     u32 bhvParam = BHV_CMD_GET_2ND_S16(0);
-    u32 modelId = BHV_CMD_GET_U32(1);
+    enum ModelExtendedId modelId = BHV_CMD_GET_U32(1);
 
     BehaviorScript *behavior = (BehaviorScript *)gCurrentObject->behavior;
 
@@ -1140,7 +1140,7 @@ static s32 bhv_cmd_spawn_child_with_param_ext(void) {
 // Command 0x3F: Spawns a new object with the specified model and behavior.
 // Usage: SPAWN_OBJ_EXT(modelId, behavior)
 static s32 bhv_cmd_spawn_obj_ext(void) {
-    u32 modelId = BHV_CMD_GET_U32(1);
+    enum ModelExtendedId modelId = BHV_CMD_GET_U32(1);
 
     BehaviorScript *behavior = (BehaviorScript *)gCurrentObject->behavior;
 

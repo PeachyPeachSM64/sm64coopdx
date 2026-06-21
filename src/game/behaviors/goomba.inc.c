@@ -92,7 +92,7 @@ void bhv_goomba_triplet_spawner_update(void) {
 
                 spawn_object_relative((o->oBehParams2ndByte & GOOMBA_TRIPLET_SPAWNER_BP_SIZE_MASK)
                                             | (goombaFlag >> 6),
-                                        dx, 0, dz, o, MODEL_GOOMBA, bhvGoomba);
+                                        dx, 0, dz, o, E_MODEL_GOOMBA, bhvGoomba);
             }
         }
 

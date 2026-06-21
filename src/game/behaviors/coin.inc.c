@@ -17,7 +17,7 @@ s16 D_8032F2A4[][2] = { { 0, -150 },  { 0, -50 },   { 0, 50 },   { 0, 150 },
 
 s32 bhv_coin_sparkles_init(void) {
     if (o->oInteractStatus & INT_STATUS_INTERACTED && !(o->oInteractStatus & INT_STATUS_TOUCHED_BOB_OMB)) {
-        spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+        spawn_object(o, E_MODEL_SPARKLES, bhvGoldenCoinSparkles);
         obj_mark_for_deletion(o);
         return 1;
     }
@@ -31,7 +31,7 @@ void bhv_yellow_coin_init(void) {
     bhv_init_room();
     cur_obj_update_floor_height();
     if (500.0f < absf(o->oPosY - o->oFloorHeight))
-        cur_obj_set_model(smlua_model_util_load(E_MODEL_YELLOW_COIN_NO_SHADOW));
+        cur_obj_set_model(E_MODEL_YELLOW_COIN_NO_SHADOW);
     if (o->oFloorHeight < gLevelValues.floorLowerLimitMisc)
         obj_mark_for_deletion(o);
 }
@@ -130,7 +130,7 @@ void bhv_coin_formation_spawn_loop(void) {
         } else {
             cur_obj_update_floor_height();
             if (absf(o->oPosY - o->oFloorHeight) > 250.0f)
-                cur_obj_set_model(smlua_model_util_load(E_MODEL_YELLOW_COIN_NO_SHADOW));
+                cur_obj_set_model(E_MODEL_YELLOW_COIN_NO_SHADOW);
         }
     } else {
         if (o->parentObj && bhv_coin_sparkles_init()) {
@@ -177,7 +177,7 @@ void spawn_coin_in_formation(s32 sp50, s32 sp54) {
     if (sp54 & 0x10)
         sp38 = 0;
     if (sp3C) {
-        sp4C = spawn_object_relative(sp50, sp40[0], sp40[1], sp40[2], o, MODEL_YELLOW_COIN,
+        sp4C = spawn_object_relative(sp50, sp40[0], sp40[1], sp40[2], o, E_MODEL_YELLOW_COIN,
                                      bhvCoinFormationSpawn);
         if (sp4C != NULL) { sp4C->oCoinUnkF8 = sp38; }
     }
@@ -220,7 +220,7 @@ void coin_inside_boo_act_1(void) {
     }
     cur_obj_move_standard(-30);
     bhv_coin_sparkles_init();
-    if (cur_obj_has_model(smlua_model_util_load(E_MODEL_BLUE_COIN)))
+    if (cur_obj_has_model(E_MODEL_BLUE_COIN))
         o->oDamageOrCoinValue = 5;
     if (cur_obj_wait_then_blink(400, 20))
         obj_mark_for_deletion(o);
@@ -238,7 +238,7 @@ void coin_inside_boo_act_0(void) {
     }
 
     if (o->oTimer == 0 && gCurrLevelNum == LEVEL_BBH) {
-        cur_obj_set_model(smlua_model_util_load(E_MODEL_BLUE_COIN));
+        cur_obj_set_model(E_MODEL_BLUE_COIN);
         cur_obj_scale(0.7);
     }
     obj_copy_pos(o, parent);
@@ -267,7 +267,7 @@ void bhv_golden_coin_sparkles_loop(void) {
     struct Object *sp2C;
     UNUSED s32 unused;
     f32 sp24 = 30.0f;
-    sp2C = spawn_object(o, MODEL_SPARKLES, bhvCoinSparkles);
+    sp2C = spawn_object(o, E_MODEL_SPARKLES, bhvCoinSparkles);
     if (sp2C == NULL) { return; }
     sp2C->oPosX += random_float() * sp24 - sp24 / 2;
     sp2C->oPosZ += random_float() * sp24 - sp24 / 2;

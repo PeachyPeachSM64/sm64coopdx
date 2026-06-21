@@ -48,7 +48,7 @@ void moving_coin_flicker(void) {
 }
 
 void coin_collected(void) {
-    spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+    spawn_object(o, E_MODEL_SPARKLES, bhvGoldenCoinSparkles);
     o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
 }
 

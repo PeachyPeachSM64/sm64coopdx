@@ -130,7 +130,7 @@ s64 DynOS_Lvl_ParseLevelScriptConstants(const String& _Arg, bool* found) {
     lvl_constant(SEQ_COUNT);
 
     // Model constants
-    s64 cModelConstant = DynOS_Common_ParseModelConstants(_Arg, found);
+    s64 cModelConstant = DynOS_Common_ParseModelConstants(_Arg, false, found);
     if (*found) { return cModelConstant; }
     *found = true; // reset found value
 

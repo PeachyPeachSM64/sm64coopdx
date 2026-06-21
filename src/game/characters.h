@@ -4,6 +4,7 @@
 #include <PR/ultratypes.h>
 #include "pc/configfile.h"
 #include "mario_animation_ids.h"
+#include "data/dynos_models.h"
 // NOTE: do not include any additional headers
 
 enum CharacterType {
@@ -71,11 +72,11 @@ struct Character {
     char hudHead;
     struct TextureInfo hudHeadTexture;
     u32 cameraHudHead;
-    u32 modelId;
-    u32 capModelId;
-    u32 capMetalModelId;
-    u32 capWingModelId;
-    u32 capMetalWingModelId;
+    enum ModelExtendedId modelId;
+    enum ModelExtendedId capModelId;
+    enum ModelExtendedId capMetalModelId;
+    enum ModelExtendedId capWingModelId;
+    enum ModelExtendedId capMetalWingModelId;
     u8 capEnemyLayer;
     Gfx* capEnemyGfx;
     Gfx* capEnemyDecalGfx;

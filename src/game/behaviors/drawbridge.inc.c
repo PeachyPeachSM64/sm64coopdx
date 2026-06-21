@@ -3,14 +3,14 @@
 void bhv_lll_drawbridge_spawner_init(void) {
     struct Object *drawbridge[2];
 
-    drawbridge[0] = spawn_object(o, MODEL_LLL_DRAWBRIDGE_PART, bhvLllDrawbridge);
+    drawbridge[0] = spawn_object(o, E_MODEL_LLL_DRAWBRIDGE_PART, bhvLllDrawbridge);
     if (drawbridge[0] != NULL) {
         drawbridge[0]->oMoveAngleYaw = o->oMoveAngleYaw;
         drawbridge[0]->oPosX += coss(o->oMoveAngleYaw) * 640.0f;
         drawbridge[0]->oPosZ += sins(o->oMoveAngleYaw) * 640.0f;
     }
 
-    drawbridge[1] = spawn_object(o, MODEL_LLL_DRAWBRIDGE_PART, bhvLllDrawbridge);
+    drawbridge[1] = spawn_object(o, E_MODEL_LLL_DRAWBRIDGE_PART, bhvLllDrawbridge);
     if (drawbridge[1] != NULL) {
         drawbridge[1]->oMoveAngleYaw = o->oMoveAngleYaw + 0x8000;
         drawbridge[1]->oPosX += coss(o->oMoveAngleYaw) * -640.0f;

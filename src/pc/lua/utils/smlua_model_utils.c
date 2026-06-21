@@ -17,14 +17,5 @@ const char *smlua_model_util_get_name(enum ModelExtendedId modelId) {
         return NULL;
     }
 
-
+    return dynos_model_get_name(modelId);
 }
-
-bool smlua_model_util_forget(enum ModelExtendedId modelId) {
-    if (modelId == E_MODEL_NONE) {
-        return false;
-    }
-
-
-}
-

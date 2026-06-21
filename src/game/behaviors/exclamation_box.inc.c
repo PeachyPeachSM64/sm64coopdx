@@ -35,13 +35,13 @@ void exclamation_box_act_0(void) {
 void exclamation_box_act_1(void) {
     cur_obj_become_intangible();
     if (o->oTimer == 0) {
-        spawn_object(o, smlua_model_util_load(E_MODEL_EXCLAMATION_POINT), bhvRotatingExclamationMark);
-        cur_obj_set_model(smlua_model_util_load(E_MODEL_EXCLAMATION_BOX_OUTLINE));
+        spawn_object(o, E_MODEL_EXCLAMATION_POINT, bhvRotatingExclamationMark);
+        cur_obj_set_model(E_MODEL_EXCLAMATION_BOX_OUTLINE);
     }
     if ((save_file_get_flags() & BHV_ARR(D_8032F0C0, o->oBehParams2ndByte, s32))
         || ((o->oBehParams >> 24) & 0xFF) != 0) {
         o->oAction = 2;
-        cur_obj_set_model(smlua_model_util_load(E_MODEL_EXCLAMATION_BOX));
+        cur_obj_set_model(E_MODEL_EXCLAMATION_BOX);
     }
 }
 
@@ -116,7 +116,7 @@ void exclamation_box_spawn_contents(struct ExclamationBoxContent *content, u8 it
 
     for (u8 i = 0; i < gExclamationBoxSize; i++) {
         if (itemId == content->id) {
-            enum ModelExtendedId modelId = exclamation_replace_model(marioState, smlua_model_util_load(content->model));
+            enum ModelExtendedId modelId = exclamation_replace_model(marioState, content->model);
 
             spawnedObject = spawn_object(o, modelId, get_behavior_from_id(content->behavior));
             if (spawnedObject != NULL) {

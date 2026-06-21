@@ -8915,13 +8915,13 @@ end
 --- @param relativePosY integer
 --- @param relativePosZ integer
 --- @param scale number
---- @param model integer
+--- @param modelId ModelExtendedId
 --- @param startSpeed number
 --- @param endSpeed number
 --- @param movePitch integer
 --- @return Object
 --- Spawns a small piranha flame object with the given parameters. Used by Bowser, Fly Guy, Piranha Plant, and Fire Spitters
-function obj_spit_fire(relativePosX, relativePosY, relativePosZ, scale, model, startSpeed, endSpeed, movePitch)
+function obj_spit_fire(relativePosX, relativePosY, relativePosZ, scale, modelId, startSpeed, endSpeed, movePitch)
     -- ...
 end
 
@@ -9535,6 +9535,47 @@ function cur_obj_get_dropped()
     -- ...
 end
 
+--- @param modelId ModelExtendedId
+--- Sets the model of the current object to `modelId`
+function cur_obj_set_model(modelId)
+    -- ...
+end
+
+--- @param obj Object
+--- @param modelId ModelExtendedId
+--- Sets the model of an object to `modelId`
+function obj_set_model(obj, modelId)
+    -- ...
+end
+
+--- @param modelId ModelExtendedId
+--- @return integer
+--- Checks if the current object's model is `modelId`
+function cur_obj_has_model(modelId)
+    -- ...
+end
+
+--- @param obj Object
+--- @param modelId ModelExtendedId
+--- @return integer
+--- Checks if an object's model is `modelId`
+function obj_has_model(obj, modelId)
+    -- ...
+end
+
+--- @return ModelExtendedId
+--- Returns the current object's model id
+function cur_obj_get_model_id()
+    -- ...
+end
+
+--- @param obj Object
+--- @return ModelExtendedId
+--- Returns an object's model id
+function obj_get_model_id(obj)
+    -- ...
+end
+
 --- @param flag integer
 --- Sets a flag on Mario's state
 function mario_set_flag(flag)
@@ -9831,9 +9872,9 @@ end
 --- @param baseYVel number
 --- @param coinBehavior Pointer_BehaviorScript
 --- @param posJitter integer
---- @param model integer
+--- @param modelId ModelExtendedId
 --- Spawns loot coins from an object using the specified behavior, jitter, and model
-function obj_spawn_loot_coins(obj, numCoins, baseYVel, coinBehavior, posJitter, model)
+function obj_spawn_loot_coins(obj, numCoins, baseYVel, coinBehavior, posJitter, modelId)
     -- ...
 end
 
@@ -10293,13 +10334,6 @@ end
 --- @param dialogResult integer
 --- Ends dialog state for the current object and records Mario's response
 function cur_obj_end_dialog(m, dialogFlags, dialogResult)
-    -- ...
-end
-
---- @param modelID integer
---- @return integer
---- Checks whether the current object uses the specified model geometry
-function cur_obj_has_model(modelID)
     -- ...
 end
 
@@ -12420,7 +12454,7 @@ end
 
 --- @param name string
 --- @return ModelExtendedId
---- Gets the extended model ID for the `name` of a `GeoLayout`
+--- Gets the model id of the geo layout `name`
 function smlua_model_util_get_id(name)
     -- ...
 end
@@ -12456,28 +12490,6 @@ end
 --- @return integer
 --- Checks if an object has `behaviorId`
 function obj_has_behavior_id(o, behaviorId)
-    -- ...
-end
-
---- @param o Object
---- @param modelId ModelExtendedId
---- @return integer
---- Checks if an object's model is equal to `modelId`
-function obj_has_model_extended(o, modelId)
-    -- ...
-end
-
---- @param o Object
---- @return ModelExtendedId
---- Returns an object's extended model id
-function obj_get_model_id_extended(o)
-    -- ...
-end
-
---- @param o Object
---- @param modelId ModelExtendedId
---- Sets an object's model to `modelId`
-function obj_set_model_extended(o, modelId)
     -- ...
 end
 

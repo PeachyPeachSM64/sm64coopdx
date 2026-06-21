@@ -896,7 +896,7 @@ bool smlua_call_event_hooks_HOOK_ON_CHAT_MESSAGE(struct MarioState *m, const cha
     return hookResult;
 }
 
-bool smlua_call_event_hooks_HOOK_OBJECT_SET_MODEL(struct Object *obj, s32 modelID, enum ModelExtendedId modelExtendedId) {
+bool smlua_call_event_hooks_HOOK_OBJECT_SET_MODEL(struct Object *obj, enum ModelExtendedId modelId, enum ModelExtendedId modelExtendedId) {
     lua_State *L = gLuaState;
     if (L == NULL) { return false; }
     bool hookResult = false;
@@ -911,8 +911,8 @@ bool smlua_call_event_hooks_HOOK_OBJECT_SET_MODEL(struct Object *obj, s32 modelI
         // push obj
         smlua_push_object(L, LOT_OBJECT, obj, NULL);
 
-        // push modelID
-        lua_pushinteger(L, modelID);
+        // push modelId
+        lua_pushinteger(L, modelId);
 
         // push modelExtendedId
         lua_pushinteger(L, modelExtendedId);

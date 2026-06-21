@@ -177,7 +177,7 @@ void bhv_mips_act_follow_path(void) {
     // Play sounds during walk animation.
     if (cur_obj_check_if_near_animation_end() == 1 && (collisionFlags & OBJ_COL_FLAG_UNDERWATER)) {
         cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_MIPS_RABBIT_WATER);
-        spawn_object(o, MODEL_NONE, bhvShallowWaterSplash);
+        spawn_object(o, E_MODEL_NONE, bhvShallowWaterSplash);
     } else if (cur_obj_check_if_near_animation_end() == 1) {
         cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_MIPS_RABBIT);
     }
@@ -210,7 +210,7 @@ void bhv_mips_act_fall_down(void) {
         o->oMoveAngleYaw = o->oFaceAngleYaw;
 
         if (collisionFlags & OBJ_COL_FLAG_UNDERWATER)
-            spawn_object(o, MODEL_NONE, bhvShallowWaterSplash);
+            spawn_object(o, E_MODEL_NONE, bhvShallowWaterSplash);
     }
 }
 

@@ -13,7 +13,7 @@ void bhv_orange_number_loop(void) {
         o->oVelY = 14.0;
 
     if (o->oTimer == 35) {
-        sp1C = spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+        sp1C = spawn_object(o, E_MODEL_SPARKLES, bhvGoldenCoinSparkles);
         if (sp1C != NULL) {
             sp1C->oPosY -= 30.f;
         }

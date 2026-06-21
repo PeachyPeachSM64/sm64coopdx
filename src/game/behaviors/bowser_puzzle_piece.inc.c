@@ -147,7 +147,7 @@ void bhv_lll_bowser_puzzle_loop(void) {
             if (o->oBowserPuzzleCompletionFlags == 3 && distanceToPlayer < 1000.0f) {
                 // Spawn 5 coins.
                 for (i = 0; i < 5; i++)
-                    sp28 = spawn_object(o, MODEL_YELLOW_COIN, bhvSingleCoinGetsSpawned);
+                    sp28 = spawn_object(o, E_MODEL_YELLOW_COIN, bhvSingleCoinGetsSpawned);
 
                 // Reset completion flags (even though they never get checked again).
                 o->oBowserPuzzleCompletionFlags = 0;

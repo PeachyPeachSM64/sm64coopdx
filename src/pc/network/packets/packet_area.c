@@ -224,7 +224,7 @@ void network_receive_area(struct Packet* p) {
 
         LOG_INFO("rx respawner");
         if (syncId < SYNC_ID_BLOCK_SIZE) {
-            struct Object* respawner = spawn_object_abs_with_rot(gMarioStates[0].marioObj, 0, MODEL_NONE, bhvRespawner, posX, posY, posZ, 0, 0, 0);
+            struct Object* respawner = spawn_object_abs_with_rot(gMarioStates[0].marioObj, 0, E_MODEL_NONE, bhvRespawner, posX, posY, posZ, 0, 0, 0);
             if (respawner != NULL) {
                 respawner->parentObj = respawner;
                 respawner->oBehParams = behParams;

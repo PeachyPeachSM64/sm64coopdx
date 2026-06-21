@@ -202,7 +202,7 @@ void bhv_generic_bowling_ball_spawner_loop(void) {
                     return;
                 }
                 // this branch only runs for one player at a time
-                bowlingBall = spawn_object(o, MODEL_BOWLING_BALL, bhvBowlingBall);
+                bowlingBall = spawn_object(o, E_MODEL_BOWLING_BALL, bhvBowlingBall);
                 if (bowlingBall != NULL) {
                     bowlingBall->oBehParams2ndByte = o->oBehParams2ndByte;
 
@@ -236,7 +236,7 @@ void bhv_thi_bowling_ball_spawner_loop(void) {
         if (is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 12000)) {
             if (sync_object_is_owned_locally(o->oSyncID) && (s32)(random_float() * 1.5) == 0) {
                 // this branch only runs for one player at a time
-                bowlingBall = spawn_object(o, MODEL_BOWLING_BALL, bhvBowlingBall);
+                bowlingBall = spawn_object(o, E_MODEL_BOWLING_BALL, bhvBowlingBall);
                 if (bowlingBall != NULL) {
                     bowlingBall->oBehParams2ndByte = o->oBehParams2ndByte;
 

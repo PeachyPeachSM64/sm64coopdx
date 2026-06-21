@@ -33,7 +33,7 @@ void bhv_treasure_chest_top_loop(void) {
         case 1:
             if (o->oTimer == 0) {
                 if (rootParent->oTreasureChestIsAboveWater == 0) {
-                    spawn_object_relative(0, 0, -80, 120, o, MODEL_BUBBLE, bhvWaterAirBubble);
+                    spawn_object_relative(0, 0, -80, 120, o, E_MODEL_BUBBLE, bhvWaterAirBubble);
                     play_sound(SOUND_GENERAL_CLAM_SHELL1, o->header.gfx.cameraToObject);
                 } else {
                     play_sound(SOUND_GENERAL_OPEN_CHEST, o->header.gfx.cameraToObject);
@@ -66,7 +66,7 @@ void bhv_treasure_chest_top_loop(void) {
 }
 
 void bhv_treasure_chest_bottom_init(void) {
-    spawn_object_relative(0, 0, 102, -77, o, MODEL_TREASURE_CHEST_LID, bhvTreasureChestTop);
+    spawn_object_relative(0, 0, 102, -77, o, E_MODEL_TREASURE_CHEST_LID, bhvTreasureChestTop);
     obj_set_hitbox(o, &sTreasureChestBottomHitbox);
 }
 
@@ -127,7 +127,7 @@ void bhv_treasure_chest_bottom_loop(void) {
 }
 
 struct Object* spawn_treasure_chest(s8 index, s32 x, s32 y, s32 z, s16 r) {
-    struct Object *obj = spawn_object_abs_with_rot(o, 0, MODEL_TREASURE_CHEST_BASE, bhvTreasureChestBottom, x, y, z, 0, r, 0);
+    struct Object *obj = spawn_object_abs_with_rot(o, 0, E_MODEL_TREASURE_CHEST_BASE, bhvTreasureChestBottom, x, y, z, 0, r, 0);
     if (obj != NULL) { obj->oBehParams2ndByte = index; }
     return obj;
 }

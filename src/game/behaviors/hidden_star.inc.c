@@ -3,7 +3,7 @@
 void bhv_hidden_star_init(void) {
     s16 count = count_objects_with_behavior(bhvHiddenStarTrigger);
     if (count == 0) {
-        struct Object *obj = spawn_object_abs_with_rot(o, 0, MODEL_STAR, bhvStar, o->oPosX, o->oPosY, o->oPosZ, 0, 0, 0);
+        struct Object *obj = spawn_object_abs_with_rot(o, 0, E_MODEL_STAR, bhvStar, o->oPosX, o->oPosY, o->oPosZ, 0, 0, 0);
         if (obj != NULL) { obj->oBehParams = o->oBehParams; }
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
@@ -93,7 +93,7 @@ void bhv_hidden_star_trigger_loop(void) {
         }
     }
     if (gLevelValues.visibleSecrets) {
-        obj_set_model(o, MODEL_PURPLE_MARBLE);
+        obj_set_model(o, E_MODEL_PURPLE_MARBLE);
         obj_set_billboard(o);
     }
 }

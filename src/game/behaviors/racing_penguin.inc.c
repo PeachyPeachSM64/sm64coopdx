@@ -180,7 +180,7 @@ static void racing_penguin_act_race(void) {
         cur_obj_rotate_yaw_toward(o->oPathedTargetYaw, (s32)(15.0f * o->oForwardVel));
 
         if (cur_obj_check_if_at_animation_end() && (o->oMoveFlags & OBJ_MOVE_MASK_ON_GROUND)) {
-            spawn_object_relative_with_scale(0, 0, -100, 0, 4.0f, o, MODEL_SMOKE, bhvWhitePuffSmoke2);
+            spawn_object_relative_with_scale(0, 0, -100, 0, 4.0f, o, E_MODEL_SMOKE, bhvWhitePuffSmoke2);
         }
     }
 

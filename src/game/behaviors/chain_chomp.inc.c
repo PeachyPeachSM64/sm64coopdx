@@ -80,7 +80,7 @@ static void chain_chomp_act_uninitialized(void) {
             // Spawn the non-pivot chain parts, starting from the chain
             // chomp and moving toward the pivot
             for (s32 i = 1; i <= 4; i++) {
-                spawn_object_relative(i, 0, 0, 0, o, MODEL_METALLIC_BALL, bhvChainChompChainPart);
+                spawn_object_relative(i, 0, 0, 0, o, E_MODEL_METALLIC_BALL, bhvChainChompChainPart);
             }
 
             o->oAction = CHAIN_CHOMP_ACT_MOVE;

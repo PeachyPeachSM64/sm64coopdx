@@ -20,7 +20,7 @@ void bhv_checkerboard_elevator_group_init(void) {
         else
             sp38 = D_8032F754[sp34].unk0;
 
-        sp2C = spawn_object_relative(i, 0, i * sp3C, sp38, o, MODEL_CHECKERBOARD_PLATFORM,
+        sp2C = spawn_object_relative(i, 0, i * sp3C, sp38, o, E_MODEL_CHECKERBOARD_PLATFORM,
                                      bhvCheckerboardPlatformSub);
         if (sp2C == NULL) { continue; }
         sp2C->oCheckerBoardPlatformUnk1AC = D_8032F754[sp34].unk2;

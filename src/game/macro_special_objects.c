@@ -222,32 +222,32 @@ void spawn_macro_objects_hardcoded(s16 areaIndex, s16 *macroObjList) {
         struct Object* obj = NULL;
         switch (macroObjPreset) {
             case 0:
-                obj = spawn_macro_abs_yrot_2params(MODEL_NONE, bhvBooBossSpawnedBridge, macroObjX, macroObjY,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_NONE, bhvBooBossSpawnedBridge, macroObjX, macroObjY,
                                                    macroObjZ, macroObjRY, 0);
                 break;
             case 1:
-                obj = spawn_macro_abs_yrot_2params(MODEL_BBH_TILTING_FLOOR_PLATFORM,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_BBH_TILTING_FLOOR_PLATFORM,
                                                    bhvBbhTiltingTrapPlatform, macroObjX, macroObjY, macroObjZ,
                                                    macroObjRY, 0);
                 break;
             case 2:
-                obj = spawn_macro_abs_yrot_2params(MODEL_BBH_TUMBLING_PLATFORM, bhvBbhTumblingBridge,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_BBH_TUMBLING_PLATFORM, bhvBbhTumblingBridge,
                                                    macroObjX, macroObjY, macroObjZ, macroObjRY, 0);
                 break;
             case 3:
-                obj = spawn_macro_abs_yrot_2params(MODEL_BBH_MOVING_BOOKSHELF, bhvHauntedBookshelf, macroObjX,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_BBH_MOVING_BOOKSHELF, bhvHauntedBookshelf, macroObjX,
                                                    macroObjY, macroObjZ, macroObjRY, 0);
                 break;
             case 4:
-                obj = spawn_macro_abs_yrot_2params(MODEL_BBH_MESH_ELEVATOR, bhvMeshElevator, macroObjX,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_BBH_MESH_ELEVATOR, bhvMeshElevator, macroObjX,
                                                    macroObjY, macroObjZ, macroObjRY, 0);
                 break;
             case 20:
-                obj = spawn_macro_abs_yrot_2params(MODEL_YELLOW_COIN, bhvYellowCoin, macroObjX, macroObjY,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_YELLOW_COIN, bhvYellowCoin, macroObjX, macroObjY,
                                                    macroObjZ, macroObjRY, 0);
                 break;
             case 21:
-                obj = spawn_macro_abs_yrot_2params(MODEL_YELLOW_COIN, bhvYellowCoin, macroObjX, macroObjY,
+                obj = spawn_macro_abs_yrot_2params(E_MODEL_YELLOW_COIN, bhvYellowCoin, macroObjX, macroObjY,
                                                    macroObjZ, macroObjRY, 0);
                 break;
             default:

@@ -41,7 +41,7 @@ struct MacroPreset MacroObjectPresets[] = {
     {bhvGoomba, E_MODEL_GOOMBA, 0},
     {bhvHomingAmp, E_MODEL_AMP, 0},
     {bhvCirclingAmp, E_MODEL_AMP, 0},
-    {bhvCarrySomething1, MODEL_UNKNOWN_7D, 0}, // unused
+    {bhvCarrySomething1, (enum ModelExtendedId) MODEL_UNKNOWN_7D, 0}, // unused
     {bhvBetaTrampolineTop, E_MODEL_TRAMPOLINE, 0}, // unused
     {bhvFreeBowlingBall, E_MODEL_BOWLING_BALL, 0}, // unused
     {bhvSnufit, E_MODEL_SNUFIT, 0},
@@ -97,7 +97,7 @@ struct MacroPreset MacroObjectPresets[] = {
     {bhvSmallBully, E_MODEL_BULLY, 0},
     {bhvSmallBully, E_MODEL_BULLY_BOSS, 0}, // unused
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
-    {bhvStub1D0C, MODEL_UNKNOWN_58, 0}, // unused
+    {bhvStub1D0C, (enum ModelExtendedId) MODEL_UNKNOWN_58, 0}, // unused
     {bhvBouncingFireball, E_MODEL_NONE, 0},
     {bhvFlamethrower, E_MODEL_NONE, 4},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
@@ -124,7 +124,7 @@ struct MacroPreset MacroObjectPresets[] = {
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
-    {bhvUnusedFakeStar, MODEL_UNKNOWN_54, 0}, // unused
+    {bhvUnusedFakeStar, (enum ModelExtendedId) MODEL_UNKNOWN_54, 0}, // unused
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvUnagi, E_MODEL_UNAGI, 0}, // unused
     {bhvSushiShark, E_MODEL_SUSHI, 0}, // unused
@@ -304,7 +304,7 @@ struct MacroPreset MacroObjectPresets[] = {
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
-    {bhvYellowCoin, MODEL_UNKNOWN_54, 0}, // unused
+    {bhvYellowCoin, (enum ModelExtendedId) MODEL_UNKNOWN_54, 0}, // unused
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},

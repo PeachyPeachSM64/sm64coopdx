@@ -62,19 +62,19 @@ static void bhv_controllable_platform_on_received_post(UNUSED u8 localIndex) {
 }
 
 void bhv_controllable_platform_init(void) {
-    controllablePlatformSubs[0] = spawn_object_rel_with_rot(o, MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub, 0,
+    controllablePlatformSubs[0] = spawn_object_rel_with_rot(o, E_MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub, 0,
                                                             51, 204, 0, 0, 0);
     if (controllablePlatformSubs[0] != NULL) { controllablePlatformSubs[0]->oBehParams2ndByte = 1; }
 
-    controllablePlatformSubs[1] = spawn_object_rel_with_rot(o, MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub, 0,
+    controllablePlatformSubs[1] = spawn_object_rel_with_rot(o, E_MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub, 0,
                                                             51, -204, 0, -0x8000, 0);
     if (controllablePlatformSubs[1] != NULL) { controllablePlatformSubs[1]->oBehParams2ndByte = 2; }
 
-    controllablePlatformSubs[2] = spawn_object_rel_with_rot(o, MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub, 204,
+    controllablePlatformSubs[2] = spawn_object_rel_with_rot(o, E_MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub, 204,
                                                             51, 0, 0, 0x4000, 0);
     if (controllablePlatformSubs[2] != NULL) { controllablePlatformSubs[2]->oBehParams2ndByte = 3; }
 
-    controllablePlatformSubs[3] = spawn_object_rel_with_rot(o, MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub,
+    controllablePlatformSubs[3] = spawn_object_rel_with_rot(o, E_MODEL_HMC_METAL_ARROW_PLATFORM, bhvControllablePlatformSub,
                                                             -204, 51, 0, 0, -0x4000, 0);
     if (controllablePlatformSubs[3] != NULL) { controllablePlatformSubs[3]->oBehParams2ndByte = 4; }
 

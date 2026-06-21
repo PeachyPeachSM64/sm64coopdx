@@ -279,7 +279,7 @@ static void monty_mole_act_spawn_rock(void) {
         if (o->oBehParams2ndByte != MONTY_MOLE_BP_NO_ROCK
             && abs_angle_diff(angleToPlayer, o->oMoveAngleYaw) < 0x4000
             && sync_object_is_owned_locally(o->oSyncID)
-            && (rock = spawn_object(o, MODEL_PEBBLE, bhvMontyMoleRock)) != NULL) {
+            && (rock = spawn_object(o, E_MODEL_PEBBLE, bhvMontyMoleRock)) != NULL) {
 
             struct Object* spawn_objects[] = { rock };
             u32 models[] = { E_MODEL_PEBBLE };
@@ -462,7 +462,7 @@ void bhv_monty_mole_update(void) {
             if (distToLastKill < 1500.0f) {
                 if (sMontyMoleKillStreak == 7 && sync_object_is_owned_locally(o->oSyncID)) {
                     play_puzzle_jingle();
-                    struct Object* oneUp = spawn_object(o, MODEL_1UP, bhv1upWalking);
+                    struct Object* oneUp = spawn_object(o, E_MODEL_1UP, bhv1upWalking);
                     if (oneUp != NULL) {
                         struct Object* spawn_objects[] = { oneUp };
                         u32 models[] = { E_MODEL_1UP };

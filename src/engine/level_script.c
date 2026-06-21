@@ -433,7 +433,7 @@ static void level_cmd_begin_area(void) {
     void *geoLayoutAddr = CMD_GET(void *, 4);
 
     if (areaIndex < MAX_AREAS) {
-        enum ModelExtendedId modelId = E_MODEL_LEVEL_AREA_START + areaIndex;
+        enum ModelExtendedId modelId = E_MODEL__LEVEL_AREA_START_ + areaIndex;
         struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo_layout(modelId, MODEL_POOL_LEVEL, geoLayoutAddr, NULL, true);
         struct GraphNodeCamera *node = (struct GraphNodeCamera *) screenArea->views[0];
 

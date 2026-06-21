@@ -42,7 +42,7 @@ void flying_bookend_act_0(void) {
         o->oAction = 1;
         o->oBookendUnkF4 = o->oFaceAnglePitch + 0x7FFF;
         o->oBookendUnkF8 = o->oFaceAngleRoll - 0x7FFF;
-        cur_obj_set_model(smlua_model_util_load(E_MODEL_BOOKEND_PART));
+        cur_obj_set_model(E_MODEL_BOOKEND_PART);
     }
 }
 
@@ -144,7 +144,7 @@ void bhv_bookend_spawn_loop(void) {
 
     if (!(o->activeFlags & ACTIVE_FLAG_IN_DIFFERENT_ROOM)) {
         if (o->oTimer > 40 && marioState && obj_is_near_to_and_facing_mario(marioState, 600.0f, 0x2000)) {
-            book = spawn_object(o, MODEL_BOOKEND, bhvFlyingBookend);
+            book = spawn_object(o, E_MODEL_BOOKEND, bhvFlyingBookend);
             if (book != NULL) {
                 book->oAction = 3;
 
@@ -166,7 +166,7 @@ void bookshelf_manager_act_0(void) {
 
     //if (!(o->activeFlags & ACTIVE_FLAG_IN_DIFFERENT_ROOM)) {
         for (val04 = 0; val04 < 3; val04++) {
-            spawn_object_relative(val04, D_80331B30[val04].unk00, D_80331B30[val04].unk02, 0, o, MODEL_BOOKEND, bhvBookSwitch);
+            spawn_object_relative(val04, D_80331B30[val04].unk00, D_80331B30[val04].unk02, 0, o, E_MODEL_BOOKEND, bhvBookSwitch);
         }
 
         o->oAction = 1;
@@ -390,7 +390,7 @@ void bhv_book_switch_loop(void) {
                         }
 
                         if (so && so->owned) {
-                            book = spawn_object_abs_with_rot(o, 0, MODEL_BOOKEND, bhvFlyingBookend,
+                            book = spawn_object_abs_with_rot(o, 0, E_MODEL_BOOKEND, bhvFlyingBookend,
                                                              0x1FC * sp36 - 0x8CA, 890, sp34, 0,
                                                              0x8000 * sp36 + 0x4000, 0);
                             if (book != NULL) {

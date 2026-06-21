@@ -37,7 +37,7 @@ void spawn_star_number(void) {
 
     // If not, spawn a number
     if (!starNumber && o) {
-        starNumber = spawn_object(o, MODEL_NUMBER, bhvStarNumber);
+        starNumber = spawn_object(o, E_MODEL_NUMBER, bhvStarNumber);
     }
     if (starNumber && o) {
         starNumber->parentObj = o;
@@ -65,9 +65,9 @@ void bhv_collect_star_init(void) {
     starId = o->oBehParams >> 24;
     currentLevelStarFlags = save_file_get_star_flags(gCurrSaveFileNum - 1, (gLevelValues.useGlobalStarIds ? (starId / 7) - 1 : gCurrCourseNum - 1));
     if (currentLevelStarFlags & (1 << (gLevelValues.useGlobalStarIds ? starId % 7 : starId))) {
-        cur_obj_set_model(MODEL_TRANSPARENT_STAR);
+        cur_obj_set_model(E_MODEL_TRANSPARENT_STAR);
     } else {
-        cur_obj_set_model(MODEL_STAR);
+        cur_obj_set_model(E_MODEL_STAR);
     }
 
     obj_set_hitbox(o, &sCollectStarHitbox);
@@ -125,7 +125,7 @@ void bhv_star_spawn_loop(void) {
             o->oStarSpawnUnkFC += o->oVelY;
             o->oPosY = o->oStarSpawnUnkFC + sins((o->oTimer * 0x8000) / 30) * 400.0f;
             o->oFaceAngleYaw += 0x1000;
-            spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+            spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
             cur_obj_play_sound_if_visible(SOUND_ENV_STAR);
             if (o->oTimer == 30) {
                 o->oAction = 2;
@@ -140,7 +140,7 @@ void bhv_star_spawn_loop(void) {
             else
                 o->oVelY = -10.0f;
 
-            spawn_object(o, MODEL_NONE, bhvSparkleSpawn);
+            spawn_object(o, E_MODEL_NONE, bhvSparkleSpawn);
             obj_move_xyz_using_fvel_and_yaw(o);
             o->oFaceAngleYaw = o->oFaceAngleYaw - o->oTimer * 0x10 + 0x1000;
             cur_obj_play_sound_if_visible(SOUND_ENV_STAR);
@@ -182,7 +182,7 @@ void bhv_star_spawn_loop(void) {
 }
 
 struct Object *spawn_star(struct Object *obj, f32 x, f32 y, f32 z) {
-    obj = spawn_object_abs_with_rot(o, 0, MODEL_STAR, bhvStarSpawnCoordinates, o->oPosX, o->oPosY,
+    obj = spawn_object_abs_with_rot(o, 0, E_MODEL_STAR, bhvStarSpawnCoordinates, o->oPosX, o->oPosY,
                                      o->oPosZ, 0, 0, 0);
     if (obj == NULL) { return NULL; }
     obj->oBehParams = o->oBehParams;
@@ -295,12 +295,12 @@ struct Object *spawn_networked_default_star(f32 x, f32 y, f32 z, u8 networkPlaye
 
 void bhv_hidden_red_coin_star_init(void) {
     if (gCurrCourseNum != COURSE_JRB) {
-        spawn_object(o, MODEL_TRANSPARENT_STAR, bhvRedCoinStarMarker);
+        spawn_object(o, E_MODEL_TRANSPARENT_STAR, bhvRedCoinStarMarker);
     }
 
     s16 redCoins = count_objects_with_behavior(bhvRedCoin);
     if (redCoins == 0) {
-        struct Object *star = spawn_object_abs_with_rot(o, 0, MODEL_STAR, bhvStar, o->oPosX, o->oPosY, o->oPosZ, 0, 0, 0);
+        struct Object *star = spawn_object_abs_with_rot(o, 0, E_MODEL_STAR, bhvStar, o->oPosX, o->oPosY, o->oPosZ, 0, 0, 0);
         if (star != NULL) { star->oBehParams = o->oBehParams; }
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }

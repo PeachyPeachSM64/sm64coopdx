@@ -1,31 +1,31 @@
 // animated_floor_switch.inc.c
 
 struct Struct80331A54 {
-    const void *unk00;
-    s16 unk04;
+    const void *collision;
+    enum ModelExtendedId modelId;
 };
 
 struct Struct80331A54 D_80331A54[][5] = {
     {
-        { bits_seg7_collision_0701B734, MODEL_BITS_STAIRCASE_FRAME4 },
-        { bits_seg7_collision_0701B59C, MODEL_BITS_STAIRCASE_FRAME3 },
-        { bits_seg7_collision_0701B404, MODEL_BITS_STAIRCASE_FRAME2 },
-        { bits_seg7_collision_0701B26C, MODEL_BITS_STAIRCASE_FRAME1 },
-        { bits_seg7_collision_0701B0D4, MODEL_BITS_STAIRCASE },
+        { bits_seg7_collision_0701B734, E_MODEL_BITS_STAIRCASE_FRAME4 },
+        { bits_seg7_collision_0701B59C, E_MODEL_BITS_STAIRCASE_FRAME3 },
+        { bits_seg7_collision_0701B404, E_MODEL_BITS_STAIRCASE_FRAME2 },
+        { bits_seg7_collision_0701B26C, E_MODEL_BITS_STAIRCASE_FRAME1 },
+        { bits_seg7_collision_0701B0D4, E_MODEL_BITS_STAIRCASE },
     },
     {
-        { bitdw_seg7_collision_0700FD9C, MODEL_BITDW_STAIRCASE },
-        { bitdw_seg7_collision_0700FC7C, MODEL_BITDW_STAIRCASE_FRAME1 },
-        { bitdw_seg7_collision_0700FB5C, MODEL_BITDW_STAIRCASE_FRAME2 },
-        { bitdw_seg7_collision_0700FA3C, MODEL_BITDW_STAIRCASE_FRAME3 },
-        { bitdw_seg7_collision_0700F91C, MODEL_BITDW_STAIRCASE_FRAME4 },
+        { bitdw_seg7_collision_0700FD9C, E_MODEL_BITDW_STAIRCASE },
+        { bitdw_seg7_collision_0700FC7C, E_MODEL_BITDW_STAIRCASE_FRAME1 },
+        { bitdw_seg7_collision_0700FB5C, E_MODEL_BITDW_STAIRCASE_FRAME2 },
+        { bitdw_seg7_collision_0700FA3C, E_MODEL_BITDW_STAIRCASE_FRAME3 },
+        { bitdw_seg7_collision_0700F91C, E_MODEL_BITDW_STAIRCASE_FRAME4 },
     },
     {
-        { rr_seg7_collision_0702A6B4, MODEL_RR_TRICKY_TRIANGLES_FRAME4 },
-        { rr_seg7_collision_0702A32C, MODEL_RR_TRICKY_TRIANGLES_FRAME3 },
-        { rr_seg7_collision_07029FA4, MODEL_RR_TRICKY_TRIANGLES_FRAME2 },
-        { rr_seg7_collision_07029C1C, MODEL_RR_TRICKY_TRIANGLES_FRAME1 },
-        { rr_seg7_collision_07029924, MODEL_RR_TRICKY_TRIANGLES },
+        { rr_seg7_collision_0702A6B4, E_MODEL_RR_TRICKY_TRIANGLES_FRAME4 },
+        { rr_seg7_collision_0702A32C, E_MODEL_RR_TRICKY_TRIANGLES_FRAME3 },
+        { rr_seg7_collision_07029FA4, E_MODEL_RR_TRICKY_TRIANGLES_FRAME2 },
+        { rr_seg7_collision_07029C1C, E_MODEL_RR_TRICKY_TRIANGLES_FRAME1 },
+        { rr_seg7_collision_07029924, E_MODEL_RR_TRICKY_TRIANGLES },
     },
 };
 
@@ -75,9 +75,7 @@ void bhv_animates_on_floor_switch_press_loop(void) {
     u8 group = (u8)o->oBehParams2ndByte;
     u8 fType = (u8)o->oFloorSwitchPressAnimationUnkF8 / 2;
     if (group <= 2 && fType <= 4) {
-        o->collisionData = segmented_to_virtual(
-            D_80331A54[group][fType].unk00);
-
-        cur_obj_set_model(D_80331A54[group][fType].unk04);
+        o->collisionData = segmented_to_virtual(D_80331A54[group][fType].collision);
+        cur_obj_set_model(D_80331A54[group][fType].modelId);
     }
 }

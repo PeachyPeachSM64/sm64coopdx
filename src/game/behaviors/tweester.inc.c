@@ -109,7 +109,7 @@ void tweester_act_chase(void) {
 
     cur_obj_move_standard(60);
     tweester_scale_and_move(1.0f);
-    spawn_object(o, MODEL_SAND_DUST, bhvTweesterSandParticle);
+    spawn_object(o, E_MODEL_SAND_DUST, bhvTweesterSandParticle);
 }
 
 /**

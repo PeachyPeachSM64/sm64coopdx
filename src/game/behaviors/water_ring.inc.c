@@ -158,7 +158,7 @@ void bhv_jet_stream_water_ring_loop(void) {
 }
 
 void spawn_manta_ray_ring_manager(void) {
-    struct Object *ringManager = spawn_object(o, MODEL_NONE, bhvMantaRayRingManager);
+    struct Object *ringManager = spawn_object(o, E_MODEL_NONE, bhvMantaRayRingManager);
     o->parentObj = ringManager;
 }
 
@@ -177,7 +177,7 @@ void water_ring_spawner_act_inactive(void) {
         o->oTimer = 0;
     if ((o->oTimer == 0) || (o->oTimer == 50) || (o->oTimer == 150) || (o->oTimer == 200)
         || (o->oTimer == 250)) {
-        waterRing = spawn_object(o, MODEL_WATER_RING, bhvJetStreamWaterRing);
+        waterRing = spawn_object(o, E_MODEL_WATER_RING, bhvJetStreamWaterRing);
         if (waterRing != NULL) {
             waterRing->oWaterRingIndex = currentObj->oWaterRingMgrNextRingIndex;
             currentObj->oWaterRingMgrNextRingIndex++;

@@ -10,20 +10,20 @@ void bhv_celebration_star_init(void) {
     o->oCelebStarDiameterOfRotation = 100;
 #if BUGFIX_STAR_BOWSER_KEY
     if (gCurrLevelNum == LEVEL_BOWSER_1 || gCurrLevelNum == LEVEL_BOWSER_2) {
-        cur_obj_set_model(MODEL_BOWSER_KEY);
+        cur_obj_set_model(E_MODEL_BOWSER_KEY);
         o->oFaceAnglePitch = 0;
         o->oFaceAngleRoll = 49152;
         cur_obj_scale(0.1f);
         o->oCelebStarUnkF4 = 1;
     } else {
-        cur_obj_set_model(MODEL_STAR);
+        cur_obj_set_model(E_MODEL_STAR);
         o->oFaceAnglePitch = 0;
         o->oFaceAngleRoll = 0;
         cur_obj_scale(0.4f);
         o->oCelebStarUnkF4 = 0;
     }
 #else
-    cur_obj_set_model(MODEL_STAR);
+    cur_obj_set_model(E_MODEL_STAR);
     cur_obj_scale(0.4f);
     o->oFaceAnglePitch = 0;
     o->oFaceAngleRoll = 0;
@@ -40,7 +40,7 @@ void celeb_star_act_spin_around_mario(void) {
     if (o->oTimer == 40)
         o->oAction = CELEB_STAR_ACT_FACE_CAMERA;
     if (o->oTimer < 35) {
-        spawn_object(o, MODEL_SPARKLES, bhvCelebrationStarSparkle);
+        spawn_object(o, E_MODEL_SPARKLES, bhvCelebrationStarSparkle);
         o->oCelebStarDiameterOfRotation++;
     } else
         o->oCelebStarDiameterOfRotation -= 20;

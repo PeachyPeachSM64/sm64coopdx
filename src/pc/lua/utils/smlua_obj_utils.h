@@ -18,12 +18,6 @@ struct Object* spawn_non_sync_object(enum BehaviorId behaviorId, enum ModelExten
 
 /* |description|Checks if an object has `behaviorId`|descriptionEnd| */
 s32 obj_has_behavior_id(struct Object *o, enum BehaviorId behaviorId);
-/* |description|Checks if an object's model is equal to `modelId`|descriptionEnd| */
-s32 obj_has_model_extended(struct Object *o, enum ModelExtendedId modelId);
-/* |description|Returns an object's extended model id|descriptionEnd| */
-enum ModelExtendedId obj_get_model_id_extended(struct Object *o);
-/* |description|Sets an object's model to `modelId`|descriptionEnd| */
-void obj_set_model_extended(struct Object *o, enum ModelExtendedId modelId);
 
 /* |description|Gets a trajectory by `name`|descriptionEnd| */
 Trajectory* get_trajectory(const char* name);

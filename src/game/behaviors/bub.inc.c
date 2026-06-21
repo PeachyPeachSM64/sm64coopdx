@@ -10,7 +10,7 @@ void bub_spawner_act_0(void) {
     s32 sp18 = o->oBirdChirpChirpUnkF4;
     if (sp18 > 20) { sp18 = 20; }
     for (i = 0; i < sp18; i++)
-        spawn_object(o, MODEL_BUB, bhvBub);
+        spawn_object(o, E_MODEL_BUB, bhvBub);
     o->oAction = 1;
 }
 
@@ -88,7 +88,7 @@ void bub_act_2(void) {
     f32 dy;
     if (o->oTimer < 20) {
         if (o->oInteractStatus & INT_STATUS_INTERACTED)
-            spawn_object(o, MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticleSnow);
+            spawn_object(o, E_MODEL_WHITE_PARTICLE_SMALL, bhvSmallParticleSnow);
     } else
         o->oInteractStatus = 0;
     if (o->oTimer == 0)

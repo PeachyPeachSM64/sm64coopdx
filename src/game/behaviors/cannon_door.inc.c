@@ -7,7 +7,7 @@ static void bhv_cannon_closed_init_non_spawn(void) {
 }
 
 void bhv_cannon_closed_init(void) {
-    struct Object* cannon = spawn_object(o, MODEL_CANNON_BASE, bhvCannon);
+    struct Object* cannon = spawn_object(o, E_MODEL_CANNON_BASE, bhvCannon);
     if (cannon != NULL) {
         cannon->parentObj = cannon;
         cannon->oBehParams2ndByte = o->oBehParams2ndByte;

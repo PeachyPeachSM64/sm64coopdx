@@ -229,7 +229,7 @@ void platform_on_track_update_pos_or_spawn_ball(s32 ballIndex, f32 x, f32 y, f32
 
         if (ballIndex != 0) {
             trackBall = spawn_object_relative(o->oPlatformOnTrackBaseBallIndex + ballIndex, 0, 0, 0, o,
-                                              MODEL_TRAJECTORY_MARKER_BALL, bhvTrackBall);
+                                              E_MODEL_TRAJECTORY_MARKER_BALL, bhvTrackBall);
 
             if (trackBall != NULL) {
                 trackBall->oPosX = x;
@@ -687,7 +687,7 @@ void obj_die_if_health_non_positive(void) {
         }
 
         if ((s32)o->oNumLootCoins < 0) {
-            spawn_object(o, MODEL_BLUE_COIN, bhvMrIBlueCoin);
+            spawn_object(o, E_MODEL_BLUE_COIN, bhvMrIBlueCoin);
         } else {
             obj_spawn_loot_yellow_coins(o, o->oNumLootCoins, 20.0f);
         }

@@ -512,14 +512,14 @@ void try_do_mario_debug_object_spawn(void) {
 
     if (sDebugPage == DEBUG_PAGE_STAGEINFO && gDebugInfo[DEBUG_PAGE_ENEMYINFO][7] == 1) {
         if (gPlayer1Controller->buttonPressed & R_JPAD) {
-            spawn_object_relative(0, 0, 100, 200, gCurrentObject, MODEL_KOOPA_SHELL, bhvKoopaShell);
+            spawn_object_relative(0, 0, 100, 200, gCurrentObject, E_MODEL_KOOPA_SHELL, bhvKoopaShell);
         }
         if (gPlayer1Controller->buttonPressed & L_JPAD) {
-            spawn_object_relative(0, 0, 100, 200, gCurrentObject, MODEL_BREAKABLE_BOX_SMALL,
+            spawn_object_relative(0, 0, 100, 200, gCurrentObject, E_MODEL_BREAKABLE_BOX_SMALL,
                                   bhvJumpingBox);
         }
         if (gPlayer1Controller->buttonPressed & D_JPAD) {
-            spawn_object_relative(0, 0, 100, 200, gCurrentObject, MODEL_KOOPA_SHELL,
+            spawn_object_relative(0, 0, 100, 200, gCurrentObject, E_MODEL_KOOPA_SHELL,
                                   bhvKoopaShellUnderwater);
         }
     }
@@ -573,7 +573,7 @@ void debug_enemy_unknown(s16 *enemyArr) {
 void debug_position(f32 x, f32 y, f32 z, bool red) {
     struct Object* player = gMarioStates[0].marioObj;
     if (player == NULL) { return; }
-    struct Object* obj = spawn_object(player, red ? MODEL_RED_COIN : MODEL_YELLOW_COIN, bhvSparkle);
+    struct Object* obj = spawn_object(player, red ? E_MODEL_RED_COIN : E_MODEL_YELLOW_COIN, bhvSparkle);
     if (obj != NULL) {
         obj_scale(obj, 0.25f);
         obj->oPosX = x;

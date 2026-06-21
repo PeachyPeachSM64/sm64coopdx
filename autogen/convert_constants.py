@@ -6,7 +6,8 @@ from exposed_lists import \
     constants_files, \
     constants_whitelist, \
     constants_blacklist, \
-    constants_hidden
+    constants_hidden, \
+    constants_enums_with_include
 
 verbose = len(sys.argv) > 1 and (sys.argv[1] == "-v" or sys.argv[1] == "--verbose")
 
@@ -34,6 +35,33 @@ defined_values = {
 pretend_find = [
     "SOUND_ARG_LOAD",
 ]
+
+############################################################################
+
+def process_enum_include(filename, line, inIfBlock, enum_defines, filepath, field, index, set_to, set_to_val):
+    constants = []
+    with open(filepath, 'r') as f:
+        txt = f.read()
+
+    # strip comments
+    txt = re.sub('//.*', ' ', txt)
+    while ('/*' in txt):
+        s1 = txt.split('/*', 1)
+        s2 = s1[1].split('*/', 1)
+        txt = s1[0] + s2[-1]
+
+    for l in txt.split('\n'):
+        for define, arg_num in enum_defines.items():
+            tokens = l.strip().replace('(', ',').replace(')', ',').split(',')
+            if len(tokens) >= arg_num + 1 and tokens[0].strip() == define:
+                field = tokens[arg_num].strip()
+                constant = get_constant(filename, line, inIfBlock, field, index, set_to, set_to_val)
+                if constant is not None:
+                    constants.append(constant)
+                index += 1
+                break
+
+    return constants, index
 
 ############################################################################
 
@@ -90,6 +118,11 @@ def process_enum(filename, line, inIfBlock):
     ret = {}
     ret['identifier'] = ident
 
+    enum_defines = constants_enums_with_include.get(filename, {}).get(ident)
+    if enum_defines:
+        val = re.sub(r'#define .*#include', '#include', val)
+        val = re.sub(r'#undef [A-Z_]+', ',', val)
+
     constants = []
     set_to = None
     set_to_val = None
@@ -98,6 +131,12 @@ def process_enum(filename, line, inIfBlock):
     for field in fields:
         field = field.strip()
         if len(field) == 0:
+            continue
+
+        if enum_defines and field.startswith("#include"):
+            filepath = re.sub(r'#include +\"(.*)\"', r'\1', field)
+            included, index = process_enum_include(filename, line, inIfBlock, enum_defines, filepath, field, index, set_to, set_to_val)
+            constants += included
             continue
 
         if '=' in field:

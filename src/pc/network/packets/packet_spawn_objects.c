@@ -25,7 +25,6 @@ struct SpawnObjectData {
     s32 rawData[OBJECT_NUM_FIELDS];
     u8 setHome;
     u8 globalPlayerIndex;
-    u16 extendedModelId; // unused
     u8 extraFieldCount;
 };
 #pragma pack()
@@ -94,7 +93,6 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
         u32 parentId = generate_parent_id(objects, i, true);
         u32 behaviorId = get_id_from_behavior(o->behavior);
         struct SyncObject* so = sync_object_get(o->oSyncID);
-        u16 extendedModelId = 0; // unused
         packet_write(&p, &o->ctx, sizeof(u8));
         packet_write(&p, &parentId, sizeof(u32));
         packet_write(&p, &modelId, sizeof(u32));
@@ -106,7 +104,7 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
         packet_write(&p, &o->header.gfx.scale[2], sizeof(f32));
         packet_write(&p, &o->setHome, sizeof(u8));
         packet_write(&p, &o->globalPlayerIndex, sizeof(u8));
-        packet_write(&p, &extendedModelId, sizeof(u16));
+        // TODO: do something for modfs loaded models?
     }
 
     if (sendToLocalIndex == PACKET_DESTINATION_BROADCAST) {
@@ -148,10 +146,10 @@ void network_receive_spawn_objects(struct Packet* p) {
         packet_read(p, &scale[2], sizeof(f32));
         packet_read(p, &data.setHome, sizeof(u8));
         packet_read(p, &data.globalPlayerIndex, sizeof(u8));
-        packet_read(p, &data.extendedModelId, sizeof(u16));
+        // TODO: do something for modfs loaded models?
 
-        char* id = "unknown";
-        char* name = "unknown";
+        const char *id = "unknown";
+        const char *name = "unknown";
         if (gNetworkSystem && p->localIndex) {
             id = gNetworkSystem->get_id_str(p->localIndex);
             name = gNetworkPlayers[p->localIndex].name;
@@ -165,9 +163,9 @@ void network_receive_spawn_objects(struct Packet* p) {
             struct SyncObject *so = sync_object_get(syncID);
             if (so && so->o) {
                 if (so->o->behavior == get_behavior_from_id(data.behaviorId)) {
-                    LOG_ERROR("recieved duplicate sync object with id %d from %s (%s)", syncID, name, id);
+                    LOG_ERROR("received duplicate sync object with id %d from %s (%s)", syncID, name, id);
                 } else {
-                    LOG_ERROR("recieved duplicate sync object with id %d with different behavior %s from %s (%s)", syncID, bhvName, name, id);
+                    LOG_ERROR("received duplicate sync object with id %d with different behavior %s from %s (%s)", syncID, bhvName, name, id);
                 }
                 continue;
             }

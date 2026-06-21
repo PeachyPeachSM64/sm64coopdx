@@ -27,7 +27,7 @@ static void skeeter_spawn_waves(void) {
 
     for (i = 0; i < 4; i++) {
         spawn_object_relative_with_scale(0, D_80331C38[i].unk00, 0, D_80331C38[i].unk02, 0.8f, o,
-                                         MODEL_IDLE_WATER_WAVE, bhvSkeeterWave);
+                                         E_MODEL_IDLE_WATER_WAVE, bhvSkeeterWave);
     }
 }
 

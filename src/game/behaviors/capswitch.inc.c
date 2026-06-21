@@ -6,7 +6,7 @@ void cap_switch_act_0(void) {
     o->oAnimState = o->oBehParams2ndByte;
     cur_obj_scale(0.5f);
     o->oPosY += 71.0f;
-    spawn_object_relative_with_scale(0, 0, -71, 0, 0.5f, o, MODEL_CAP_SWITCH_BASE, bhvCapSwitchBase);
+    spawn_object_relative_with_scale(0, 0, -71, 0, 0.5f, o, E_MODEL_CAP_SWITCH_BASE, bhvCapSwitchBase);
     if (gCurrLevelNum != LEVEL_UNKNOWN_32) {
         if (save_file_get_flags() & BHV_ARR(D_8032F0C0, o->oBehParams2ndByte, s32)) {
             o->oAction = 3;

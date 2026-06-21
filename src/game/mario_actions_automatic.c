@@ -1083,7 +1083,7 @@ s32 act_bubbled(struct MarioState* m) {
 
     // create bubble
     if (m->bubbleObj == NULL && is_player_in_local_area(m)) {
-        m->bubbleObj = spawn_object(m->marioObj, MODEL_BUBBLE_PLAYER, bhvBubblePlayer);
+        m->bubbleObj = spawn_object(m->marioObj, E_MODEL_BUBBLE_PLAYER, bhvBubblePlayer);
         if (m->bubbleObj != NULL) {
             m->bubbleObj->heldByPlayerIndex = m->playerIndex;
         }

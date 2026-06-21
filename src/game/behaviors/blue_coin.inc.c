@@ -51,7 +51,7 @@ void bhv_hidden_blue_coin_loop(void) {
 
             // Delete the coin once collected
             if (o->oInteractStatus & INT_STATUS_INTERACTED) {
-                spawn_object(o, MODEL_SPARKLES, bhvGoldenCoinSparkles);
+                spawn_object(o, E_MODEL_SPARKLES, bhvGoldenCoinSparkles);
                 obj_mark_for_deletion(o);
             }
 
@@ -106,7 +106,7 @@ void bhv_blue_coin_number_loop(void) {
  * Init function for bhvBlueCoinSwitch.
  */
 void bhv_blue_coin_switch_init(void) {
-    struct Object *blueCoinNumber = spawn_object(o, MODEL_NUMBER, bhvBlueCoinNumber);
+    struct Object *blueCoinNumber = spawn_object(o, E_MODEL_NUMBER, bhvBlueCoinNumber);
     if (blueCoinNumber) {
         blueCoinNumber->activeFlags |= ACTIVE_FLAG_INITIATED_TIME_STOP; // to make sure it's updated even during time stop
         blueCoinNumber->oHiddenBlueCoinSwitch = o;

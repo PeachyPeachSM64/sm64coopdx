@@ -27,7 +27,7 @@ void mr_i_piranha_particle_act_1(void) {
     s32 i;
     obj_mark_for_deletion(o);
     for (i = 0; i < 10; i++)
-        spawn_object(o, MODEL_PURPLE_MARBLE, bhvPurpleParticle);
+        spawn_object(o, E_MODEL_PURPLE_MARBLE, bhvPurpleParticle);
 }
 
 void (*sMrIParticleActions[])(void) = { mr_i_piranha_particle_act_0, mr_i_piranha_particle_act_1 };
@@ -39,7 +39,7 @@ void bhv_mr_i_particle_loop(void) {
 void spawn_mr_i_particle(void) {
     struct Object *particle;
     f32 sp18 = o->header.gfx.scale[1];
-    particle = spawn_object(o, MODEL_PURPLE_MARBLE, bhvMrIParticle);
+    particle = spawn_object(o, E_MODEL_PURPLE_MARBLE, bhvMrIParticle);
     if (particle != NULL) {
         particle->oPosY += 50.0f * sp18;
         particle->oPosX += sins(o->oMoveAngleYaw) * 90.0f * sp18;

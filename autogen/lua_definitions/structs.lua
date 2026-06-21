@@ -229,11 +229,11 @@
 --- @field public hudHead integer
 --- @field public hudHeadTexture TextureInfo
 --- @field public cameraHudHead integer
---- @field public modelId integer
---- @field public capModelId integer
---- @field public capMetalModelId integer
---- @field public capWingModelId integer
---- @field public capMetalWingModelId integer
+--- @field public modelId ModelExtendedId
+--- @field public capModelId ModelExtendedId
+--- @field public capMetalModelId ModelExtendedId
+--- @field public capWingModelId ModelExtendedId
+--- @field public capMetalWingModelId ModelExtendedId
 --- @field public capEnemyLayer integer
 --- @field public capEnemyGfx Pointer_Gfx
 --- @field public capEnemyDecalGfx Pointer_Gfx
@@ -2179,7 +2179,7 @@
 --- @class SpawnParticlesInfo
 --- @field public behParam integer
 --- @field public count integer
---- @field public model integer
+--- @field public model ModelExtendedId
 --- @field public offsetY integer
 --- @field public forwardVelBase integer
 --- @field public forwardVelRange integer
@@ -2293,7 +2293,7 @@
 
 --- @class WaterDropletParams
 --- @field public flags integer
---- @field public model integer
+--- @field public model ModelExtendedId
 --- @field public behavior Pointer_BehaviorScript
 --- @field public moveAngleRange integer
 --- @field public moveRange integer

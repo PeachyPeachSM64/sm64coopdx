@@ -51,7 +51,7 @@ void bullet_bill_act_2(void) {
     } else {
         if (o->oTimer > 70)
             cur_obj_update_floor_and_walls();
-        spawn_object(o, MODEL_SMOKE, bhvWhitePuffSmoke);
+        spawn_object(o, E_MODEL_SMOKE, bhvWhitePuffSmoke);
         o->oForwardVel = 30.0f;
         if (distanceToPlayer > 300.0f)
             cur_obj_rotate_yaw_toward(angleToPlayer, 0x100);

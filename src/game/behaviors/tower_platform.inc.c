@@ -122,14 +122,14 @@ void spawn_wf_platform_group(void) {
     o->oPlatformSpawnerUnk100 = 704.0f;
     o->oPlatformSpawnerUnk104 = 380.0f;
     o->oPlatformSpawnerUnk108 = 3.0f;
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSlidingTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSlidingTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSlidingTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
-    spawn_and_init_wf_platforms(MODEL_WF_TOWER_SQUARE_PLATORM_ELEVATOR, bhvWfElevatorTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSlidingTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSlidingTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSlidingTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM, bhvWfSolidTowerPlatform);
+    spawn_and_init_wf_platforms(E_MODEL_WF_TOWER_SQUARE_PLATORM_ELEVATOR, bhvWfElevatorTowerPlatform);
 }
 
 void bhv_tower_platform_group_init(void) {
