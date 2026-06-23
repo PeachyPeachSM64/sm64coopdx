@@ -92,7 +92,6 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
         u32 modelId = models[i];
         u32 parentId = generate_parent_id(objects, i, true);
         u32 behaviorId = get_id_from_behavior(o->behavior);
-        struct SyncObject* so = sync_object_get(o->oSyncID);
         packet_write(&p, &o->ctx, sizeof(u8));
         packet_write(&p, &parentId, sizeof(u32));
         packet_write(&p, &modelId, sizeof(u32));

@@ -652,7 +652,7 @@ s32 smlua_func_level_script_parse_callback(u8 type, void *cmd) {
             lua_pushinteger(L, bhvParams);
             lua_settable(L, macroBhvArgsIdx);
             lua_pushinteger(L, i);
-            lua_pushinteger(L, MacroObjectPresets[presetId].model);
+            lua_pushinteger(L, MacroObjectPresets[presetId].modelId);
             lua_settable(L, macroBhvModelsIdx);
         }
     } else {

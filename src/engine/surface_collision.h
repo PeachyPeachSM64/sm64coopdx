@@ -6,7 +6,6 @@
 #include "types.h"
 
 #include "engine/extended_bounds.h"
-#include "pc/lua/smlua_autogen.h"
 
 
 #define CELL_HEIGHT_LIMIT           20000

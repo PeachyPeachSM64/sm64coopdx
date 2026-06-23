@@ -128,7 +128,7 @@ void exclamation_box_spawn_contents(struct ExclamationBoxContent *content, u8 it
                 }
             }
             o->oBehParams |= content->firstByte << 24;
-            if (content->modelId == E_MODEL_STAR)
+            if (content->model == E_MODEL_STAR)
                 o->oFlags |= OBJ_FLAG_PERSISTENT_RESPAWN;
 
             // send non-star spawn events
@@ -136,7 +136,6 @@ void exclamation_box_spawn_contents(struct ExclamationBoxContent *content, u8 it
             if (content->behavior != get_id_from_behavior(smlua_override_behavior(bhvSpawnedStar)) && spawnedObject != NULL) {
                 // hack: Sync everything
                 sync_object_set_id(spawnedObject);
-                struct SyncObject* so = sync_object_get(spawnedObject->oSyncID);
 
                 struct Object* spawn_objects[] = { spawnedObject };
                 u32 models[] = { modelId };

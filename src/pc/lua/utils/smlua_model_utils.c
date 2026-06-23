@@ -8,7 +8,7 @@ enum ModelExtendedId smlua_model_util_get_id(const char *name) {
         return E_MODEL_ERROR_MODEL;
     }
 
-    struct GraphNode *node = dynos_model_load_geo_layout(E_MODEL_NONE, MODEL_POOL_SESSION, geoLayout, name, false);
+    struct GraphNode *node = dynos_model_load_geo_layout(E_MODEL_NONE, MODEL_POOL_SESSION, geoLayout, name);
     return dynos_model_get_id(node);
 }
 

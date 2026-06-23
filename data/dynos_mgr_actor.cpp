@@ -58,7 +58,7 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     }
 
     // Load the graph node
-    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_MOD_ACTOR, MODEL_POOL_SESSION, geoLayout, aActorName, false);
+    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_MOD_ACTOR, MODEL_POOL_SESSION, geoLayout, aActorName);
     if (!graphNode) {
         PrintError("  ERROR: Couldn't load graph node for \"%s\"", actorName.c_str());
         return false;
@@ -187,7 +187,7 @@ void DynOS_Actor_Override_All(void) {
             if (_Object->activeFlags && _Object->header.gfx.sharedChild != NULL) {
                 if (_Object->header.gfx.sharedChild->georef != NULL) {
                     const void *georef = _Object->header.gfx.sharedChild->georef;
-                    _Object->header.gfx.sharedChild = DynOS_Model_LoadGeoLayout(E_MODEL_NONE, MODEL_POOL_PERMANENT, georef, NULL, false);
+                    _Object->header.gfx.sharedChild = DynOS_Model_LoadGeoLayout(E_MODEL_NONE, MODEL_POOL_PERMANENT, georef, NULL);
                 }
                 DynOS_Actor_Override(_Object, (void**)&_Object->header.gfx.sharedChild);
             }

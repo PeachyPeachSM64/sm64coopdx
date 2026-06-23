@@ -1,14 +1,6 @@
 #ifndef DYNOS_MODELS_H
 #define DYNOS_MODELS_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include "game/area.h" // for MAX_AREAS
-#ifdef __cplusplus
-}
-#endif
-
 #define MAX_BUILTIN_LEVEL_GEOS 1000
 
 // E_MODEL__XXX_ are delimiters, not actual model ids
@@ -33,15 +25,12 @@ enum ModelExtendedId {
     E_MODEL__LEVEL_GEO_START_   = E_MODEL__EXTENDED_END_,
     E_MODEL__LEVEL_GEO_END_     = E_MODEL__LEVEL_GEO_START_ + MAX_BUILTIN_LEVEL_GEOS,
 
-    E_MODEL__LEVEL_AREA_START_  = E_MODEL__LEVEL_GEO_END_,
-    E_MODEL__LEVEL_AREA_END_    = E_MODEL__LEVEL_AREA_START_ + MAX_AREAS,
+    E_MODEL__CUSTOM_START_      = E_MODEL__LEVEL_GEO_END_ + 1,
 
-    E_MODEL__CUSTOM_START_      = E_MODEL__LEVEL_AREA_END_,
-    E_MODEL__DYNOS_PACK_START_  = E_MODEL__CUSTOM_START_,
-    E_MODEL__MOD_ACTOR_START_   = E_MODEL__CUSTOM_START_ + 1,
-
-    E_MODEL_DYNOS_PACK          = E_MODEL__DYNOS_PACK_START_,
-    E_MODEL_MOD_ACTOR           = E_MODEL__MOD_ACTOR_START_,
+    // Special slots
+    E_MODEL_AREA_GEO            = E_MODEL__CUSTOM_START_ - 1,
+    E_MODEL_DYNOS_PACK          = E_MODEL__CUSTOM_START_ + 0,
+    E_MODEL_MOD_ACTOR           = E_MODEL__CUSTOM_START_ + 1,
 };
 
 // The lower the index, the higher the lifetime

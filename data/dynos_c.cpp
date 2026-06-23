@@ -264,8 +264,8 @@ void dynos_behavior_hook_all_custom_behaviors(void) {
 
 // -- models -- //
 
-struct GraphNode *dynos_model_load_geo_layout(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, const char *name, bool isAreaLayout) {
-    return DynOS_Model_LoadGeoLayout(modelId, modelPool, asset, name, isAreaLayout);
+struct GraphNode *dynos_model_load_geo_layout(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, const char *name) {
+    return DynOS_Model_LoadGeoLayout(modelId, modelPool, asset, name);
 }
 
 struct GraphNode *dynos_model_load_display_list(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, u8 layer) {

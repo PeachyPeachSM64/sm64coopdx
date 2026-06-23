@@ -433,8 +433,7 @@ static void level_cmd_begin_area(void) {
     void *geoLayoutAddr = CMD_GET(void *, 4);
 
     if (areaIndex < MAX_AREAS) {
-        enum ModelExtendedId modelId = E_MODEL__LEVEL_AREA_START_ + areaIndex;
-        struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo_layout(modelId, MODEL_POOL_LEVEL, geoLayoutAddr, NULL, true);
+        struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo_layout(E_MODEL_AREA_GEO, MODEL_POOL_LEVEL, geoLayoutAddr, NULL);
         struct GraphNodeCamera *node = (struct GraphNodeCamera *) screenArea->views[0];
 
         sCurrAreaIndex = areaIndex;
@@ -476,7 +475,7 @@ static void level_cmd_load_model_from_geo(void) {
     void *geoLayout = CMD_GET(void *, 4);
 
     if (geoLayout != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_geo_layout(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, geoLayout, NULL, false);
+        dynos_model_load_geo_layout(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, geoLayout, NULL);
     }
 
     sCurrentCmd = CMD_NEXT;
@@ -1020,7 +1019,7 @@ static void level_cmd_load_model_from_geo_ext(void) {
     const char* geoName = dynos_level_get_token(CMD_GET(u32, 4));
 
     if (geoName != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, dynos_geolayout_get(geoName), geoName, false);
+        dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, dynos_geolayout_get(geoName), geoName);
     }
 
     sCurrentCmd = CMD_NEXT;

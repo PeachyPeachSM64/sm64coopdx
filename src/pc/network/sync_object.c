@@ -132,7 +132,6 @@ struct SyncObject* sync_object_init(struct Object *o, float maxSyncDistance) {
         return NULL;
     }
 
-    bool hadSyncId = (o->oSyncID != 0);
     // generate new sync ID
     if (!sync_object_set_id(o)) {
         LOG_ERROR("failed to set sync id for object w/behavior %d (init_object)", get_id_from_behavior(o->behavior));

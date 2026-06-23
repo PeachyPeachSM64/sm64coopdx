@@ -80,7 +80,7 @@ const char *dynos_behavior_get_token(BehaviorScript *bhvScript, u32 index);
 void dynos_behavior_hook_all_custom_behaviors(void);
 
 // -- models -- //
-struct GraphNode *dynos_model_load_geo_layout(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, const char *name, bool isAreaLayout);
+struct GraphNode *dynos_model_load_geo_layout(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, const char *name);
 struct GraphNode *dynos_model_load_display_list(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, u8 layer);
 struct GraphNode *dynos_model_load_graph_node(enum ModelExtendedId modelId, enum ModelPool modelPool, const void *asset, struct GraphNode *node);
 struct GraphNode *dynos_model_get_graph_node(enum ModelExtendedId modelId);

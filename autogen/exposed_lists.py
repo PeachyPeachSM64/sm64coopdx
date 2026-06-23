@@ -120,7 +120,7 @@ constants_blacklist = { "__name__": "constants_blacklist",
     "src/pc/mods/mod_fs.h": [ "INT_TYPE_MAX", "FLOAT_TYPE_MAX", "FILE_SEEK_MAX" ],
     "src/engine/surface_load.h": [ "NUM_CELLS" ],
     "src/pc/network/version.h": [ "VERSION_OFFSET" ],
-    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_DYNOS_PACK", "E_MODEL_MOD_ACTOR", "MAX_BUILTIN_LEVEL_GEOS", "MODEL_POOL_" ],
+    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_AREA_GEO", "E_MODEL_DYNOS_PACK", "E_MODEL_MOD_ACTOR", "MAX_BUILTIN_LEVEL_GEOS", "MODEL_POOL_" ],
 }
 
 # For each file, expose these constants, but hide them from the documentation or VSCode autocomplete
