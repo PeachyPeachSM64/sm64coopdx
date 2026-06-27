@@ -119,8 +119,8 @@ bool dynos_add_actor_custom(s32 modIndex, s32 modFileIndex, const char *filePath
     return DynOS_Actor_AddCustom(modIndex, modFileIndex, filePath, geoName);
 }
 
-const GeoLayout *dynos_geolayout_get(const char *name) {
-    return DynOS_Geo_GetLayoutFromName(name);
+const GeoLayout *dynos_geolayout_get(const char *name, enum ModelExtendedId *modelType) {
+    return DynOS_Geo_GetLayoutFromName(name, modelType);
 }
 
 bool dynos_actor_get_mod_index_and_token(struct GraphNode *graphNode, u32 tokenIndex, s32 *modIndex, s32 *modFileIndex, const char **token) {

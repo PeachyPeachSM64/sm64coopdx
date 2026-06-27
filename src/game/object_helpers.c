@@ -1521,11 +1521,7 @@ void obj_set_model(struct Object *obj, enum ModelExtendedId modelId) {
     struct GraphNode *node = dynos_model_get_graph_node(modelId);
     obj->header.gfx.sharedChild = node;
     dynos_actor_override(obj, (void **) &obj->header.gfx.sharedChild);
-    enum ModelExtendedId modelId2 = dynos_model_get_id(node);
-    if (modelId != modelId2) {
-        LOG_WARNING("obj_set_model: Model id mismatch: provided %u, loaded %u", modelId, modelId2);
-    }
-    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, modelId2);
+    smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, dynos_model_get_id(node));
 }
 
 /* |description|Checks if the current object's model is `modelId`|descriptionEnd| */

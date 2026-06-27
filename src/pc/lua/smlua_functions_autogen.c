@@ -35052,6 +35052,23 @@ int smlua_func_smlua_model_util_get_id(lua_State* L) {
     return 1;
 }
 
+int smlua_func_smlua_model_util_get_name(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "smlua_model_util_get_name", 1, top);
+        return 0;
+    }
+
+    enum ModelExtendedId modelId = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "smlua_model_util_get_name"); return 0; }
+
+    lua_pushstring(L, smlua_model_util_get_name(modelId));
+
+    return 1;
+}
+
   ///////////////////////
  // smlua_obj_utils.h //
 ///////////////////////
@@ -39251,6 +39268,7 @@ void smlua_bind_functions_autogen(void) {
 
     // smlua_model_utils.h
     smlua_bind_function(L, "smlua_model_util_get_id", smlua_func_smlua_model_util_get_id);
+    smlua_bind_function(L, "smlua_model_util_get_name", smlua_func_smlua_model_util_get_name);
 
     // smlua_obj_utils.h
     smlua_bind_function(L, "spawn_sync_object", smlua_func_spawn_sync_object);

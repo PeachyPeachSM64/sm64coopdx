@@ -21,6 +21,8 @@ enum TextureTransitionType
     TRANS_TYPE_CLAMP
 };
 
+struct WarpTransitionData;
+
 void reset_screen_transition_timers(void);
 s32 render_screen_transition(s8 fadeTimer, s8 transType, u8 transTime, struct WarpTransitionData *transData);
 Gfx *geo_cannon_circle_base(s32 callContext, struct GraphNode *node, UNUSED Mat4 mtx);

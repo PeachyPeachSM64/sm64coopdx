@@ -1035,11 +1035,9 @@ s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool allowExtendedModel
     if (allowExtendedModels) {
 #define MODEL_EXTENDED_GEO(_modelId_, ...) if (_Arg == #_modelId_) { return (s64) (_modelId_); }
 #define MODEL_EXTENDED_DL(_modelId_, ...) if (_Arg == #_modelId_) { return (s64) (_modelId_); }
-#define MODEL_EXTENDED_LVL(...)
 #include "dynos_models_builtin.inl"
 #undef MODEL_EXTENDED_GEO
 #undef MODEL_EXTENDED_DL
-#undef MODEL_EXTENDED_LVL
     }
 
     *found = false;

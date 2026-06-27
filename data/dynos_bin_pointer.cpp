@@ -134,22 +134,16 @@ static PointerData GetDataFromPointer(const void* aPtr, GfxData* aGfxData) {
         return { get_behavior_name_from_id(id), 0 };
     }
 
-    // Built-in Actors
-    auto builtinActor = DynOS_Builtin_Actor_GetFromData((const GeoLayout*)aPtr);
-    if (builtinActor != NULL) {
-        return { builtinActor, 0 };
+    // Built-in Geos
+    auto builtinGeo = DynOS_Builtin_Geo_GetFromData((const GeoLayout*)aPtr);
+    if (builtinGeo != NULL) {
+        return { builtinGeo, 0 };
     }
 
     // Built-in Level Macros
     auto builtinLvlMacro = DynOS_Builtin_LvlMacro_GetFromData((const MacroObject*)aPtr);
     if (builtinLvlMacro != NULL) {
         return { builtinLvlMacro, 0 };
-    }
-
-    // Built-in Lvl Geos
-    auto builtinGeo = DynOS_Builtin_LvlGeo_GetFromData((const GeoLayout*)aPtr);
-    if (builtinGeo != NULL) {
-        return { builtinGeo, 0 };
     }
 
     // Built-in Cols
@@ -429,22 +423,16 @@ static void *GetPointerFromData(GfxData *aGfxData, const String &aPtrName, u32 a
         return (void*)get_behavior_from_id(id);
     }
 
-    // Built-in Actors
-    auto builtinActor = DynOS_Builtin_Actor_GetFromName(aPtrName.begin());
-    if (builtinActor != NULL) {
-        return (void*)builtinActor;
+    // Built-in Geos
+    auto builtinGeo = DynOS_Builtin_Geo_GetFromName(aPtrName.begin());
+    if (builtinGeo != NULL) {
+        return (void*)builtinGeo;
     }
 
     // Built-in Lvl Macros
     auto builtinLvlMacro = DynOS_Builtin_LvlMacro_GetFromName(aPtrName.begin());
     if (builtinLvlMacro != NULL) {
         return (void*)builtinLvlMacro;
-    }
-
-    // Built-in Lvl Geos
-    auto builtinGeo = DynOS_Builtin_LvlGeo_GetFromName(aPtrName.begin());
-    if (builtinGeo != NULL) {
-        return (void*)builtinGeo;
     }
 
     // Built-in Cols

@@ -1870,7 +1870,7 @@ const BehaviorScript bhvBowser[] = {
     SET_HOME(),
     LOAD_ANIMATIONS(oAnimations, &bowser_seg6_anims_06057690),
     SPAWN_CHILD(/*Model*/ E_MODEL_NONE, /*Behavior*/ bhvBowserBodyAnchor),
-    SPAWN_CHILD(/*Model*/ E_MODEL_BOWSER_BOMB_CHILD_OBJ, /*Behavior*/ bhvBowserFlameSpawn),
+    SPAWN_CHILD(/*Model*/ E_MODEL_BOWSER_BOMB, /*Behavior*/ bhvBowserFlameSpawn),
     SPAWN_OBJ(/*Model*/ E_MODEL_NONE, /*Behavior*/ bhvBowserTailAnchor),
     SET_INT(oNumLootCoins, 50),
     SET_OBJ_PHYSICS(/*Wall hitbox radius*/ 0, /*Gravity*/ -400, /*Bounciness*/ -70, /*Drag strength*/ 1000, /*Friction*/ 1000, /*Buoyancy*/ 200, /*Unused*/ 0, 0),

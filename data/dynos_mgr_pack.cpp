@@ -46,7 +46,7 @@ static void DynOS_Pack_ActivateActor(s32 aPackIndex, std::pair<std::string, GfxD
     GraphNode* graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_DYNOS_PACK, MODEL_POOL_PERMANENT, geoNode->mData, aActorName);
     if (graphNode == NULL) { return; }
 
-    const void* georef = DynOS_Builtin_Actor_GetFromName(aActorName);
+    const void* georef = DynOS_Builtin_Geo_GetFromName(aActorName);
     graphNode->georef = georef;
 
     ActorGfx actorGfx;
@@ -66,7 +66,7 @@ static void DynOS_Pack_ActivateActor(s32 aPackIndex, std::pair<std::string, GfxD
 
 static void DynOS_Pack_DeactivateActor(s32 aPackIndex, std::pair<std::string, GfxData *> &pair) {
     const char* aActorName = pair.first.c_str();
-    const void* georef = DynOS_Builtin_Actor_GetFromName(aActorName);
+    const void* georef = DynOS_Builtin_Geo_GetFromName(aActorName);
     DynOS_Actor_Invalid(georef, aPackIndex);
 
     // figure out which actor to replace it with

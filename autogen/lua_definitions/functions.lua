@@ -12459,6 +12459,13 @@ function smlua_model_util_get_id(name)
     -- ...
 end
 
+--- @param modelId ModelExtendedId
+--- @return string
+--- Gets the geo layout name corresponding to a `modelId`
+function smlua_model_util_get_name(modelId)
+    -- ...
+end
+
 --- @param behaviorId BehaviorId
 --- @param modelId ModelExtendedId
 --- @param x number

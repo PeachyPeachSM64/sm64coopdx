@@ -480,22 +480,16 @@ static LevelScript ParseLevelScriptSymbolArgInternal(GfxData* aGfxData, DataNode
         }
     }
 
-    // Built-in actors
-    auto builtinActor = DynOS_Builtin_Actor_GetFromName(_Arg.begin());
-    if (builtinActor != NULL) {
-        return (LevelScript)builtinActor;
+    // Built-in Geos
+    auto builtinGeo = DynOS_Builtin_Geo_GetFromName(_Arg.begin());
+    if (builtinGeo != NULL) {
+        return (LevelScript)builtinGeo;
     }
 
     // Built-in Lvl Macros
     auto builtinLvlMacro = DynOS_Builtin_LvlMacro_GetFromName(_Arg.begin());
     if (builtinLvlMacro != NULL) {
         return (LevelScript)builtinLvlMacro;
-    }
-
-    // Built-in Lvl Geos
-    auto builtinGeo = DynOS_Builtin_LvlGeo_GetFromName(_Arg.begin());
-    if (builtinGeo != NULL) {
-        return (LevelScript)builtinGeo;
     }
 
     // Built-in Cols

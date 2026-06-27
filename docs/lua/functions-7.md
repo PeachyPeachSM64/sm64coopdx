@@ -4075,6 +4075,29 @@ Gets the model id of the geo layout `name`
 
 <br />
 
+## [smlua_model_util_get_name](#smlua_model_util_get_name)
+
+### Description
+Gets the geo layout name corresponding to a `modelId`
+
+### Lua Example
+`local stringValue = smlua_model_util_get_name(modelId)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| modelId | [enum ModelExtendedId](constants.md#enum-ModelExtendedId) |
+
+### Returns
+- `string`
+
+### C Prototype
+`const char *smlua_model_util_get_name(enum ModelExtendedId modelId);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ---
 # functions from smlua_obj_utils.h
 

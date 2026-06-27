@@ -2123,6 +2123,7 @@
 
 - smlua_model_utils.h
    - [smlua_model_util_get_id](functions-7.md#smlua_model_util_get_id)
+   - [smlua_model_util_get_name](functions-7.md#smlua_model_util_get_name)
 
 <br />
 

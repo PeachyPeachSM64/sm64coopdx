@@ -120,7 +120,7 @@ constants_blacklist = { "__name__": "constants_blacklist",
     "src/pc/mods/mod_fs.h": [ "INT_TYPE_MAX", "FLOAT_TYPE_MAX", "FILE_SEEK_MAX" ],
     "src/engine/surface_load.h": [ "NUM_CELLS" ],
     "src/pc/network/version.h": [ "VERSION_OFFSET" ],
-    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_AREA_GEO", "E_MODEL_DYNOS_PACK", "E_MODEL_MOD_ACTOR", "MAX_BUILTIN_LEVEL_GEOS", "MODEL_POOL_" ],
+    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_AREA_GEO", "E_MODEL_LEVEL_GEO", "E_MODEL_DYNOS_PACK", "E_MODEL_MOD_ACTOR", "E_MODEL_MOD_FS", "MODEL_POOL_" ],
 }
 
 # For each file, expose these constants, but hide them from the documentation or VSCode autocomplete
@@ -226,7 +226,6 @@ functions_whitelist = { "__name__": "functions_whitelist",
     "src/pc/djui/djui_language.h":          [ "djui_language_get" ],
     "src/pc/djui/djui_panel_menu.h":        [ "djui_menu_get_rainbow_string_color" ],
     "src/game/save_file.h":                 [ "get_level_", "save_file_get_", "save_file_set_flags", "save_file_clear_flags", "save_file_reload", "save_file_erase_current_backup_save", "save_file_set_star_flags", "save_file_is_cannon_unlocked", "save_file_set_cannon_unlocked", "touch_coin_score_age", "save_file_set_course_coin_score", "save_file_do_save", "save_file_remove_star_flags", "save_file_erase" ],
-    "src/pc/lua/utils/smlua_model_utils.h": [ "smlua_model_util_get_id" ],
     "src/game/object_list_processor.h":     [ "set_object_respawn_info_bits" ],
     "src/game/platform_displacement.h":     [ "apply_platform_displacement" ],
     "src/game/mario_misc.h":                [ "bhv_toad.*", "bhv_unlock_door.*", "geo_get_.*" ],

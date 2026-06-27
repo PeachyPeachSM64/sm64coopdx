@@ -2839,558 +2839,665 @@ DJUI_RAINBOW_COLOR_YELLOW = 3 --- @type DjuiRainbowColor
 --- | `DJUI_RAINBOW_COLOR_BLUE`
 --- | `DJUI_RAINBOW_COLOR_YELLOW`
 
-E_MODEL_NONE                               =   0 --- @type ModelExtendedId
-E_MODEL_MARIO                              = 256 --- @type ModelExtendedId
-E_MODEL_MARIOS_CAP                         = 257 --- @type ModelExtendedId
-E_MODEL_MARIOS_METAL_CAP                   = 258 --- @type ModelExtendedId
-E_MODEL_MARIOS_WING_CAP                    = 259 --- @type ModelExtendedId
-E_MODEL_MARIOS_WINGED_METAL_CAP            = 260 --- @type ModelExtendedId
-E_MODEL_SMOKE                              = 261 --- @type ModelExtendedId
-E_MODEL_SPARKLES                           = 262 --- @type ModelExtendedId
-E_MODEL_BUBBLE                             = 263 --- @type ModelExtendedId
-E_MODEL_SMALL_WATER_SPLASH                 = 264 --- @type ModelExtendedId
-E_MODEL_IDLE_WATER_WAVE                    = 265 --- @type ModelExtendedId
-E_MODEL_WATER_SPLASH                       = 266 --- @type ModelExtendedId
-E_MODEL_WAVE_TRAIL                         = 267 --- @type ModelExtendedId
-E_MODEL_WHITE_PARTICLE_SMALL               = 268 --- @type ModelExtendedId
-E_MODEL_BURN_SMOKE                         = 269 --- @type ModelExtendedId
-E_MODEL_PURPLE_MARBLE                      = 270 --- @type ModelExtendedId
-E_MODEL_SPARKLES_ANIMATION                 = 271 --- @type ModelExtendedId
-E_MODEL_BURN_SMOKE_UNUSED                  = 272 --- @type ModelExtendedId
-E_MODEL_BULLET_BILL                        = 273 --- @type ModelExtendedId
-E_MODEL_YELLOW_SPHERE                      = 274 --- @type ModelExtendedId
-E_MODEL_HOOT                               = 275 --- @type ModelExtendedId
-E_MODEL_YOSHI_EGG                          = 276 --- @type ModelExtendedId
-E_MODEL_THWOMP                             = 277 --- @type ModelExtendedId
-E_MODEL_HEAVE_HO                           = 278 --- @type ModelExtendedId
-E_MODEL_BLARGG                             = 279 --- @type ModelExtendedId
-E_MODEL_BULLY                              = 280 --- @type ModelExtendedId
-E_MODEL_BULLY_BOSS                         = 281 --- @type ModelExtendedId
-E_MODEL_WATER_BOMB                         = 282 --- @type ModelExtendedId
-E_MODEL_WATER_BOMB_SHADOW                  = 283 --- @type ModelExtendedId
-E_MODEL_KING_BOBOMB                        = 284 --- @type ModelExtendedId
-E_MODEL_MANTA_RAY                          = 285 --- @type ModelExtendedId
-E_MODEL_UNAGI                              = 286 --- @type ModelExtendedId
-E_MODEL_SUSHI                              = 287 --- @type ModelExtendedId
-E_MODEL_DL_WHIRLPOOL                       = 288 --- @type ModelExtendedId
-E_MODEL_CLAM_SHELL                         = 289 --- @type ModelExtendedId
-E_MODEL_POKEY_HEAD                         = 290 --- @type ModelExtendedId
-E_MODEL_POKEY_BODY_PART                    = 291 --- @type ModelExtendedId
-E_MODEL_TWEESTER                           = 292 --- @type ModelExtendedId
-E_MODEL_KLEPTO                             = 293 --- @type ModelExtendedId
-E_MODEL_EYEROK_LEFT_HAND                   = 294 --- @type ModelExtendedId
-E_MODEL_EYEROK_RIGHT_HAND                  = 295 --- @type ModelExtendedId
-E_MODEL_DL_MONTY_MOLE_HOLE                 = 296 --- @type ModelExtendedId
-E_MODEL_MONTY_MOLE                         = 297 --- @type ModelExtendedId
-E_MODEL_UKIKI                              = 298 --- @type ModelExtendedId
-E_MODEL_FWOOSH                             = 299 --- @type ModelExtendedId
-E_MODEL_SPINDRIFT                          = 300 --- @type ModelExtendedId
-E_MODEL_MR_BLIZZARD_HIDDEN                 = 301 --- @type ModelExtendedId
-E_MODEL_MR_BLIZZARD                        = 302 --- @type ModelExtendedId
-E_MODEL_PENGUIN                            = 303 --- @type ModelExtendedId
-E_MODEL_CAP_SWITCH_EXCLAMATION             = 304 --- @type ModelExtendedId
-E_MODEL_CAP_SWITCH                         = 305 --- @type ModelExtendedId
-E_MODEL_CAP_SWITCH_BASE                    = 306 --- @type ModelExtendedId
-E_MODEL_TRAMPOLINE                         = 307 --- @type ModelExtendedId
-E_MODEL_TRAMPOLINE_CENTER                  = 308 --- @type ModelExtendedId
-E_MODEL_TRAMPOLINE_BASE                    = 309 --- @type ModelExtendedId
-E_MODEL_BOO                                = 310 --- @type ModelExtendedId
-E_MODEL_BETA_BOO_KEY                       = 311 --- @type ModelExtendedId
-E_MODEL_HAUNTED_CHAIR                      = 312 --- @type ModelExtendedId
-E_MODEL_MAD_PIANO                          = 313 --- @type ModelExtendedId
-E_MODEL_BOOKEND_PART                       = 314 --- @type ModelExtendedId
-E_MODEL_BOOKEND                            = 315 --- @type ModelExtendedId
-E_MODEL_HAUNTED_CAGE                       = 316 --- @type ModelExtendedId
-E_MODEL_BIRDS                              = 317 --- @type ModelExtendedId
-E_MODEL_PEACH                              = 318 --- @type ModelExtendedId
-E_MODEL_YOSHI                              = 319 --- @type ModelExtendedId
-E_MODEL_ENEMY_LAKITU                       = 320 --- @type ModelExtendedId
-E_MODEL_SPINY_BALL                         = 321 --- @type ModelExtendedId
-E_MODEL_SPINY                              = 322 --- @type ModelExtendedId
-E_MODEL_WIGGLER_HEAD                       = 323 --- @type ModelExtendedId
-E_MODEL_WIGGLER_BODY                       = 324 --- @type ModelExtendedId
-E_MODEL_BUBBA                              = 325 --- @type ModelExtendedId
-E_MODEL_BOWSER                             = 326 --- @type ModelExtendedId
-E_MODEL_BOWSER_BOMB_CHILD_OBJ              = 327 --- @type ModelExtendedId
-E_MODEL_BOWSER_BOMB                        = 328 --- @type ModelExtendedId
-E_MODEL_BOWSER_SMOKE                       = 329 --- @type ModelExtendedId
-E_MODEL_BOWSER_FLAMES                      = 330 --- @type ModelExtendedId
-E_MODEL_BOWSER_WAVE                        = 331 --- @type ModelExtendedId
-E_MODEL_BOWSER2                            = 332 --- @type ModelExtendedId
-E_MODEL_BUB                                = 333 --- @type ModelExtendedId
-E_MODEL_TREASURE_CHEST_BASE                = 334 --- @type ModelExtendedId
-E_MODEL_TREASURE_CHEST_LID                 = 335 --- @type ModelExtendedId
-E_MODEL_CYAN_FISH                          = 336 --- @type ModelExtendedId
-E_MODEL_WATER_RING                         = 337 --- @type ModelExtendedId
-E_MODEL_WATER_MINE                         = 338 --- @type ModelExtendedId
-E_MODEL_SEAWEED                            = 339 --- @type ModelExtendedId
-E_MODEL_SKEETER                            = 340 --- @type ModelExtendedId
-E_MODEL_PIRANHA_PLANT                      = 341 --- @type ModelExtendedId
-E_MODEL_WHOMP                              = 342 --- @type ModelExtendedId
-E_MODEL_KOOPA_WITH_SHELL                   = 343 --- @type ModelExtendedId
-E_MODEL_KOOPA_WITHOUT_SHELL                = 344 --- @type ModelExtendedId
-E_MODEL_METALLIC_BALL                      = 345 --- @type ModelExtendedId
-E_MODEL_CHAIN_CHOMP                        = 346 --- @type ModelExtendedId
-E_MODEL_KOOPA_FLAG                         = 347 --- @type ModelExtendedId
-E_MODEL_WOODEN_POST                        = 348 --- @type ModelExtendedId
-E_MODEL_MIPS                               = 349 --- @type ModelExtendedId
-E_MODEL_BOO_CASTLE                         = 350 --- @type ModelExtendedId
-E_MODEL_LAKITU                             = 351 --- @type ModelExtendedId
-E_MODEL_TOAD                               = 352 --- @type ModelExtendedId
-E_MODEL_CHILL_BULLY                        = 353 --- @type ModelExtendedId
-E_MODEL_BIG_CHILL_BULLY                    = 354 --- @type ModelExtendedId
-E_MODEL_MONEYBAG                           = 355 --- @type ModelExtendedId
-E_MODEL_SWOOP                              = 356 --- @type ModelExtendedId
-E_MODEL_SCUTTLEBUG                         = 357 --- @type ModelExtendedId
-E_MODEL_MR_I_IRIS                          = 358 --- @type ModelExtendedId
-E_MODEL_MR_I                               = 359 --- @type ModelExtendedId
-E_MODEL_DORRIE                             = 360 --- @type ModelExtendedId
-E_MODEL_SNUFIT                             = 361 --- @type ModelExtendedId
-E_MODEL_BLUE_COIN_SWITCH                   = 362 --- @type ModelExtendedId
-E_MODEL_AMP                                = 363 --- @type ModelExtendedId
-E_MODEL_PURPLE_SWITCH                      = 364 --- @type ModelExtendedId
-E_MODEL_CHECKERBOARD_PLATFORM              = 365 --- @type ModelExtendedId
-E_MODEL_BREAKABLE_BOX                      = 366 --- @type ModelExtendedId
-E_MODEL_BREAKABLE_BOX_SMALL                = 367 --- @type ModelExtendedId
-E_MODEL_EXCLAMATION_BOX_OUTLINE            = 368 --- @type ModelExtendedId
-E_MODEL_EXCLAMATION_BOX                    = 369 --- @type ModelExtendedId
-E_MODEL_GOOMBA                             = 370 --- @type ModelExtendedId
-E_MODEL_EXCLAMATION_POINT                  = 371 --- @type ModelExtendedId
-E_MODEL_KOOPA_SHELL                        = 372 --- @type ModelExtendedId
-E_MODEL_METAL_BOX                          = 373 --- @type ModelExtendedId
-E_MODEL_METAL_BOX_DL                       = 374 --- @type ModelExtendedId
-E_MODEL_BLACK_BOBOMB                       = 375 --- @type ModelExtendedId
-E_MODEL_BOBOMB_BUDDY                       = 376 --- @type ModelExtendedId
-E_MODEL_DL_CANNON_LID                      = 377 --- @type ModelExtendedId
-E_MODEL_BOWLING_BALL                       = 378 --- @type ModelExtendedId
-E_MODEL_CANNON_BARREL                      = 379 --- @type ModelExtendedId
-E_MODEL_CANNON_BASE                        = 380 --- @type ModelExtendedId
-E_MODEL_HEART                              = 381 --- @type ModelExtendedId
-E_MODEL_FLYGUY                             = 382 --- @type ModelExtendedId
-E_MODEL_CHUCKYA                            = 383 --- @type ModelExtendedId
-E_MODEL_TRAJECTORY_MARKER_BALL             = 384 --- @type ModelExtendedId
-E_MODEL_YELLOW_COIN                        = 385 --- @type ModelExtendedId
-E_MODEL_STAR                               = 386 --- @type ModelExtendedId
-E_MODEL_TRANSPARENT_STAR                   = 387 --- @type ModelExtendedId
-E_MODEL_WOODEN_SIGNPOST                    = 388 --- @type ModelExtendedId
-E_MODEL_RED_FLAME                          = 389 --- @type ModelExtendedId
-E_MODEL_BLUE_FLAME                         = 390 --- @type ModelExtendedId
-E_MODEL_LEAVES                             = 391 --- @type ModelExtendedId
-E_MODEL_FISH                               = 392 --- @type ModelExtendedId
-E_MODEL_FISH_SHADOW                        = 393 --- @type ModelExtendedId
-E_MODEL_SAND_DUST                          = 394 --- @type ModelExtendedId
-E_MODEL_BUTTERFLY                          = 395 --- @type ModelExtendedId
-E_MODEL_PEBBLE                             = 396 --- @type ModelExtendedId
-E_MODEL_MIST                               = 397 --- @type ModelExtendedId
-E_MODEL_WHITE_PUFF                         = 398 --- @type ModelExtendedId
-E_MODEL_WHITE_PARTICLE_DL                  = 399 --- @type ModelExtendedId
-E_MODEL_WHITE_PARTICLE                     = 400 --- @type ModelExtendedId
-E_MODEL_YELLOW_COIN_NO_SHADOW              = 401 --- @type ModelExtendedId
-E_MODEL_BLUE_COIN                          = 402 --- @type ModelExtendedId
-E_MODEL_BLUE_COIN_NO_SHADOW                = 403 --- @type ModelExtendedId
-E_MODEL_BOWSER_KEY_CUTSCENE                = 404 --- @type ModelExtendedId
-E_MODEL_BOWSER_KEY                         = 405 --- @type ModelExtendedId
-E_MODEL_RED_FLAME_SHADOW                   = 406 --- @type ModelExtendedId
-E_MODEL_1UP                                = 407 --- @type ModelExtendedId
-E_MODEL_RED_COIN                           = 408 --- @type ModelExtendedId
-E_MODEL_RED_COIN_NO_SHADOW                 = 409 --- @type ModelExtendedId
-E_MODEL_NUMBER                             = 410 --- @type ModelExtendedId
-E_MODEL_EXPLOSION                          = 411 --- @type ModelExtendedId
-E_MODEL_DIRT_ANIMATION                     = 412 --- @type ModelExtendedId
-E_MODEL_CARTOON_STAR                       = 413 --- @type ModelExtendedId
-E_MODEL_BUBBLY_TREE                        = 414 --- @type ModelExtendedId
-E_MODEL_SPIKY_TREE                         = 415 --- @type ModelExtendedId
-E_MODEL_SNOW_TREE                          = 416 --- @type ModelExtendedId
-E_MODEL_PALM_TREE                          = 417 --- @type ModelExtendedId
-E_MODEL_WARP_PIPE                          = 418 --- @type ModelExtendedId
-E_MODEL_BOB_BUBBLY_TREE                    = 419 --- @type ModelExtendedId
-E_MODEL_BOB_CHAIN_CHOMP_GATE               = 420 --- @type ModelExtendedId
-E_MODEL_BOB_SEESAW_PLATFORM                = 421 --- @type ModelExtendedId
-E_MODEL_BOB_BARS_GRILLS                    = 422 --- @type ModelExtendedId
-E_MODEL_WF_BUBBLY_TREE                     = 423 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_03                     = 424 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_04                     = 425 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_05                     = 426 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_06                     = 427 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_07                     = 428 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_08                     = 429 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_09                     = 430 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_0A                     = 431 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_0C                     = 432 --- @type ModelExtendedId
-E_MODEL_WF_GIANT_POLE                      = 433 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_0E                     = 434 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_0F                     = 435 --- @type ModelExtendedId
-E_MODEL_WF_ROTATING_PLATFORM               = 436 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_11                     = 437 --- @type ModelExtendedId
-E_MODEL_WF_GEOMETRY_12                     = 438 --- @type ModelExtendedId
-E_MODEL_WF_SMALL_BOMP                      = 439 --- @type ModelExtendedId
-E_MODEL_WF_LARGE_BOMP                      = 440 --- @type ModelExtendedId
-E_MODEL_WF_ROTATING_WOODEN_PLATFORM        = 441 --- @type ModelExtendedId
-E_MODEL_WF_SLIDING_PLATFORM                = 442 --- @type ModelExtendedId
-E_MODEL_WF_TUMBLING_BRIDGE_PART            = 443 --- @type ModelExtendedId
-E_MODEL_WF_TUMBLING_BRIDGE                 = 444 --- @type ModelExtendedId
-E_MODEL_WF_TOWER_TRAPEZOID_PLATORM         = 445 --- @type ModelExtendedId
-E_MODEL_WF_TOWER_SQUARE_PLATORM            = 446 --- @type ModelExtendedId
-E_MODEL_WF_TOWER_SQUARE_PLATORM_UNUSED     = 447 --- @type ModelExtendedId
-E_MODEL_WF_TOWER_SQUARE_PLATORM_ELEVATOR   = 448 --- @type ModelExtendedId
-E_MODEL_WF_BREAKABLE_WALL_RIGHT            = 449 --- @type ModelExtendedId
-E_MODEL_WF_BREAKABLE_WALL_LEFT             = 450 --- @type ModelExtendedId
-E_MODEL_WF_KICKABLE_BOARD                  = 451 --- @type ModelExtendedId
-E_MODEL_WF_TOWER_DOOR                      = 452 --- @type ModelExtendedId
-E_MODEL_WF_KICKABLE_BOARD_FELLED           = 453 --- @type ModelExtendedId
-E_MODEL_JRB_SHIP_LEFT_HALF_PART            = 454 --- @type ModelExtendedId
-E_MODEL_JRB_SHIP_BACK_LEFT_PART            = 455 --- @type ModelExtendedId
-E_MODEL_JRB_SHIP_RIGHT_HALF_PART           = 456 --- @type ModelExtendedId
-E_MODEL_JRB_SHIP_BACK_RIGHT_PART           = 457 --- @type ModelExtendedId
-E_MODEL_JRB_SUNKEN_SHIP                    = 458 --- @type ModelExtendedId
-E_MODEL_JRB_SUNKEN_SHIP_BACK               = 459 --- @type ModelExtendedId
-E_MODEL_JRB_ROCK                           = 460 --- @type ModelExtendedId
-E_MODEL_JRB_SLIDING_BOX                    = 461 --- @type ModelExtendedId
-E_MODEL_JRB_FALLING_PILLAR                 = 462 --- @type ModelExtendedId
-E_MODEL_JRB_FALLING_PILLAR_BASE            = 463 --- @type ModelExtendedId
-E_MODEL_JRB_FLOATING_PLATFORM              = 464 --- @type ModelExtendedId
-E_MODEL_CCM_GEOMETRY_03                    = 465 --- @type ModelExtendedId
-E_MODEL_CCM_GEOMETRY_04                    = 466 --- @type ModelExtendedId
-E_MODEL_CCM_GEOMETRY_05                    = 467 --- @type ModelExtendedId
-E_MODEL_CCM_GEOMETRY_06                    = 468 --- @type ModelExtendedId
-E_MODEL_CCM_GEOMETRY_07                    = 469 --- @type ModelExtendedId
-E_MODEL_CCM_CABIN_DOOR                     = 470 --- @type ModelExtendedId
-E_MODEL_CCM_SNOW_TREE                      = 471 --- @type ModelExtendedId
-E_MODEL_CCM_ROPEWAY_LIFT                   = 472 --- @type ModelExtendedId
-E_MODEL_CCM_SNOWMAN_BASE                   = 473 --- @type ModelExtendedId
-E_MODEL_CCM_SNOWMAN_HEAD                   = 474 --- @type ModelExtendedId
-E_MODEL_BBH_HAUNTED_DOOR                   = 475 --- @type ModelExtendedId
-E_MODEL_BBH_STAIRCASE_STEP                 = 476 --- @type ModelExtendedId
-E_MODEL_BBH_TILTING_FLOOR_PLATFORM         = 477 --- @type ModelExtendedId
-E_MODEL_BBH_TUMBLING_PLATFORM              = 478 --- @type ModelExtendedId
-E_MODEL_BBH_TUMBLING_PLATFORM_PART         = 479 --- @type ModelExtendedId
-E_MODEL_BBH_MOVING_BOOKSHELF               = 480 --- @type ModelExtendedId
-E_MODEL_BBH_MESH_ELEVATOR                  = 481 --- @type ModelExtendedId
-E_MODEL_BBH_MERRY_GO_ROUND                 = 482 --- @type ModelExtendedId
-E_MODEL_BBH_WOODEN_TOMB                    = 483 --- @type ModelExtendedId
-E_MODEL_HMC_WOODEN_DOOR                    = 484 --- @type ModelExtendedId
-E_MODEL_HMC_METAL_DOOR                     = 485 --- @type ModelExtendedId
-E_MODEL_HMC_HAZY_MAZE_DOOR                 = 486 --- @type ModelExtendedId
-E_MODEL_HMC_METAL_PLATFORM                 = 487 --- @type ModelExtendedId
-E_MODEL_HMC_METAL_ARROW_PLATFORM           = 488 --- @type ModelExtendedId
-E_MODEL_HMC_ELEVATOR_PLATFORM              = 489 --- @type ModelExtendedId
-E_MODEL_HMC_ROLLING_ROCK                   = 490 --- @type ModelExtendedId
-E_MODEL_HMC_ROCK_PIECE                     = 491 --- @type ModelExtendedId
-E_MODEL_HMC_ROCK_SMALL_PIECE               = 492 --- @type ModelExtendedId
-E_MODEL_HMC_RED_GRILLS                     = 493 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_03                    = 494 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_04                    = 495 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_05                    = 496 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_06                    = 497 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_07                    = 498 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_08                    = 499 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_0A                    = 500 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_0B                    = 501 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_0C                    = 502 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_0D                    = 503 --- @type ModelExtendedId
-E_MODEL_LLL_GEOMETRY_0E                    = 504 --- @type ModelExtendedId
-E_MODEL_LLL_DRAWBRIDGE_PART                = 505 --- @type ModelExtendedId
-E_MODEL_LLL_ROTATING_BLOCK_FIRE_BARS       = 506 --- @type ModelExtendedId
-E_MODEL_LLL_ROTATING_HEXAGONAL_RING        = 507 --- @type ModelExtendedId
-E_MODEL_LLL_SINKING_RECTANGULAR_PLATFORM   = 508 --- @type ModelExtendedId
-E_MODEL_LLL_SINKING_SQUARE_PLATFORMS       = 509 --- @type ModelExtendedId
-E_MODEL_LLL_TILTING_SQUARE_PLATFORM        = 510 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_1                 = 511 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_2                 = 512 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_3                 = 513 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_4                 = 514 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_5                 = 515 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_6                 = 516 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_7                 = 517 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_8                 = 518 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_9                 = 519 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_10                = 520 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_11                = 521 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_12                = 522 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_13                = 523 --- @type ModelExtendedId
-E_MODEL_LLL_BOWSER_PIECE_14                = 524 --- @type ModelExtendedId
-E_MODEL_LLL_MOVING_OCTAGONAL_MESH_PLATFORM = 525 --- @type ModelExtendedId
-E_MODEL_LLL_SINKING_ROCK_BLOCK             = 526 --- @type ModelExtendedId
-E_MODEL_LLL_ROLLING_LOG                    = 527 --- @type ModelExtendedId
-E_MODEL_LLL_ROTATING_HEXAGONAL_PLATFORM    = 528 --- @type ModelExtendedId
-E_MODEL_LLL_WOOD_BRIDGE                    = 529 --- @type ModelExtendedId
-E_MODEL_LLL_LARGE_WOOD_BRIDGE              = 530 --- @type ModelExtendedId
-E_MODEL_LLL_FALLING_PLATFORM               = 531 --- @type ModelExtendedId
-E_MODEL_LLL_LARGE_FALLING_PLATFORM         = 532 --- @type ModelExtendedId
-E_MODEL_LLL_VOLCANO_FALLING_TRAP           = 533 --- @type ModelExtendedId
-E_MODEL_SSL_PALM_TREE                      = 534 --- @type ModelExtendedId
-E_MODEL_SSL_GEOMETRY_03                    = 535 --- @type ModelExtendedId
-E_MODEL_SSL_GEOMETRY_04                    = 536 --- @type ModelExtendedId
-E_MODEL_SSL_PYRAMID_TOP                    = 537 --- @type ModelExtendedId
-E_MODEL_SSL_GRINDEL                        = 538 --- @type ModelExtendedId
-E_MODEL_SSL_SPINDEL                        = 539 --- @type ModelExtendedId
-E_MODEL_SSL_MOVING_PYRAMID_WALL            = 540 --- @type ModelExtendedId
-E_MODEL_SSL_PYRAMID_ELEVATOR               = 541 --- @type ModelExtendedId
-E_MODEL_SSL_TOX_BOX                        = 542 --- @type ModelExtendedId
-E_MODEL_DDD_BOWSER_SUB_DOOR                = 543 --- @type ModelExtendedId
-E_MODEL_DDD_BOWSER_SUB                     = 544 --- @type ModelExtendedId
-E_MODEL_DDD_POLE                           = 545 --- @type ModelExtendedId
-E_MODEL_SL_SNOW_TRIANGLE                   = 546 --- @type ModelExtendedId
-E_MODEL_SL_CRACKED_ICE                     = 547 --- @type ModelExtendedId
-E_MODEL_SL_CRACKED_ICE_CHUNK               = 548 --- @type ModelExtendedId
-E_MODEL_SL_SNOW_TREE                       = 549 --- @type ModelExtendedId
-E_MODEL_WDW_BUBBLY_TREE                    = 550 --- @type ModelExtendedId
-E_MODEL_WDW_SQUARE_FLOATING_PLATFORM       = 551 --- @type ModelExtendedId
-E_MODEL_WDW_ARROW_LIFT                     = 552 --- @type ModelExtendedId
-E_MODEL_WDW_WATER_LEVEL_DIAMOND            = 553 --- @type ModelExtendedId
-E_MODEL_WDW_HIDDEN_PLATFORM                = 554 --- @type ModelExtendedId
-E_MODEL_WDW_EXPRESS_ELEVATOR               = 555 --- @type ModelExtendedId
-E_MODEL_WDW_RECTANGULAR_FLOATING_PLATFORM  = 556 --- @type ModelExtendedId
-E_MODEL_WDW_ROTATING_PLATFORM              = 557 --- @type ModelExtendedId
-E_MODEL_TTM_SLIDE_EXIT_PODIUM              = 558 --- @type ModelExtendedId
-E_MODEL_TTM_ROLLING_LOG                    = 559 --- @type ModelExtendedId
-E_MODEL_TTM_STAR_CAGE                      = 560 --- @type ModelExtendedId
-E_MODEL_TTM_BLUE_SMILEY                    = 561 --- @type ModelExtendedId
-E_MODEL_TTM_YELLOW_SMILEY                  = 562 --- @type ModelExtendedId
-E_MODEL_TTM_STAR_SMILEY                    = 563 --- @type ModelExtendedId
-E_MODEL_TTM_MOON_SMILEY                    = 564 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_03                    = 565 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_04                    = 566 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_05                    = 567 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_06                    = 568 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_07                    = 569 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_08                    = 570 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_09                    = 571 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_0A                    = 572 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_0B                    = 573 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_0C                    = 574 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_0D                    = 575 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_0F                    = 576 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_10                    = 577 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_11                    = 578 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_12                    = 579 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_13                    = 580 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_14                    = 581 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_15                    = 582 --- @type ModelExtendedId
-E_MODEL_TTM_GEOMETRY_16                    = 583 --- @type ModelExtendedId
-E_MODEL_THI_BUBBLY_TREE                    = 584 --- @type ModelExtendedId
-E_MODEL_THI_GEOMETRY_03                    = 585 --- @type ModelExtendedId
-E_MODEL_THI_WARP_PIPE                      = 586 --- @type ModelExtendedId
-E_MODEL_THI_HUGE_ISLAND_TOP                = 587 --- @type ModelExtendedId
-E_MODEL_THI_TINY_ISLAND_TOP                = 588 --- @type ModelExtendedId
-E_MODEL_TTC_ROTATING_CUBE                  = 589 --- @type ModelExtendedId
-E_MODEL_TTC_ROTATING_PRISM                 = 590 --- @type ModelExtendedId
-E_MODEL_TTC_PENDULUM                       = 591 --- @type ModelExtendedId
-E_MODEL_TTC_LARGE_TREADMILL                = 592 --- @type ModelExtendedId
-E_MODEL_TTC_SMALL_TREADMILL                = 593 --- @type ModelExtendedId
-E_MODEL_TTC_PUSH_BLOCK                     = 594 --- @type ModelExtendedId
-E_MODEL_TTC_ROTATING_HEXAGON               = 595 --- @type ModelExtendedId
-E_MODEL_TTC_ROTATING_TRIANGLE              = 596 --- @type ModelExtendedId
-E_MODEL_TTC_PIT_BLOCK                      = 597 --- @type ModelExtendedId
-E_MODEL_TTC_PIT_BLOCK_UNUSED               = 598 --- @type ModelExtendedId
-E_MODEL_TTC_ELEVATOR_PLATFORM              = 599 --- @type ModelExtendedId
-E_MODEL_TTC_CLOCK_HAND                     = 600 --- @type ModelExtendedId
-E_MODEL_TTC_SPINNER                        = 601 --- @type ModelExtendedId
-E_MODEL_TTC_SMALL_GEAR                     = 602 --- @type ModelExtendedId
-E_MODEL_TTC_LARGE_GEAR                     = 603 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_03                     = 604 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_04                     = 605 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_05                     = 606 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_06                     = 607 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_07                     = 608 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_08                     = 609 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_09                     = 610 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_0A                     = 611 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_0B                     = 612 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_0C                     = 613 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_0D                     = 614 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_0E                     = 615 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_0F                     = 616 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_10                     = 617 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_11                     = 618 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_12                     = 619 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_13                     = 620 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_14                     = 621 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_15                     = 622 --- @type ModelExtendedId
-E_MODEL_RR_GEOMETRY_16                     = 623 --- @type ModelExtendedId
-E_MODEL_RR_SLIDING_PLATFORM                = 624 --- @type ModelExtendedId
-E_MODEL_RR_FLYING_CARPET                   = 625 --- @type ModelExtendedId
-E_MODEL_RR_OCTAGONAL_PLATFORM              = 626 --- @type ModelExtendedId
-E_MODEL_RR_ROTATING_BRIDGE_PLATFORM        = 627 --- @type ModelExtendedId
-E_MODEL_RR_TRIANGLE_PLATFORM               = 628 --- @type ModelExtendedId
-E_MODEL_RR_CRUISER_WING                    = 629 --- @type ModelExtendedId
-E_MODEL_RR_SEESAW_PLATFORM                 = 630 --- @type ModelExtendedId
-E_MODEL_RR_L_SHAPED_PLATFORM               = 631 --- @type ModelExtendedId
-E_MODEL_RR_SWINGING_PLATFORM               = 632 --- @type ModelExtendedId
-E_MODEL_RR_DONUT_PLATFORM                  = 633 --- @type ModelExtendedId
-E_MODEL_RR_ELEVATOR_PLATFORM               = 634 --- @type ModelExtendedId
-E_MODEL_RR_TRICKY_TRIANGLES                = 635 --- @type ModelExtendedId
-E_MODEL_RR_TRICKY_TRIANGLES_FRAME1         = 636 --- @type ModelExtendedId
-E_MODEL_RR_TRICKY_TRIANGLES_FRAME2         = 637 --- @type ModelExtendedId
-E_MODEL_RR_TRICKY_TRIANGLES_FRAME3         = 638 --- @type ModelExtendedId
-E_MODEL_RR_TRICKY_TRIANGLES_FRAME4         = 639 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_03                  = 640 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_04                  = 641 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_05                  = 642 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_06                  = 643 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_07                  = 644 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_08                  = 645 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_09                  = 646 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_0A                  = 647 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_0B                  = 648 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_0C                  = 649 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_0D                  = 650 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_0E                  = 651 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_0F                  = 652 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_10                  = 653 --- @type ModelExtendedId
-E_MODEL_BITDW_GEOMETRY_11                  = 654 --- @type ModelExtendedId
-E_MODEL_BITDW_WARP_PIPE                    = 655 --- @type ModelExtendedId
-E_MODEL_BITDW_SQUARE_PLATFORM              = 656 --- @type ModelExtendedId
-E_MODEL_BITDW_SEESAW_PLATFORM              = 657 --- @type ModelExtendedId
-E_MODEL_BITDW_SLIDING_PLATFORM             = 658 --- @type ModelExtendedId
-E_MODEL_BITDW_FERRIS_WHEEL_AXLE            = 659 --- @type ModelExtendedId
-E_MODEL_BITDW_BLUE_PLATFORM                = 660 --- @type ModelExtendedId
-E_MODEL_BITDW_STAIRCASE_FRAME4             = 661 --- @type ModelExtendedId
-E_MODEL_BITDW_STAIRCASE_FRAME3             = 662 --- @type ModelExtendedId
-E_MODEL_BITDW_STAIRCASE_FRAME2             = 663 --- @type ModelExtendedId
-E_MODEL_BITDW_STAIRCASE_FRAME1             = 664 --- @type ModelExtendedId
-E_MODEL_BITDW_STAIRCASE                    = 665 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_03                  = 666 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_04                  = 667 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_05                  = 668 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_06                  = 669 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_07                  = 670 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_08                  = 671 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_09                  = 672 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_0A                  = 673 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_0B                  = 674 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_0C                  = 675 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_0D                  = 676 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_0E                  = 677 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_0F                  = 678 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_10                  = 679 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_11                  = 680 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_12                  = 681 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_13                  = 682 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_14                  = 683 --- @type ModelExtendedId
-E_MODEL_BITFS_GEOMETRY_15                  = 684 --- @type ModelExtendedId
-E_MODEL_BITFS_PLATFORM_ON_TRACK            = 685 --- @type ModelExtendedId
-E_MODEL_BITFS_TILTING_SQUARE_PLATFORM      = 686 --- @type ModelExtendedId
-E_MODEL_BITFS_SINKING_PLATFORMS            = 687 --- @type ModelExtendedId
-E_MODEL_BITFS_BLUE_POLE                    = 688 --- @type ModelExtendedId
-E_MODEL_BITFS_SINKING_CAGE_PLATFORM        = 689 --- @type ModelExtendedId
-E_MODEL_BITFS_ELEVATOR                     = 690 --- @type ModelExtendedId
-E_MODEL_BITFS_STRETCHING_PLATFORMS         = 691 --- @type ModelExtendedId
-E_MODEL_BITFS_SEESAW_PLATFORM              = 692 --- @type ModelExtendedId
-E_MODEL_BITFS_MOVING_SQUARE_PLATFORM       = 693 --- @type ModelExtendedId
-E_MODEL_BITFS_SLIDING_PLATFORM             = 694 --- @type ModelExtendedId
-E_MODEL_BITFS_TUMBLING_PLATFORM_PART       = 695 --- @type ModelExtendedId
-E_MODEL_BITFS_TUMBLING_PLATFORM            = 696 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_03                   = 697 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_04                   = 698 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_05                   = 699 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_06                   = 700 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_07                   = 701 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_08                   = 702 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_09                   = 703 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_0A                   = 704 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_0B                   = 705 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_0C                   = 706 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_0D                   = 707 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_0E                   = 708 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_0F                   = 709 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_10                   = 710 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_11                   = 711 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_12                   = 712 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_13                   = 713 --- @type ModelExtendedId
-E_MODEL_BITS_GEOMETRY_14                   = 714 --- @type ModelExtendedId
-E_MODEL_BITS_SLIDING_PLATFORM              = 715 --- @type ModelExtendedId
-E_MODEL_BITS_TWIN_SLIDING_PLATFORMS        = 716 --- @type ModelExtendedId
-E_MODEL_BITS_OCTAGONAL_PLATFORM            = 717 --- @type ModelExtendedId
-E_MODEL_BITS_BLUE_PLATFORM                 = 718 --- @type ModelExtendedId
-E_MODEL_BITS_FERRIS_WHEEL_AXLE             = 719 --- @type ModelExtendedId
-E_MODEL_BITS_ARROW_PLATFORM                = 720 --- @type ModelExtendedId
-E_MODEL_BITS_SEESAW_PLATFORM               = 721 --- @type ModelExtendedId
-E_MODEL_BITS_TILTING_W_PLATFORM            = 722 --- @type ModelExtendedId
-E_MODEL_BITS_STAIRCASE                     = 723 --- @type ModelExtendedId
-E_MODEL_BITS_STAIRCASE_FRAME1              = 724 --- @type ModelExtendedId
-E_MODEL_BITS_STAIRCASE_FRAME2              = 725 --- @type ModelExtendedId
-E_MODEL_BITS_STAIRCASE_FRAME3              = 726 --- @type ModelExtendedId
-E_MODEL_BITS_STAIRCASE_FRAME4              = 727 --- @type ModelExtendedId
-E_MODEL_BITS_WARP_PIPE                     = 728 --- @type ModelExtendedId
-E_MODEL_BOWSER_1_YELLOW_SPHERE             = 729 --- @type ModelExtendedId
-E_MODEL_BOWSER_2_TILTING_ARENA             = 730 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_1        = 731 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_2        = 732 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_3        = 733 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_4        = 734 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_5        = 735 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_6        = 736 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_7        = 737 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_8        = 738 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_9        = 739 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_FALLING_PLATFORM_10       = 740 --- @type ModelExtendedId
-E_MODEL_BOWSER_3_GEOMETRY_03               = 741 --- @type ModelExtendedId
-E_MODEL_TOTWC_GEOMETRY_03                  = 742 --- @type ModelExtendedId
-E_MODEL_VCUTM_SEESAW_PLATFORM              = 743 --- @type ModelExtendedId
-E_MODEL_VCUTM_WARP_PIPE                    = 744 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_GEOMETRY_03         = 745 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_BUBBLY_TREE         = 746 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_WARP_PIPE           = 747 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_CASTLE_DOOR         = 748 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_METAL_DOOR          = 749 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_VCUTM_GRILL         = 750 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_FLAG                = 751 --- @type ModelExtendedId
-E_MODEL_CASTLE_GROUNDS_CANNON_GRILL        = 752 --- @type ModelExtendedId
-E_MODEL_CASTLE_BOWSER_TRAP                 = 753 --- @type ModelExtendedId
-E_MODEL_CASTLE_WATER_LEVEL_PILLAR          = 754 --- @type ModelExtendedId
-E_MODEL_CASTLE_CLOCK_MINUTE_HAND           = 755 --- @type ModelExtendedId
-E_MODEL_CASTLE_CLOCK_HOUR_HAND             = 756 --- @type ModelExtendedId
-E_MODEL_CASTLE_CLOCK_PENDULUM              = 757 --- @type ModelExtendedId
-E_MODEL_CASTLE_CASTLE_DOOR                 = 758 --- @type ModelExtendedId
-E_MODEL_CASTLE_WOODEN_DOOR                 = 759 --- @type ModelExtendedId
-E_MODEL_CASTLE_METAL_DOOR                  = 760 --- @type ModelExtendedId
-E_MODEL_CASTLE_CASTLE_DOOR_UNUSED          = 761 --- @type ModelExtendedId
-E_MODEL_CASTLE_WOODEN_DOOR_UNUSED          = 762 --- @type ModelExtendedId
-E_MODEL_CASTLE_DOOR_0_STARS                = 763 --- @type ModelExtendedId
-E_MODEL_CASTLE_DOOR_1_STAR                 = 764 --- @type ModelExtendedId
-E_MODEL_CASTLE_DOOR_3_STARS                = 765 --- @type ModelExtendedId
-E_MODEL_CASTLE_KEY_DOOR                    = 766 --- @type ModelExtendedId
-E_MODEL_CASTLE_STAR_DOOR_30_STARS          = 767 --- @type ModelExtendedId
-E_MODEL_CASTLE_STAR_DOOR_8_STARS           = 768 --- @type ModelExtendedId
-E_MODEL_CASTLE_STAR_DOOR_50_STARS          = 769 --- @type ModelExtendedId
-E_MODEL_CASTLE_STAR_DOOR_70_STARS          = 770 --- @type ModelExtendedId
-E_MODEL_COURTYARD_SPIKY_TREE               = 771 --- @type ModelExtendedId
-E_MODEL_COURTYARD_WOODEN_DOOR              = 772 --- @type ModelExtendedId
-E_MODEL_COURTYARD_GEOMETRY_03              = 773 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_MARIO_SAVE_BUTTON        = 774 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_RED_ERASE_BUTTON         = 775 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_BLUE_COPY_BUTTON         = 776 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_YELLOW_FILE_BUTTON       = 777 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_GREEN_SCORE_BUTTON       = 778 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_MARIO_SAVE_BUTTON_FADE   = 779 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_MARIO_NEW_BUTTON         = 780 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_MARIO_NEW_BUTTON_FADE    = 781 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_PURPLE_SOUND_BUTTON      = 782 --- @type ModelExtendedId
-E_MODEL_MAIN_MENU_GENERIC_BUTTON           = 783 --- @type ModelExtendedId
-E_MODEL_BUBBLE_PLAYER                      = 784 --- @type ModelExtendedId
-E_MODEL_LUIGI                              = 785 --- @type ModelExtendedId
-E_MODEL_LUIGIS_CAP                         = 786 --- @type ModelExtendedId
-E_MODEL_LUIGIS_METAL_CAP                   = 787 --- @type ModelExtendedId
-E_MODEL_LUIGIS_WING_CAP                    = 788 --- @type ModelExtendedId
-E_MODEL_LUIGIS_WINGED_METAL_CAP            = 789 --- @type ModelExtendedId
-E_MODEL_TOAD_PLAYER                        = 790 --- @type ModelExtendedId
-E_MODEL_TOADS_CAP                          = 791 --- @type ModelExtendedId
-E_MODEL_TOADS_METAL_CAP                    = 792 --- @type ModelExtendedId
-E_MODEL_TOADS_WING_CAP                     = 793 --- @type ModelExtendedId
-E_MODEL_TOADS_WINGED_METAL_CAP             = 794 --- @type ModelExtendedId
-E_MODEL_WALUIGI                            = 795 --- @type ModelExtendedId
-E_MODEL_WALUIGIS_CAP                       = 796 --- @type ModelExtendedId
-E_MODEL_WALUIGIS_METAL_CAP                 = 797 --- @type ModelExtendedId
-E_MODEL_WALUIGIS_WING_CAP                  = 798 --- @type ModelExtendedId
-E_MODEL_WALUIGIS_WINGED_METAL_CAP          = 799 --- @type ModelExtendedId
-E_MODEL_WARIO                              = 800 --- @type ModelExtendedId
-E_MODEL_WARIOS_CAP                         = 801 --- @type ModelExtendedId
-E_MODEL_WARIOS_METAL_CAP                   = 802 --- @type ModelExtendedId
-E_MODEL_WARIOS_WING_CAP                    = 803 --- @type ModelExtendedId
-E_MODEL_WARIOS_WINGED_METAL_CAP            = 804 --- @type ModelExtendedId
-E_MODEL_ERROR_MODEL                        = 805 --- @type ModelExtendedId
-E_MODEL_MAX                                = 806 --- @type ModelExtendedId
+E_MODEL_NONE                                            =                  0 --- @type ModelExtendedId
+E_MODEL_MARIO                                           =                256 --- @type ModelExtendedId
+E_MODEL_MARIOS_CAP                                      =                257 --- @type ModelExtendedId
+E_MODEL_MARIOS_METAL_CAP                                =                258 --- @type ModelExtendedId
+E_MODEL_MARIOS_WING_CAP                                 =                259 --- @type ModelExtendedId
+E_MODEL_MARIOS_WINGED_METAL_CAP                         =                260 --- @type ModelExtendedId
+E_MODEL_SMOKE                                           =                261 --- @type ModelExtendedId
+E_MODEL_SPARKLES                                        =                262 --- @type ModelExtendedId
+E_MODEL_BUBBLE                                          =                263 --- @type ModelExtendedId
+E_MODEL_SMALL_WATER_SPLASH                              =                264 --- @type ModelExtendedId
+E_MODEL_IDLE_WATER_WAVE                                 =                265 --- @type ModelExtendedId
+E_MODEL_WATER_SPLASH                                    =                266 --- @type ModelExtendedId
+E_MODEL_WAVE_TRAIL                                      =                267 --- @type ModelExtendedId
+E_MODEL_WHITE_PARTICLE_SMALL                            =                268 --- @type ModelExtendedId
+E_MODEL_BURN_SMOKE                                      =                269 --- @type ModelExtendedId
+E_MODEL_PURPLE_MARBLE                                   =                270 --- @type ModelExtendedId
+E_MODEL_SPARKLES_ANIMATION                              =                271 --- @type ModelExtendedId
+E_MODEL_BULLET_BILL                                     =                272 --- @type ModelExtendedId
+E_MODEL_YELLOW_SPHERE                                   =                273 --- @type ModelExtendedId
+E_MODEL_HOOT                                            =                274 --- @type ModelExtendedId
+E_MODEL_YOSHI_EGG                                       =                275 --- @type ModelExtendedId
+E_MODEL_THWOMP                                          =                276 --- @type ModelExtendedId
+E_MODEL_HEAVE_HO                                        =                277 --- @type ModelExtendedId
+E_MODEL_BLARGG                                          =                278 --- @type ModelExtendedId
+E_MODEL_BULLY                                           =                279 --- @type ModelExtendedId
+E_MODEL_BULLY_BOSS                                      =                280 --- @type ModelExtendedId
+E_MODEL_WATER_BOMB                                      =                281 --- @type ModelExtendedId
+E_MODEL_WATER_BOMB_SHADOW                               =                282 --- @type ModelExtendedId
+E_MODEL_KING_BOBOMB                                     =                283 --- @type ModelExtendedId
+E_MODEL_MANTA_RAY                                       =                284 --- @type ModelExtendedId
+E_MODEL_UNAGI                                           =                285 --- @type ModelExtendedId
+E_MODEL_SUSHI                                           =                286 --- @type ModelExtendedId
+E_MODEL_DL_WHIRLPOOL                                    =                287 --- @type ModelExtendedId
+E_MODEL_CLAM_SHELL                                      =                288 --- @type ModelExtendedId
+E_MODEL_POKEY_HEAD                                      =                289 --- @type ModelExtendedId
+E_MODEL_POKEY_BODY_PART                                 =                290 --- @type ModelExtendedId
+E_MODEL_TWEESTER                                        =                291 --- @type ModelExtendedId
+E_MODEL_KLEPTO                                          =                292 --- @type ModelExtendedId
+E_MODEL_EYEROK_LEFT_HAND                                =                293 --- @type ModelExtendedId
+E_MODEL_EYEROK_RIGHT_HAND                               =                294 --- @type ModelExtendedId
+E_MODEL_DL_MONTY_MOLE_HOLE                              =                295 --- @type ModelExtendedId
+E_MODEL_MONTY_MOLE                                      =                296 --- @type ModelExtendedId
+E_MODEL_UKIKI                                           =                297 --- @type ModelExtendedId
+E_MODEL_FWOOSH                                          =                298 --- @type ModelExtendedId
+E_MODEL_SPINDRIFT                                       =                299 --- @type ModelExtendedId
+E_MODEL_MR_BLIZZARD_HIDDEN                              =                300 --- @type ModelExtendedId
+E_MODEL_MR_BLIZZARD                                     =                301 --- @type ModelExtendedId
+E_MODEL_PENGUIN                                         =                302 --- @type ModelExtendedId
+E_MODEL_CAP_SWITCH_EXCLAMATION                          =                303 --- @type ModelExtendedId
+E_MODEL_CAP_SWITCH                                      =                304 --- @type ModelExtendedId
+E_MODEL_CAP_SWITCH_BASE                                 =                305 --- @type ModelExtendedId
+E_MODEL_TRAMPOLINE                                      =                306 --- @type ModelExtendedId
+E_MODEL_TRAMPOLINE_CENTER                               =                307 --- @type ModelExtendedId
+E_MODEL_TRAMPOLINE_BASE                                 =                308 --- @type ModelExtendedId
+E_MODEL_BOO                                             =                309 --- @type ModelExtendedId
+E_MODEL_BETA_BOO_KEY                                    =                310 --- @type ModelExtendedId
+E_MODEL_HAUNTED_CHAIR                                   =                311 --- @type ModelExtendedId
+E_MODEL_MAD_PIANO                                       =                312 --- @type ModelExtendedId
+E_MODEL_BOOKEND_PART                                    =                313 --- @type ModelExtendedId
+E_MODEL_BOOKEND                                         =                314 --- @type ModelExtendedId
+E_MODEL_HAUNTED_CAGE                                    =                315 --- @type ModelExtendedId
+E_MODEL_BIRDS                                           =                316 --- @type ModelExtendedId
+E_MODEL_PEACH                                           =                317 --- @type ModelExtendedId
+E_MODEL_YOSHI                                           =                318 --- @type ModelExtendedId
+E_MODEL_ENEMY_LAKITU                                    =                319 --- @type ModelExtendedId
+E_MODEL_SPINY_BALL                                      =                320 --- @type ModelExtendedId
+E_MODEL_SPINY                                           =                321 --- @type ModelExtendedId
+E_MODEL_WIGGLER_HEAD                                    =                322 --- @type ModelExtendedId
+E_MODEL_WIGGLER_BODY                                    =                323 --- @type ModelExtendedId
+E_MODEL_BUBBA                                           =                324 --- @type ModelExtendedId
+E_MODEL_BOWSER                                          =                325 --- @type ModelExtendedId
+E_MODEL_BOWSER_BOMB                                     =                326 --- @type ModelExtendedId
+E_MODEL_BOWSER_SMOKE                                    =                327 --- @type ModelExtendedId
+E_MODEL_BOWSER_FLAMES                                   =                328 --- @type ModelExtendedId
+E_MODEL_BOWSER_WAVE                                     =                329 --- @type ModelExtendedId
+E_MODEL_BOWSER_BITS_DEFEATED                            =                330 --- @type ModelExtendedId
+E_MODEL_BOWSER_YELLOW_SPHERE                            =                331 --- @type ModelExtendedId
+E_MODEL_BUB                                             =                332 --- @type ModelExtendedId
+E_MODEL_TREASURE_CHEST_BASE                             =                333 --- @type ModelExtendedId
+E_MODEL_TREASURE_CHEST_LID                              =                334 --- @type ModelExtendedId
+E_MODEL_CYAN_FISH                                       =                335 --- @type ModelExtendedId
+E_MODEL_WATER_RING                                      =                336 --- @type ModelExtendedId
+E_MODEL_WATER_MINE                                      =                337 --- @type ModelExtendedId
+E_MODEL_SEAWEED                                         =                338 --- @type ModelExtendedId
+E_MODEL_SKEETER                                         =                339 --- @type ModelExtendedId
+E_MODEL_PIRANHA_PLANT                                   =                340 --- @type ModelExtendedId
+E_MODEL_WHOMP                                           =                341 --- @type ModelExtendedId
+E_MODEL_KOOPA_WITH_SHELL                                =                342 --- @type ModelExtendedId
+E_MODEL_KOOPA_WITHOUT_SHELL                             =                343 --- @type ModelExtendedId
+E_MODEL_METALLIC_BALL                                   =                344 --- @type ModelExtendedId
+E_MODEL_CHAIN_CHOMP                                     =                345 --- @type ModelExtendedId
+E_MODEL_KOOPA_FLAG                                      =                346 --- @type ModelExtendedId
+E_MODEL_WOODEN_POST                                     =                347 --- @type ModelExtendedId
+E_MODEL_MIPS                                            =                348 --- @type ModelExtendedId
+E_MODEL_BOO_CASTLE                                      =                349 --- @type ModelExtendedId
+E_MODEL_LAKITU                                          =                350 --- @type ModelExtendedId
+E_MODEL_TOAD                                            =                351 --- @type ModelExtendedId
+E_MODEL_CHILL_BULLY                                     =                352 --- @type ModelExtendedId
+E_MODEL_BIG_CHILL_BULLY                                 =                353 --- @type ModelExtendedId
+E_MODEL_MONEYBAG                                        =                354 --- @type ModelExtendedId
+E_MODEL_SWOOP                                           =                355 --- @type ModelExtendedId
+E_MODEL_SCUTTLEBUG                                      =                356 --- @type ModelExtendedId
+E_MODEL_MR_I_IRIS                                       =                357 --- @type ModelExtendedId
+E_MODEL_MR_I                                            =                358 --- @type ModelExtendedId
+E_MODEL_DORRIE                                          =                359 --- @type ModelExtendedId
+E_MODEL_SNUFIT                                          =                360 --- @type ModelExtendedId
+E_MODEL_BLUE_COIN_SWITCH                                =                361 --- @type ModelExtendedId
+E_MODEL_AMP                                             =                362 --- @type ModelExtendedId
+E_MODEL_PURPLE_SWITCH                                   =                363 --- @type ModelExtendedId
+E_MODEL_CHECKERBOARD_PLATFORM                           =                364 --- @type ModelExtendedId
+E_MODEL_BREAKABLE_BOX                                   =                365 --- @type ModelExtendedId
+E_MODEL_BREAKABLE_BOX_SMALL                             =                366 --- @type ModelExtendedId
+E_MODEL_EXCLAMATION_BOX_OUTLINE                         =                367 --- @type ModelExtendedId
+E_MODEL_EXCLAMATION_BOX                                 =                368 --- @type ModelExtendedId
+E_MODEL_GOOMBA                                          =                369 --- @type ModelExtendedId
+E_MODEL_EXCLAMATION_POINT                               =                370 --- @type ModelExtendedId
+E_MODEL_KOOPA_SHELL                                     =                371 --- @type ModelExtendedId
+E_MODEL_METAL_BOX                                       =                372 --- @type ModelExtendedId
+E_MODEL_METAL_BOX_DL                                    =                373 --- @type ModelExtendedId
+E_MODEL_BLACK_BOBOMB                                    =                374 --- @type ModelExtendedId
+E_MODEL_BOBOMB_BUDDY                                    =                375 --- @type ModelExtendedId
+E_MODEL_DL_CANNON_LID                                   =                376 --- @type ModelExtendedId
+E_MODEL_BOWLING_BALL                                    =                377 --- @type ModelExtendedId
+E_MODEL_CANNON_BARREL                                   =                378 --- @type ModelExtendedId
+E_MODEL_CANNON_BASE                                     =                379 --- @type ModelExtendedId
+E_MODEL_HEART                                           =                380 --- @type ModelExtendedId
+E_MODEL_FLYGUY                                          =                381 --- @type ModelExtendedId
+E_MODEL_CHUCKYA                                         =                382 --- @type ModelExtendedId
+E_MODEL_TRAJECTORY_MARKER_BALL                          =                383 --- @type ModelExtendedId
+E_MODEL_YELLOW_COIN                                     =                384 --- @type ModelExtendedId
+E_MODEL_STAR                                            =                385 --- @type ModelExtendedId
+E_MODEL_TRANSPARENT_STAR                                =                386 --- @type ModelExtendedId
+E_MODEL_WOODEN_SIGNPOST                                 =                387 --- @type ModelExtendedId
+E_MODEL_RED_FLAME                                       =                388 --- @type ModelExtendedId
+E_MODEL_BLUE_FLAME                                      =                389 --- @type ModelExtendedId
+E_MODEL_LEAVES                                          =                390 --- @type ModelExtendedId
+E_MODEL_FISH                                            =                391 --- @type ModelExtendedId
+E_MODEL_FISH_SHADOW                                     =                392 --- @type ModelExtendedId
+E_MODEL_SAND_DUST                                       =                393 --- @type ModelExtendedId
+E_MODEL_BUTTERFLY                                       =                394 --- @type ModelExtendedId
+E_MODEL_PEBBLE                                          =                395 --- @type ModelExtendedId
+E_MODEL_MIST                                            =                396 --- @type ModelExtendedId
+E_MODEL_WHITE_PUFF                                      =                397 --- @type ModelExtendedId
+E_MODEL_WHITE_PARTICLE_DL                               =                398 --- @type ModelExtendedId
+E_MODEL_WHITE_PARTICLE                                  =                399 --- @type ModelExtendedId
+E_MODEL_YELLOW_COIN_NO_SHADOW                           =                400 --- @type ModelExtendedId
+E_MODEL_BLUE_COIN                                       =                401 --- @type ModelExtendedId
+E_MODEL_BLUE_COIN_NO_SHADOW                             =                402 --- @type ModelExtendedId
+E_MODEL_BOWSER_KEY_CUTSCENE                             =                403 --- @type ModelExtendedId
+E_MODEL_BOWSER_KEY                                      =                404 --- @type ModelExtendedId
+E_MODEL_RED_FLAME_SHADOW                                =                405 --- @type ModelExtendedId
+E_MODEL_1UP                                             =                406 --- @type ModelExtendedId
+E_MODEL_RED_COIN                                        =                407 --- @type ModelExtendedId
+E_MODEL_RED_COIN_NO_SHADOW                              =                408 --- @type ModelExtendedId
+E_MODEL_NUMBER                                          =                409 --- @type ModelExtendedId
+E_MODEL_EXPLOSION                                       =                410 --- @type ModelExtendedId
+E_MODEL_DIRT_ANIMATION                                  =                411 --- @type ModelExtendedId
+E_MODEL_CARTOON_STAR                                    =                412 --- @type ModelExtendedId
+E_MODEL_BUBBLY_TREE                                     =                413 --- @type ModelExtendedId
+E_MODEL_SPIKY_TREE                                      =                414 --- @type ModelExtendedId
+E_MODEL_SNOW_TREE                                       =                415 --- @type ModelExtendedId
+E_MODEL_PALM_TREE                                       =                416 --- @type ModelExtendedId
+E_MODEL_WARP_PIPE                                       =                417 --- @type ModelExtendedId
+E_MODEL_CASTLE_DOOR                                     =                418 --- @type ModelExtendedId
+E_MODEL_CASTLE_DOOR_0_STARS                             =                419 --- @type ModelExtendedId
+E_MODEL_CASTLE_DOOR_1_STAR                              =                420 --- @type ModelExtendedId
+E_MODEL_CASTLE_DOOR_3_STARS                             =                421 --- @type ModelExtendedId
+E_MODEL_KEY_DOOR                                        =                422 --- @type ModelExtendedId
+E_MODEL_STAR_DOOR                                       =                423 --- @type ModelExtendedId
+E_MODEL_CABIN_DOOR                                      =                424 --- @type ModelExtendedId
+E_MODEL_HAUNTED_DOOR                                    =                425 --- @type ModelExtendedId
+E_MODEL_WOODEN_DOOR                                     =                426 --- @type ModelExtendedId
+E_MODEL_METAL_DOOR                                      =                427 --- @type ModelExtendedId
+E_MODEL_HAZY_MAZE_DOOR                                  =                428 --- @type ModelExtendedId
+E_MODEL_BOB_CHAIN_CHOMP_GATE                            =                429 --- @type ModelExtendedId
+E_MODEL_BOB_SEESAW_PLATFORM                             =                430 --- @type ModelExtendedId
+E_MODEL_BOB_BARS_GRILLS                                 =                431 --- @type ModelExtendedId
+E_MODEL_BOB_MAIN_AREA                                   =                432 --- @type ModelExtendedId
+E_MODEL_WF_SMALL_STAIRS                                 =                433 --- @type ModelExtendedId
+E_MODEL_WF_LARGE_STAIRS                                 =                434 --- @type ModelExtendedId
+E_MODEL_WF_PILLARS                                      =                435 --- @type ModelExtendedId
+E_MODEL_WF_FENCES                                       =                436 --- @type ModelExtendedId
+E_MODEL_WF_FLOATING_PLATFORM                            =                437 --- @type ModelExtendedId
+E_MODEL_WF_TOWER                                        =                438 --- @type ModelExtendedId
+E_MODEL_WF_BULLET_BILL_LAUNCHER                         =                439 --- @type ModelExtendedId
+E_MODEL_WF_DIRT_SLOPE                                   =                440 --- @type ModelExtendedId
+E_MODEL_WF_PLATFORM_WITH_WOODEN_PLANK                   =                441 --- @type ModelExtendedId
+E_MODEL_WF_GIANT_POLE                                   =                442 --- @type ModelExtendedId
+E_MODEL_WF_STARTING_PLATFORM                            =                443 --- @type ModelExtendedId
+E_MODEL_WF_RED_COIN_STAR_PLATFORM                       =                444 --- @type ModelExtendedId
+E_MODEL_WF_ROTATING_PLATFORM                            =                445 --- @type ModelExtendedId
+E_MODEL_WF_BALCONY                                      =                446 --- @type ModelExtendedId
+E_MODEL_WF_SIDE_RAMP                                    =                447 --- @type ModelExtendedId
+E_MODEL_WF_SMALL_BOMP                                   =                448 --- @type ModelExtendedId
+E_MODEL_WF_LARGE_BOMP                                   =                449 --- @type ModelExtendedId
+E_MODEL_WF_ROTATING_WOODEN_PLATFORM                     =                450 --- @type ModelExtendedId
+E_MODEL_WF_SLIDING_PLATFORM                             =                451 --- @type ModelExtendedId
+E_MODEL_WF_TUMBLING_BRIDGE_PART                         =                452 --- @type ModelExtendedId
+E_MODEL_WF_TUMBLING_BRIDGE                              =                453 --- @type ModelExtendedId
+E_MODEL_WF_TOWER_TRAPEZOID_PLATORM                      =                454 --- @type ModelExtendedId
+E_MODEL_WF_TOWER_SQUARE_PLATORM                         =                455 --- @type ModelExtendedId
+E_MODEL_WF_TOWER_SQUARE_PLATORM_UNUSED                  =                456 --- @type ModelExtendedId
+E_MODEL_WF_TOWER_SQUARE_PLATORM_ELEVATOR                =                457 --- @type ModelExtendedId
+E_MODEL_WF_BREAKABLE_WALL_RIGHT                         =                458 --- @type ModelExtendedId
+E_MODEL_WF_BREAKABLE_WALL_LEFT                          =                459 --- @type ModelExtendedId
+E_MODEL_WF_KICKABLE_BOARD                               =                460 --- @type ModelExtendedId
+E_MODEL_WF_TOWER_DOOR                                   =                461 --- @type ModelExtendedId
+E_MODEL_WF_KICKABLE_BOARD_FELLED                        =                462 --- @type ModelExtendedId
+E_MODEL_WF_MAIN_AREA                                    =                463 --- @type ModelExtendedId
+E_MODEL_JRB_SHIP_LEFT_HALF_PART                         =                464 --- @type ModelExtendedId
+E_MODEL_JRB_SHIP_BACK_LEFT_PART                         =                465 --- @type ModelExtendedId
+E_MODEL_JRB_SHIP_RIGHT_HALF_PART                        =                466 --- @type ModelExtendedId
+E_MODEL_JRB_SHIP_BACK_RIGHT_PART                        =                467 --- @type ModelExtendedId
+E_MODEL_JRB_SUNKEN_SHIP                                 =                468 --- @type ModelExtendedId
+E_MODEL_JRB_SUNKEN_SHIP_BACK                            =                469 --- @type ModelExtendedId
+E_MODEL_JRB_ROCK                                        =                470 --- @type ModelExtendedId
+E_MODEL_JRB_SLIDING_BOX                                 =                471 --- @type ModelExtendedId
+E_MODEL_JRB_FALLING_PILLAR                              =                472 --- @type ModelExtendedId
+E_MODEL_JRB_FALLING_PILLAR_BASE                         =                473 --- @type ModelExtendedId
+E_MODEL_JRB_FLOATING_PLATFORM                           =                474 --- @type ModelExtendedId
+E_MODEL_JRB_MAIN_AREA                                   =                475 --- @type ModelExtendedId
+E_MODEL_JRB_SUNKEN_SHIP_AREA                            =                476 --- @type ModelExtendedId
+E_MODEL_CCM_CABIN_CHIMNEY                               =                477 --- @type ModelExtendedId
+E_MODEL_CCM_CABIN_EXIT                                  =                478 --- @type ModelExtendedId
+E_MODEL_CCM_SNOWMAN_PEDESTAL                            =                479 --- @type ModelExtendedId
+E_MODEL_CCM_ICE_CUBE                                    =                480 --- @type ModelExtendedId
+E_MODEL_CCM_WALL_KICK_SECTION                           =                481 --- @type ModelExtendedId
+E_MODEL_CCM_ROPEWAY_LIFT                                =                482 --- @type ModelExtendedId
+E_MODEL_CCM_SNOWMAN_BASE                                =                483 --- @type ModelExtendedId
+E_MODEL_CCM_SNOWMAN_HEAD                                =                484 --- @type ModelExtendedId
+E_MODEL_CCM_MAIN_AREA                                   =                485 --- @type ModelExtendedId
+E_MODEL_CCM_SLIDE_AREA                                  =                486 --- @type ModelExtendedId
+E_MODEL_BBH_STAIRCASE_STEP                              =                487 --- @type ModelExtendedId
+E_MODEL_BBH_TILTING_FLOOR_PLATFORM                      =                488 --- @type ModelExtendedId
+E_MODEL_BBH_TUMBLING_PLATFORM                           =                489 --- @type ModelExtendedId
+E_MODEL_BBH_TUMBLING_PLATFORM_PART                      =                490 --- @type ModelExtendedId
+E_MODEL_BBH_MOVING_BOOKSHELF                            =                491 --- @type ModelExtendedId
+E_MODEL_BBH_MESH_ELEVATOR                               =                492 --- @type ModelExtendedId
+E_MODEL_BBH_MERRY_GO_ROUND                              =                493 --- @type ModelExtendedId
+E_MODEL_BBH_WOODEN_TOMB                                 =                494 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_ROOM                                   =                495 --- @type ModelExtendedId
+E_MODEL_BBH_FAKE_FLOOR_ROOM                             =                496 --- @type ModelExtendedId
+E_MODEL_BBH_PIANO_ROOM                                  =                497 --- @type ModelExtendedId
+E_MODEL_BBH_BRIDGE_ROOM                                 =                498 --- @type ModelExtendedId
+E_MODEL_BBH_BOO_PAINTING_ROOM                           =                499 --- @type ModelExtendedId
+E_MODEL_BBH_HAUNTED_LIBRARY_ROOM                        =                500 --- @type ModelExtendedId
+E_MODEL_BBH_COFFIN_ROOM                                 =                501 --- @type ModelExtendedId
+E_MODEL_BBH_RED_MESH_ROOM                               =                502 --- @type ModelExtendedId
+E_MODEL_BBH_THIRD_FLOOR_ROOM                            =                503 --- @type ModelExtendedId
+E_MODEL_BBH_MERRY_GO_ROUND_ROOM                         =                504 --- @type ModelExtendedId
+E_MODEL_BBH_FLOODED_HALL_ROOM                           =                505 --- @type ModelExtendedId
+E_MODEL_BBH_SHED_ROOM                                   =                506 --- @type ModelExtendedId
+E_MODEL_BBH_OUTSIDE_ROOM                                =                507 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_FAKE_FLOOR_ROOM                    =                508 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_PIANO_ROOM                         =                509 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_BRIDGE_ROOM                        =                510 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_BOO_PAINTING_ROOM                  =                511 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_HAUNTED_LIBRARY_ROOM               =                512 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_COFFIN_ROOM                        =                513 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AND_RED_MESH_ROOM                      =                514 --- @type ModelExtendedId
+E_MODEL_BBH_OUTSIDE_AND_MAIN_ROOM                       =                515 --- @type ModelExtendedId
+E_MODEL_BBH_BRIDGE_AND_FAKE_FLOOR_ROOM                  =                516 --- @type ModelExtendedId
+E_MODEL_BBH_FAKE_FLOOR_AND_THIRD_FLOOR_ROOM             =                517 --- @type ModelExtendedId
+E_MODEL_BBH_FAKE_FLOOR_AND_MERRY_GO_ROUND_ROOM          =                518 --- @type ModelExtendedId
+E_MODEL_BBH_PIANO_AND_BOO_PAINTING_ROOM                 =                519 --- @type ModelExtendedId
+E_MODEL_BBH_PIANO_AND_HAUNTED_LIBRARY_ROOM              =                520 --- @type ModelExtendedId
+E_MODEL_BBH_BRIDGE_AND_MERRY_GO_ROUND_ROOM              =                521 --- @type ModelExtendedId
+E_MODEL_BBH_OUTSIDE_AND_BOO_PAINTING_ROOM               =                522 --- @type ModelExtendedId
+E_MODEL_BBH_OUTSIDE_AND_THIRD_FLOOR_ROOM                =                523 --- @type ModelExtendedId
+E_MODEL_BBH_MERRY_GO_ROUND_AND_FLOODED_HALL_ROOM        =                524 --- @type ModelExtendedId
+E_MODEL_BBH_SHED_AND_FLOODED_HALL_ROOM                  =                525 --- @type ModelExtendedId
+E_MODEL_BBH_OUTSIDE_AND_SHED_ROOM                       =                526 --- @type ModelExtendedId
+E_MODEL_BBH_MAIN_AREA                                   =                527 --- @type ModelExtendedId
+E_MODEL_HMC_METAL_PLATFORM                              =                528 --- @type ModelExtendedId
+E_MODEL_HMC_METAL_ARROW_PLATFORM                        =                529 --- @type ModelExtendedId
+E_MODEL_HMC_ELEVATOR_PLATFORM                           =                530 --- @type ModelExtendedId
+E_MODEL_HMC_ROLLING_ROCK                                =                531 --- @type ModelExtendedId
+E_MODEL_HMC_ROCK_PIECE                                  =                532 --- @type ModelExtendedId
+E_MODEL_HMC_ROCK_SMALL_PIECE                            =                533 --- @type ModelExtendedId
+E_MODEL_HMC_RED_GRILLS                                  =                534 --- @type ModelExtendedId
+E_MODEL_HMC_ENTRANCE_ROOM                               =                535 --- @type ModelExtendedId
+E_MODEL_HMC_RED_COIN_ROOM                               =                536 --- @type ModelExtendedId
+E_MODEL_HMC_TOXIC_MAZE_ROOM                             =                537 --- @type ModelExtendedId
+E_MODEL_HMC_ROLLING_ROCKS_ROOM                          =                538 --- @type ModelExtendedId
+E_MODEL_HMC_EMERGENCY_EXIT_ROOM                         =                539 --- @type ModelExtendedId
+E_MODEL_HMC_NAVIGATING_DORRIE_ROOM                      =                540 --- @type ModelExtendedId
+E_MODEL_HMC_COTMC_ROOM                                  =                541 --- @type ModelExtendedId
+E_MODEL_HMC_METAL_HEAD_MARIO_ROOM                       =                542 --- @type ModelExtendedId
+E_MODEL_HMC_ENTRANCE_AND_RED_COIN_ROOM                  =                543 --- @type ModelExtendedId
+E_MODEL_HMC_ENTRANCE_AND_ROLLING_ROCKS_ROOM             =                544 --- @type ModelExtendedId
+E_MODEL_HMC_RED_COIN_AND_TOXIC_MAZE_ROOM                =                545 --- @type ModelExtendedId
+E_MODEL_HMC_RED_COIN_AND_ROLLING_ROCKS_ROOM             =                546 --- @type ModelExtendedId
+E_MODEL_HMC_TOXIC_MAZE_AND_EMERGENCY_EXIT_ROOM          =                547 --- @type ModelExtendedId
+E_MODEL_HMC_TOXIC_MAZE_AND_NAVIGATING_DORRIE_ROOM       =                548 --- @type ModelExtendedId
+E_MODEL_HMC_ROLLING_ROCKS_AND_NAVIGATING_DORRIE_ROOM    =                549 --- @type ModelExtendedId
+E_MODEL_HMC_NAVIGATING_DORRIE_AND_COTMC_ROOM            =                550 --- @type ModelExtendedId
+E_MODEL_HMC_NAVIGATING_DORRIE_AND_METAL_HEAD_MARIO_ROOM =                551 --- @type ModelExtendedId
+E_MODEL_HMC_ROLLING_ROCKS_AND_EMERGENCY_EXIT_ROOM       =                552 --- @type ModelExtendedId
+E_MODEL_HMC_MAIN_AREA                                   =                553 --- @type ModelExtendedId
+E_MODEL_LLL_BIG_BULLY_MINIONS_PLATFORM                  =                554 --- @type ModelExtendedId
+E_MODEL_LLL_BOUNCING_FIREBALLS_PLATFORM                 =                555 --- @type ModelExtendedId
+E_MODEL_LLL_BULLIES_PLATFORM                            =                556 --- @type ModelExtendedId
+E_MODEL_LLL_DRAWBRIDGE_PLATFORM                         =                557 --- @type ModelExtendedId
+E_MODEL_LLL_MR_I_GRILL_PLATFORM                         =                558 --- @type ModelExtendedId
+E_MODEL_LLL_STONE_PLATFORM                              =                559 --- @type ModelExtendedId
+E_MODEL_LLL_VOLCANO                                     =                560 --- @type ModelExtendedId
+E_MODEL_LLL_STONE_ARCH                                  =                561 --- @type ModelExtendedId
+E_MODEL_LLL_DOWNWARD_RAMP                               =                562 --- @type ModelExtendedId
+E_MODEL_LLL_FLAMETHROWER                                =                563 --- @type ModelExtendedId
+E_MODEL_LLL_HEXAGONAL_MESH                              =                564 --- @type ModelExtendedId
+E_MODEL_LLL_DRAWBRIDGE_PART                             =                565 --- @type ModelExtendedId
+E_MODEL_LLL_ROTATING_BLOCK_FIRE_BARS                    =                566 --- @type ModelExtendedId
+E_MODEL_LLL_ROTATING_HEXAGONAL_RING                     =                567 --- @type ModelExtendedId
+E_MODEL_LLL_SINKING_RECTANGULAR_PLATFORM                =                568 --- @type ModelExtendedId
+E_MODEL_LLL_SINKING_SQUARE_PLATFORMS                    =                569 --- @type ModelExtendedId
+E_MODEL_LLL_TILTING_SQUARE_PLATFORM                     =                570 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_1                              =                571 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_2                              =                572 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_3                              =                573 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_4                              =                574 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_5                              =                575 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_6                              =                576 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_7                              =                577 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_8                              =                578 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_9                              =                579 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_10                             =                580 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_11                             =                581 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_12                             =                582 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_13                             =                583 --- @type ModelExtendedId
+E_MODEL_LLL_BOWSER_PIECE_14                             =                584 --- @type ModelExtendedId
+E_MODEL_LLL_MOVING_OCTAGONAL_MESH_PLATFORM              =                585 --- @type ModelExtendedId
+E_MODEL_LLL_SINKING_ROCK_BLOCK                          =                586 --- @type ModelExtendedId
+E_MODEL_LLL_ROLLING_LOG                                 =                587 --- @type ModelExtendedId
+E_MODEL_LLL_ROTATING_HEXAGONAL_PLATFORM                 =                588 --- @type ModelExtendedId
+E_MODEL_LLL_WOOD_BRIDGE                                 =                589 --- @type ModelExtendedId
+E_MODEL_LLL_LARGE_WOOD_BRIDGE                           =                590 --- @type ModelExtendedId
+E_MODEL_LLL_FALLING_PLATFORM                            =                591 --- @type ModelExtendedId
+E_MODEL_LLL_LARGE_FALLING_PLATFORM                      =                592 --- @type ModelExtendedId
+E_MODEL_LLL_VOLCANO_FALLING_TRAP                        =                593 --- @type ModelExtendedId
+E_MODEL_LLL_MAIN_AREA                                   =                594 --- @type ModelExtendedId
+E_MODEL_LLL_VOLCANO_AREA                                =                595 --- @type ModelExtendedId
+E_MODEL_SSL_QUICKSAND                                   =                596 --- @type ModelExtendedId
+E_MODEL_SSL_PYRAMID_QUICKSAND                           =                597 --- @type ModelExtendedId
+E_MODEL_SSL_PYRAMID_TOP                                 =                598 --- @type ModelExtendedId
+E_MODEL_SSL_GRINDEL                                     =                599 --- @type ModelExtendedId
+E_MODEL_SSL_SPINDEL                                     =                600 --- @type ModelExtendedId
+E_MODEL_SSL_MOVING_PYRAMID_WALL                         =                601 --- @type ModelExtendedId
+E_MODEL_SSL_PYRAMID_ELEVATOR                            =                602 --- @type ModelExtendedId
+E_MODEL_SSL_TOX_BOX                                     =                603 --- @type ModelExtendedId
+E_MODEL_SSL_MAIN_AREA                                   =                604 --- @type ModelExtendedId
+E_MODEL_SSL_PYRAMID_AREA                                =                605 --- @type ModelExtendedId
+E_MODEL_SSL_EYEROK_CHAMBER_AREA                         =                606 --- @type ModelExtendedId
+E_MODEL_DDD_BOWSER_SUB_DOOR                             =                607 --- @type ModelExtendedId
+E_MODEL_DDD_BOWSER_SUB                                  =                608 --- @type ModelExtendedId
+E_MODEL_DDD_POLE                                        =                609 --- @type ModelExtendedId
+E_MODEL_DDD_MAIN_AREA                                   =                610 --- @type ModelExtendedId
+E_MODEL_DDD_BOWSER_SUB_AREA                             =                611 --- @type ModelExtendedId
+E_MODEL_SL_SNOW_TRIANGLE                                =                612 --- @type ModelExtendedId
+E_MODEL_SL_CRACKED_ICE                                  =                613 --- @type ModelExtendedId
+E_MODEL_SL_CRACKED_ICE_CHUNK                            =                614 --- @type ModelExtendedId
+E_MODEL_SL_MAIN_AREA                                    =                615 --- @type ModelExtendedId
+E_MODEL_SL_IGLOO_AREA                                   =                616 --- @type ModelExtendedId
+E_MODEL_WDW_SQUARE_FLOATING_PLATFORM                    =                617 --- @type ModelExtendedId
+E_MODEL_WDW_ARROW_LIFT                                  =                618 --- @type ModelExtendedId
+E_MODEL_WDW_WATER_LEVEL_DIAMOND                         =                619 --- @type ModelExtendedId
+E_MODEL_WDW_HIDDEN_PLATFORM                             =                620 --- @type ModelExtendedId
+E_MODEL_WDW_EXPRESS_ELEVATOR                            =                621 --- @type ModelExtendedId
+E_MODEL_WDW_RECTANGULAR_FLOATING_PLATFORM               =                622 --- @type ModelExtendedId
+E_MODEL_WDW_ROTATING_PLATFORM                           =                623 --- @type ModelExtendedId
+E_MODEL_WDW_MAIN_AREA                                   =                624 --- @type ModelExtendedId
+E_MODEL_WDW_DOWNTOWN_AREA                               =                625 --- @type ModelExtendedId
+E_MODEL_TTM_SLIDE_EXIT_PODIUM                           =                626 --- @type ModelExtendedId
+E_MODEL_TTM_ROLLING_LOG                                 =                627 --- @type ModelExtendedId
+E_MODEL_TTM_STAR_CAGE                                   =                628 --- @type ModelExtendedId
+E_MODEL_TTM_BLUE_SMILEY                                 =                629 --- @type ModelExtendedId
+E_MODEL_TTM_YELLOW_SMILEY                               =                630 --- @type ModelExtendedId
+E_MODEL_TTM_STAR_SMILEY                                 =                631 --- @type ModelExtendedId
+E_MODEL_TTM_MOON_SMILEY                                 =                632 --- @type ModelExtendedId
+E_MODEL_TTM_MUSHROOM_LARGE                              =                633 --- @type ModelExtendedId
+E_MODEL_TTM_MUSHROOM_MEDIUM                             =                634 --- @type ModelExtendedId
+E_MODEL_TTM_MUSHROOM_SMALL                              =                635 --- @type ModelExtendedId
+E_MODEL_TTM_MUSHROOM_SMALLEST                           =                636 --- @type ModelExtendedId
+E_MODEL_TTM_STARTING_PLATFORM                           =                637 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_1                            =                638 --- @type ModelExtendedId
+E_MODEL_TTM_CANNON_HOLE                                 =                639 --- @type ModelExtendedId
+E_MODEL_TTM_WOODEN_BRIDGE                               =                640 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_2                            =                641 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_3                            =                642 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_4                            =                643 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_5                            =                644 --- @type ModelExtendedId
+E_MODEL_TTM_WATERFALL_HOLE                              =                645 --- @type ModelExtendedId
+E_MODEL_TTM_MOUNTAIN_TOP                                =                646 --- @type ModelExtendedId
+E_MODEL_TTM_VINE_BRIDGE                                 =                647 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_6                            =                648 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_7                            =                649 --- @type ModelExtendedId
+E_MODEL_TTM_ROCK_FORMATION_8                            =                650 --- @type ModelExtendedId
+E_MODEL_TTM_SLIDE_EXIT                                  =                651 --- @type ModelExtendedId
+E_MODEL_TTM_MAIN_AREA                                   =                652 --- @type ModelExtendedId
+E_MODEL_TTM_SLIDE_AREA_1                                =                653 --- @type ModelExtendedId
+E_MODEL_TTM_SLIDE_AREA_2                                =                654 --- @type ModelExtendedId
+E_MODEL_TTM_SLIDE_AREA_3                                =                655 --- @type ModelExtendedId
+E_MODEL_THI_FLOATING_PLATFORM                           =                656 --- @type ModelExtendedId
+E_MODEL_THI_HUGE_ISLAND_TOP                             =                657 --- @type ModelExtendedId
+E_MODEL_THI_TINY_ISLAND_TOP                             =                658 --- @type ModelExtendedId
+E_MODEL_THI_HUGE_AREA                                   =                659 --- @type ModelExtendedId
+E_MODEL_THI_TINY_AREA                                   =                660 --- @type ModelExtendedId
+E_MODEL_THI_WIGGLER_BASEMENT_AREA                       =                661 --- @type ModelExtendedId
+E_MODEL_TTC_ROTATING_CUBE                               =                662 --- @type ModelExtendedId
+E_MODEL_TTC_ROTATING_PRISM                              =                663 --- @type ModelExtendedId
+E_MODEL_TTC_PENDULUM                                    =                664 --- @type ModelExtendedId
+E_MODEL_TTC_LARGE_TREADMILL                             =                665 --- @type ModelExtendedId
+E_MODEL_TTC_SMALL_TREADMILL                             =                666 --- @type ModelExtendedId
+E_MODEL_TTC_PUSH_BLOCK                                  =                667 --- @type ModelExtendedId
+E_MODEL_TTC_ROTATING_HEXAGON                            =                668 --- @type ModelExtendedId
+E_MODEL_TTC_ROTATING_TRIANGLE                           =                669 --- @type ModelExtendedId
+E_MODEL_TTC_PIT_BLOCK                                   =                670 --- @type ModelExtendedId
+E_MODEL_TTC_PIT_BLOCK_UNUSED                            =                671 --- @type ModelExtendedId
+E_MODEL_TTC_ELEVATOR_PLATFORM                           =                672 --- @type ModelExtendedId
+E_MODEL_TTC_CLOCK_HAND                                  =                673 --- @type ModelExtendedId
+E_MODEL_TTC_SPINNER                                     =                674 --- @type ModelExtendedId
+E_MODEL_TTC_SMALL_GEAR                                  =                675 --- @type ModelExtendedId
+E_MODEL_TTC_LARGE_GEAR                                  =                676 --- @type ModelExtendedId
+E_MODEL_TTC_MAIN_AREA                                   =                677 --- @type ModelExtendedId
+E_MODEL_RR_STARTING_PLATFORM_1                          =                678 --- @type ModelExtendedId
+E_MODEL_RR_STARTING_BRIDGE                              =                679 --- @type ModelExtendedId
+E_MODEL_RR_BOTTOM_PLATFORMS_1                           =                680 --- @type ModelExtendedId
+E_MODEL_RR_TRICKY_TRIANGLES_PLATFORMS_1                 =                681 --- @type ModelExtendedId
+E_MODEL_RR_BOTTOM_PLATFORMS_2                           =                682 --- @type ModelExtendedId
+E_MODEL_RR_BOTTOM_PLATFORMS_3                           =                683 --- @type ModelExtendedId
+E_MODEL_RR_STARTING_PLATFORMS_2                         =                684 --- @type ModelExtendedId
+E_MODEL_RR_MAZE                                         =                685 --- @type ModelExtendedId
+E_MODEL_RR_CRUISER_PLATFORMS_1                          =                686 --- @type ModelExtendedId
+E_MODEL_RR_CRUISER                                      =                687 --- @type ModelExtendedId
+E_MODEL_RR_CRUISER_LOOKOUT                              =                688 --- @type ModelExtendedId
+E_MODEL_RR_RAINBOW_RING                                 =                689 --- @type ModelExtendedId
+E_MODEL_RR_BIG_HOUSE                                    =                690 --- @type ModelExtendedId
+E_MODEL_RR_CRUISER_SHORTCUT                             =                691 --- @type ModelExtendedId
+E_MODEL_RR_FLOATING_ISLAND                              =                692 --- @type ModelExtendedId
+E_MODEL_RR_GLASS_BOXES_1                                =                693 --- @type ModelExtendedId
+E_MODEL_RR_RAINBOW_PATH_START                           =                694 --- @type ModelExtendedId
+E_MODEL_RR_RAINBOW_PATH_TO_CRUISER                      =                695 --- @type ModelExtendedId
+E_MODEL_RR_RAINBOW_PATH_TO_BIG_HOUSE                    =                696 --- @type ModelExtendedId
+E_MODEL_RR_GLASS_BOXES_2                                =                697 --- @type ModelExtendedId
+E_MODEL_RR_SLIDING_PLATFORM                             =                698 --- @type ModelExtendedId
+E_MODEL_RR_FLYING_CARPET                                =                699 --- @type ModelExtendedId
+E_MODEL_RR_OCTAGONAL_PLATFORM                           =                700 --- @type ModelExtendedId
+E_MODEL_RR_ROTATING_BRIDGE_PLATFORM                     =                701 --- @type ModelExtendedId
+E_MODEL_RR_TRIANGLE_PLATFORM                            =                702 --- @type ModelExtendedId
+E_MODEL_RR_CRUISER_WING                                 =                703 --- @type ModelExtendedId
+E_MODEL_RR_SEESAW_PLATFORM                              =                704 --- @type ModelExtendedId
+E_MODEL_RR_L_SHAPED_PLATFORM                            =                705 --- @type ModelExtendedId
+E_MODEL_RR_SWINGING_PLATFORM                            =                706 --- @type ModelExtendedId
+E_MODEL_RR_DONUT_PLATFORM                               =                707 --- @type ModelExtendedId
+E_MODEL_RR_ELEVATOR_PLATFORM                            =                708 --- @type ModelExtendedId
+E_MODEL_RR_TRICKY_TRIANGLES                             =                709 --- @type ModelExtendedId
+E_MODEL_RR_TRICKY_TRIANGLES_FRAME1                      =                710 --- @type ModelExtendedId
+E_MODEL_RR_TRICKY_TRIANGLES_FRAME2                      =                711 --- @type ModelExtendedId
+E_MODEL_RR_TRICKY_TRIANGLES_FRAME3                      =                712 --- @type ModelExtendedId
+E_MODEL_RR_TRICKY_TRIANGLES_FRAME4                      =                713 --- @type ModelExtendedId
+E_MODEL_RR_MAIN_AREA                                    =                714 --- @type ModelExtendedId
+E_MODEL_BITDW_STARTING_PLATFORM                         =                715 --- @type ModelExtendedId
+E_MODEL_BITDW_FLAMETHROWER_PLATFORM                     =                716 --- @type ModelExtendedId
+E_MODEL_BITDW_WOODEN_BRIDGE_AND_FENCES                  =                717 --- @type ModelExtendedId
+E_MODEL_BITDW_CRYSTAL_PATH_1                            =                718 --- @type ModelExtendedId
+E_MODEL_BITDW_CRYSTAL_PATH_2                            =                719 --- @type ModelExtendedId
+E_MODEL_BITDW_CRYSTAL_PATH_FENCES                       =                720 --- @type ModelExtendedId
+E_MODEL_BITDW_SPIKY_PLATFORM                            =                721 --- @type ModelExtendedId
+E_MODEL_BITDW_DOUBLE_RAMP                               =                722 --- @type ModelExtendedId
+E_MODEL_BITDW_WOODEN_PLATFORM                           =                723 --- @type ModelExtendedId
+E_MODEL_BITDW_OVERHANGING_PLATFORMS_1                   =                724 --- @type ModelExtendedId
+E_MODEL_BITDW_OVERHANGING_PLATFORMS_2                   =                725 --- @type ModelExtendedId
+E_MODEL_BITDW_CRYSTAL                                   =                726 --- @type ModelExtendedId
+E_MODEL_BITDW_STAIRCASE_PLATFORM                        =                727 --- @type ModelExtendedId
+E_MODEL_BITDW_SQUARE_RAIL                               =                728 --- @type ModelExtendedId
+E_MODEL_BITDW_CURVED_WOODEN_BRIDGE                      =                729 --- @type ModelExtendedId
+E_MODEL_BITDW_SQUARE_PLATFORM                           =                730 --- @type ModelExtendedId
+E_MODEL_BITDW_SEESAW_PLATFORM                           =                731 --- @type ModelExtendedId
+E_MODEL_BITDW_SLIDING_PLATFORM                          =                732 --- @type ModelExtendedId
+E_MODEL_BITDW_FERRIS_WHEEL_AXLE                         =                733 --- @type ModelExtendedId
+E_MODEL_BITDW_BLUE_PLATFORM                             =                734 --- @type ModelExtendedId
+E_MODEL_BITDW_STAIRCASE_FRAME4                          =                735 --- @type ModelExtendedId
+E_MODEL_BITDW_STAIRCASE_FRAME3                          =                736 --- @type ModelExtendedId
+E_MODEL_BITDW_STAIRCASE_FRAME2                          =                737 --- @type ModelExtendedId
+E_MODEL_BITDW_STAIRCASE_FRAME1                          =                738 --- @type ModelExtendedId
+E_MODEL_BITDW_STAIRCASE                                 =                739 --- @type ModelExtendedId
+E_MODEL_BITDW_MAIN_AREA                                 =                740 --- @type ModelExtendedId
+E_MODEL_BITFS_STARTING_PLATFORM_1                       =                741 --- @type ModelExtendedId
+E_MODEL_BITFS_TWO_PILLARS                               =                742 --- @type ModelExtendedId
+E_MODEL_BITFS_STARTING_PLATFORM_2                       =                743 --- @type ModelExtendedId
+E_MODEL_BITFS_LAVA_POOL_1                               =                744 --- @type ModelExtendedId
+E_MODEL_BITFS_GRILL_PLATFORM                            =                745 --- @type ModelExtendedId
+E_MODEL_BITFS_ELEVATOR_CAGE_1                           =                746 --- @type ModelExtendedId
+E_MODEL_BITFS_ELEVATOR_CAGE_2                           =                747 --- @type ModelExtendedId
+E_MODEL_BITFS_LAVA_POOL_2_SECOND_FLOOR                  =                748 --- @type ModelExtendedId
+E_MODEL_BITFS_FLAMETHROWER                              =                749 --- @type ModelExtendedId
+E_MODEL_BITFS_SECOND_FLOOR_PLATFORMS                    =                750 --- @type ModelExtendedId
+E_MODEL_BITFS_SECOND_FLOOR_HANGABLE_GRILL               =                751 --- @type ModelExtendedId
+E_MODEL_BITFS_SECOND_FLOOR_BULLIES_PLATFORM             =                752 --- @type ModelExtendedId
+E_MODEL_BITFS_RAMP_TO_THIRD_FLOOR                       =                753 --- @type ModelExtendedId
+E_MODEL_BITFS_THIRD_FLOOR_POOL_GRILL                    =                754 --- @type ModelExtendedId
+E_MODEL_BITFS_THIRD_FLOOR_SINKING_PLATFORMS_MAZE        =                755 --- @type ModelExtendedId
+E_MODEL_BITFS_THIRD_FLOOR_SINKING_PLATFORMS_GRILLS      =                756 --- @type ModelExtendedId
+E_MODEL_BITFS_BOWSER_WARP                               =                757 --- @type ModelExtendedId
+E_MODEL_BITFS_BOWSER_WARP_STAR                          =                758 --- @type ModelExtendedId
+E_MODEL_BITFS_LAVA_POOL_2_THIRD_FLOOR                   =                759 --- @type ModelExtendedId
+E_MODEL_BITFS_PLATFORM_ON_TRACK                         =                760 --- @type ModelExtendedId
+E_MODEL_BITFS_TILTING_SQUARE_PLATFORM                   =                761 --- @type ModelExtendedId
+E_MODEL_BITFS_SINKING_PLATFORMS                         =                762 --- @type ModelExtendedId
+E_MODEL_BITFS_BLUE_POLE                                 =                763 --- @type ModelExtendedId
+E_MODEL_BITFS_SINKING_CAGE_PLATFORM                     =                764 --- @type ModelExtendedId
+E_MODEL_BITFS_ELEVATOR                                  =                765 --- @type ModelExtendedId
+E_MODEL_BITFS_STRETCHING_PLATFORMS                      =                766 --- @type ModelExtendedId
+E_MODEL_BITFS_SEESAW_PLATFORM                           =                767 --- @type ModelExtendedId
+E_MODEL_BITFS_MOVING_SQUARE_PLATFORM                    =                768 --- @type ModelExtendedId
+E_MODEL_BITFS_SLIDING_PLATFORM                          =                769 --- @type ModelExtendedId
+E_MODEL_BITFS_TUMBLING_PLATFORM_PART                    =                770 --- @type ModelExtendedId
+E_MODEL_BITFS_TUMBLING_PLATFORM                         =                771 --- @type ModelExtendedId
+E_MODEL_BITFS_MAIN_AREA                                 =                772 --- @type ModelExtendedId
+E_MODEL_BITS_STARTING_PLATFORMS                         =                773 --- @type ModelExtendedId
+E_MODEL_BITS_SECOND_FLOOR_BASE                          =                774 --- @type ModelExtendedId
+E_MODEL_BITS_UPWARD_RAMP_TO_SECOND_FLOOR                =                775 --- @type ModelExtendedId
+E_MODEL_BITS_90_DEGREES_BRIDGE                          =                776 --- @type ModelExtendedId
+E_MODEL_BITS_FENCES_1                                   =                777 --- @type ModelExtendedId
+E_MODEL_BITS_SECOND_FLOOR_WHOMP_PLATFORM                =                778 --- @type ModelExtendedId
+E_MODEL_BITS_SECOND_FLOOR_CHUCKYA_PLATFORM              =                779 --- @type ModelExtendedId
+E_MODEL_BITS_FENCES_2                                   =                780 --- @type ModelExtendedId
+E_MODEL_BITS_SECOND_FLOOR_TO_STAIRCASE                  =                781 --- @type ModelExtendedId
+E_MODEL_BITS_BENDING_RAMP_TO_THIRD_FLOOR                =                782 --- @type ModelExtendedId
+E_MODEL_BITS_THIRD_FLOOR_BOBOMBS_PLATFORM               =                783 --- @type ModelExtendedId
+E_MODEL_BITS_THIRD_FLOOR_POLE_TOP                       =                784 --- @type ModelExtendedId
+E_MODEL_BITS_THIRD_FLOOR_WOODEN_LOGS_AND_POLE           =                785 --- @type ModelExtendedId
+E_MODEL_BITS_STAIRCASE_PLATFORM                         =                786 --- @type ModelExtendedId
+E_MODEL_BITS_ARROW_PLATFORM_RAIL                        =                787 --- @type ModelExtendedId
+E_MODEL_BITS_BIG_POLE                                   =                788 --- @type ModelExtendedId
+E_MODEL_BITS_BRIDGE_TO_FERRIS_WHEELS                    =                789 --- @type ModelExtendedId
+E_MODEL_BITS_FINAL_PLATFORM                             =                790 --- @type ModelExtendedId
+E_MODEL_BITS_SLIDING_PLATFORM                           =                791 --- @type ModelExtendedId
+E_MODEL_BITS_TWIN_SLIDING_PLATFORMS                     =                792 --- @type ModelExtendedId
+E_MODEL_BITS_OCTAGONAL_PLATFORM                         =                793 --- @type ModelExtendedId
+E_MODEL_BITS_BLUE_PLATFORM                              =                794 --- @type ModelExtendedId
+E_MODEL_BITS_FERRIS_WHEEL_AXLE                          =                795 --- @type ModelExtendedId
+E_MODEL_BITS_ARROW_PLATFORM                             =                796 --- @type ModelExtendedId
+E_MODEL_BITS_SEESAW_PLATFORM                            =                797 --- @type ModelExtendedId
+E_MODEL_BITS_TILTING_W_PLATFORM                         =                798 --- @type ModelExtendedId
+E_MODEL_BITS_STAIRCASE                                  =                799 --- @type ModelExtendedId
+E_MODEL_BITS_STAIRCASE_FRAME1                           =                800 --- @type ModelExtendedId
+E_MODEL_BITS_STAIRCASE_FRAME2                           =                801 --- @type ModelExtendedId
+E_MODEL_BITS_STAIRCASE_FRAME3                           =                802 --- @type ModelExtendedId
+E_MODEL_BITS_STAIRCASE_FRAME4                           =                803 --- @type ModelExtendedId
+E_MODEL_BITS_MAIN_AREA                                  =                804 --- @type ModelExtendedId
+E_MODEL_BOWSER_1_MAIN_AREA                              =                805 --- @type ModelExtendedId
+E_MODEL_BOWSER_2_TILTING_ARENA                          =                806 --- @type ModelExtendedId
+E_MODEL_BOWSER_2_MAIN_AREA                              =                807 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_1                     =                808 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_2                     =                809 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_3                     =                810 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_4                     =                811 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_5                     =                812 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_6                     =                813 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_7                     =                814 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_8                     =                815 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_9                     =                816 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_FALLING_PLATFORM_10                    =                817 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_BOMB_BASE                              =                818 --- @type ModelExtendedId
+E_MODEL_BOWSER_3_MAIN_AREA                              =                819 --- @type ModelExtendedId
+E_MODEL_PSS_MAIN_AREA                                   =                820 --- @type ModelExtendedId
+E_MODEL_COTMC_MAIN_AREA                                 =                821 --- @type ModelExtendedId
+E_MODEL_TOTWC_CLOUD                                     =                822 --- @type ModelExtendedId
+E_MODEL_TOTWC_MAIN_AREA                                 =                823 --- @type ModelExtendedId
+E_MODEL_VCUTM_SEESAW_PLATFORM                           =                824 --- @type ModelExtendedId
+E_MODEL_VCUTM_MAIN_AREA                                 =                825 --- @type ModelExtendedId
+E_MODEL_WMOTR_MAIN_AREA                                 =                826 --- @type ModelExtendedId
+E_MODEL_SA_MAIN_AREA                                    =                827 --- @type ModelExtendedId
+E_MODEL_CASTLE_GROUNDS_TOWER                            =                828 --- @type ModelExtendedId
+E_MODEL_CASTLE_GROUNDS_VCUTM_GRILL                      =                829 --- @type ModelExtendedId
+E_MODEL_CASTLE_GROUNDS_FLAG                             =                830 --- @type ModelExtendedId
+E_MODEL_CASTLE_GROUNDS_CANNON_GRILL                     =                831 --- @type ModelExtendedId
+E_MODEL_CASTLE_GROUNDS_MAIN_AREA                        =                832 --- @type ModelExtendedId
+E_MODEL_CASTLE_BOWSER_TRAP                              =                833 --- @type ModelExtendedId
+E_MODEL_CASTLE_WATER_LEVEL_PILLAR                       =                834 --- @type ModelExtendedId
+E_MODEL_CASTLE_CLOCK_MINUTE_HAND                        =                835 --- @type ModelExtendedId
+E_MODEL_CASTLE_CLOCK_HOUR_HAND                          =                836 --- @type ModelExtendedId
+E_MODEL_CASTLE_CLOCK_PENDULUM                           =                837 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_ROOM                         =                838 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_BOO_HALLWAY_ROOM                  =                839 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_BITDW_ROOM                        =                840 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_PSS_ROOM                          =                841 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_BOB_ROOM                          =                842 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_WF_ROOM                           =                843 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_JRB_ROOM                          =                844 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_CCM_ROOM                          =                845 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_UPSTAIRS_ROOM                     =                846 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_BOO_HALLWAY_ROOM         =                847 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_BITDW_ROOM               =                848 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_PSS_ROOM                 =                849 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_BOB_ROOM                 =                850 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_WF_ROOM                  =                851 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_JRB_ROOM                 =                852 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_CCM_ROOM                 =                853 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_MAIN_AND_UPSTAIRS_ROOM            =                854 --- @type ModelExtendedId
+E_MODEL_CASTLE_INSIDE_AREA                              =                855 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_SPIRAL_STAIRS_ROOM              =                856 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_GALLERY_ROOM                    =                857 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_MIRROR_ROOM                     =                858 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_THI_ROOM                        =                859 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_TIPPY_ROOM                      =                860 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_INFINITE_STAIRS_ROOM            =                861 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_SPIRAL_STAIRS_AND_GALLERY_ROOM  =                862 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_GALLERY_AND_MIRROR_ROOM         =                863 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_GALLERY_AND_THI_ROOM            =                864 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_GALLERY_AND_TIPPY_ROOM          =                865 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_TIPPY_AND_INFINITE_STAIRS_ROOM  =                866 --- @type ModelExtendedId
+E_MODEL_CASTLE_UPSTAIRS_AREA                            =                867 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_ENTRANCE_ROOM                   =                868 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_MIPS_ROOM                       =                869 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_HMC_ROOM                        =                870 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_WATER_PILLAR_ROOM               =                871 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_DDD_ROOM                        =                872 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_ENTRANCE_AND_MIPS_ROOM          =                873 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_ENTRANCE_AND_DDD_ROOM           =                874 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_ENTRANCE_AND_WATER_PILLAR_ROOM  =                875 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_MIPS_AND_WATER_PILLAR_ROOM      =                876 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_MIPS_AND_HMC_ROOM               =                877 --- @type ModelExtendedId
+E_MODEL_CASTLE_BASEMENT_AREA                            =                878 --- @type ModelExtendedId
+E_MODEL_CASTLE_COURTYARD_TOWER                          =                879 --- @type ModelExtendedId
+E_MODEL_CASTLE_COURTYARD_AREA                           =                880 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_MARIO_SAVE_BUTTON                     =                881 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_RED_ERASE_BUTTON                      =                882 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_BLUE_COPY_BUTTON                      =                883 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_YELLOW_FILE_BUTTON                    =                884 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_GREEN_SCORE_BUTTON                    =                885 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_MARIO_SAVE_BUTTON_FADE                =                886 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_MARIO_NEW_BUTTON                      =                887 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_MARIO_NEW_BUTTON_FADE                 =                888 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_PURPLE_SOUND_BUTTON                   =                889 --- @type ModelExtendedId
+E_MODEL_MAIN_MENU_GENERIC_BUTTON                        =                890 --- @type ModelExtendedId
+E_MODEL_LUIGI                                           =                891 --- @type ModelExtendedId
+E_MODEL_LUIGIS_CAP                                      =                892 --- @type ModelExtendedId
+E_MODEL_LUIGIS_METAL_CAP                                =                893 --- @type ModelExtendedId
+E_MODEL_LUIGIS_WING_CAP                                 =                894 --- @type ModelExtendedId
+E_MODEL_LUIGIS_WINGED_METAL_CAP                         =                895 --- @type ModelExtendedId
+E_MODEL_TOAD_PLAYER                                     =                896 --- @type ModelExtendedId
+E_MODEL_TOADS_CAP                                       =                897 --- @type ModelExtendedId
+E_MODEL_TOADS_METAL_CAP                                 =                898 --- @type ModelExtendedId
+E_MODEL_TOADS_WING_CAP                                  =                899 --- @type ModelExtendedId
+E_MODEL_TOADS_WINGED_METAL_CAP                          =                900 --- @type ModelExtendedId
+E_MODEL_WALUIGI                                         =                901 --- @type ModelExtendedId
+E_MODEL_WALUIGIS_CAP                                    =                902 --- @type ModelExtendedId
+E_MODEL_WALUIGIS_METAL_CAP                              =                903 --- @type ModelExtendedId
+E_MODEL_WALUIGIS_WING_CAP                               =                904 --- @type ModelExtendedId
+E_MODEL_WALUIGIS_WINGED_METAL_CAP                       =                905 --- @type ModelExtendedId
+E_MODEL_WARIO                                           =                906 --- @type ModelExtendedId
+E_MODEL_WARIOS_CAP                                      =                907 --- @type ModelExtendedId
+E_MODEL_WARIOS_METAL_CAP                                =                908 --- @type ModelExtendedId
+E_MODEL_WARIOS_WING_CAP                                 =                909 --- @type ModelExtendedId
+E_MODEL_WARIOS_WINGED_METAL_CAP                         =                910 --- @type ModelExtendedId
+E_MODEL_ERROR_MODEL                                     =                911 --- @type ModelExtendedId
+E_MODEL_MAX                                             =                912 --- @type ModelExtendedId
+E_MODEL_BUBBLE_PLAYER                                   = E_MODEL_WATER_BOMB --- @type ModelExtendedId
 
 --- @alias ModelExtendedId
 --- | `E_MODEL_NONE`
@@ -3410,7 +3517,6 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_BURN_SMOKE`
 --- | `E_MODEL_PURPLE_MARBLE`
 --- | `E_MODEL_SPARKLES_ANIMATION`
---- | `E_MODEL_BURN_SMOKE_UNUSED`
 --- | `E_MODEL_BULLET_BILL`
 --- | `E_MODEL_YELLOW_SPHERE`
 --- | `E_MODEL_HOOT`
@@ -3465,12 +3571,12 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_WIGGLER_BODY`
 --- | `E_MODEL_BUBBA`
 --- | `E_MODEL_BOWSER`
---- | `E_MODEL_BOWSER_BOMB_CHILD_OBJ`
 --- | `E_MODEL_BOWSER_BOMB`
 --- | `E_MODEL_BOWSER_SMOKE`
 --- | `E_MODEL_BOWSER_FLAMES`
 --- | `E_MODEL_BOWSER_WAVE`
---- | `E_MODEL_BOWSER2`
+--- | `E_MODEL_BOWSER_BITS_DEFEATED`
+--- | `E_MODEL_BOWSER_YELLOW_SPHERE`
 --- | `E_MODEL_BUB`
 --- | `E_MODEL_TREASURE_CHEST_BASE`
 --- | `E_MODEL_TREASURE_CHEST_LID`
@@ -3557,26 +3663,36 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_SNOW_TREE`
 --- | `E_MODEL_PALM_TREE`
 --- | `E_MODEL_WARP_PIPE`
---- | `E_MODEL_BOB_BUBBLY_TREE`
+--- | `E_MODEL_CASTLE_DOOR`
+--- | `E_MODEL_CASTLE_DOOR_0_STARS`
+--- | `E_MODEL_CASTLE_DOOR_1_STAR`
+--- | `E_MODEL_CASTLE_DOOR_3_STARS`
+--- | `E_MODEL_KEY_DOOR`
+--- | `E_MODEL_STAR_DOOR`
+--- | `E_MODEL_CABIN_DOOR`
+--- | `E_MODEL_HAUNTED_DOOR`
+--- | `E_MODEL_WOODEN_DOOR`
+--- | `E_MODEL_METAL_DOOR`
+--- | `E_MODEL_HAZY_MAZE_DOOR`
 --- | `E_MODEL_BOB_CHAIN_CHOMP_GATE`
 --- | `E_MODEL_BOB_SEESAW_PLATFORM`
 --- | `E_MODEL_BOB_BARS_GRILLS`
---- | `E_MODEL_WF_BUBBLY_TREE`
---- | `E_MODEL_WF_GEOMETRY_03`
---- | `E_MODEL_WF_GEOMETRY_04`
---- | `E_MODEL_WF_GEOMETRY_05`
---- | `E_MODEL_WF_GEOMETRY_06`
---- | `E_MODEL_WF_GEOMETRY_07`
---- | `E_MODEL_WF_GEOMETRY_08`
---- | `E_MODEL_WF_GEOMETRY_09`
---- | `E_MODEL_WF_GEOMETRY_0A`
---- | `E_MODEL_WF_GEOMETRY_0C`
+--- | `E_MODEL_BOB_MAIN_AREA`
+--- | `E_MODEL_WF_SMALL_STAIRS`
+--- | `E_MODEL_WF_LARGE_STAIRS`
+--- | `E_MODEL_WF_PILLARS`
+--- | `E_MODEL_WF_FENCES`
+--- | `E_MODEL_WF_FLOATING_PLATFORM`
+--- | `E_MODEL_WF_TOWER`
+--- | `E_MODEL_WF_BULLET_BILL_LAUNCHER`
+--- | `E_MODEL_WF_DIRT_SLOPE`
+--- | `E_MODEL_WF_PLATFORM_WITH_WOODEN_PLANK`
 --- | `E_MODEL_WF_GIANT_POLE`
---- | `E_MODEL_WF_GEOMETRY_0E`
---- | `E_MODEL_WF_GEOMETRY_0F`
+--- | `E_MODEL_WF_STARTING_PLATFORM`
+--- | `E_MODEL_WF_RED_COIN_STAR_PLATFORM`
 --- | `E_MODEL_WF_ROTATING_PLATFORM`
---- | `E_MODEL_WF_GEOMETRY_11`
---- | `E_MODEL_WF_GEOMETRY_12`
+--- | `E_MODEL_WF_BALCONY`
+--- | `E_MODEL_WF_SIDE_RAMP`
 --- | `E_MODEL_WF_SMALL_BOMP`
 --- | `E_MODEL_WF_LARGE_BOMP`
 --- | `E_MODEL_WF_ROTATING_WOODEN_PLATFORM`
@@ -3592,6 +3708,7 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_WF_KICKABLE_BOARD`
 --- | `E_MODEL_WF_TOWER_DOOR`
 --- | `E_MODEL_WF_KICKABLE_BOARD_FELLED`
+--- | `E_MODEL_WF_MAIN_AREA`
 --- | `E_MODEL_JRB_SHIP_LEFT_HALF_PART`
 --- | `E_MODEL_JRB_SHIP_BACK_LEFT_PART`
 --- | `E_MODEL_JRB_SHIP_RIGHT_HALF_PART`
@@ -3603,17 +3720,18 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_JRB_FALLING_PILLAR`
 --- | `E_MODEL_JRB_FALLING_PILLAR_BASE`
 --- | `E_MODEL_JRB_FLOATING_PLATFORM`
---- | `E_MODEL_CCM_GEOMETRY_03`
---- | `E_MODEL_CCM_GEOMETRY_04`
---- | `E_MODEL_CCM_GEOMETRY_05`
---- | `E_MODEL_CCM_GEOMETRY_06`
---- | `E_MODEL_CCM_GEOMETRY_07`
---- | `E_MODEL_CCM_CABIN_DOOR`
---- | `E_MODEL_CCM_SNOW_TREE`
+--- | `E_MODEL_JRB_MAIN_AREA`
+--- | `E_MODEL_JRB_SUNKEN_SHIP_AREA`
+--- | `E_MODEL_CCM_CABIN_CHIMNEY`
+--- | `E_MODEL_CCM_CABIN_EXIT`
+--- | `E_MODEL_CCM_SNOWMAN_PEDESTAL`
+--- | `E_MODEL_CCM_ICE_CUBE`
+--- | `E_MODEL_CCM_WALL_KICK_SECTION`
 --- | `E_MODEL_CCM_ROPEWAY_LIFT`
 --- | `E_MODEL_CCM_SNOWMAN_BASE`
 --- | `E_MODEL_CCM_SNOWMAN_HEAD`
---- | `E_MODEL_BBH_HAUNTED_DOOR`
+--- | `E_MODEL_CCM_MAIN_AREA`
+--- | `E_MODEL_CCM_SLIDE_AREA`
 --- | `E_MODEL_BBH_STAIRCASE_STEP`
 --- | `E_MODEL_BBH_TILTING_FLOOR_PLATFORM`
 --- | `E_MODEL_BBH_TUMBLING_PLATFORM`
@@ -3622,9 +3740,39 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_BBH_MESH_ELEVATOR`
 --- | `E_MODEL_BBH_MERRY_GO_ROUND`
 --- | `E_MODEL_BBH_WOODEN_TOMB`
---- | `E_MODEL_HMC_WOODEN_DOOR`
---- | `E_MODEL_HMC_METAL_DOOR`
---- | `E_MODEL_HMC_HAZY_MAZE_DOOR`
+--- | `E_MODEL_BBH_MAIN_ROOM`
+--- | `E_MODEL_BBH_FAKE_FLOOR_ROOM`
+--- | `E_MODEL_BBH_PIANO_ROOM`
+--- | `E_MODEL_BBH_BRIDGE_ROOM`
+--- | `E_MODEL_BBH_BOO_PAINTING_ROOM`
+--- | `E_MODEL_BBH_HAUNTED_LIBRARY_ROOM`
+--- | `E_MODEL_BBH_COFFIN_ROOM`
+--- | `E_MODEL_BBH_RED_MESH_ROOM`
+--- | `E_MODEL_BBH_THIRD_FLOOR_ROOM`
+--- | `E_MODEL_BBH_MERRY_GO_ROUND_ROOM`
+--- | `E_MODEL_BBH_FLOODED_HALL_ROOM`
+--- | `E_MODEL_BBH_SHED_ROOM`
+--- | `E_MODEL_BBH_OUTSIDE_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_FAKE_FLOOR_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_PIANO_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_BRIDGE_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_BOO_PAINTING_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_HAUNTED_LIBRARY_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_COFFIN_ROOM`
+--- | `E_MODEL_BBH_MAIN_AND_RED_MESH_ROOM`
+--- | `E_MODEL_BBH_OUTSIDE_AND_MAIN_ROOM`
+--- | `E_MODEL_BBH_BRIDGE_AND_FAKE_FLOOR_ROOM`
+--- | `E_MODEL_BBH_FAKE_FLOOR_AND_THIRD_FLOOR_ROOM`
+--- | `E_MODEL_BBH_FAKE_FLOOR_AND_MERRY_GO_ROUND_ROOM`
+--- | `E_MODEL_BBH_PIANO_AND_BOO_PAINTING_ROOM`
+--- | `E_MODEL_BBH_PIANO_AND_HAUNTED_LIBRARY_ROOM`
+--- | `E_MODEL_BBH_BRIDGE_AND_MERRY_GO_ROUND_ROOM`
+--- | `E_MODEL_BBH_OUTSIDE_AND_BOO_PAINTING_ROOM`
+--- | `E_MODEL_BBH_OUTSIDE_AND_THIRD_FLOOR_ROOM`
+--- | `E_MODEL_BBH_MERRY_GO_ROUND_AND_FLOODED_HALL_ROOM`
+--- | `E_MODEL_BBH_SHED_AND_FLOODED_HALL_ROOM`
+--- | `E_MODEL_BBH_OUTSIDE_AND_SHED_ROOM`
+--- | `E_MODEL_BBH_MAIN_AREA`
 --- | `E_MODEL_HMC_METAL_PLATFORM`
 --- | `E_MODEL_HMC_METAL_ARROW_PLATFORM`
 --- | `E_MODEL_HMC_ELEVATOR_PLATFORM`
@@ -3632,17 +3780,36 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_HMC_ROCK_PIECE`
 --- | `E_MODEL_HMC_ROCK_SMALL_PIECE`
 --- | `E_MODEL_HMC_RED_GRILLS`
---- | `E_MODEL_LLL_GEOMETRY_03`
---- | `E_MODEL_LLL_GEOMETRY_04`
---- | `E_MODEL_LLL_GEOMETRY_05`
---- | `E_MODEL_LLL_GEOMETRY_06`
---- | `E_MODEL_LLL_GEOMETRY_07`
---- | `E_MODEL_LLL_GEOMETRY_08`
---- | `E_MODEL_LLL_GEOMETRY_0A`
---- | `E_MODEL_LLL_GEOMETRY_0B`
---- | `E_MODEL_LLL_GEOMETRY_0C`
---- | `E_MODEL_LLL_GEOMETRY_0D`
---- | `E_MODEL_LLL_GEOMETRY_0E`
+--- | `E_MODEL_HMC_ENTRANCE_ROOM`
+--- | `E_MODEL_HMC_RED_COIN_ROOM`
+--- | `E_MODEL_HMC_TOXIC_MAZE_ROOM`
+--- | `E_MODEL_HMC_ROLLING_ROCKS_ROOM`
+--- | `E_MODEL_HMC_EMERGENCY_EXIT_ROOM`
+--- | `E_MODEL_HMC_NAVIGATING_DORRIE_ROOM`
+--- | `E_MODEL_HMC_COTMC_ROOM`
+--- | `E_MODEL_HMC_METAL_HEAD_MARIO_ROOM`
+--- | `E_MODEL_HMC_ENTRANCE_AND_RED_COIN_ROOM`
+--- | `E_MODEL_HMC_ENTRANCE_AND_ROLLING_ROCKS_ROOM`
+--- | `E_MODEL_HMC_RED_COIN_AND_TOXIC_MAZE_ROOM`
+--- | `E_MODEL_HMC_RED_COIN_AND_ROLLING_ROCKS_ROOM`
+--- | `E_MODEL_HMC_TOXIC_MAZE_AND_EMERGENCY_EXIT_ROOM`
+--- | `E_MODEL_HMC_TOXIC_MAZE_AND_NAVIGATING_DORRIE_ROOM`
+--- | `E_MODEL_HMC_ROLLING_ROCKS_AND_NAVIGATING_DORRIE_ROOM`
+--- | `E_MODEL_HMC_NAVIGATING_DORRIE_AND_COTMC_ROOM`
+--- | `E_MODEL_HMC_NAVIGATING_DORRIE_AND_METAL_HEAD_MARIO_ROOM`
+--- | `E_MODEL_HMC_ROLLING_ROCKS_AND_EMERGENCY_EXIT_ROOM`
+--- | `E_MODEL_HMC_MAIN_AREA`
+--- | `E_MODEL_LLL_BIG_BULLY_MINIONS_PLATFORM`
+--- | `E_MODEL_LLL_BOUNCING_FIREBALLS_PLATFORM`
+--- | `E_MODEL_LLL_BULLIES_PLATFORM`
+--- | `E_MODEL_LLL_DRAWBRIDGE_PLATFORM`
+--- | `E_MODEL_LLL_MR_I_GRILL_PLATFORM`
+--- | `E_MODEL_LLL_STONE_PLATFORM`
+--- | `E_MODEL_LLL_VOLCANO`
+--- | `E_MODEL_LLL_STONE_ARCH`
+--- | `E_MODEL_LLL_DOWNWARD_RAMP`
+--- | `E_MODEL_LLL_FLAMETHROWER`
+--- | `E_MODEL_LLL_HEXAGONAL_MESH`
 --- | `E_MODEL_LLL_DRAWBRIDGE_PART`
 --- | `E_MODEL_LLL_ROTATING_BLOCK_FIRE_BARS`
 --- | `E_MODEL_LLL_ROTATING_HEXAGONAL_RING`
@@ -3672,23 +3839,29 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_LLL_FALLING_PLATFORM`
 --- | `E_MODEL_LLL_LARGE_FALLING_PLATFORM`
 --- | `E_MODEL_LLL_VOLCANO_FALLING_TRAP`
---- | `E_MODEL_SSL_PALM_TREE`
---- | `E_MODEL_SSL_GEOMETRY_03`
---- | `E_MODEL_SSL_GEOMETRY_04`
+--- | `E_MODEL_LLL_MAIN_AREA`
+--- | `E_MODEL_LLL_VOLCANO_AREA`
+--- | `E_MODEL_SSL_QUICKSAND`
+--- | `E_MODEL_SSL_PYRAMID_QUICKSAND`
 --- | `E_MODEL_SSL_PYRAMID_TOP`
 --- | `E_MODEL_SSL_GRINDEL`
 --- | `E_MODEL_SSL_SPINDEL`
 --- | `E_MODEL_SSL_MOVING_PYRAMID_WALL`
 --- | `E_MODEL_SSL_PYRAMID_ELEVATOR`
 --- | `E_MODEL_SSL_TOX_BOX`
+--- | `E_MODEL_SSL_MAIN_AREA`
+--- | `E_MODEL_SSL_PYRAMID_AREA`
+--- | `E_MODEL_SSL_EYEROK_CHAMBER_AREA`
 --- | `E_MODEL_DDD_BOWSER_SUB_DOOR`
 --- | `E_MODEL_DDD_BOWSER_SUB`
 --- | `E_MODEL_DDD_POLE`
+--- | `E_MODEL_DDD_MAIN_AREA`
+--- | `E_MODEL_DDD_BOWSER_SUB_AREA`
 --- | `E_MODEL_SL_SNOW_TRIANGLE`
 --- | `E_MODEL_SL_CRACKED_ICE`
 --- | `E_MODEL_SL_CRACKED_ICE_CHUNK`
---- | `E_MODEL_SL_SNOW_TREE`
---- | `E_MODEL_WDW_BUBBLY_TREE`
+--- | `E_MODEL_SL_MAIN_AREA`
+--- | `E_MODEL_SL_IGLOO_AREA`
 --- | `E_MODEL_WDW_SQUARE_FLOATING_PLATFORM`
 --- | `E_MODEL_WDW_ARROW_LIFT`
 --- | `E_MODEL_WDW_WATER_LEVEL_DIAMOND`
@@ -3696,6 +3869,8 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_WDW_EXPRESS_ELEVATOR`
 --- | `E_MODEL_WDW_RECTANGULAR_FLOATING_PLATFORM`
 --- | `E_MODEL_WDW_ROTATING_PLATFORM`
+--- | `E_MODEL_WDW_MAIN_AREA`
+--- | `E_MODEL_WDW_DOWNTOWN_AREA`
 --- | `E_MODEL_TTM_SLIDE_EXIT_PODIUM`
 --- | `E_MODEL_TTM_ROLLING_LOG`
 --- | `E_MODEL_TTM_STAR_CAGE`
@@ -3703,30 +3878,35 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_TTM_YELLOW_SMILEY`
 --- | `E_MODEL_TTM_STAR_SMILEY`
 --- | `E_MODEL_TTM_MOON_SMILEY`
---- | `E_MODEL_TTM_GEOMETRY_03`
---- | `E_MODEL_TTM_GEOMETRY_04`
---- | `E_MODEL_TTM_GEOMETRY_05`
---- | `E_MODEL_TTM_GEOMETRY_06`
---- | `E_MODEL_TTM_GEOMETRY_07`
---- | `E_MODEL_TTM_GEOMETRY_08`
---- | `E_MODEL_TTM_GEOMETRY_09`
---- | `E_MODEL_TTM_GEOMETRY_0A`
---- | `E_MODEL_TTM_GEOMETRY_0B`
---- | `E_MODEL_TTM_GEOMETRY_0C`
---- | `E_MODEL_TTM_GEOMETRY_0D`
---- | `E_MODEL_TTM_GEOMETRY_0F`
---- | `E_MODEL_TTM_GEOMETRY_10`
---- | `E_MODEL_TTM_GEOMETRY_11`
---- | `E_MODEL_TTM_GEOMETRY_12`
---- | `E_MODEL_TTM_GEOMETRY_13`
---- | `E_MODEL_TTM_GEOMETRY_14`
---- | `E_MODEL_TTM_GEOMETRY_15`
---- | `E_MODEL_TTM_GEOMETRY_16`
---- | `E_MODEL_THI_BUBBLY_TREE`
---- | `E_MODEL_THI_GEOMETRY_03`
---- | `E_MODEL_THI_WARP_PIPE`
+--- | `E_MODEL_TTM_MUSHROOM_LARGE`
+--- | `E_MODEL_TTM_MUSHROOM_MEDIUM`
+--- | `E_MODEL_TTM_MUSHROOM_SMALL`
+--- | `E_MODEL_TTM_MUSHROOM_SMALLEST`
+--- | `E_MODEL_TTM_STARTING_PLATFORM`
+--- | `E_MODEL_TTM_ROCK_FORMATION_1`
+--- | `E_MODEL_TTM_CANNON_HOLE`
+--- | `E_MODEL_TTM_WOODEN_BRIDGE`
+--- | `E_MODEL_TTM_ROCK_FORMATION_2`
+--- | `E_MODEL_TTM_ROCK_FORMATION_3`
+--- | `E_MODEL_TTM_ROCK_FORMATION_4`
+--- | `E_MODEL_TTM_ROCK_FORMATION_5`
+--- | `E_MODEL_TTM_WATERFALL_HOLE`
+--- | `E_MODEL_TTM_MOUNTAIN_TOP`
+--- | `E_MODEL_TTM_VINE_BRIDGE`
+--- | `E_MODEL_TTM_ROCK_FORMATION_6`
+--- | `E_MODEL_TTM_ROCK_FORMATION_7`
+--- | `E_MODEL_TTM_ROCK_FORMATION_8`
+--- | `E_MODEL_TTM_SLIDE_EXIT`
+--- | `E_MODEL_TTM_MAIN_AREA`
+--- | `E_MODEL_TTM_SLIDE_AREA_1`
+--- | `E_MODEL_TTM_SLIDE_AREA_2`
+--- | `E_MODEL_TTM_SLIDE_AREA_3`
+--- | `E_MODEL_THI_FLOATING_PLATFORM`
 --- | `E_MODEL_THI_HUGE_ISLAND_TOP`
 --- | `E_MODEL_THI_TINY_ISLAND_TOP`
+--- | `E_MODEL_THI_HUGE_AREA`
+--- | `E_MODEL_THI_TINY_AREA`
+--- | `E_MODEL_THI_WIGGLER_BASEMENT_AREA`
 --- | `E_MODEL_TTC_ROTATING_CUBE`
 --- | `E_MODEL_TTC_ROTATING_PRISM`
 --- | `E_MODEL_TTC_PENDULUM`
@@ -3742,26 +3922,27 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_TTC_SPINNER`
 --- | `E_MODEL_TTC_SMALL_GEAR`
 --- | `E_MODEL_TTC_LARGE_GEAR`
---- | `E_MODEL_RR_GEOMETRY_03`
---- | `E_MODEL_RR_GEOMETRY_04`
---- | `E_MODEL_RR_GEOMETRY_05`
---- | `E_MODEL_RR_GEOMETRY_06`
---- | `E_MODEL_RR_GEOMETRY_07`
---- | `E_MODEL_RR_GEOMETRY_08`
---- | `E_MODEL_RR_GEOMETRY_09`
---- | `E_MODEL_RR_GEOMETRY_0A`
---- | `E_MODEL_RR_GEOMETRY_0B`
---- | `E_MODEL_RR_GEOMETRY_0C`
---- | `E_MODEL_RR_GEOMETRY_0D`
---- | `E_MODEL_RR_GEOMETRY_0E`
---- | `E_MODEL_RR_GEOMETRY_0F`
---- | `E_MODEL_RR_GEOMETRY_10`
---- | `E_MODEL_RR_GEOMETRY_11`
---- | `E_MODEL_RR_GEOMETRY_12`
---- | `E_MODEL_RR_GEOMETRY_13`
---- | `E_MODEL_RR_GEOMETRY_14`
---- | `E_MODEL_RR_GEOMETRY_15`
---- | `E_MODEL_RR_GEOMETRY_16`
+--- | `E_MODEL_TTC_MAIN_AREA`
+--- | `E_MODEL_RR_STARTING_PLATFORM_1`
+--- | `E_MODEL_RR_STARTING_BRIDGE`
+--- | `E_MODEL_RR_BOTTOM_PLATFORMS_1`
+--- | `E_MODEL_RR_TRICKY_TRIANGLES_PLATFORMS_1`
+--- | `E_MODEL_RR_BOTTOM_PLATFORMS_2`
+--- | `E_MODEL_RR_BOTTOM_PLATFORMS_3`
+--- | `E_MODEL_RR_STARTING_PLATFORMS_2`
+--- | `E_MODEL_RR_MAZE`
+--- | `E_MODEL_RR_CRUISER_PLATFORMS_1`
+--- | `E_MODEL_RR_CRUISER`
+--- | `E_MODEL_RR_CRUISER_LOOKOUT`
+--- | `E_MODEL_RR_RAINBOW_RING`
+--- | `E_MODEL_RR_BIG_HOUSE`
+--- | `E_MODEL_RR_CRUISER_SHORTCUT`
+--- | `E_MODEL_RR_FLOATING_ISLAND`
+--- | `E_MODEL_RR_GLASS_BOXES_1`
+--- | `E_MODEL_RR_RAINBOW_PATH_START`
+--- | `E_MODEL_RR_RAINBOW_PATH_TO_CRUISER`
+--- | `E_MODEL_RR_RAINBOW_PATH_TO_BIG_HOUSE`
+--- | `E_MODEL_RR_GLASS_BOXES_2`
 --- | `E_MODEL_RR_SLIDING_PLATFORM`
 --- | `E_MODEL_RR_FLYING_CARPET`
 --- | `E_MODEL_RR_OCTAGONAL_PLATFORM`
@@ -3778,22 +3959,22 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_RR_TRICKY_TRIANGLES_FRAME2`
 --- | `E_MODEL_RR_TRICKY_TRIANGLES_FRAME3`
 --- | `E_MODEL_RR_TRICKY_TRIANGLES_FRAME4`
---- | `E_MODEL_BITDW_GEOMETRY_03`
---- | `E_MODEL_BITDW_GEOMETRY_04`
---- | `E_MODEL_BITDW_GEOMETRY_05`
---- | `E_MODEL_BITDW_GEOMETRY_06`
---- | `E_MODEL_BITDW_GEOMETRY_07`
---- | `E_MODEL_BITDW_GEOMETRY_08`
---- | `E_MODEL_BITDW_GEOMETRY_09`
---- | `E_MODEL_BITDW_GEOMETRY_0A`
---- | `E_MODEL_BITDW_GEOMETRY_0B`
---- | `E_MODEL_BITDW_GEOMETRY_0C`
---- | `E_MODEL_BITDW_GEOMETRY_0D`
---- | `E_MODEL_BITDW_GEOMETRY_0E`
---- | `E_MODEL_BITDW_GEOMETRY_0F`
---- | `E_MODEL_BITDW_GEOMETRY_10`
---- | `E_MODEL_BITDW_GEOMETRY_11`
---- | `E_MODEL_BITDW_WARP_PIPE`
+--- | `E_MODEL_RR_MAIN_AREA`
+--- | `E_MODEL_BITDW_STARTING_PLATFORM`
+--- | `E_MODEL_BITDW_FLAMETHROWER_PLATFORM`
+--- | `E_MODEL_BITDW_WOODEN_BRIDGE_AND_FENCES`
+--- | `E_MODEL_BITDW_CRYSTAL_PATH_1`
+--- | `E_MODEL_BITDW_CRYSTAL_PATH_2`
+--- | `E_MODEL_BITDW_CRYSTAL_PATH_FENCES`
+--- | `E_MODEL_BITDW_SPIKY_PLATFORM`
+--- | `E_MODEL_BITDW_DOUBLE_RAMP`
+--- | `E_MODEL_BITDW_WOODEN_PLATFORM`
+--- | `E_MODEL_BITDW_OVERHANGING_PLATFORMS_1`
+--- | `E_MODEL_BITDW_OVERHANGING_PLATFORMS_2`
+--- | `E_MODEL_BITDW_CRYSTAL`
+--- | `E_MODEL_BITDW_STAIRCASE_PLATFORM`
+--- | `E_MODEL_BITDW_SQUARE_RAIL`
+--- | `E_MODEL_BITDW_CURVED_WOODEN_BRIDGE`
 --- | `E_MODEL_BITDW_SQUARE_PLATFORM`
 --- | `E_MODEL_BITDW_SEESAW_PLATFORM`
 --- | `E_MODEL_BITDW_SLIDING_PLATFORM`
@@ -3804,25 +3985,26 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_BITDW_STAIRCASE_FRAME2`
 --- | `E_MODEL_BITDW_STAIRCASE_FRAME1`
 --- | `E_MODEL_BITDW_STAIRCASE`
---- | `E_MODEL_BITFS_GEOMETRY_03`
---- | `E_MODEL_BITFS_GEOMETRY_04`
---- | `E_MODEL_BITFS_GEOMETRY_05`
---- | `E_MODEL_BITFS_GEOMETRY_06`
---- | `E_MODEL_BITFS_GEOMETRY_07`
---- | `E_MODEL_BITFS_GEOMETRY_08`
---- | `E_MODEL_BITFS_GEOMETRY_09`
---- | `E_MODEL_BITFS_GEOMETRY_0A`
---- | `E_MODEL_BITFS_GEOMETRY_0B`
---- | `E_MODEL_BITFS_GEOMETRY_0C`
---- | `E_MODEL_BITFS_GEOMETRY_0D`
---- | `E_MODEL_BITFS_GEOMETRY_0E`
---- | `E_MODEL_BITFS_GEOMETRY_0F`
---- | `E_MODEL_BITFS_GEOMETRY_10`
---- | `E_MODEL_BITFS_GEOMETRY_11`
---- | `E_MODEL_BITFS_GEOMETRY_12`
---- | `E_MODEL_BITFS_GEOMETRY_13`
---- | `E_MODEL_BITFS_GEOMETRY_14`
---- | `E_MODEL_BITFS_GEOMETRY_15`
+--- | `E_MODEL_BITDW_MAIN_AREA`
+--- | `E_MODEL_BITFS_STARTING_PLATFORM_1`
+--- | `E_MODEL_BITFS_TWO_PILLARS`
+--- | `E_MODEL_BITFS_STARTING_PLATFORM_2`
+--- | `E_MODEL_BITFS_LAVA_POOL_1`
+--- | `E_MODEL_BITFS_GRILL_PLATFORM`
+--- | `E_MODEL_BITFS_ELEVATOR_CAGE_1`
+--- | `E_MODEL_BITFS_ELEVATOR_CAGE_2`
+--- | `E_MODEL_BITFS_LAVA_POOL_2_SECOND_FLOOR`
+--- | `E_MODEL_BITFS_FLAMETHROWER`
+--- | `E_MODEL_BITFS_SECOND_FLOOR_PLATFORMS`
+--- | `E_MODEL_BITFS_SECOND_FLOOR_HANGABLE_GRILL`
+--- | `E_MODEL_BITFS_SECOND_FLOOR_BULLIES_PLATFORM`
+--- | `E_MODEL_BITFS_RAMP_TO_THIRD_FLOOR`
+--- | `E_MODEL_BITFS_THIRD_FLOOR_POOL_GRILL`
+--- | `E_MODEL_BITFS_THIRD_FLOOR_SINKING_PLATFORMS_MAZE`
+--- | `E_MODEL_BITFS_THIRD_FLOOR_SINKING_PLATFORMS_GRILLS`
+--- | `E_MODEL_BITFS_BOWSER_WARP`
+--- | `E_MODEL_BITFS_BOWSER_WARP_STAR`
+--- | `E_MODEL_BITFS_LAVA_POOL_2_THIRD_FLOOR`
 --- | `E_MODEL_BITFS_PLATFORM_ON_TRACK`
 --- | `E_MODEL_BITFS_TILTING_SQUARE_PLATFORM`
 --- | `E_MODEL_BITFS_SINKING_PLATFORMS`
@@ -3835,24 +4017,25 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_BITFS_SLIDING_PLATFORM`
 --- | `E_MODEL_BITFS_TUMBLING_PLATFORM_PART`
 --- | `E_MODEL_BITFS_TUMBLING_PLATFORM`
---- | `E_MODEL_BITS_GEOMETRY_03`
---- | `E_MODEL_BITS_GEOMETRY_04`
---- | `E_MODEL_BITS_GEOMETRY_05`
---- | `E_MODEL_BITS_GEOMETRY_06`
---- | `E_MODEL_BITS_GEOMETRY_07`
---- | `E_MODEL_BITS_GEOMETRY_08`
---- | `E_MODEL_BITS_GEOMETRY_09`
---- | `E_MODEL_BITS_GEOMETRY_0A`
---- | `E_MODEL_BITS_GEOMETRY_0B`
---- | `E_MODEL_BITS_GEOMETRY_0C`
---- | `E_MODEL_BITS_GEOMETRY_0D`
---- | `E_MODEL_BITS_GEOMETRY_0E`
---- | `E_MODEL_BITS_GEOMETRY_0F`
---- | `E_MODEL_BITS_GEOMETRY_10`
---- | `E_MODEL_BITS_GEOMETRY_11`
---- | `E_MODEL_BITS_GEOMETRY_12`
---- | `E_MODEL_BITS_GEOMETRY_13`
---- | `E_MODEL_BITS_GEOMETRY_14`
+--- | `E_MODEL_BITFS_MAIN_AREA`
+--- | `E_MODEL_BITS_STARTING_PLATFORMS`
+--- | `E_MODEL_BITS_SECOND_FLOOR_BASE`
+--- | `E_MODEL_BITS_UPWARD_RAMP_TO_SECOND_FLOOR`
+--- | `E_MODEL_BITS_90_DEGREES_BRIDGE`
+--- | `E_MODEL_BITS_FENCES_1`
+--- | `E_MODEL_BITS_SECOND_FLOOR_WHOMP_PLATFORM`
+--- | `E_MODEL_BITS_SECOND_FLOOR_CHUCKYA_PLATFORM`
+--- | `E_MODEL_BITS_FENCES_2`
+--- | `E_MODEL_BITS_SECOND_FLOOR_TO_STAIRCASE`
+--- | `E_MODEL_BITS_BENDING_RAMP_TO_THIRD_FLOOR`
+--- | `E_MODEL_BITS_THIRD_FLOOR_BOBOMBS_PLATFORM`
+--- | `E_MODEL_BITS_THIRD_FLOOR_POLE_TOP`
+--- | `E_MODEL_BITS_THIRD_FLOOR_WOODEN_LOGS_AND_POLE`
+--- | `E_MODEL_BITS_STAIRCASE_PLATFORM`
+--- | `E_MODEL_BITS_ARROW_PLATFORM_RAIL`
+--- | `E_MODEL_BITS_BIG_POLE`
+--- | `E_MODEL_BITS_BRIDGE_TO_FERRIS_WHEELS`
+--- | `E_MODEL_BITS_FINAL_PLATFORM`
 --- | `E_MODEL_BITS_SLIDING_PLATFORM`
 --- | `E_MODEL_BITS_TWIN_SLIDING_PLATFORMS`
 --- | `E_MODEL_BITS_OCTAGONAL_PLATFORM`
@@ -3866,9 +4049,10 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_BITS_STAIRCASE_FRAME2`
 --- | `E_MODEL_BITS_STAIRCASE_FRAME3`
 --- | `E_MODEL_BITS_STAIRCASE_FRAME4`
---- | `E_MODEL_BITS_WARP_PIPE`
---- | `E_MODEL_BOWSER_1_YELLOW_SPHERE`
+--- | `E_MODEL_BITS_MAIN_AREA`
+--- | `E_MODEL_BOWSER_1_MAIN_AREA`
 --- | `E_MODEL_BOWSER_2_TILTING_ARENA`
+--- | `E_MODEL_BOWSER_2_MAIN_AREA`
 --- | `E_MODEL_BOWSER_3_FALLING_PLATFORM_1`
 --- | `E_MODEL_BOWSER_3_FALLING_PLATFORM_2`
 --- | `E_MODEL_BOWSER_3_FALLING_PLATFORM_3`
@@ -3879,39 +4063,69 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_BOWSER_3_FALLING_PLATFORM_8`
 --- | `E_MODEL_BOWSER_3_FALLING_PLATFORM_9`
 --- | `E_MODEL_BOWSER_3_FALLING_PLATFORM_10`
---- | `E_MODEL_BOWSER_3_GEOMETRY_03`
---- | `E_MODEL_TOTWC_GEOMETRY_03`
+--- | `E_MODEL_BOWSER_3_BOMB_BASE`
+--- | `E_MODEL_BOWSER_3_MAIN_AREA`
+--- | `E_MODEL_PSS_MAIN_AREA`
+--- | `E_MODEL_COTMC_MAIN_AREA`
+--- | `E_MODEL_TOTWC_CLOUD`
+--- | `E_MODEL_TOTWC_MAIN_AREA`
 --- | `E_MODEL_VCUTM_SEESAW_PLATFORM`
---- | `E_MODEL_VCUTM_WARP_PIPE`
---- | `E_MODEL_CASTLE_GROUNDS_GEOMETRY_03`
---- | `E_MODEL_CASTLE_GROUNDS_BUBBLY_TREE`
---- | `E_MODEL_CASTLE_GROUNDS_WARP_PIPE`
---- | `E_MODEL_CASTLE_GROUNDS_CASTLE_DOOR`
---- | `E_MODEL_CASTLE_GROUNDS_METAL_DOOR`
+--- | `E_MODEL_VCUTM_MAIN_AREA`
+--- | `E_MODEL_WMOTR_MAIN_AREA`
+--- | `E_MODEL_SA_MAIN_AREA`
+--- | `E_MODEL_CASTLE_GROUNDS_TOWER`
 --- | `E_MODEL_CASTLE_GROUNDS_VCUTM_GRILL`
 --- | `E_MODEL_CASTLE_GROUNDS_FLAG`
 --- | `E_MODEL_CASTLE_GROUNDS_CANNON_GRILL`
+--- | `E_MODEL_CASTLE_GROUNDS_MAIN_AREA`
 --- | `E_MODEL_CASTLE_BOWSER_TRAP`
 --- | `E_MODEL_CASTLE_WATER_LEVEL_PILLAR`
 --- | `E_MODEL_CASTLE_CLOCK_MINUTE_HAND`
 --- | `E_MODEL_CASTLE_CLOCK_HOUR_HAND`
 --- | `E_MODEL_CASTLE_CLOCK_PENDULUM`
---- | `E_MODEL_CASTLE_CASTLE_DOOR`
---- | `E_MODEL_CASTLE_WOODEN_DOOR`
---- | `E_MODEL_CASTLE_METAL_DOOR`
---- | `E_MODEL_CASTLE_CASTLE_DOOR_UNUSED`
---- | `E_MODEL_CASTLE_WOODEN_DOOR_UNUSED`
---- | `E_MODEL_CASTLE_DOOR_0_STARS`
---- | `E_MODEL_CASTLE_DOOR_1_STAR`
---- | `E_MODEL_CASTLE_DOOR_3_STARS`
---- | `E_MODEL_CASTLE_KEY_DOOR`
---- | `E_MODEL_CASTLE_STAR_DOOR_30_STARS`
---- | `E_MODEL_CASTLE_STAR_DOOR_8_STARS`
---- | `E_MODEL_CASTLE_STAR_DOOR_50_STARS`
---- | `E_MODEL_CASTLE_STAR_DOOR_70_STARS`
---- | `E_MODEL_COURTYARD_SPIKY_TREE`
---- | `E_MODEL_COURTYARD_WOODEN_DOOR`
---- | `E_MODEL_COURTYARD_GEOMETRY_03`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_BOO_HALLWAY_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_BITDW_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_PSS_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_BOB_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_WF_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_JRB_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_CCM_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_UPSTAIRS_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_BOO_HALLWAY_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_BITDW_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_PSS_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_BOB_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_WF_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_JRB_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_CCM_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_MAIN_AND_UPSTAIRS_ROOM`
+--- | `E_MODEL_CASTLE_INSIDE_AREA`
+--- | `E_MODEL_CASTLE_UPSTAIRS_SPIRAL_STAIRS_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_GALLERY_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_MIRROR_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_THI_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_TIPPY_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_INFINITE_STAIRS_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_SPIRAL_STAIRS_AND_GALLERY_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_GALLERY_AND_MIRROR_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_GALLERY_AND_THI_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_GALLERY_AND_TIPPY_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_TIPPY_AND_INFINITE_STAIRS_ROOM`
+--- | `E_MODEL_CASTLE_UPSTAIRS_AREA`
+--- | `E_MODEL_CASTLE_BASEMENT_ENTRANCE_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_MIPS_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_HMC_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_WATER_PILLAR_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_DDD_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_ENTRANCE_AND_MIPS_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_ENTRANCE_AND_DDD_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_ENTRANCE_AND_WATER_PILLAR_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_MIPS_AND_WATER_PILLAR_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_MIPS_AND_HMC_ROOM`
+--- | `E_MODEL_CASTLE_BASEMENT_AREA`
+--- | `E_MODEL_CASTLE_COURTYARD_TOWER`
+--- | `E_MODEL_CASTLE_COURTYARD_AREA`
 --- | `E_MODEL_MAIN_MENU_MARIO_SAVE_BUTTON`
 --- | `E_MODEL_MAIN_MENU_RED_ERASE_BUTTON`
 --- | `E_MODEL_MAIN_MENU_BLUE_COPY_BUTTON`
@@ -3922,7 +4136,6 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_MAIN_MENU_MARIO_NEW_BUTTON_FADE`
 --- | `E_MODEL_MAIN_MENU_PURPLE_SOUND_BUTTON`
 --- | `E_MODEL_MAIN_MENU_GENERIC_BUTTON`
---- | `E_MODEL_BUBBLE_PLAYER`
 --- | `E_MODEL_LUIGI`
 --- | `E_MODEL_LUIGIS_CAP`
 --- | `E_MODEL_LUIGIS_METAL_CAP`
@@ -3945,6 +4158,7 @@ E_MODEL_MAX                                = 806 --- @type ModelExtendedId
 --- | `E_MODEL_WARIOS_WINGED_METAL_CAP`
 --- | `E_MODEL_ERROR_MODEL`
 --- | `E_MODEL_MAX`
+--- | `E_MODEL_BUBBLE_PLAYER`
 
 --- @type integer
 ENVFX_MODE_NONE = 0

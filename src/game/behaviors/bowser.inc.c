@@ -1026,7 +1026,7 @@ s32 bowser_dead_bits_end(void) {
             o->oBowserUnkF8++;
         }
         if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, dialogID, 0, bowser_dead_bits_end_continue_dialog)) {
-            cur_obj_set_model(E_MODEL_BOWSER2);
+            cur_obj_set_model(E_MODEL_BOWSER_BITS_DEFEATED);
             seq_player_unlower_volume(SEQ_PLAYER_LEVEL, 60);
             seq_player_fade_out(SEQ_PLAYER_LEVEL, 1);
             bowser_spawn_grand_star_key();

@@ -1999,7 +1999,7 @@ static void intro_cutscene_peach_lakitu_scene(struct MarioState *m) {
             u8 globalIndex = gNetworkPlayers[m->playerIndex].globalIndex;
             if (globalIndex == UNKNOWN_GLOBAL_INDEX) { globalIndex = 0; }
             sIntroWarpPipeObj[globalIndex] =
-                spawn_object_abs_with_rot(gCurrentObject, 0, E_MODEL_CASTLE_GROUNDS_WARP_PIPE,
+                spawn_object_abs_with_rot(gCurrentObject, 0, E_MODEL_WARP_PIPE,
                                           bhvStaticObject, -1328 - (350 * globalIndex), 60, 4664, 0, 180, 0);
             advance_cutscene_step(m);
         }
@@ -2039,7 +2039,7 @@ static void intro_cutscene_raise_pipe_main_menu(struct MarioState* m) {
     if (globalIndex == UNKNOWN_GLOBAL_INDEX) { globalIndex = 0; }
     if (sIntroWarpPipeObj[globalIndex] == NULL) {
         sIntroWarpPipeObj[globalIndex] =
-            spawn_object_abs_with_rot(gCurrentObject, 0, E_MODEL_CASTLE_GROUNDS_WARP_PIPE,
+            spawn_object_abs_with_rot(gCurrentObject, 0, E_MODEL_WARP_PIPE,
                 bhvStaticObject, m->pos[0], 260, m->pos[2], 0, 180, 0);
     }
 

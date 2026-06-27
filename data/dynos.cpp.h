@@ -821,7 +821,8 @@ s32 DynOS_String_Width(const u8 *aStr64);
 // Geo
 //
 
-const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName);
+const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName, enum ModelExtendedId *outModelType);
+const char *DynOS_Geo_GetNameFromLayout(const GeoLayout *aGeoLayout);
 
 //
 // Levels
@@ -860,12 +861,10 @@ bool DynOS_Warp_ToCastle(s32 aLevel);
 
 const void*      DynOS_Builtin_ScriptPtr_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_ScriptPtr_GetFromData(const void* aData);
-const GeoLayout* DynOS_Builtin_Actor_GetFromName(const char* aDataName);
-const char*      DynOS_Builtin_Actor_GetFromData(const GeoLayout* aData);
+const GeoLayout* DynOS_Builtin_Geo_GetFromName(const char* aDataName);
+const char*      DynOS_Builtin_Geo_GetFromData(const GeoLayout* aData);
 const MacroObject* DynOS_Builtin_LvlMacro_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_LvlMacro_GetFromData(const MacroObject* aData);
-const GeoLayout* DynOS_Builtin_LvlGeo_GetFromName(const char* aDataName);
-const char*      DynOS_Builtin_LvlGeo_GetFromData(const GeoLayout* aData);
 const Collision* DynOS_Builtin_Col_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_Col_GetFromData(const Collision* aData);
 const Animation *DynOS_Builtin_Anim_GetFromName(const char *aDataName);

@@ -1,8 +1,6 @@
 #ifndef DYNOS_MODELS_H
 #define DYNOS_MODELS_H
 
-#define MAX_BUILTIN_LEVEL_GEOS 1000
-
 // E_MODEL__XXX_ are delimiters, not actual model ids
 enum ModelExtendedId {
     E_MODEL_NONE = 0,
@@ -11,26 +9,26 @@ enum ModelExtendedId {
 
 #define MODEL_EXTENDED_GEO(_modelId_, ...) _modelId_,
 #define MODEL_EXTENDED_DL(_modelId_, ...) _modelId_,
-#define MODEL_EXTENDED_LVL(...)
 #include "data/dynos_models_builtin.inl"
 #undef MODEL_EXTENDED_GEO
 #undef MODEL_EXTENDED_DL
-#undef MODEL_EXTENDED_LVL
 
     E_MODEL_MAX,
-    E_MODEL__EXTENDED_END_      = E_MODEL_MAX,
-    E_MODEL__VANILLA_END_       = E_MODEL__VANILLA_MAX_ + 1,
-    E_MODEL__EXTENDED_START_    = E_MODEL__VANILLA_END_,
+    E_MODEL__EXTENDED_END_   = E_MODEL_MAX,
+    E_MODEL__VANILLA_END_    = E_MODEL__VANILLA_MAX_ + 1,
+    E_MODEL__EXTENDED_START_ = E_MODEL__VANILLA_END_,
+    E_MODEL__CUSTOM_START_   = E_MODEL__EXTENDED_END_ + 1,
 
-    E_MODEL__LEVEL_GEO_START_   = E_MODEL__EXTENDED_END_,
-    E_MODEL__LEVEL_GEO_END_     = E_MODEL__LEVEL_GEO_START_ + MAX_BUILTIN_LEVEL_GEOS,
-
-    E_MODEL__CUSTOM_START_      = E_MODEL__LEVEL_GEO_END_ + 1,
+    // Bubble
+    // The only model id worth enough to not end up in deprecated.lua
+    E_MODEL_BUBBLE_PLAYER = E_MODEL_WATER_BOMB,
 
     // Special slots
-    E_MODEL_AREA_GEO            = E_MODEL__CUSTOM_START_ - 1,
-    E_MODEL_DYNOS_PACK          = E_MODEL__CUSTOM_START_ + 0,
-    E_MODEL_MOD_ACTOR           = E_MODEL__CUSTOM_START_ + 1,
+    E_MODEL_AREA_GEO   = E_MODEL__CUSTOM_START_ - 1,
+    E_MODEL_LEVEL_GEO  = E_MODEL__CUSTOM_START_ + 0,
+    E_MODEL_DYNOS_PACK = E_MODEL__CUSTOM_START_ + 1,
+    E_MODEL_MOD_ACTOR  = E_MODEL__CUSTOM_START_ + 2,
+    E_MODEL_MOD_FS     = E_MODEL__CUSTOM_START_ + 3,
 };
 
 // The lower the index, the higher the lifetime

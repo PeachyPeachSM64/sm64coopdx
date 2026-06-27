@@ -1019,7 +1019,7 @@ static void level_cmd_load_model_from_geo_ext(void) {
     const char* geoName = dynos_level_get_token(CMD_GET(u32, 4));
 
     if (geoName != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, dynos_geolayout_get(geoName), geoName);
+        dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, dynos_geolayout_get(geoName, NULL), geoName);
     }
 
     sCurrentCmd = CMD_NEXT;

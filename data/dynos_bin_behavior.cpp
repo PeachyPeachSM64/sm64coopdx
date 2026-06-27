@@ -1935,22 +1935,16 @@ static BehaviorScript ParseBehaviorScriptSymbolArgInternal(GfxData *aGfxData, Da
         return 0;
     }
 
-    // Built-in actors
-    auto builtinActor = DynOS_Builtin_Actor_GetFromName(_Arg.begin());
-    if (builtinActor != NULL) {
-        return (BehaviorScript)builtinActor;
+    // Built-in Geos
+    auto builtinGeo = DynOS_Builtin_Geo_GetFromName(_Arg.begin());
+    if (builtinGeo != NULL) {
+        return (BehaviorScript)builtinGeo;
     }
 
     // Built-in Lvl Macros
     auto builtinLvlMacro = DynOS_Builtin_LvlMacro_GetFromName(_Arg.begin());
     if (builtinLvlMacro != NULL) {
         return (BehaviorScript)builtinLvlMacro;
-    }
-
-    // Built-in Lvl Geos
-    auto builtinGeo = DynOS_Builtin_LvlGeo_GetFromName(_Arg.begin());
-    if (builtinGeo != NULL) {
-        return (BehaviorScript)builtinGeo;
     }
 
     // Built-in Cols

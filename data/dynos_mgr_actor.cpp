@@ -39,7 +39,7 @@ std::map<const void *, ActorGfx> &DynOS_Actor_GetValidActors() {
 
 // Only used for mods with custom actors.
 bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFilename, const char *aActorName) {
-    const void* georef = DynOS_Builtin_Actor_GetFromName(aActorName);
+    const void* georef = DynOS_Builtin_Geo_GetFromName(aActorName);
 
     std::string actorName = aActorName;
 
@@ -58,7 +58,8 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     }
 
     // Load the graph node
-    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(E_MODEL_MOD_ACTOR, MODEL_POOL_SESSION, geoLayout, aActorName);
+    enum ModelExtendedId modelType = is_mod_fs_file(aFilename.c_str()) ? E_MODEL_MOD_FS : E_MODEL_MOD_ACTOR;
+    GraphNode *graphNode = DynOS_Model_LoadGeoLayout(modelType, MODEL_POOL_SESSION, geoLayout, aActorName);
     if (!graphNode) {
         PrintError("  ERROR: Couldn't load graph node for \"%s\"", actorName.c_str());
         return false;
@@ -268,7 +269,7 @@ void DynOS_Actor_ModShutdown() {
     sModifiedGraphNodes.clear();
 }
 
-const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName) {
+const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName, enum ModelExtendedId *outModelType) {
     if (aGeoName == NULL) { return NULL; }
 
     // check levels
@@ -276,6 +277,7 @@ const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName) {
     for (auto& lvl : levelsArray) {
         auto geo = lvl.second->mGeoLayouts.Find(aGeoName);
         if (geo) {
+            if (outModelType) { *outModelType = E_MODEL_LEVEL_GEO; }
             return geo->mData;
         }
     }
@@ -283,6 +285,7 @@ const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName) {
     // check custom actors
     for (auto& pair : DynosCustomActors()) {
         if (pair.first == aGeoName) {
+            if (outModelType) { *outModelType = is_mod_fs_file(aGeoName) ? E_MODEL_MOD_FS : E_MODEL_MOD_ACTOR; }
             return (const GeoLayout *) pair.second;
         }
     }
@@ -291,22 +294,16 @@ const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName) {
     for (auto& pair : DynosValidActors()) {
         auto geo = pair.second.mGfxData->mGeoLayouts.Find(aGeoName);
         if (geo) {
+            if (outModelType) { *outModelType = E_MODEL_DYNOS_PACK; }
             return geo->mData;
         }
     }
 
-    // check built in actors
+    // check built in geos
     {
-        const GeoLayout *geoLayout = DynOS_Builtin_Actor_GetFromName(aGeoName);
+        const GeoLayout *geoLayout = DynOS_Builtin_Geo_GetFromName(aGeoName);
         if (geoLayout) {
-            return geoLayout;
-        }
-    }
-
-    // check built in level geos
-    {
-        const GeoLayout *geoLayout = DynOS_Builtin_LvlGeo_GetFromName(aGeoName);
-        if (geoLayout) {
+            if (outModelType) { *outModelType = E_MODEL_NONE; }
             return geoLayout;
         }
     }
@@ -314,7 +311,47 @@ const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName) {
     // check modfs file
     if (is_mod_fs_file(aGeoName)) {
         if (DynOS_Actor_AddCustom(gLuaActiveMod->index, -1, aGeoName, aGeoName)) {
-            return DynOS_Geo_GetLayoutFromName(aGeoName);
+            return DynOS_Geo_GetLayoutFromName(aGeoName, outModelType);
+        }
+    }
+
+    return NULL;
+}
+
+const char *DynOS_Geo_GetNameFromLayout(const GeoLayout *aGeoLayout) {
+    if (aGeoLayout == NULL) { return NULL; }
+
+    // check levels
+    auto& levelsArray = DynOS_Lvl_GetArray();
+    for (auto& lvl : levelsArray) {
+        for (auto &geo : lvl.second->mGeoLayouts) {
+            if (geo->mData == aGeoLayout) {
+                return geo->mName.begin();
+            }
+        }
+    }
+
+    // check custom actors
+    for (auto& pair : DynosCustomActors()) {
+        if (pair.second == aGeoLayout) {
+            return pair.first.c_str();
+        }
+    }
+
+    // check loaded actors
+    for (auto& pair : DynosValidActors()) {
+        for (auto &geo : pair.second.mGfxData->mGeoLayouts) {
+            if (geo->mData == aGeoLayout) {
+                return geo->mName.begin();
+            }
+        }
+    }
+
+    // check built in geos
+    {
+        const char *name = DynOS_Builtin_Geo_GetFromData(aGeoLayout);
+        if (name) {
+            return name;
         }
     }
 
