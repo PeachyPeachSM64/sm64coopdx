@@ -1,6 +1,8 @@
 #ifndef DYNOS_MODELS_H
 #define DYNOS_MODELS_H
 
+#define GEO_LAYOUT_LAYER 0xFF
+
 // E_MODEL__XXX_ are delimiters, not actual model ids
 enum ModelExtendedId {
     E_MODEL_NONE = 0,

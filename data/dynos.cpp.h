@@ -808,23 +808,6 @@ void DynOS_Gfx_Init();
 void DynOS_Gfx_Free(GfxData *aGfxData);
 
 //
-// String
-//
-
-u8 *DynOS_String_Convert(const char *aString, bool aHeapAlloc);
-u8 *DynOS_String_Decapitalize(u8 *aStr64);
-s32 DynOS_String_Length(const u8 *aStr64);
-s32 DynOS_String_WidthChar64(u8 aChar64);
-s32 DynOS_String_Width(const u8 *aStr64);
-
-//
-// Geo
-//
-
-const GeoLayout *DynOS_Geo_GetLayoutFromName(const char *aGeoName, enum ModelExtendedId *outModelType);
-const char *DynOS_Geo_GetNameFromLayout(const GeoLayout *aGeoLayout);
-
-//
 // Levels
 //
 
@@ -861,8 +844,6 @@ bool DynOS_Warp_ToCastle(s32 aLevel);
 
 const void*      DynOS_Builtin_ScriptPtr_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_ScriptPtr_GetFromData(const void* aData);
-const GeoLayout* DynOS_Builtin_Geo_GetFromName(const char* aDataName);
-const char*      DynOS_Builtin_Geo_GetFromData(const GeoLayout* aData);
 const MacroObject* DynOS_Builtin_LvlMacro_GetFromName(const char* aDataName);
 const char*      DynOS_Builtin_LvlMacro_GetFromData(const MacroObject* aData);
 const Collision* DynOS_Builtin_Col_GetFromName(const char* aDataName);
@@ -902,6 +883,7 @@ void DynOS_Pack_AddTex(PackData* aPackData, DataNode<TexData>* aTexData);
 //
 
 std::map<const void *, ActorGfx> &DynOS_Actor_GetValidActors();
+std::vector<std::pair<std::string, void *>> &DynOS_Actor_GetCustomActors();
 bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFilename, const char *aActorName);
 bool DynOS_Actor_GetModIndexAndToken(const GraphNode *aGraphNode, u32 aTokenIndex, s32 *outModIndex, s32 *outModFileIndex, const char **outToken);
 ActorGfx* DynOS_Actor_GetActorGfx(const GraphNode* aGraphNode);
@@ -984,12 +966,16 @@ void DynOS_MovtexQC_ModShutdown();
 // Model Manager
 //
 
-struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, const char *aName);
-struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, u8 aLayer);
-struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, struct GraphNode *aNode);
+struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset);
+struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer);
+struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode);
 struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId);
 enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode);
 const char *DynOS_Model_GetName(enum ModelExtendedId aModelId);
+const void *DynOS_Model_GetAssetFromName(const char *aName, enum ModelExtendedId *outModelType, u8 *outLayer);
+const char *DynOS_Model_GetNameFromAsset(const void *aAsset);
+const void *DynOS_Model_GetBuiltinAssetFromName(const char *aName, u8 *outLayer);
+const char *DynOS_Model_GetNameFromBuiltinAsset(const void *aAsset);
 enum ModelPool DynOS_Model_GetModelPool(struct GraphNode *aNode);
 void DynOS_Model_ClearPool(enum ModelPool aModelPool);
 

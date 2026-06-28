@@ -134,10 +134,10 @@ static PointerData GetDataFromPointer(const void* aPtr, GfxData* aGfxData) {
         return { get_behavior_name_from_id(id), 0 };
     }
 
-    // Built-in Geos
-    auto builtinGeo = DynOS_Builtin_Geo_GetFromData((const GeoLayout*)aPtr);
-    if (builtinGeo != NULL) {
-        return { builtinGeo, 0 };
+    // Built-in Assets
+    auto builtinAsset = DynOS_Model_GetNameFromBuiltinAsset(aPtr);
+    if (builtinAsset != NULL) {
+        return { builtinAsset, 0 };
     }
 
     // Built-in Level Macros
@@ -423,10 +423,10 @@ static void *GetPointerFromData(GfxData *aGfxData, const String &aPtrName, u32 a
         return (void*)get_behavior_from_id(id);
     }
 
-    // Built-in Geos
-    auto builtinGeo = DynOS_Builtin_Geo_GetFromName(aPtrName.begin());
-    if (builtinGeo != NULL) {
-        return (void*)builtinGeo;
+    // Built-in Assets
+    auto builtinAsset = DynOS_Model_GetBuiltinAssetFromName(aPtrName.begin(), NULL);
+    if (builtinAsset != NULL) {
+        return (void*)builtinAsset;
     }
 
     // Built-in Lvl Macros

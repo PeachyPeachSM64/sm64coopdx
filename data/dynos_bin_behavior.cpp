@@ -1935,10 +1935,10 @@ static BehaviorScript ParseBehaviorScriptSymbolArgInternal(GfxData *aGfxData, Da
         return 0;
     }
 
-    // Built-in Geos
-    auto builtinGeo = DynOS_Builtin_Geo_GetFromName(_Arg.begin());
-    if (builtinGeo != NULL) {
-        return (BehaviorScript)builtinGeo;
+    // Built-in Assets
+    auto builtinAsset = DynOS_Model_GetBuiltinAssetFromName(_Arg.begin(), NULL);
+    if (builtinAsset != NULL) {
+        return (BehaviorScript)builtinAsset;
     }
 
     // Built-in Lvl Macros

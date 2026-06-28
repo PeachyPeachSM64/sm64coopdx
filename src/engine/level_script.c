@@ -104,22 +104,26 @@ static s32 eval_script_op(s8 op, s32 arg) {
 }
 
 struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u8 destNode, u8 checkpoint, struct Object *o) {
-    if (sCurrAreaIndex != -1) {
-        struct ObjectWarpNode *warpNode = dynamic_pool_alloc(gLevelPool, sizeof(struct ObjectWarpNode));
-
-        warpNode->node.id = id;
-        warpNode->node.destLevel = destLevel + checkpoint;
-        warpNode->node.destArea = destArea;
-        warpNode->node.destNode = destNode;
-
-        warpNode->object = o;
-
-        warpNode->next = gAreas[sCurrAreaIndex].warpNodes;
-        gAreas[sCurrAreaIndex].warpNodes = warpNode;
-
-        return warpNode;
+    if (gCurrAreaIndex < 0 || gCurrAreaIndex >= MAX_AREAS) {
+        return NULL;
     }
-    return NULL;
+
+    struct ObjectWarpNode *warpNode = dynamic_pool_alloc(gLevelPool, sizeof(struct ObjectWarpNode));
+    if (!warpNode) {
+        return NULL;
+    }
+
+    warpNode->node.id = id;
+    warpNode->node.destLevel = destLevel + checkpoint;
+    warpNode->node.destArea = destArea;
+    warpNode->node.destNode = destNode;
+
+    warpNode->object = o;
+
+    warpNode->next = gAreas[gCurrAreaIndex].warpNodes;
+    gAreas[gCurrAreaIndex].warpNodes = warpNode;
+
+    return warpNode;
 }
 
 static void area_check_red_coin_or_secret(void *arg, bool isMacroObject) {
@@ -433,7 +437,7 @@ static void level_cmd_begin_area(void) {
     void *geoLayoutAddr = CMD_GET(void *, 4);
 
     if (areaIndex < MAX_AREAS) {
-        struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo_layout(E_MODEL_AREA_GEO, MODEL_POOL_LEVEL, geoLayoutAddr, NULL);
+        struct GraphNodeRoot *screenArea = (struct GraphNodeRoot *) dynos_model_load_geo_layout(E_MODEL_AREA_GEO, MODEL_POOL_LEVEL, NULL, geoLayoutAddr);
         struct GraphNodeCamera *node = (struct GraphNodeCamera *) screenArea->views[0];
 
         sCurrAreaIndex = areaIndex;
@@ -464,7 +468,7 @@ static void level_cmd_load_model_from_dl(void) {
     void *displayList = CMD_GET(void *, 4);
 
     if (displayList != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_display_list(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, displayList, layer);
+        dynos_model_load_display_list(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, NULL, displayList, layer);
     }
 
     sCurrentCmd = CMD_NEXT;
@@ -475,7 +479,7 @@ static void level_cmd_load_model_from_geo(void) {
     void *geoLayout = CMD_GET(void *, 4);
 
     if (geoLayout != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_geo_layout(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, geoLayout, NULL);
+        dynos_model_load_geo_layout(modelId, sFinishedLoadingPerm ? MODEL_POOL_LEVEL : MODEL_POOL_PERMANENT, NULL, geoLayout);
     }
 
     sCurrentCmd = CMD_NEXT;
@@ -496,7 +500,8 @@ static void level_cmd_23(void) {
     // GraphNodeScale has a GraphNode at the top. This
     // is being stored to the array, so cast the pointer.
     if (displayList != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_graph_node(modelId, MODEL_POOL_LEVEL, displayList, (struct GraphNode*) init_graph_node_scale(gLevelPool, NULL, layer, displayList, scale.f));
+        struct GraphNode *node = (struct GraphNode *) init_graph_node_scale(gLevelPool, NULL, layer, displayList, scale.f);
+        dynos_model_load_graph_node(modelId, MODEL_POOL_LEVEL, NULL, displayList, layer, node);
     }
 
     sCurrentCmd = CMD_NEXT;
@@ -923,38 +928,11 @@ static void level_cmd_cleardemoptr(void)
 // coop
 //
 
-static bool find_lua_param(uintptr_t *param, u32 offset, u32 luaParams, u32 luaParamFlag) {
-    *param = CMD_GET(uintptr_t, offset);
-    if (luaParams & luaParamFlag) {
-        if (gLevelScriptModIndex == -1) {
-            LOG_ERROR("Could not find level script mod index");
-            return false;
-        }
-
-        const char *paramStr = dynos_level_get_token(*param);
-        gSmLuaConvertSuccess = true;
-        *param = smlua_get_integer_mod_variable(gLevelScriptModIndex, paramStr);
-
-        if (!gSmLuaConvertSuccess) {
-            gSmLuaConvertSuccess = true;
-            *param = smlua_get_any_integer_mod_variable(paramStr);
-        }
-
-        if (!gSmLuaConvertSuccess) {
-            LOG_LUA("Failed to execute level command, could not find parameter '%s'", paramStr);
-            return false;
-        }
-    }
-    return true;
-}
-
-#define get_lua_param(name, type, flag) \
-    uintptr_t name##Param; \
-    if (!find_lua_param(&name##Param, flag##_OFFSET(cmdType), luaParams, flag)) { \
+#define get_lua_param(paramName, paramType, luaParamFlag) \
+    smlua_get_lua_param(paramName, paramType, CMD_GET(uintptr_t, luaParamFlag##_OFFSET(cmdType)), luaParams, luaParamFlag, { \
         sCurrentCmd = CMD_NEXT; \
         return; \
-    } \
-    type name = (type) name##Param;
+    })
 
 static void level_cmd_place_object_ext_lua_params(void) {
     u8 val7 = 1 << (gCurrActNum - 1);
@@ -1016,10 +994,18 @@ static void level_cmd_place_object_ext_lua_params(void) {
 
 static void level_cmd_load_model_from_geo_ext(void) {
     u8 modelId = CMD_GET(s16, 2) & 0xFF;
-    const char* geoName = dynos_level_get_token(CMD_GET(u32, 4));
+    const char* name = dynos_level_get_token(CMD_GET(u32, 4));
 
-    if (geoName != NULL && modelId != MODEL_NONE) {
-        dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, dynos_geolayout_get(geoName, NULL), geoName);
+    if (name != NULL && modelId != MODEL_NONE) {
+        u8 layer;
+        const void *asset = dynos_model_get_asset_from_name(name, NULL, &layer);
+        if (asset != NULL) {
+            if (layer == GEO_LAYOUT_LAYER) {
+                dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, name, asset);
+            } else {
+                dynos_model_load_display_list(modelId, MODEL_POOL_SESSION, name, asset, layer);
+            }
+        }
     }
 
     sCurrentCmd = CMD_NEXT;

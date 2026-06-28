@@ -5,6 +5,7 @@ extern "C" {
 #include <assert.h>
 #include "sm64.h"
 #include "pc/debuglog.h"
+#include "pc/mods/mod_fs.h"
 #include "engine/geo_layout.h"
 #include "engine/graph_node.h"
 #include "actors/group0.h"
@@ -132,7 +133,7 @@ public:
         .modelId = _modelId_, \
         .name    = #_asset_, \
         .asset   = (const void *) _asset_, \
-        .layer   = 0xFF, \
+        .layer   = GEO_LAYOUT_LAYER, \
     }; \
     mAssetToId[(const void *) _asset_] = _modelId_; \
 }
@@ -231,7 +232,7 @@ private:
         if (!aData) {
             enum ModelExtendedId customId;
             if (!aName) {
-                aName = DynOS_Geo_GetNameFromLayout((const GeoLayout *) aAsset);
+                aName = DynOS_Model_GetNameFromAsset(aAsset);
             }
 
             // Resolve model id
@@ -276,7 +277,7 @@ private:
     }
 
 public:
-    struct GraphNode *Load(enum ModelLoadType aModelLoadType, enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, const char *aName, u8 aLayer, struct GraphNode *aGraphNode) {
+    struct GraphNode *Load(enum ModelLoadType aModelLoadType, enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode) {
         if (!aAsset) { return NULL; }
 
         // Sanity check pool
@@ -387,21 +388,22 @@ static ModelExtendedManager sModels;
  // Built-in //
 //////////////
 
-const GeoLayout *DynOS_Builtin_Geo_GetFromName(const char *aDataName) {
+const void *DynOS_Model_GetBuiltinAssetFromName(const char *aName, u8 *outLayer) {
     const struct ModelExtendedData *data = sModels.GetData(
-        [aDataName](const struct ModelExtendedData &data) { return strcmp(data.GetName(), aDataName) == 0; },
+        [aName](const struct ModelExtendedData &data) { return strcmp(data.GetName(), aName) == 0; },
         E_MODEL__EXTENDED_START_,
         E_MODEL__EXTENDED_END_
     );
     if (data) {
-        return (const GeoLayout *) data->asset;
+        if (outLayer) { *outLayer = data->layer; }
+        return data->asset;
     }
     return NULL;
 }
 
-const char *DynOS_Builtin_Geo_GetFromData(const GeoLayout *aData) {
+const char *DynOS_Model_GetNameFromBuiltinAsset(const void *aAsset) {
     const struct ModelExtendedData *data = sModels.GetData(
-        [aData](const struct ModelExtendedData &data) { return data.asset == (const void *) aData; },
+        [aAsset](const struct ModelExtendedData &data) { return data.asset == aAsset; },
         E_MODEL__EXTENDED_START_,
         E_MODEL__EXTENDED_END_
     );
@@ -415,16 +417,16 @@ const char *DynOS_Builtin_Geo_GetFromData(const GeoLayout *aData) {
  // Load //
 //////////
 
-struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, const char *aName) {
-    return sModels.Load(MLT_GEO_LAYOUT, aModelId, aModelPool, aAsset, aName, 0xFF, NULL);
+struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset) {
+    return sModels.Load(MLT_GEO_LAYOUT, aModelId, aModelPool, aName, aAsset, GEO_LAYOUT_LAYER, NULL);
 }
 
-struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, u8 aLayer) {
-    return sModels.Load(MLT_DISPLAY_LIST, aModelId, aModelPool, aAsset, NULL, aLayer, NULL);
+struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer) {
+    return sModels.Load(MLT_DISPLAY_LIST, aModelId, aModelPool, aName, aAsset, aLayer, NULL);
 }
 
-struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const void *aAsset, struct GraphNode *aNode) {
-    return sModels.Load(MLT_GRAPH_NODE, aModelId, aModelPool, aAsset, NULL, 0xFF, aNode);
+struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode) {
+    return sModels.Load(MLT_GRAPH_NODE, aModelId, aModelPool, aName, aAsset, aLayer, aGraphNode);
 }
 
   /////////
@@ -434,7 +436,7 @@ struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum 
 static struct GraphNode *DynOS_Model_GetErrorModel() {
     struct ModelExtendedData *data = sModels.GetData(E_MODEL_ERROR_MODEL);
     if (data) {
-        return data->GetGraphNode();
+        return sModels.Load(MLT_GEO_LAYOUT, E_MODEL_NONE, MODEL_POOL_PERMANENT, data->GetName(), data->asset, GEO_LAYOUT_LAYER, NULL);
     }
     return NULL;
 }
@@ -453,7 +455,7 @@ struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId) {
 
         // Try to load it
         LOG_WARNING("DynOS_Model_GetGraphNode: Trying to load model with existing data now: %s", DynOS_Model_IdName(data->modelId));
-        return sModels.Load(data->layer != 0xFF ? MLT_DISPLAY_LIST : MLT_GEO_LAYOUT, E_MODEL_NONE, MODEL_POOL_SESSION, data->asset, data->GetName(), data->layer, NULL);
+        return sModels.Load(data->layer == GEO_LAYOUT_LAYER ? MLT_GEO_LAYOUT : MLT_DISPLAY_LIST, E_MODEL_NONE, MODEL_POOL_SESSION, data->GetName(), data->asset, data->layer, NULL);
     }
 
     return DynOS_Model_GetErrorModel();
@@ -484,6 +486,98 @@ const char *DynOS_Model_GetName(enum ModelExtendedId aModelId) {
     struct ModelExtendedData *data = sModels.GetData(aModelId);
     if (data) {
         return data->GetName();
+    }
+
+    return NULL;
+}
+
+const void *DynOS_Model_GetAssetFromName(const char *aName, enum ModelExtendedId *outModelType, u8 *outLayer) {
+    if (aName == NULL) { return NULL; }
+
+    // Check levels
+    for (const auto &level : DynOS_Lvl_GetArray()) {
+        const auto &geoNode = level.second->mGeoLayouts.Find(aName);
+        if (geoNode) {
+            if (outModelType) { *outModelType = E_MODEL_LEVEL_GEO; }
+            if (outLayer) { *outLayer = GEO_LAYOUT_LAYER; }
+            return (const void *) geoNode->mData;
+        }
+    }
+
+    // Check custom actors
+    for (const auto &actor : DynOS_Actor_GetCustomActors()) {
+        if (actor.first == aName) {
+            if (outModelType) { *outModelType = is_mod_fs_file(aName) ? E_MODEL_MOD_FS : E_MODEL_MOD_ACTOR; }
+            if (outLayer) { *outLayer = GEO_LAYOUT_LAYER; }
+            return (const void *) actor.second;
+        }
+    }
+
+    // Check loaded actors
+    // Valid actors also contain custom ones, but the above for loop
+    // already handles these, meaning only DynOS packs remain
+    for (const auto &actor : DynOS_Actor_GetValidActors()) {
+        const auto &geoNode = actor.second.mGfxData->mGeoLayouts.Find(aName);
+        if (geoNode) {
+            if (outModelType) { *outModelType = E_MODEL_DYNOS_PACK; }
+            if (outLayer) { *outLayer = GEO_LAYOUT_LAYER; }
+            return (const void *) geoNode->mData;
+        }
+    }
+
+    // Check built-in assets
+    {
+        const void *asset = DynOS_Model_GetBuiltinAssetFromName(aName, outLayer);
+        if (asset) {
+            if (outModelType) { *outModelType = E_MODEL_NONE; }
+            return asset;
+        }
+    }
+
+    // Check ModFS file
+    if (is_mod_fs_file(aName)) {
+        if (DynOS_Actor_AddCustom(gLuaActiveMod->index, -1, aName, aName)) {
+            return DynOS_Model_GetAssetFromName(aName, outModelType, outLayer);
+        }
+    }
+
+    return NULL;
+}
+
+const char *DynOS_Model_GetNameFromAsset(const void *aAsset) {
+    if (aAsset == NULL) { return NULL; }
+
+    // Check levels
+    for (const auto &level : DynOS_Lvl_GetArray()) {
+        for (const auto &geoNode : level.second->mGeoLayouts) {
+            if ((const void *) geoNode->mData == aAsset) {
+                return geoNode->mName.begin();
+            }
+        }
+    }
+
+    // Check custom actors
+    for (const auto &actor : DynOS_Actor_GetCustomActors()) {
+        if ((const void *) actor.second == aAsset) {
+            return actor.first.c_str();
+        }
+    }
+
+    // Check loaded actors
+    for (const auto &actor : DynOS_Actor_GetValidActors()) {
+        for (const auto &geoNode : actor.second.mGfxData->mGeoLayouts) {
+            if ((const void *) geoNode->mData == aAsset) {
+                return geoNode->mName.begin();
+            }
+        }
+    }
+
+    // Check built-in assets
+    {
+        const char *name = DynOS_Model_GetNameFromBuiltinAsset(aAsset);
+        if (name) {
+            return name;
+        }
     }
 
     return NULL;
