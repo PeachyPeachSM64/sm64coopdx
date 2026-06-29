@@ -725,7 +725,7 @@ void geo_layout_cmd_node_generated(void) {
         graphNodeFunc != (GraphNodeFunc) geo_render_mirror_mario &&
         graphNodeFunc != (GraphNodeFunc) geo_wdw_set_initial_water_level &&
         graphNodeFunc != (GraphNodeFunc) geo_exec_flying_carpet_timer_update
-        // TODO: remove if it doesn't cause any issue
+        // TODO MODELS: remove if it doesn't cause any issue
         // graphNodeFunc != (GraphNodeFunc) geo_painting_update &&
         // graphNodeFunc != (GraphNodeFunc) geo_painting_draw &&
         // graphNodeFunc != (GraphNodeFunc) geo_movtex_draw_water_regions &&

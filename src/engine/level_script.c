@@ -928,7 +928,7 @@ static void level_cmd_cleardemoptr(void)
 // coop
 //
 
-#define get_lua_param(paramName, paramType, luaParamFlag) \
+#define level_cmd_get_lua_param(paramName, paramType, luaParamFlag) \
     smlua_get_lua_param(paramName, paramType, CMD_GET(uintptr_t, luaParamFlag##_OFFSET(cmdType)), luaParams, luaParamFlag, { \
         sCurrentCmd = CMD_NEXT; \
         return; \
@@ -945,20 +945,20 @@ static void level_cmd_place_object_ext_lua_params(void) {
         CMD_GET(u16, 2)
     )));
 
-    get_lua_param(acts, u8, OBJECT_EXT_LUA_ACTS);
+    level_cmd_get_lua_param(acts, u8, OBJECT_EXT_LUA_ACTS);
 
     if (sCurrAreaIndex != -1 && (gLevelValues.disableActs || (acts & val7) || acts == 0x1F)) {
         spawnInfo = dynamic_pool_alloc(gLevelPool, sizeof(struct SpawnInfo));
 
-        get_lua_param(modelId, u32, OBJECT_EXT_LUA_MODEL);
-        get_lua_param(posX, s16, OBJECT_EXT_LUA_POS_X);
-        get_lua_param(posY, s16, OBJECT_EXT_LUA_POS_Y);
-        get_lua_param(posZ, s16, OBJECT_EXT_LUA_POS_Z);
-        get_lua_param(angleX, s16, OBJECT_EXT_LUA_ANGLE_X);
-        get_lua_param(angleY, s16, OBJECT_EXT_LUA_ANGLE_Y);
-        get_lua_param(angleZ, s16, OBJECT_EXT_LUA_ANGLE_Z);
-        get_lua_param(behParam, u32, OBJECT_EXT_LUA_BEH_PARAMS);
-        get_lua_param(behavior, uintptr_t, OBJECT_EXT_LUA_BEHAVIOR);
+        level_cmd_get_lua_param(modelId, u32, OBJECT_EXT_LUA_MODEL);
+        level_cmd_get_lua_param(posX, s16, OBJECT_EXT_LUA_POS_X);
+        level_cmd_get_lua_param(posY, s16, OBJECT_EXT_LUA_POS_Y);
+        level_cmd_get_lua_param(posZ, s16, OBJECT_EXT_LUA_POS_Z);
+        level_cmd_get_lua_param(angleX, s16, OBJECT_EXT_LUA_ANGLE_X);
+        level_cmd_get_lua_param(angleY, s16, OBJECT_EXT_LUA_ANGLE_Y);
+        level_cmd_get_lua_param(angleZ, s16, OBJECT_EXT_LUA_ANGLE_Z);
+        level_cmd_get_lua_param(behParam, u32, OBJECT_EXT_LUA_BEH_PARAMS);
+        level_cmd_get_lua_param(behavior, uintptr_t, OBJECT_EXT_LUA_BEHAVIOR);
 
         spawnInfo->startPos[0] = posX;
         spawnInfo->startPos[1] = posY;
@@ -1023,8 +1023,8 @@ static void level_cmd_show_dialog_ext(void) {
     if (sCurrAreaIndex != -1 && !gDjuiInMainMenu) {
         u8 luaParams = CMD_GET(u8, 2);
 
-        get_lua_param(index, u8, SHOW_DIALOG_EXT_LUA_INDEX);
-        get_lua_param(dialogId, s32, SHOW_DIALOG_EXT_LUA_DIALOG);
+        level_cmd_get_lua_param(index, u8, SHOW_DIALOG_EXT_LUA_INDEX);
+        level_cmd_get_lua_param(dialogId, s32, SHOW_DIALOG_EXT_LUA_DIALOG);
 
         if (index < 2) {
             gAreas[sCurrAreaIndex].dialog[index] = dialogId;

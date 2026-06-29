@@ -103,7 +103,7 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
         packet_write(&p, &o->header.gfx.scale[2], sizeof(f32));
         packet_write(&p, &o->setHome, sizeof(u8));
         packet_write(&p, &o->globalPlayerIndex, sizeof(u8));
-        // TODO: do something for modfs loaded models?
+        // TODO MODELS: do something for modfs loaded models?
     }
 
     if (sendToLocalIndex == PACKET_DESTINATION_BROADCAST) {
@@ -145,7 +145,7 @@ void network_receive_spawn_objects(struct Packet* p) {
         packet_read(p, &scale[2], sizeof(f32));
         packet_read(p, &data.setHome, sizeof(u8));
         packet_read(p, &data.globalPlayerIndex, sizeof(u8));
-        // TODO: do something for modfs loaded models?
+        // TODO MODELS: do something for modfs loaded models?
 
         const char *id = "unknown";
         const char *name = "unknown";
