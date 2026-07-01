@@ -675,8 +675,8 @@ static void load_environmental_regions(s16 **data) {
     numRegions = *(*data)++;
     gEnvironmentRegionsLength++;
 
-    if (numRegions > 20) {
-        numRegions = 20;
+    if (numRegions > MAX_WATER_REGIONS) {
+        numRegions = MAX_WATER_REGIONS;
     }
 
     for (s32 i = 0; i < numRegions; i++) {
@@ -985,10 +985,6 @@ static void load_object_collision_model_internal(bool isSOC) {
     }
     if (numVertices <= 0) {
         LOG_ERROR("Object collisions had invalid vertex count");
-        return;
-    }
-    if (numVertices >= 4096) {
-        LOG_ERROR("Object collisions had too many vertices");
         return;
     }
 

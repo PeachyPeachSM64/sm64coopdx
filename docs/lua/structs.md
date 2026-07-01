@@ -53,6 +53,7 @@
 - [GraphNodeSwitchCase](#GraphNodeSwitchCase)
 - [GraphNodeTranslation](#GraphNodeTranslation)
 - [GraphNodeTranslationRotation](#GraphNodeTranslationRotation)
+- [GraphNodeWaterRegions](#GraphNodeWaterRegions)
 - [HudDisplay](#HudDisplay)
 - [InstantWarp](#InstantWarp)
 - [LakituState](#LakituState)
@@ -98,6 +99,7 @@
 - [WallCollisionData](#WallCollisionData)
 - [WarpNode](#WarpNode)
 - [WaterDropletParams](#WaterDropletParams)
+- [WaterRegion](#WaterRegion)
 - [Waypoint](#Waypoint)
 - [Whirlpool](#Whirlpool)
 
@@ -1414,6 +1416,18 @@
 | displayList | `Pointer` <`Gfx`> |  |
 | translation | [Vec3s](structs.md#Vec3s) | read-only |
 | rotation | [Vec3s](structs.md#Vec3s) | read-only |
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [GraphNodeWaterRegions](#GraphNodeWaterRegions)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| node | [GraphNode](structs.md#GraphNode) | read-only |
+| numRegions | `integer` | read-only |
+| regions | `Array` <`WaterRegion`> | read-only |
 
 [:arrow_up_small:](#)
 
@@ -3167,6 +3181,21 @@
 | randYVelScale | `number` |  |
 | randSizeOffset | `number` |  |
 | randSizeScale | `number` |  |
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [WaterRegion](#WaterRegion)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| id | `integer` | read-only |
+| xmin | `integer` | read-only |
+| xmax | `integer` | read-only |
+| zmin | `integer` | read-only |
+| zmax | `integer` | read-only |
+| height | `integer` |  |
 
 [:arrow_up_small:](#)
 

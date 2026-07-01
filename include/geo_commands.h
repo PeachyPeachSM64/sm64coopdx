@@ -74,7 +74,7 @@ enum SkyBackgroundParams {
     CMD_BBH(0x05, 0x00, 0x0000)
 
 /**
- * 0x06: Register the current node at the given index in the gGeoViews array
+ * 0x06: Register the current node at the given index in the geo views array
  *   0x01: unused
  *   0x02: s16 index
  */

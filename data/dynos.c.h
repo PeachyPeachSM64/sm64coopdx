@@ -71,6 +71,8 @@ const void *dynos_level_get_vanilla_script(s32 level);
 s32 dynos_level_get_mod_index(s32 level);
 bool dynos_level_is_vanilla_level(s32 level);
 Collision *dynos_level_get_collision(u32 level, u16 area);
+u32 dynos_level_get_array_count();
+const LevelScript *dynos_level_get_array_script(u32 index);
 
 // -- behaviors -- //
 void dynos_add_behavior(s32 modIndex, const char *filePath, const char *behaviorName);

@@ -7,44 +7,13 @@
 #include "macros.h"
 #include "types.h"
 
-#define GEO_CMD_FLAGS_RESET 0
-#define GEO_CMD_FLAGS_SET   1
-#define GEO_CMD_FLAGS_CLEAR 2
-
 #define CMD_SIZE_SHIFT (sizeof(void *) >> 3)
 #define CMD_PROCESS_OFFSET(offset) (((offset) & 3) | (((offset) & ~3) << CMD_SIZE_SHIFT))
 
-#define cur_geo_cmd_u8(offset) \
-    (gGeoLayoutCommand[CMD_PROCESS_OFFSET(offset)])
-
-#define cur_geo_cmd_s16(offset) \
-    (*(s16 *) &gGeoLayoutCommand[CMD_PROCESS_OFFSET(offset)])
-
-#define cur_geo_cmd_s32(offset) \
-    (*(s32 *) &gGeoLayoutCommand[CMD_PROCESS_OFFSET(offset)])
-
-#define cur_geo_cmd_u32(offset) \
-    (*(u32 *) &gGeoLayoutCommand[CMD_PROCESS_OFFSET(offset)])
-
-#define cur_geo_cmd_ptr(offset) \
-    (*(void **) &gGeoLayoutCommand[CMD_PROCESS_OFFSET(offset)])
-
-extern struct DynamicPool *gGraphNodePool;
+extern struct GraphNode gObjParentGraphNode;
 extern struct GraphNode *gCurRootGraphNode;
-extern struct GraphNode **gGeoViews;
-extern u16 gGeoNumViews;
-extern uintptr_t gGeoLayoutStack[];
 extern struct GraphNode *gCurGraphNodeList[];
 extern s16 gCurGraphNodeIndex;
-extern s16 gGeoLayoutStackIndex;
-extern s16 gGeoLayoutReturnIndex;
-extern u8 *gGeoLayoutCommand;
-extern struct GraphNode gObjParentGraphNode;
-
-extern struct DynamicPool *D_8038BCA0;
-extern struct GraphNode *D_8038BCA4;
-extern s16 D_8038BD78;
-extern struct GraphNode *D_8038BCF8[];
 
 void geo_layout_cmd_branch_and_link(void);
 void geo_layout_cmd_end(void);
@@ -82,7 +51,8 @@ void geo_layout_cmd_node_culling_radius(void);
 void geo_layout_cmd_node_background_ext(void);
 void geo_layout_cmd_node_switch_case_ext(void);
 void geo_layout_cmd_node_generated_ext(void);
-void geo_layout_cmd_bone(void);
+void geo_layout_cmd_node_bone(void);
+void geo_layout_cmd_node_water_regions(void);
 
 struct GraphNode *process_geo_layout(struct DynamicPool *pool, const GeoLayout *geoLayout, bool isAreaCommand);
 

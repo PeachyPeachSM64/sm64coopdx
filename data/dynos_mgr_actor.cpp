@@ -224,6 +224,8 @@ static std::unordered_map<s16, size_t> sGraphNodeSizeMap = {
     { GRAPH_NODE_TYPE_GENERATED_LIST,       sizeof(GraphNodeGenerated) },
     { GRAPH_NODE_TYPE_BACKGROUND,           sizeof(GraphNodeBackground) },
     { GRAPH_NODE_TYPE_HELD_OBJ,             sizeof(GraphNodeHeldObject) },
+    { GRAPH_NODE_TYPE_BONE,                 sizeof(GraphNodeBone) },
+    { GRAPH_NODE_TYPE_WATER_REGIONS,        sizeof(GraphNodeWaterRegions) },
 };
 
 size_t get_graph_node_size(s16 nodeType) {

@@ -4503,6 +4503,9 @@ GRAPH_NODE_TYPE_CULLING_RADIUS = 0x02F
 GRAPH_NODE_TYPE_BONE = 0x030
 
 --- @type integer
+GRAPH_NODE_TYPE_WATER_REGIONS = 0x031
+
+--- @type integer
 GFX_NUM_MASTER_LISTS = 8
 
 --- @type integer
@@ -4522,6 +4525,9 @@ GEO_CONTEXT_AREA_INIT = 4
 
 --- @type integer
 GEO_CONTEXT_HELD_OBJ = 5
+
+--- @type integer
+MAX_WATER_REGIONS = 20
 
 INTERACT_HOOT           =  (1 << 0) --- @type InteractionType
 INTERACT_GRABBABLE      =  (1 << 1) --- @type InteractionType

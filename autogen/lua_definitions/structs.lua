@@ -947,6 +947,11 @@
 --- @field public translation Vec3s
 --- @field public rotation Vec3s
 
+--- @class GraphNodeWaterRegions
+--- @field public node GraphNode
+--- @field public numRegions integer
+--- @field public regions WaterRegion[]
+
 --- @class HudDisplay
 --- @field public lives integer
 --- @field public coins integer
@@ -2303,6 +2308,14 @@
 --- @field public randYVelScale number
 --- @field public randSizeOffset number
 --- @field public randSizeScale number
+
+--- @class WaterRegion
+--- @field public id integer
+--- @field public xmin integer
+--- @field public xmax integer
+--- @field public zmin integer
+--- @field public zmax integer
+--- @field public height integer
 
 --- @class Waypoint
 --- @field public flags integer

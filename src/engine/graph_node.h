@@ -53,6 +53,7 @@
 #define GRAPH_NODE_TYPE_HELD_OBJ             (0x02E | GRAPH_NODE_TYPE_FUNCTIONAL)
 #define GRAPH_NODE_TYPE_CULLING_RADIUS        0x02F
 #define GRAPH_NODE_TYPE_BONE                  0x030
+#define GRAPH_NODE_TYPE_WATER_REGIONS         0x031
 
 // The number of master lists. A master list determines the order and render
 // mode with which display lists are drawn.
@@ -66,6 +67,9 @@
 #define GEO_CONTEXT_AREA_LOAD     3 // called when loading an area
 #define GEO_CONTEXT_AREA_INIT     4 // called when initializing the 8 areas
 #define GEO_CONTEXT_HELD_OBJ      5 // called when processing a GraphNodeHeldObj
+
+// The maximum number of water regions for GraphNodeWaterRegions.
+#define MAX_WATER_REGIONS 20
 
 // The signature for a function stored in a geo node
 // The context argument depends on the callContext:
@@ -391,6 +395,27 @@ struct GraphNodeBone
     Vec3f scale;
 };
 
+struct WaterRegion {
+    s16 id;
+    s16 xmin;
+    s16 xmax;
+    s16 zmin;
+    s16 zmax;
+    s16 height;
+};
+
+/**
+ * GraphNode that controls water boxes height.
+ * This node is generated automatically when the geo function `geo_movtex_draw_water_regions` is detected in a GeoLayout.
+ * There is no GeoLayout command equivalent.
+ */
+struct GraphNodeWaterRegions
+{
+    struct GraphNode node;
+    s16 numRegions;
+    struct WaterRegion regions[MAX_WATER_REGIONS];
+};
+
 extern struct GraphNodeMasterList *gCurGraphNodeMasterList;
 extern struct GraphNodePerspective *gCurGraphNodeCamFrustum;
 extern struct GraphNodeCamera *gCurGraphNodeCamera;
@@ -452,6 +477,9 @@ struct GraphNodeBone *init_graph_node_bone(struct DynamicPool *pool,
                                            s32 drawingLayer, void *displayList,
                                            Vec3s translation, Vec3s rotation,
                                            Vec3f scale);
+struct GraphNodeWaterRegions *init_graph_node_water_regions(struct DynamicPool *pool,
+                                                            struct GraphNodeWaterRegions *graphNode,
+                                                            s16 numRegions, struct WaterRegion *regions);
 struct GraphNode *geo_add_child(struct GraphNode *parent, struct GraphNode *childNode);
 struct GraphNode* geo_remove_child_from_parent(struct GraphNode* parent, struct GraphNode* graphNode);
 struct GraphNode *geo_remove_child(struct GraphNode *graphNode);

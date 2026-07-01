@@ -576,6 +576,26 @@ struct GraphNodeBone *init_graph_node_bone(struct DynamicPool *pool,
 }
 
 /**
+ * Allocates and returns a newly created water regions node with a fixed num regions and initial height values
+ */
+struct GraphNodeWaterRegions *init_graph_node_water_regions(struct DynamicPool *pool,
+                                                            struct GraphNodeWaterRegions *graphNode,
+                                                            s16 numRegions, struct WaterRegion *regions) {
+    if (pool != NULL) {
+        graphNode = dynamic_pool_alloc(pool, sizeof(struct GraphNodeWaterRegions));
+    }
+
+    if (graphNode != NULL) {
+        init_scene_graph_node_links(&graphNode->node, GRAPH_NODE_TYPE_WATER_REGIONS);
+        graphNode->numRegions = clamp(numRegions, 0, MAX_WATER_REGIONS);
+        memset(graphNode->regions, 0, sizeof(graphNode->regions));
+        memcpy(graphNode->regions, regions, sizeof(*graphNode->regions) * graphNode->numRegions);
+    }
+
+    return graphNode;
+}
+
+/**
  * Adds 'childNode' to the end of the list children from 'parent'
  */
 struct GraphNode *geo_add_child(struct GraphNode *parent, struct GraphNode *childNode) {

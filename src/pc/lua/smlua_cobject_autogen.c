@@ -1224,6 +1224,13 @@ static struct LuaObjectField sGraphNodeTranslationRotationFields[LUA_GRAPH_NODE_
     { "translation", LVT_COBJECT,   offsetof(struct GraphNodeTranslationRotation, translation), true,  LOT_VEC3S     },
 };
 
+#define LUA_GRAPH_NODE_WATER_REGIONS_FIELD_COUNT 3
+static struct LuaObjectField sGraphNodeWaterRegionsFields[LUA_GRAPH_NODE_WATER_REGIONS_FIELD_COUNT] = {
+    { "node",       LVT_COBJECT, offsetof(struct GraphNodeWaterRegions, node),       true, LOT_GRAPHNODE                                                  },
+    { "numRegions", LVT_S16,     offsetof(struct GraphNodeWaterRegions, numRegions), true, LOT_NONE                                                       },
+    { "regions",    LVT_COBJECT, offsetof(struct GraphNodeWaterRegions, regions),    true, LOT_WATERREGION, MAX_WATER_REGIONS, sizeof(struct WaterRegion) },
+};
+
 #define LUA_HUD_DISPLAY_FIELD_COUNT 7
 static struct LuaObjectField sHudDisplayFields[LUA_HUD_DISPLAY_FIELD_COUNT] = {
     { "coins",  LVT_S16, offsetof(struct HudDisplay, coins),  false, LOT_NONE },
@@ -2678,6 +2685,16 @@ static struct LuaObjectField sWaterDropletParamsFields[LUA_WATER_DROPLET_PARAMS_
     { "randYVelScale",        LVT_F32,              offsetof(struct WaterDropletParams, randYVelScale),        false, LOT_NONE    },
 };
 
+#define LUA_WATER_REGION_FIELD_COUNT 6
+static struct LuaObjectField sWaterRegionFields[LUA_WATER_REGION_FIELD_COUNT] = {
+    { "height", LVT_S16, offsetof(struct WaterRegion, height), false, LOT_NONE },
+    { "id",     LVT_S16, offsetof(struct WaterRegion, id),     true,  LOT_NONE },
+    { "xmax",   LVT_S16, offsetof(struct WaterRegion, xmax),   true,  LOT_NONE },
+    { "xmin",   LVT_S16, offsetof(struct WaterRegion, xmin),   true,  LOT_NONE },
+    { "zmax",   LVT_S16, offsetof(struct WaterRegion, zmax),   true,  LOT_NONE },
+    { "zmin",   LVT_S16, offsetof(struct WaterRegion, zmin),   true,  LOT_NONE },
+};
+
 #define LUA_WAYPOINT_FIELD_COUNT 2
 static struct LuaObjectField sWaypointFields[LUA_WAYPOINT_FIELD_COUNT] = {
     { "flags", LVT_S16,     offsetof(struct Waypoint, flags), false, LOT_NONE  },
@@ -2742,6 +2759,7 @@ struct LuaObjectTable sLuaObjectAutogenTable[LOT_AUTOGEN_MAX - LOT_AUTOGEN_MIN] 
     { LOT_GRAPHNODESWITCHCASE,          sGraphNodeSwitchCaseFields,          LUA_GRAPH_NODE_SWITCH_CASE_FIELD_COUNT          },
     { LOT_GRAPHNODETRANSLATION,         sGraphNodeTranslationFields,         LUA_GRAPH_NODE_TRANSLATION_FIELD_COUNT          },
     { LOT_GRAPHNODETRANSLATIONROTATION, sGraphNodeTranslationRotationFields, LUA_GRAPH_NODE_TRANSLATION_ROTATION_FIELD_COUNT },
+    { LOT_GRAPHNODEWATERREGIONS,        sGraphNodeWaterRegionsFields,        LUA_GRAPH_NODE_WATER_REGIONS_FIELD_COUNT        },
     { LOT_HUDDISPLAY,                   sHudDisplayFields,                   LUA_HUD_DISPLAY_FIELD_COUNT                     },
     { LOT_INSTANTWARP,                  sInstantWarpFields,                  LUA_INSTANT_WARP_FIELD_COUNT                    },
     { LOT_LAKITUSTATE,                  sLakituStateFields,                  LUA_LAKITU_STATE_FIELD_COUNT                    },
@@ -2777,6 +2795,7 @@ struct LuaObjectTable sLuaObjectAutogenTable[LOT_AUTOGEN_MAX - LOT_AUTOGEN_MIN] 
     { LOT_WALLCOLLISIONDATA,            sWallCollisionDataFields,            LUA_WALL_COLLISION_DATA_FIELD_COUNT             },
     { LOT_WARPNODE,                     sWarpNodeFields,                     LUA_WARP_NODE_FIELD_COUNT                       },
     { LOT_WATERDROPLETPARAMS,           sWaterDropletParamsFields,           LUA_WATER_DROPLET_PARAMS_FIELD_COUNT            },
+    { LOT_WATERREGION,                  sWaterRegionFields,                  LUA_WATER_REGION_FIELD_COUNT                    },
     { LOT_WAYPOINT,                     sWaypointFields,                     LUA_WAYPOINT_FIELD_COUNT                        },
     { LOT_WHIRLPOOL,                    sWhirlpoolFields,                    LUA_WHIRLPOOL_FIELD_COUNT                       },
 };
@@ -2848,6 +2867,7 @@ const char *sLuaLotNames[] = {
 	[LOT_GRAPHNODESWITCHCASE] = "GraphNodeSwitchCase",
 	[LOT_GRAPHNODETRANSLATION] = "GraphNodeTranslation",
 	[LOT_GRAPHNODETRANSLATIONROTATION] = "GraphNodeTranslationRotation",
+	[LOT_GRAPHNODEWATERREGIONS] = "GraphNodeWaterRegions",
 	[LOT_HUDDISPLAY] = "HudDisplay",
 	[LOT_INSTANTWARP] = "InstantWarp",
 	[LOT_LAKITUSTATE] = "LakituState",
@@ -2883,6 +2903,7 @@ const char *sLuaLotNames[] = {
 	[LOT_WALLCOLLISIONDATA] = "WallCollisionData",
 	[LOT_WARPNODE] = "WarpNode",
 	[LOT_WATERDROPLETPARAMS] = "WaterDropletParams",
+	[LOT_WATERREGION] = "WaterRegion",
 	[LOT_WAYPOINT] = "Waypoint",
 	[LOT_WHIRLPOOL] = "Whirlpool",
 };

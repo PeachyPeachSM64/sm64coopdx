@@ -96,7 +96,7 @@ extern s16 gCheckingSurfaceCollisionsForCamera;
 extern s16 gFindFloorIncludeSurfaceIntangible;
 extern s16 *gEnvironmentRegions;
 extern s32 gEnvironmentRegionsLength;
-extern s32 gEnvironmentLevels[20];
+extern s32 gEnvironmentLevels[];
 extern s8 gDoorAdjacentRooms[60][2];
 extern s16 gMarioCurrentRoom;
 extern s16 gDoorCurrentRoom;
