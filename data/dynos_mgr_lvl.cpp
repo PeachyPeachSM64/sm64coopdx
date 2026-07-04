@@ -97,18 +97,22 @@ void DynOS_Lvl_Activate(s32 modIndex, const SysPath &aFilename, const char *aLev
     _OverrideLevelScripts.push_back({ originalScript, newScriptNode->mData, _Node});
 }
 
-GfxData* DynOS_Lvl_GetActiveGfx(void) {
+GfxData* DynOS_Lvl_GetGfx(const LevelScript *aScript) {
     auto& _CustomLevelScripts = DynOS_Lvl_GetArray();
     for (auto &lvlEntry : _CustomLevelScripts) {
         auto& gfxData = lvlEntry.second;
         auto& scripts = gfxData->mLevelScripts;
         for (auto& s : scripts) {
-            if (gLevelScriptActive == s->mData) {
+            if (aScript == s->mData) {
                 return gfxData;
             }
         }
     }
     return NULL;
+}
+
+GfxData* DynOS_Lvl_GetActiveGfx(void) {
+    return DynOS_Lvl_GetGfx(gLevelScriptActive);
 }
 
 const char* DynOS_Lvl_GetToken(u32 index) {

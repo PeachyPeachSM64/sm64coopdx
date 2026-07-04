@@ -1426,6 +1426,8 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | node | [GraphNode](structs.md#GraphNode) | read-only |
+| levelNum | `integer` | read-only |
+| areaIndex | `integer` | read-only |
 | numRegions | `integer` | read-only |
 | regions | `Array` <`WaterRegion`> | read-only |
 

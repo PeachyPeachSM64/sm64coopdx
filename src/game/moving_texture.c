@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "rendering_graph_node.h"
 #include "engine/math_util.h"
+#include "engine/level_script.h"
 #include "memory.h"
 #include "save_file.h"
 #include "segment2.h"
@@ -544,7 +545,7 @@ extern u8 ttm_movtex_puddle[];
 /**
  * Find the quadCollection for a given quad collection id.
  */
-void *get_quad_collection_from_id(u32 id) {
+static void *get_quad_collection_from_id(s16 levelNum, s16 areaIndex, u32 id) {
     switch (id) {
         case BBH_MOVTEX_MERRY_GO_ROUND_WATER_ENTRANCE:
             return bbh_movtex_merry_go_round_water_entrance;
@@ -595,7 +596,7 @@ void *get_quad_collection_from_id(u32 id) {
         case TTM_MOVTEX_PUDDLE:
             return ttm_movtex_puddle;
         default:
-            return dynos_movtexqc_get_from_id(id);
+            return dynos_movtexqc_get_from_id(levelNum, areaIndex, id);
     }
 }
 
@@ -624,19 +625,25 @@ static Gfx *geo_movtex_draw_water_regions_internal(s32 callContext, struct Graph
     Gfx *gfxHead = NULL;
 
     if (callContext == GEO_CONTEXT_RENDER) {
-        s16 *regions = NULL;
-        s16 numRegions = 0;
-        s32 regionsLength = 0;
+        const LevelScript *script;
+        s16 *regions, numRegions, levelNum, areaIndex;
+        s32 regionsLength;
 
         struct GraphNodeWaterRegions *nodeRegions = (struct GraphNodeWaterRegions *) node->prev;
         if (nodeRegions != NULL && nodeRegions->node.type == GRAPH_NODE_TYPE_WATER_REGIONS) {
             regions = (s16 *) nodeRegions->regions;
             numRegions = nodeRegions->numRegions;
             regionsLength = 1 + (nodeRegions->numRegions * sizeof(*nodeRegions->regions) / sizeof(s16));
+            levelNum = nodeRegions->levelNum;
+            areaIndex = nodeRegions->areaIndex;
+            script = nodeRegions->script;
         } else if (gEnvironmentRegions != NULL) {
             regions = (gEnvironmentRegions + 1);
             numRegions = *gEnvironmentRegions;
             regionsLength = gEnvironmentRegionsLength;
+            levelNum = gCurrLevelNum;
+            areaIndex = gCurrAreaIndex;
+            script = gLevelScriptActive;
         } else {
             return NULL;
         }
@@ -675,8 +682,8 @@ static Gfx *geo_movtex_draw_water_regions_internal(s32 callContext, struct Graph
 
         void *quadCollection = (
             isExt ?
-            (void *) dynos_movtexqc_get_from_index(asGenerated->parameter) :
-            get_quad_collection_from_id(asGenerated->parameter)
+            (void *) dynos_movtexqc_get_from_index(script, asGenerated->parameter) :
+            get_quad_collection_from_id(levelNum, areaIndex, asGenerated->parameter)
         );
         if (quadCollection == NULL) {
             return NULL;

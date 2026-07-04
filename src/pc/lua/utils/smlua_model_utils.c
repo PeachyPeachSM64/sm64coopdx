@@ -10,7 +10,7 @@ enum ModelExtendedId smlua_model_util_get_id(const char *name) {
     }
 
     struct GraphNode *node = (
-        layer == GEO_LAYOUT_LAYER ?
+        layer == LAYER_GEO_LAYOUT ?
         dynos_model_load_geo_layout(modelType, MODEL_POOL_SESSION, name, asset) :
         dynos_model_load_display_list(modelType, MODEL_POOL_SESSION, name, asset, layer)
     );

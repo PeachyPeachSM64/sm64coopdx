@@ -1,7 +1,7 @@
 #ifndef DYNOS_MODELS_H
 #define DYNOS_MODELS_H
 
-#define GEO_LAYOUT_LAYER 0xFF
+#define LAYER_GEO_LAYOUT 0xFF
 
 // E_MODEL__XXX_ are delimiters, not actual model ids
 enum ModelExtendedId {
@@ -19,18 +19,25 @@ enum ModelExtendedId {
     E_MODEL__EXTENDED_END_   = E_MODEL_MAX,
     E_MODEL__VANILLA_END_    = E_MODEL__VANILLA_MAX_ + 1,
     E_MODEL__EXTENDED_START_ = E_MODEL__VANILLA_END_,
-    E_MODEL__CUSTOM_START_   = E_MODEL__EXTENDED_END_ + 1,
+    E_MODEL__TYPE_START_     = E_MODEL__EXTENDED_END_ + 1,
 
     // Bubble
     // The only model id worth enough to not end up in deprecated.lua
     E_MODEL_BUBBLE_PLAYER = E_MODEL_WATER_BOMB,
 
-    // Special slots
-    E_MODEL_AREA_GEO   = E_MODEL__CUSTOM_START_ - 1,
-    E_MODEL_LEVEL_GEO  = E_MODEL__CUSTOM_START_ + 0,
-    E_MODEL_DYNOS_PACK = E_MODEL__CUSTOM_START_ + 1,
-    E_MODEL_MOD_ACTOR  = E_MODEL__CUSTOM_START_ + 2,
-    E_MODEL_MOD_FS     = E_MODEL__CUSTOM_START_ + 3,
+    // Special slot dedicated to the area layout
+    E_MODEL_AREA_GEO = E_MODEL__EXTENDED_END_,
+
+    // Custom model types
+    E_MODEL_TYPE_DYNOS_PACK = E_MODEL__TYPE_START_,
+    E_MODEL_TYPE_MOD_ACTOR,
+    E_MODEL_TYPE_LEVEL_GEO,
+    E_MODEL_TYPE_MOD_FS,
+
+    E_MODEL__TYPE_END_,
+
+    // Custom model ids start here
+    E_MODEL__CUSTOM_START_ = E_MODEL__TYPE_END_,
 };
 
 // The lower the index, the higher the lifetime

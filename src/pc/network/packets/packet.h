@@ -164,7 +164,7 @@ void packet_init(struct Packet* packet, enum PacketType packetType, bool reliabl
 void packet_duplicate(struct Packet* srcPacket, struct Packet* dstPacket);
 void packet_set_flags(struct Packet* packet);
 void packet_set_destination(struct Packet* packet, u8 destGlobalId);
-void packet_write(struct Packet* packet, void* data, u16 length);
+void packet_write(struct Packet* packet, const void* data, u16 length);
 u8 packet_initial_read(struct Packet* packet);
 void packet_read(struct Packet* packet, void* data, u16 length);
 u32 packet_hash(struct Packet* packet);

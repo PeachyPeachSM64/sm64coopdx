@@ -223,6 +223,28 @@ const void *DynOS_Level_GetVanillaScript(s32 aLevel) {
     return (const void *) gDynosLevelScriptsOriginal[aLevel];
 }
 
+s32 DynOS_Level_GetNum(const LevelScript *aScript) {
+    if (!aScript) { return -1; }
+
+    // check vanilla level nums
+    for (s32 levelNum = LEVEL_NONE; levelNum < LEVEL_COUNT; levelNum++) {
+        if (sDynosLevelScripts[levelNum].mLevelScript == aScript) {
+            return levelNum;
+        }
+    }
+
+    // check custom level nums
+    for (s32 levelNum = CUSTOM_LEVEL_NUM_START;; levelNum++) {
+        struct CustomLevelInfo *info = smlua_level_util_get_info(levelNum);
+        if (!info || !info->script) { break; }
+        if (info->script == aScript) {
+            return levelNum;
+        }
+    }
+
+    return -1;
+}
+
 s32 DynOS_Level_GetModIndex(s32 aLevel) {
     if (aLevel >= CUSTOM_LEVEL_NUM_START) {
         struct CustomLevelInfo* info = smlua_level_util_get_info(aLevel);

@@ -1000,7 +1000,7 @@ static void level_cmd_load_model_from_geo_ext(void) {
         u8 layer;
         const void *asset = dynos_model_get_asset_from_name(name, NULL, &layer);
         if (asset != NULL) {
-            if (layer == GEO_LAYOUT_LAYER) {
+            if (layer == LAYER_GEO_LAYOUT) {
                 dynos_model_load_geo_layout(modelId, MODEL_POOL_SESSION, name, asset);
             } else {
                 dynos_model_load_display_list(modelId, MODEL_POOL_SESSION, name, asset, layer);

@@ -120,7 +120,7 @@ constants_blacklist = { "__name__": "constants_blacklist",
     "src/pc/mods/mod_fs.h": [ "INT_TYPE_MAX", "FLOAT_TYPE_MAX", "FILE_SEEK_MAX" ],
     "src/engine/surface_load.h": [ "NUM_CELLS" ],
     "src/pc/network/version.h": [ "VERSION_OFFSET" ],
-    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_AREA_GEO", "E_MODEL_LEVEL_GEO", "E_MODEL_DYNOS_PACK", "E_MODEL_MOD_ACTOR", "E_MODEL_MOD_FS", "MODEL_POOL_", "GEO_LAYOUT_LAYER" ],
+    "data/dynos_models.h": [ "E_MODEL__", "E_MODEL_TYPE_", "E_MODEL_AREA_GEO", "MODEL_POOL_", "LAYER_GEO_LAYOUT" ],
 }
 
 # For each file, expose these constants, but hide them from the documentation or VSCode autocomplete
@@ -132,12 +132,17 @@ constants_hidden = { "__name__": "constants_hidden",
 # Format is:
 # - filename
 #   - struct name
-#     - macro name: constant position in macro (starts at 1)
+#     - macro name: [ constant position in macro, value position in macro (incremental if omitted) ]
 constants_enums_with_include = {
     "data/dynos_models.h": {
         "ModelExtendedId": {
-            "MODEL_EXTENDED_GEO": 1,
-            "MODEL_EXTENDED_DL": 1,
+            "MODEL_EXTENDED_GEO": [1],
+            "MODEL_EXTENDED_DL": [1],
+        }
+    },
+    "src/engine/graph_node.h": {
+        "GraphNodeType": {
+            "GRAPH_NODE_TYPE": [1,2],
         }
     },
 }
@@ -393,7 +398,7 @@ structs_fields_blacklist = { "__name__": "structs_fields_blacklist",
     "Mod": [ "files", "showedScriptWarning", "customBehaviorIndex", "customObjectFields" ],
     "Camera": [ "paletteEditorCapState" ],
     "NetworkPlayer": [ "gag", "moderator", "discordId", "rxPacketHash", "rxSeqIds" ],
-    "GraphNode": [ "_guard1", "_guard2", "padding" ],
+    "GraphNode": [ "_guard1", "_guard2", "isModel" ],
     "GraphNodeRoot": [ "unk15", "views" ],
     "GraphNodeMasterList": [ "listHeads", "listTails" ],
     "GraphNodeCullingRadius": [ "pad1E" ],
@@ -402,6 +407,7 @@ structs_fields_blacklist = { "__name__": "structs_fields_blacklist",
     "GraphNodePerspective": [ "unused" ],
     "GraphNodeSwitchCase": [ "unused" ],
     "GraphNodeObject": [ "unk4C" ],
+    "GraphNodeWaterRegions": [ "script" ],
     "FnGraphNode": [ "luaTokenIndex" ],
     "Object": [ "firstSurface", "customFields", "bhvStack", "bhvStackIndex" ],
     "Animation": [ "unusedBoneCount" ],
@@ -471,7 +477,7 @@ structs_fields_immutable = {
     "GraphNodePerspective": [ "unused" ],
     "GraphNodeSwitchCase": [ "fnNode", "unused" ],
     "GraphNodeRoot": [ "node", "areaIndex", "numViews" ],
-    "GraphNodeWaterRegions": [ "numRegions" ],
+    "GraphNodeWaterRegions": [ "levelNum", "areaIndex", "numRegions" ],
     "WaterRegion": [ "id", "xmin", "xmax", "zmin", "zmax" ],
     "ObjectWarpNode": [ "next" ],
     "Animation": [ "*" ],

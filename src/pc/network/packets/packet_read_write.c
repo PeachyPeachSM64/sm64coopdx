@@ -129,7 +129,7 @@ void packet_set_destination(struct Packet* packet, u8 destGlobalId) {
     packet->buffer[PACKET_DESTINATION_BUFFER_OFFSET] = destGlobalId;
 }
 
-void packet_write(struct Packet* packet, void* data, u16 length) {
+void packet_write(struct Packet* packet, const void* data, u16 length) {
     if (data == NULL) { packet->error = true; return; }
 #ifdef DEBUG
     assert(packet->dataLength + length <= PACKET_LENGTH);

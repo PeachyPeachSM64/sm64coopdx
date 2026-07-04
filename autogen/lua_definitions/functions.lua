@@ -9550,7 +9550,7 @@ end
 
 --- @param modelId ModelExtendedId
 --- @return integer
---- Checks if the current object's model is `modelId`
+--- Checks if the current object's model is the same as `modelId`
 function cur_obj_has_model(modelId)
     -- ...
 end
@@ -9558,7 +9558,7 @@ end
 --- @param obj Object
 --- @param modelId ModelExtendedId
 --- @return integer
---- Checks if an object's model is `modelId`
+--- Checks if an object's model is the same as `modelId`
 function obj_has_model(obj, modelId)
     -- ...
 end

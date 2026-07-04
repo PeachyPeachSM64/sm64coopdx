@@ -51,13 +51,19 @@ def process_enum_include(filename, line, inIfBlock, enum_defines, filepath, fiel
         txt = s1[0] + s2[-1]
 
     for l in txt.split('\n'):
-        for define, arg_num in enum_defines.items():
+        for define, pos in enum_defines.items():
             tokens = l.strip().replace('(', ',').replace(')', ',').split(',')
-            if len(tokens) >= arg_num + 1 and tokens[0].strip() == define:
-                field = tokens[arg_num].strip()
-                constant = get_constant(filename, line, inIfBlock, field, index, set_to, set_to_val)
-                if constant is not None:
-                    constants.append(constant)
+            const_pos = pos[0]
+            if len(tokens) >= const_pos + 1 and tokens[0].strip() == define:
+                field = tokens[const_pos].strip()
+                value_pos = pos[1] if len(pos) >= 2 else None
+                if value_pos is not None and len(tokens) >= value_pos + 1:
+                    set_to, set_to_val = eval_constant(filename, constants, field, tokens[value_pos].strip())
+                    index = 0
+                else:
+                    constant, set_to, set_to_val = get_constant(filename, line, inIfBlock, field, index, set_to, set_to_val)
+                    if constant is not None:
+                        constants.append(constant)
                 index += 1
                 break
 
@@ -91,19 +97,28 @@ def saw_constant(identifier, inIfBlock):
         seen_constants.append(identifier)
         return False
 
+def eval_constant(filename, constants, ident, val):
+    try:
+        set_to_val = int(eval(val, {}, {}))
+    except Exception:
+        set_to_val = None
+    if allowed_identifier(constants_whitelist, constants_blacklist, filename, ident):
+        constants.append([ident, val])
+    return ident, set_to_val
+
 def get_constant(filename, line, inIfBlock, field, index, set_to, set_to_val):
     if set_to is not None:
         if allowed_identifier(constants_whitelist, constants_blacklist, filename, field):
             if set_to_val is not None:
-                return [field, str(set_to_val + index)]
-            return [field, '((%s) + %d)' % (set_to, index)]
+                return [field, str(set_to_val + index)], set_to, set_to_val
+            return [field, '((%s) + %d)' % (set_to, index)], set_to, set_to_val
 
     elif allowed_identifier(constants_whitelist, constants_blacklist, filename, field):
         if saw_constant(field, inIfBlock):
             print('>>> ' + line)
-        return [field, str(index)]
+        return [field, str(index)], set_to, set_to_val
 
-    return None
+    return None, set_to, set_to_val
 
 def process_enum(filename, line, inIfBlock):
     _, ident, val = line.split(' ', 2)
@@ -143,19 +158,11 @@ def process_enum(filename, line, inIfBlock):
             ident, val = field.split('=', 1)
             ident = ident.strip()
             val = val.strip()
-
-            try:
-                set_to_val = int(eval(val, {}, {}))
-            except Exception:
-                set_to_val = None
-
-            if allowed_identifier(constants_whitelist, constants_blacklist, filename, field):
-                constants.append([ident, val])
-            set_to = ident
+            set_to, set_to_val = eval_constant(filename, constants, ident, val)
             index = 1
             continue
 
-        constant = get_constant(filename, line, inIfBlock, field, index, set_to, set_to_val)
+        constant, set_to, set_to_val = get_constant(filename, line, inIfBlock, field, index, set_to, set_to_val)
         if constant is not None:
             constants.append(constant)
 

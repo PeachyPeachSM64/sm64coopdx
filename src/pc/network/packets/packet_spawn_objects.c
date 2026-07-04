@@ -54,6 +54,84 @@ static u32 generate_parent_id(struct Object* objects[], u8 onIndex, bool sanitiz
     SOFT_ASSERT_RETURN(false, (u32)-1);
 }
 
+// TODO MODELS
+static void network_send_spawn_object_model(struct Packet *p, u32 modelId) {
+    static const u16 Zero = 0;
+    static const u32 ErrorModel = E_MODEL_ERROR_MODEL;
+
+    enum ModelExtendedId modelType = dynos_model_get_type(modelId);
+    switch (modelType) {
+
+        // Area layout, DynOS pack
+        // Shouldn't be possible, send error model
+        case E_MODEL_AREA_GEO:
+        case E_MODEL_TYPE_DYNOS_PACK: {
+            packet_write(p, &Zero, sizeof(u16));
+            packet_write(p, &ErrorModel, sizeof(u32));
+        } break;
+
+        // Mod actor
+        // Send model id, loading order is consistent across clients
+        case E_MODEL_TYPE_MOD_ACTOR: {
+            packet_write(p, &Zero, sizeof(u16));
+            packet_write(p, &modelId, sizeof(u32));
+        } break;
+
+        // Level geo
+        // Send model name, consistent across clients
+        // If not found or invalid name, send error model
+        case E_MODEL_TYPE_LEVEL_GEO: {
+            const char *modelName = dynos_model_get_name(modelId);
+            if (modelName != NULL && *modelName != 0) {
+                size_t modelNameLength = strlen(modelName);
+                if (modelNameLength < (size_t) MAX(0, PACKET_LENGTH - p->cursor - 0x100)) {
+                    u16 modelNameLengthU16 = (u16) modelNameLength;
+                    packet_write(p, &modelNameLengthU16, sizeof(u16));
+                    packet_write(p, modelName, sizeof(char) * modelNameLength);
+                    break;
+                }
+            }
+            packet_write(p, &Zero, sizeof(u16));
+            packet_write(p, &ErrorModel, sizeof(u32));
+        } break;
+
+        // ModFS model
+        // It's very unlikely that two players have the same model at the same path in their ModFS
+        // Send model id, for the receivers to be able to fill that slot with `smlua_model_util_load_id` later
+        case E_MODEL_TYPE_MOD_FS: {
+            packet_write(p, &Zero, sizeof(u16));
+            packet_write(p, &modelId, sizeof(u32));
+        } break;
+
+        // Vanilla models
+        // Well defined, send model id
+        default: {
+            packet_write(p, &Zero, sizeof(u16));
+            packet_write(p, &modelId, sizeof(u32));
+        } break;
+    }
+}
+
+static enum ModelExtendedId network_receive_spawn_object_model(struct Packet *p) {
+    u16 modelNameLength = 0;
+    packet_read(p, &modelNameLength, sizeof(u16));
+
+    // Model name
+    if (modelNameLength > 0) {
+        char modelName[PACKET_LENGTH] = {0};
+        packet_read(p, modelName, sizeof(char) * modelNameLength);
+        if (*modelName != 0) {
+            return smlua_model_util_get_id(modelName);
+        }
+        return E_MODEL_ERROR_MODEL;
+    }
+
+    // Model id
+    u32 modelId = E_MODEL_NONE;
+    packet_read(p, &modelId, sizeof(u32));
+    return modelId;
+}
+
 void network_send_spawn_objects(struct Object* objects[], u32 models[], u8 objectCount) {
     network_send_spawn_objects_to(PACKET_DESTINATION_BROADCAST, objects, models, objectCount);
 }
@@ -94,7 +172,7 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
         u32 behaviorId = get_id_from_behavior(o->behavior);
         packet_write(&p, &o->ctx, sizeof(u8));
         packet_write(&p, &parentId, sizeof(u32));
-        packet_write(&p, &modelId, sizeof(u32));
+        // packet_write(&p, &modelId, sizeof(u32));
         packet_write(&p, &behaviorId, sizeof(u32));
         packet_write(&p, &o->activeFlags, sizeof(s16));
         packet_write(&p, o->rawData.asU32, sizeof(u32) * OBJECT_NUM_FIELDS);
@@ -103,7 +181,7 @@ void network_send_spawn_objects_to(u8 sendToLocalIndex, struct Object* objects[]
         packet_write(&p, &o->header.gfx.scale[2], sizeof(f32));
         packet_write(&p, &o->setHome, sizeof(u8));
         packet_write(&p, &o->globalPlayerIndex, sizeof(u8));
-        // TODO MODELS: do something for modfs loaded models?
+        network_send_spawn_object_model(&p, modelId);
     }
 
     if (sendToLocalIndex == PACKET_DESTINATION_BROADCAST) {
@@ -136,7 +214,7 @@ void network_receive_spawn_objects(struct Packet* p) {
         u8 ctx = 0;
         packet_read(p, &ctx, sizeof(u8));
         packet_read(p, &data.parentId, sizeof(u32));
-        packet_read(p, &data.modelId, sizeof(u32));
+        // packet_read(p, &data.modelId, sizeof(u32));
         packet_read(p, &data.behaviorId, sizeof(u32));
         packet_read(p, &data.activeFlags, sizeof(s16));
         packet_read(p, &data.rawData, sizeof(u32) * OBJECT_NUM_FIELDS);
@@ -145,7 +223,7 @@ void network_receive_spawn_objects(struct Packet* p) {
         packet_read(p, &scale[2], sizeof(f32));
         packet_read(p, &data.setHome, sizeof(u8));
         packet_read(p, &data.globalPlayerIndex, sizeof(u8));
-        // TODO MODELS: do something for modfs loaded models?
+        data.modelId = network_receive_spawn_object_model(p);
 
         const char *id = "unknown";
         const char *name = "unknown";

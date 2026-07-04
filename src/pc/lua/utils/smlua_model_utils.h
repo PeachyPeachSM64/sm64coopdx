@@ -6,7 +6,9 @@
 /* |description|Gets the model id of the geo layout `name`|descriptionEnd| */
 enum ModelExtendedId smlua_model_util_get_id(const char *name);
 
-/* |description|Loads the geo layout `name` as `modelId`|descriptionEnd| */
+// void smlua_model_util_send_id(enum ModelExtendedId modelId);
+
+/* |description|Loads the geo layout `name` as `modelId` (only works with custom model ids)|descriptionEnd| */
 // bool smlua_model_util_load_id(enum ModelExtendedId modelId, const char *name);
 // TODO MODELS
 

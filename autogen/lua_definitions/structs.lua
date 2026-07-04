@@ -949,6 +949,8 @@
 
 --- @class GraphNodeWaterRegions
 --- @field public node GraphNode
+--- @field public levelNum integer
+--- @field public areaIndex integer
 --- @field public numRegions integer
 --- @field public regions WaterRegion[]
 

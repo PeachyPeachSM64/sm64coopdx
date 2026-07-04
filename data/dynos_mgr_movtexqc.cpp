@@ -39,21 +39,21 @@ void DynOS_MovtexQC_Register(const char* name, s16 level, s16 area, s16 type) {
     }
 }
 
-DataNode<MovtexQC>* DynOS_MovtexQC_GetFromId(u32 id) {
+DataNode<MovtexQC>* DynOS_MovtexQC_GetFromId(s16 levelNum, s16 areaIndex, u32 id) {
     auto& _DynosRegisteredMovtexQCs = DynosRegisteredMovtexQCs();
 
     // find the datanode
     s16 type = (id & 0xF);
     for (auto& registered : _DynosRegisteredMovtexQCs) {
-        if (registered.level == gCurrLevelNum && registered.area == gCurrAreaIndex && registered.type == type) {
+        if (registered.level == levelNum && registered.area == areaIndex && registered.type == type) {
             return registered.dataNode;
         }
     }
     return NULL;
 }
 
-DataNode<MovtexQC>* DynOS_MovtexQC_GetFromIndex(s32 index) {
-    GfxData* gfxData = DynOS_Lvl_GetActiveGfx();
+DataNode<MovtexQC>* DynOS_MovtexQC_GetFromIndex(const LevelScript *script, s32 index) {
+    GfxData* gfxData = DynOS_Lvl_GetGfx(script);
     if (gfxData == NULL) {
         return NULL;
     }

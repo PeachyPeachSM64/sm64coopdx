@@ -147,7 +147,7 @@ struct GraphNode
     s16 flags; // hi = drawing layer, lo = rendering modes
     u8 extraFlags;
     u8 hookProcess;
-    s16 padding;
+    bool isModel;
 
 #ifdef DEBUG
     uintptr_t _guard2;

@@ -1524,26 +1524,16 @@ void obj_set_model(struct Object *obj, enum ModelExtendedId modelId) {
     smlua_call_event_hooks(HOOK_OBJECT_SET_MODEL, obj, modelId, dynos_model_get_id(node));
 }
 
-/* |description|Checks if the current object's model is `modelId`|descriptionEnd| */
+/* |description|Checks if the current object's model is the same as `modelId`|descriptionEnd| */
 s32 cur_obj_has_model(enum ModelExtendedId modelId) {
     return obj_has_model(o, modelId);
 }
 
-/* |description|Checks if an object's model is `modelId`|descriptionEnd| */
+/* |description|Checks if an object's model is the same as `modelId`|descriptionEnd| */
 s32 obj_has_model(struct Object *obj, enum ModelExtendedId modelId) {
     if (!obj) { return FALSE; }
 
-    struct GraphNode *sharedChild = obj->header.gfx.sharedChild;
-    if (dynos_model_get_id(sharedChild) == modelId) {
-        return TRUE;
-    }
-
-    struct GraphNode *node = dynos_model_get_graph_node(modelId);
-    if (sharedChild == node || (node && sharedChild->georef == node->georef)) {
-        return TRUE;
-    }
-
-    return FALSE;
+    return dynos_model_is_same(obj->header.gfx.sharedChild, modelId);
 }
 
 /* |description|Returns the current object's model id|descriptionEnd| */

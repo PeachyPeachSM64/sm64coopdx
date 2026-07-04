@@ -1,9 +1,11 @@
 #include <vector>
+#include <algorithm>
 #include "dynos.cpp.h"
 
 extern "C" {
 #include <assert.h>
 #include "sm64.h"
+#include "geo_commands.h"
 #include "pc/debuglog.h"
 #include "pc/mods/mod_fs.h"
 #include "engine/geo_layout.h"
@@ -63,11 +65,99 @@ extern "C" {
 #include "levels/menu/header.h"
 }
 
-// Level geo, DynOS pack, mod actor, ModFS model per global index
-#define E_MODEL__CUSTOM_OFFSET_ (3 + MAX_PLAYERS)
+//
+//  //////////////////////
+//  // Custom model ids //
+//  //////////////////////
+//
+// There are 4 types of custom ids:
+// - DynOS packs
+// - Mod actors
+// - Level geos
+// - ModFS models
+//
+// However, two of them need separate slots for each player. Why?
+// Mod actors loading order is consistent.
+// DynOS packs are local.
+// But level geos and ModFS models load on demand and thus can easily
+// be desynced across clients.
+//
+// Now, custom model ids, instead of being separated by some fixed
+// arbitrary constant, are arranged this way:
+// custom id:  0   1    2    3  ...    17   18   19  ...    33
+//         0  DP, MA, LG0, LG1, ..., LG15, MF0, MF1, ..., MF15
+//         1  DP, MA, LG0, LG1, ..., LG15, MF0, MF1, ..., MF15
+// ...and so on.
+// This arrangement allows to grow model lists infinitely, without having
+// the risk of two lists overlapping at some point.
+//
 
-static inline enum ModelExtendedId DynOS_Model_CustomIdType(enum ModelExtendedId modelId) {
-    return (enum ModelExtendedId) (E_MODEL__CUSTOM_START_ + ((size_t) (modelId - E_MODEL__CUSTOM_START_) % E_MODEL__CUSTOM_OFFSET_));
+// Make sure all custom types are defined in dynos_models_custom.inl
+static const size_t E_MODEL__TYPE_COUNT_ = (0
+#define MODEL_TYPE_CUSTOM(...) + 1
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+);
+static_assert(E_MODEL__TYPE_END_ - E_MODEL__TYPE_START_ == E_MODEL__TYPE_COUNT_);
+
+static const size_t E_MODEL__CUSTOM_OFFSET_ = (0
+#define MODEL_TYPE_CUSTOM(_modelType_, _size_, ...) + (_size_)
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+);
+
+static constexpr size_t E_MODEL__CUSTOM_TYPE_SIZE_(size_t modelType) {
+    return (0
+#define MODEL_TYPE_CUSTOM(_modelType_, _size_, ...) + (modelType == _modelType_) * (_size_)
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+    );
+}
+
+static constexpr size_t E_MODEL__CUSTOM_TYPE_START_(size_t modelType) {
+    return E_MODEL__CUSTOM_START_ + (0 *
+#define MODEL_TYPE_CUSTOM(_modelType_, _size_, ...) (modelType >= _modelType_) + (_size_) *
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+    0);
+}
+
+static constexpr size_t E_MODEL__CUSTOM_TYPE_END_(size_t modelType) {
+    return E_MODEL__CUSTOM_START_ + (0
+#define MODEL_TYPE_CUSTOM(_modelType_, _size_, ...) + (modelType >= _modelType_) * (_size_)
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+    );
+}
+
+static constexpr size_t E_MODEL__CUSTOM_TYPE_INDEX_(size_t modelType, size_t modelId) {
+    size_t modelCustomIndex = (modelId - E_MODEL__CUSTOM_TYPE_START_(modelType));
+    size_t modelTypeSize = E_MODEL__CUSTOM_TYPE_SIZE_(modelType);
+    size_t modelTypeIndex = modelCustomIndex / E_MODEL__CUSTOM_OFFSET_;
+    size_t modelSubIndex = modelCustomIndex % E_MODEL__CUSTOM_OFFSET_;
+    return (modelTypeIndex * modelTypeSize) + modelSubIndex;
+}
+
+enum ModelExtendedId DynOS_Model_GetType(enum ModelExtendedId aModelId) {
+
+    // Vanilla models
+    if (aModelId < E_MODEL__EXTENDED_END_) {
+        return E_MODEL_NONE;
+    }
+
+    // Special slots
+    if (aModelId < E_MODEL__CUSTOM_START_) {
+        return aModelId;
+    }
+
+    // Custom models
+    size_t customStart = E_MODEL__CUSTOM_START_ + ((aModelId - E_MODEL__CUSTOM_START_) % E_MODEL__CUSTOM_OFFSET_);
+    for (size_t modelType = E_MODEL__TYPE_START_; modelType < E_MODEL__TYPE_END_; modelType++) {
+        if (customStart < E_MODEL__CUSTOM_TYPE_END_(modelType)) {
+            return (enum ModelExtendedId) modelType;
+        }
+    }
+    return E_MODEL_NONE;
 }
 
 static const char *DynOS_Model_IdName(enum ModelExtendedId modelId) {
@@ -77,27 +167,66 @@ static const char *DynOS_Model_IdName(enum ModelExtendedId modelId) {
 #undef MODEL_EXTENDED_GEO
 #undef MODEL_EXTENDED_DL
     if (modelId == E_MODEL_AREA_GEO) { return "E_MODEL_AREA_GEO"; }
+
+    // Custom model types
+#define MODEL_TYPE_CUSTOM(_modelType_, ...) { if (modelId == _modelType_) { return #_modelType_; } }
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+
+    // Custom model ids
     static char modelIdStr[32];
-    if (modelId < E_MODEL__CUSTOM_START_) {
-        snprintf(modelIdStr, sizeof(modelIdStr), "%03X", modelId);
-    } else switch (DynOS_Model_CustomIdType(modelId)) {
-        case E_MODEL_LEVEL_GEO:
-            snprintf(modelIdStr, sizeof(modelIdStr), "E_MODEL_LEVEL_GEO_%04X", (modelId - E_MODEL_LEVEL_GEO) / E_MODEL__CUSTOM_OFFSET_);
-            break;
-        case E_MODEL_DYNOS_PACK:
-            snprintf(modelIdStr, sizeof(modelIdStr), "E_MODEL_DYNOS_PACK_%04X", (modelId - E_MODEL_DYNOS_PACK) / E_MODEL__CUSTOM_OFFSET_);
-            break;
-        case E_MODEL_MOD_ACTOR:
-            snprintf(modelIdStr, sizeof(modelIdStr), "E_MODEL_MOD_ACTOR_%04X", (modelId - E_MODEL_MOD_ACTOR) / E_MODEL__CUSTOM_OFFSET_);
-            break;
-        default: { // E_MODEL_MOD_FS
-            u32 globalIndex = (modelId - E_MODEL_MOD_FS) % MAX_PLAYERS;
-            size_t modelIndex = (modelId - E_MODEL_MOD_FS) / E_MODEL__CUSTOM_OFFSET_;
-            snprintf(modelIdStr, sizeof(modelIdStr), "E_MODEL_MOD_FS_%02u_%04X", globalIndex, modelIndex);
-        } break;
+    if (modelId >= E_MODEL__CUSTOM_START_) {
+        enum ModelExtendedId modelType = DynOS_Model_GetType(modelId);
+        const char *modelTypeName = NULL;
+#define MODEL_TYPE_CUSTOM(_modelType_, ...) { if (modelType == _modelType_) { modelTypeName = #_modelType_; } }
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+
+        if (modelTypeName != NULL) {
+            size_t modelTypeSize = E_MODEL__CUSTOM_TYPE_SIZE_(modelType);
+            size_t modelIndex = E_MODEL__CUSTOM_TYPE_INDEX_(modelType, modelId);
+            if (modelTypeSize > 1) {
+                snprintf(modelIdStr, sizeof(modelIdStr), "%s_%04llu_%02llu", modelTypeName, modelIndex / modelTypeSize, modelIndex % modelTypeSize);
+            } else {
+                snprintf(modelIdStr, sizeof(modelIdStr), "%s_%04llu", modelTypeName, modelIndex);
+            }
+            return modelIdStr;
+        }
     }
+
+    // Default
+    snprintf(modelIdStr, sizeof(modelIdStr), "%03u", modelId);
     return modelIdStr;
 }
+
+//
+// Special GraphNode root for models
+// Embed the model id and pool and allows for graph node hot swapping
+//
+
+#undef max
+static const size_t GRAPH_NODE_MAX_SIZE = (
+#define GRAPH_NODE_TYPE(_name_, _id_, _type_, ...) std::max(sizeof(struct _type_),
+#include "src/engine/graph_node_types.inl"
+#undef GRAPH_NODE_TYPE
+0llu
+#define GRAPH_NODE_TYPE(_name_, _id_, _type_, ...) )
+#include "src/engine/graph_node_types.inl"
+#undef GRAPH_NODE_TYPE
+);
+
+struct GraphNodeModel {
+    struct GraphNode node;
+    u8 padding[GRAPH_NODE_MAX_SIZE - sizeof(struct GraphNode)];
+
+    enum ModelExtendedId modelId;
+    enum ModelPool modelPool;
+    const void *asset;
+};
+
+//
+// Model manager
+//
 
 enum ModelLoadType { MLT_GEO_LAYOUT, MLT_DISPLAY_LIST, MLT_GRAPH_NODE };
 
@@ -106,20 +235,48 @@ struct ModelExtendedData {
     std::string name;
     const void *asset;
     u8 layer;
-    struct GraphNode *nodes[MODEL_POOL_MAX];
+    struct GraphNodeModel *model;
 
 public:
     const char *GetName() const {
         return name.empty() ? NULL : name.c_str();
     }
 
-    struct GraphNode *GetGraphNode(enum ModelPool aModelPoolMax = MODEL_POOL_MAX) {
-        for (size_t poolIndex = 0; poolIndex < (size_t) aModelPoolMax; ++poolIndex) {
-            if (nodes[poolIndex]) {
-                return nodes[poolIndex];
+    void UpdateGraphNodeModel(struct GraphNode *aNode, enum ModelPool aModelPool, const void *aAsset) {
+        size_t nodeSize = get_graph_node_type_size(aNode->type);
+        memset(model, 0, sizeof(*model));
+        memcpy(model, aNode, nodeSize);
+
+        // Fix links
+        if (model->node.prev) {
+            if (model->node.prev == aNode) {
+                model->node.prev = &model->node;
             }
+            model->node.prev->next = &model->node;
         }
-        return NULL;
+        if (model->node.next) {
+            if (model->node.next == aNode) {
+                model->node.next = &model->node;
+            }
+            model->node.next->prev = &model->node;
+        }
+        if (model->node.parent && model->node.parent->children == aNode) {
+            model->node.parent->children = &model->node;
+        }
+        if (model->node.children) {
+            struct GraphNode *child = model->node.children;
+            do {
+                if (child->parent == aNode) {
+                    child->parent = &model->node;
+                }
+                child = child->next;
+            } while (child != model->node.children);
+        }
+
+        model->node.isModel = true;
+        model->modelId = modelId;
+        model->modelPool = aModelPool;
+        model->asset = aAsset;
     }
 };
 
@@ -133,9 +290,8 @@ public:
         .modelId = _modelId_, \
         .name    = #_asset_, \
         .asset   = (const void *) _asset_, \
-        .layer   = GEO_LAYOUT_LAYER, \
+        .layer   = LAYER_GEO_LAYOUT, \
     }; \
-    mAssetToId[(const void *) _asset_] = _modelId_; \
 }
 
 #define MODEL_EXTENDED_DL(_modelId_, _asset_, _layer_) { \
@@ -145,7 +301,6 @@ public:
         .asset   = (const void *) _asset_, \
         .layer   = _layer_, \
     }; \
-    mAssetToId[(const void *) _asset_] = _modelId_; \
 }
 
 #include "dynos_models_builtin.inl"
@@ -170,6 +325,22 @@ public:
         return NULL;
     }
 
+    struct ModelExtendedData *GetData(const char *aName, enum ModelExtendedId aModelIdStart = E_MODEL_NONE, enum ModelExtendedId aModelIdEnd = E_MODEL_NONE) {
+        return GetData(
+            [aName](const struct ModelExtendedData &data) { return data.GetName() != NULL && strcmp(data.GetName(), aName) == 0; },
+            aModelIdStart,
+            aModelIdEnd
+        );
+    }
+
+    struct ModelExtendedData *GetData(const void *aAsset, enum ModelExtendedId aModelIdStart = E_MODEL_NONE, enum ModelExtendedId aModelIdEnd = E_MODEL_NONE) {
+        return GetData(
+            [aAsset](const struct ModelExtendedData &data) { return data.asset == aAsset; },
+            aModelIdStart,
+            aModelIdEnd
+        );
+    }
+
     struct ModelExtendedData *GetData(enum ModelExtendedId aModelId) {
         // Convert vanilla id to extended id
         if (aModelId >= E_MODEL__VANILLA_MIN_ && aModelId <= E_MODEL__VANILLA_MAX_) {
@@ -182,35 +353,11 @@ public:
         return NULL;
     }
 
-    struct ModelExtendedData *GetData(const void *aAsset) {
-        auto itId = mAssetToId.find(aAsset);
-        if (itId != mAssetToId.end()) {
-            return GetData(itId->second);
-        }
-        return NULL;
-    }
-
-    struct ModelExtendedData *GetData(struct GraphNode *aNode) {
-        auto itId = mNodeToIdPool.find(aNode);
-        if (itId != mNodeToIdPool.end()) {
-            return GetData(itId->second.first);
-        }
-        return NULL;
-    }
-
-    enum ModelPool GetModelPool(struct GraphNode *aNode) {
-        auto itPool = mNodeToIdPool.find(aNode);
-        if (itPool != mNodeToIdPool.end()) {
-            return itPool->second.second;
-        }
-        return MODEL_POOL_MAX;
-    }
-
 private:
     void LoadVanillaId(enum ModelExtendedId aVanillaId, enum ModelExtendedId aModelId) {
         if (aVanillaId >= E_MODEL__VANILLA_MIN_ && aVanillaId <= E_MODEL__VANILLA_MAX_) {
             mLoadedModelIds[aVanillaId] = aModelId;
-        } else if (aVanillaId != E_MODEL_NONE && aVanillaId < E_MODEL__CUSTOM_START_) {
+        } else if (aVanillaId != E_MODEL_NONE && aVanillaId < E_MODEL__TYPE_START_) {
             LOG_WARNING("[Models] LoadVanillaId: Loading an asset with a model id outside of the vanilla model slot range [%u, %u] has no effect: %s", E_MODEL__VANILLA_MIN_, E_MODEL__VANILLA_MAX_, DynOS_Model_IdName(aVanillaId));
         }
     }
@@ -231,29 +378,22 @@ private:
         // No existing data for this asset, create a new entry
         if (!aData) {
             enum ModelExtendedId customId;
-            if (!aName) {
-                aName = DynOS_Model_GetNameFromAsset(aAsset);
-            }
 
             // Resolve model id
-            if (aModelId == E_MODEL_LEVEL_GEO || (aModelId >= E_MODEL__VANILLA_MIN_ && aModelId <= E_MODEL__VANILLA_MAX_)) {
-                customId = E_MODEL_LEVEL_GEO;
-            } else if (aModelId == E_MODEL_DYNOS_PACK) {
-                customId = E_MODEL_DYNOS_PACK;
-            } else if (aModelId == E_MODEL_MOD_ACTOR) {
-                customId = E_MODEL_MOD_ACTOR;
-            } else if (aModelId == E_MODEL_MOD_FS) {
-                customId = (enum ModelExtendedId) ((size_t) E_MODEL_MOD_FS + network_global_index_from_local(0));
+#define MODEL_TYPE_CUSTOM(_modelType_, _size_, _offset_) \
+            if (aModelId == _modelType_) { \
+                customId = (enum ModelExtendedId) (E_MODEL__CUSTOM_TYPE_START_(_modelType_) + _offset_); \
+            } else
+#include "dynos_models_custom.inl"
+#undef MODEL_TYPE_CUSTOM
+            if (aModelId >= E_MODEL__VANILLA_MIN_ && aModelId <= E_MODEL__VANILLA_MAX_) {
+                customId = (enum ModelExtendedId) (E_MODEL__CUSTOM_TYPE_START_(E_MODEL_TYPE_LEVEL_GEO) + network_global_index_from_local(0));
             } else {
                 LOG_ERROR("[Models] LoadData: Trying to load an invalid custom model: %s (%s)", DynOS_Model_IdName(aModelId), aName);
                 return NULL;
             }
 
             // Find the next available slot
-            // The idea is simple: Due to inconsistent loading order, we need to keep ids in sync between players.
-            // For that, each model "type" (level geo, DynOS pack, mod actor, ModFS model) needs to be separated.
-            // Instead of assigning pools of arbitrary size to each type, we apply an offset to each id so each pool
-            // can grow infinitely without overriding ids of another pool.
             while (mData.find(customId) != mData.end()) {
                 customId = (enum ModelExtendedId) ((size_t) customId + E_MODEL__CUSTOM_OFFSET_);
             }
@@ -265,7 +405,6 @@ private:
                 .layer = aLayer,
             };
             aData = &mData[customId];
-            mAssetToId[aAsset] = customId;
 
             LOG_INFO("[Models] LoadData: Created new entry: %s (%s)", DynOS_Model_IdName(aData->modelId), aData->GetName());
         }
@@ -277,34 +416,65 @@ private:
     }
 
 public:
-    struct GraphNode *Load(enum ModelLoadType aModelLoadType, enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode) {
+    struct GraphNodeModel *Load(enum ModelLoadType aModelLoadType, enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode) {
         if (!aAsset) { return NULL; }
 
         // Sanity check pool
         if (aModelPool >= MODEL_POOL_MAX) { return NULL; }
 
-        // Check pools to see if there already is a graph node for this asset
-        // Can only check pools with lower indices, starting from permanent
+        // Try to find name
+        if (!aName) {
+            aName = DynOS_Model_GetNameFromAsset(aAsset);
+        }
+
+        // Check if there already is a graph node for this asset
+        // If the graph node was loaded in a pool with higher priority, return it
         // Ignore this for area layouts (they must be always reloaded)
         struct ModelExtendedData *data = NULL;
         if (aModelId != E_MODEL_AREA_GEO && (data = GetData(aAsset)) != NULL) {
-            enum ModelPool modelPoolMax = (enum ModelPool) ((size_t) aModelPool + 1);
-            struct GraphNode *node = data->GetGraphNode(modelPoolMax);
-            if (node) {
+            if (data->model && data->model->modelPool <= aModelPool) {
+                if (data->name.empty() && aName != NULL) {
+                    data->name = aName;
+                }
                 LoadVanillaId(aModelId, data->modelId);
-                return node;
+                return data->model;
             }
-        }
-
-        // Load model data
-        data = LoadData(data, aModelId, aAsset, aName, aLayer);
-        if (!data) {
-            return NULL;
         }
 
         // Allocate model pool
         if (!mPools[aModelPool]) {
             mPools[aModelPool] = dynamic_pool_init();
+            if (!mPools[aModelPool]) {
+                LOG_ERROR("[Models] Load: Could not allocate model pool!");
+                return NULL;
+            }
+        }
+
+        // TODO MODELS: this shit
+        // // Create fake geo layout for ModFS placeholder
+        // if (aAsset == mod_fs_placeholder_geo) {
+        //     aAsset = dynamic_pool_alloc(mPools[aModelPool], sizeof(mod_fs_placeholder_geo));
+        //     if (!aAsset) {
+        //         LOG_ERROR("[Models] Load: Could not allocate data for ModFS model placeholder!");
+        //         return NULL;
+        //     }
+        //     memcpy((void *) aAsset, mod_fs_placeholder_geo, sizeof(mod_fs_placeholder_geo));
+
+        //     // Create entry
+        //     mData[aModelId] = {
+        //         .modelId = aModelId,
+        //         .name = aName ? aName : "",
+        //         .asset = aAsset,
+        //         .layer = aLayer,
+        //     };
+        //     data = &mData[aModelId];
+        //     mAssetToId[aAsset] = aModelId;
+        // }
+
+        // Load model data
+        data = LoadData(data, aModelId, aAsset, aName, aLayer);
+        if (!data) {
+            return NULL;
         }
 
         // Load graph node
@@ -322,15 +492,19 @@ public:
         }
         if (!node) { return NULL; }
 
-        // Store graph node
-        data->nodes[aModelPool] = node;
-        if (aModelId != E_MODEL_AREA_GEO) {
-            mNodeToIdPool[node] = { data->modelId, aModelPool };
+        // Create a new graph node model if needed
+        if (data->model == NULL || aModelId == E_MODEL_AREA_GEO) {
+            data->model = (struct GraphNodeModel *) dynamic_pool_alloc(mPools[aModelPool], sizeof(struct GraphNodeModel));
+            if (!data->model) {
+                LOG_ERROR("[Models] Load: Could not allocate graph node model!");
+                return NULL;
+            }
         }
+        data->UpdateGraphNodeModel(node, aModelPool, aAsset);
 
         LOG_INFO("[Models] Load: Successfully loaded model in %s pool: %s (%s)", ((const char *[]){ "permanent", "session", "level" })[aModelPool], DynOS_Model_IdName(data->modelId), data->GetName());
 
-        return node;
+        return data->model;
     }
 
 public:
@@ -342,42 +516,28 @@ public:
         // Schedule pool to be freed
         dynamic_pool_free_pool(mPools[aModelPool]);
 
-        // Clear maps
+        // Clear data
         std::vector<enum ModelExtendedId> modelIdsToRemove;
-        std::vector<const void *> assetsToRemove;
         for (auto &kv : mData) {
             struct ModelExtendedData &data = kv.second;
-            struct GraphNode *node = data.nodes[aModelPool];
-            if (node) {
-
-                // Remove reference from node to id/pool look up
-                mNodeToIdPool.erase(node);
-
-                // Remove graph node pointer from data
-                data.nodes[aModelPool] = NULL;
+            if (data.model && data.model->modelPool == aModelPool) {
+                data.model = NULL;
 
                 // Schedule a removal of the whole data entry if it's custom and there is no graph node loaded anymore
-                if (data.modelId >= E_MODEL__CUSTOM_START_ && !data.GetGraphNode()) {
+                if (data.modelId >= E_MODEL__CUSTOM_START_) {
                     modelIdsToRemove.push_back(data.modelId);
-                    for (const auto &assetId : mAssetToId) {
-                        if (assetId.second == data.modelId) {
-                            assetsToRemove.push_back(assetId.first);
-                        }
-                    }
                 }
             }
         }
 
         // Remove ids from data
-        // Remove all asset to id entries for these ids
-        for (const auto &modelId : modelIdsToRemove) { mData.erase(modelId); }
-        for (const auto &asset : assetsToRemove) { mAssetToId.erase(asset); }
+        for (const auto &modelId : modelIdsToRemove) {
+            mData.erase(modelId);
+        }
     }
 
 private:
     std::map<enum ModelExtendedId, struct ModelExtendedData> mData;
-    std::map<const void *, enum ModelExtendedId> mAssetToId;
-    std::map<struct GraphNode *, std::pair<enum ModelExtendedId, enum ModelPool>> mNodeToIdPool;
     enum ModelExtendedId mLoadedModelIds[E_MODEL__VANILLA_END_];
     struct DynamicPool *mPools[MODEL_POOL_MAX];
 };
@@ -389,11 +549,7 @@ static ModelExtendedManager sModels;
 //////////////
 
 const void *DynOS_Model_GetBuiltinAssetFromName(const char *aName, u8 *outLayer) {
-    const struct ModelExtendedData *data = sModels.GetData(
-        [aName](const struct ModelExtendedData &data) { return strcmp(data.GetName(), aName) == 0; },
-        E_MODEL__EXTENDED_START_,
-        E_MODEL__EXTENDED_END_
-    );
+    const struct ModelExtendedData *data = sModels.GetData(aName, E_MODEL__EXTENDED_START_, E_MODEL__EXTENDED_END_);
     if (data) {
         if (outLayer) { *outLayer = data->layer; }
         return data->asset;
@@ -402,11 +558,7 @@ const void *DynOS_Model_GetBuiltinAssetFromName(const char *aName, u8 *outLayer)
 }
 
 const char *DynOS_Model_GetNameFromBuiltinAsset(const void *aAsset) {
-    const struct ModelExtendedData *data = sModels.GetData(
-        [aAsset](const struct ModelExtendedData &data) { return data.asset == aAsset; },
-        E_MODEL__EXTENDED_START_,
-        E_MODEL__EXTENDED_END_
-    );
+    const struct ModelExtendedData *data = sModels.GetData(aAsset, E_MODEL__EXTENDED_START_, E_MODEL__EXTENDED_END_);
     if (data) {
         return data->GetName();
     }
@@ -418,15 +570,15 @@ const char *DynOS_Model_GetNameFromBuiltinAsset(const void *aAsset) {
 //////////
 
 struct GraphNode *DynOS_Model_LoadGeoLayout(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset) {
-    return sModels.Load(MLT_GEO_LAYOUT, aModelId, aModelPool, aName, aAsset, GEO_LAYOUT_LAYER, NULL);
+    return (struct GraphNode *) sModels.Load(MLT_GEO_LAYOUT, aModelId, aModelPool, aName, aAsset, LAYER_GEO_LAYOUT, NULL);
 }
 
 struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer) {
-    return sModels.Load(MLT_DISPLAY_LIST, aModelId, aModelPool, aName, aAsset, aLayer, NULL);
+    return (struct GraphNode *) sModels.Load(MLT_DISPLAY_LIST, aModelId, aModelPool, aName, aAsset, aLayer, NULL);
 }
 
 struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode) {
-    return sModels.Load(MLT_GRAPH_NODE, aModelId, aModelPool, aName, aAsset, aLayer, aGraphNode);
+    return (struct GraphNode *) sModels.Load(MLT_GRAPH_NODE, aModelId, aModelPool, aName, aAsset, aLayer, aGraphNode);
 }
 
   /////////
@@ -436,7 +588,7 @@ struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum 
 static struct GraphNode *DynOS_Model_GetErrorModel() {
     struct ModelExtendedData *data = sModels.GetData(E_MODEL_ERROR_MODEL);
     if (data) {
-        return sModels.Load(MLT_GEO_LAYOUT, E_MODEL_NONE, MODEL_POOL_PERMANENT, data->GetName(), data->asset, GEO_LAYOUT_LAYER, NULL);
+        return (struct GraphNode *) sModels.Load(MLT_GEO_LAYOUT, E_MODEL_NONE, MODEL_POOL_PERMANENT, data->GetName(), data->asset, LAYER_GEO_LAYOUT, NULL);
     }
     return NULL;
 }
@@ -448,15 +600,23 @@ struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId) {
 
     struct ModelExtendedData *data = sModels.GetData(aModelId);
     if (data) {
-        struct GraphNode *node = data->GetGraphNode();
-        if (node) {
-            return node;
+        if (data->model) {
+            return (struct GraphNode *) data->model;
         }
 
         // Try to load it
         LOG_WARNING("DynOS_Model_GetGraphNode: Trying to load model with existing data now: %s", DynOS_Model_IdName(data->modelId));
-        return sModels.Load(data->layer == GEO_LAYOUT_LAYER ? MLT_GEO_LAYOUT : MLT_DISPLAY_LIST, E_MODEL_NONE, MODEL_POOL_SESSION, data->GetName(), data->asset, data->layer, NULL);
+        return (struct GraphNode *) sModels.Load(data->layer == LAYER_GEO_LAYOUT ? MLT_GEO_LAYOUT : MLT_DISPLAY_LIST, E_MODEL_NONE, MODEL_POOL_SESSION, data->GetName(), data->asset, data->layer, NULL);
     }
+
+    // TODO MODELS: this shit
+    // // ModFS special case
+    // // These models are meant to be easily replaced with `smlua_model_util_load_id`
+    // // To keep their id, allocate space with the error model
+    // if (DynOS_Model_GetType(aModelId) == E_MODEL_TYPE_MOD_FS) {
+    //     LOG_INFO("DynOS_Model_GetGraphNode: Allocating space for ModFS model: %s", DynOS_Model_IdName(aModelId));
+    //     return sModels.Load(MLT_GEO_LAYOUT, aModelId, MODEL_POOL_SESSION, NULL, mod_fs_placeholder_geo, LAYER_GEO_LAYOUT, NULL);
+    // }
 
     return DynOS_Model_GetErrorModel();
 }
@@ -466,16 +626,48 @@ enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode) {
         return E_MODEL_NONE;
     }
 
-    struct ModelExtendedData *data = (
-        aNode->georef ?
-        sModels.GetData(aNode->georef) :
-        sModels.GetData(aNode)
-    );
-    if (data) {
-        return data->modelId;
+    if (aNode->isModel) {
+        enum ModelExtendedId modelId = ((struct GraphNodeModel *) aNode)->modelId;
+        if (DynOS_Model_GetType(modelId) != E_MODEL_TYPE_DYNOS_PACK) {
+            return modelId;
+        }
+    }
+
+    if (aNode->georef) {
+        struct ModelExtendedData *data = sModels.GetData(aNode->georef);
+        if (data) {
+            return data->modelId;
+        }
     }
 
     return E_MODEL_NONE;
+}
+
+bool DynOS_Model_IsSame(struct GraphNode *aNode, enum ModelExtendedId aModelId) {
+    if (!aNode) {
+        return aModelId == E_MODEL_NONE;
+    }
+
+    // Check model id
+    if (DynOS_Model_GetId(aNode) == aModelId) {
+        return true;
+    }
+
+    // Check asset
+    if (aNode->isModel) {
+        struct ModelExtendedData *data = sModels.GetData(aModelId);
+        if (data && data->asset == ((struct GraphNodeModel *) aNode)->asset) {
+            return true;
+        }
+    }
+
+    // Check node and georef
+    struct GraphNode *node = DynOS_Model_GetGraphNode(aModelId);
+    if (aNode == node || (node && aNode->georef == node->georef)) {
+        return true;
+    }
+
+    return false;
 }
 
 const char *DynOS_Model_GetName(enum ModelExtendedId aModelId) {
@@ -498,40 +690,18 @@ const void *DynOS_Model_GetAssetFromName(const char *aName, enum ModelExtendedId
     for (const auto &level : DynOS_Lvl_GetArray()) {
         const auto &geoNode = level.second->mGeoLayouts.Find(aName);
         if (geoNode) {
-            if (outModelType) { *outModelType = E_MODEL_LEVEL_GEO; }
-            if (outLayer) { *outLayer = GEO_LAYOUT_LAYER; }
+            if (outModelType) { *outModelType = E_MODEL_TYPE_LEVEL_GEO; }
+            if (outLayer) { *outLayer = LAYER_GEO_LAYOUT; }
             return (const void *) geoNode->mData;
         }
     }
 
-    // Check custom actors
-    for (const auto &actor : DynOS_Actor_GetCustomActors()) {
-        if (actor.first == aName) {
-            if (outModelType) { *outModelType = is_mod_fs_file(aName) ? E_MODEL_MOD_FS : E_MODEL_MOD_ACTOR; }
-            if (outLayer) { *outLayer = GEO_LAYOUT_LAYER; }
-            return (const void *) actor.second;
-        }
-    }
-
-    // Check loaded actors
-    // Valid actors also contain custom ones, but the above for loop
-    // already handles these, meaning only DynOS packs remain
-    for (const auto &actor : DynOS_Actor_GetValidActors()) {
-        const auto &geoNode = actor.second.mGfxData->mGeoLayouts.Find(aName);
-        if (geoNode) {
-            if (outModelType) { *outModelType = E_MODEL_DYNOS_PACK; }
-            if (outLayer) { *outLayer = GEO_LAYOUT_LAYER; }
-            return (const void *) geoNode->mData;
-        }
-    }
-
-    // Check built-in assets
-    {
-        const void *asset = DynOS_Model_GetBuiltinAssetFromName(aName, outLayer);
-        if (asset) {
-            if (outModelType) { *outModelType = E_MODEL_NONE; }
-            return asset;
-        }
+    // Check managed assets
+    struct ModelExtendedData *data = sModels.GetData(aName);
+    if (data) {
+        if (outModelType) { *outModelType = DynOS_Model_GetType(data->modelId); }
+        if (outLayer) { *outLayer = data->layer; }
+        return data->asset;
     }
 
     // Check ModFS file
@@ -556,28 +726,10 @@ const char *DynOS_Model_GetNameFromAsset(const void *aAsset) {
         }
     }
 
-    // Check custom actors
-    for (const auto &actor : DynOS_Actor_GetCustomActors()) {
-        if ((const void *) actor.second == aAsset) {
-            return actor.first.c_str();
-        }
-    }
-
-    // Check loaded actors
-    for (const auto &actor : DynOS_Actor_GetValidActors()) {
-        for (const auto &geoNode : actor.second.mGfxData->mGeoLayouts) {
-            if ((const void *) geoNode->mData == aAsset) {
-                return geoNode->mName.begin();
-            }
-        }
-    }
-
-    // Check built-in assets
-    {
-        const char *name = DynOS_Model_GetNameFromBuiltinAsset(aAsset);
-        if (name) {
-            return name;
-        }
+    // Check managed assets
+    struct ModelExtendedData *data = sModels.GetData(aAsset);
+    if (data) {
+        return data->GetName();
     }
 
     return NULL;
@@ -588,7 +740,11 @@ enum ModelPool DynOS_Model_GetModelPool(struct GraphNode *aNode) {
         return MODEL_POOL_MAX;
     }
 
-    return sModels.GetModelPool(aNode);
+    if (aNode->isModel) {
+        return ((struct GraphNodeModel *) aNode)->modelPool;
+    }
+
+    return MODEL_POOL_MAX;
 }
 
 void DynOS_Model_ClearPool(enum ModelPool aModelPool) {

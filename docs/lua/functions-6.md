@@ -2037,7 +2037,7 @@ Sets the model of an object to `modelId`
 ## [cur_obj_has_model](#cur_obj_has_model)
 
 ### Description
-Checks if the current object's model is `modelId`
+Checks if the current object's model is the same as `modelId`
 
 ### Lua Example
 `local integerValue = cur_obj_has_model(modelId)`
@@ -2060,7 +2060,7 @@ Checks if the current object's model is `modelId`
 ## [obj_has_model](#obj_has_model)
 
 ### Description
-Checks if an object's model is `modelId`
+Checks if an object's model is the same as `modelId`
 
 ### Lua Example
 `local integerValue = obj_has_model(obj, modelId)`

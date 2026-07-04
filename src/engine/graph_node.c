@@ -12,6 +12,16 @@
 #include "pc/debuglog.h"
 
 /**
+ * Return the size in bytes of a graph node type.
+ */
+u32 get_graph_node_type_size(s16 type) {
+#define GRAPH_NODE_TYPE(_name_, _id_, _type_, ...) { if (type == _name_) { return (u32) sizeof(struct _type_); } }
+#include "src/engine/graph_node_types.inl"
+#undef GRAPH_NODE_TYPE
+    return 0;
+}
+
+/**
  * Initialize a geo node with a given type. Sets all links such that there
  * are no siblings, parent or children for this node.
  */
@@ -25,6 +35,7 @@ void init_scene_graph_node_links(struct GraphNode *graphNode, s32 type) {
     graphNode->children = NULL;
     graphNode->georef = NULL;
     graphNode->hookProcess = 0;
+    graphNode->isModel = false;
 #ifdef DEBUG
     graphNode->_guard1 = GRAPH_NODE_GUARD;
     graphNode->_guard2 = GRAPH_NODE_GUARD;
@@ -580,6 +591,7 @@ struct GraphNodeBone *init_graph_node_bone(struct DynamicPool *pool,
  */
 struct GraphNodeWaterRegions *init_graph_node_water_regions(struct DynamicPool *pool,
                                                             struct GraphNodeWaterRegions *graphNode,
+                                                            const LevelScript *script, s16 levelNum, s16 areaIndex,
                                                             s16 numRegions, struct WaterRegion *regions) {
     if (pool != NULL) {
         graphNode = dynamic_pool_alloc(pool, sizeof(struct GraphNodeWaterRegions));
@@ -587,6 +599,9 @@ struct GraphNodeWaterRegions *init_graph_node_water_regions(struct DynamicPool *
 
     if (graphNode != NULL) {
         init_scene_graph_node_links(&graphNode->node, GRAPH_NODE_TYPE_WATER_REGIONS);
+        graphNode->script = script;
+        graphNode->levelNum = levelNum;
+        graphNode->areaIndex = areaIndex;
         graphNode->numRegions = clamp(numRegions, 0, MAX_WATER_REGIONS);
         memset(graphNode->regions, 0, sizeof(graphNode->regions));
         memcpy(graphNode->regions, regions, sizeof(*graphNode->regions) * graphNode->numRegions);

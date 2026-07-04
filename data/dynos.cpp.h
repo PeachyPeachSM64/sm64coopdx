@@ -817,6 +817,7 @@ void DynOS_Level_Override(void* originalScript, void* newScript, s32 modIndex);
 void DynOS_Level_Unoverride();
 const void *DynOS_Level_GetScript(s32 aLevel);
 const void *DynOS_Level_GetVanillaScript(s32 aLevel);
+s32 DynOS_Level_GetNum(const LevelScript *aScript);
 s32 DynOS_Level_GetModIndex(s32 aLevel);
 bool DynOS_Level_IsVanillaLevel(s32 aLevel);
 Collision *DynOS_Level_GetCollision(u32 aLevel, u16 aArea);
@@ -883,7 +884,6 @@ void DynOS_Pack_AddTex(PackData* aPackData, DataNode<TexData>* aTexData);
 //
 
 std::map<const void *, ActorGfx> &DynOS_Actor_GetValidActors();
-std::vector<std::pair<std::string, void *>> &DynOS_Actor_GetCustomActors();
 bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFilename, const char *aActorName);
 bool DynOS_Actor_GetModIndexAndToken(const GraphNode *aGraphNode, u32 aTokenIndex, s32 *outModIndex, s32 *outModFileIndex, const char **outToken);
 ActorGfx* DynOS_Actor_GetActorGfx(const GraphNode* aGraphNode);
@@ -925,6 +925,7 @@ void DynOS_Tex_ModShutdown();
 std::vector<std::pair<std::string, GfxData *>> &DynOS_Lvl_GetArray();
 LevelScript* DynOS_Lvl_GetScript(const char* aScriptEntryName);
 void  DynOS_Lvl_Activate(s32 modIndex, const SysPath &aFilePath, const char *aLevelName);
+GfxData* DynOS_Lvl_GetGfx(const LevelScript *aScript);
 GfxData* DynOS_Lvl_GetActiveGfx(void);
 const char* DynOS_Lvl_GetToken(u32 index);
 DataNode<MovtexQC>* DynOS_Lvl_GetMovtexQuadCollection(s32 index);
@@ -958,8 +959,8 @@ void DynOS_Col_ModShutdown();
 //
 
 void DynOS_MovtexQC_Register(const char* name, s16 level, s16 area, s16 type);
-DataNode<MovtexQC>* DynOS_MovtexQC_GetFromId(u32 id);
-DataNode<MovtexQC>* DynOS_MovtexQC_GetFromIndex(s32 index);
+DataNode<MovtexQC>* DynOS_MovtexQC_GetFromId(s16 levelNum, s16 areaIndex, u32 id);
+DataNode<MovtexQC>* DynOS_MovtexQC_GetFromIndex(const LevelScript *script, s32 index);
 void DynOS_MovtexQC_ModShutdown();
 
 //
@@ -971,6 +972,8 @@ struct GraphNode *DynOS_Model_LoadDisplayList(enum ModelExtendedId aModelId, enu
 struct GraphNode *DynOS_Model_LoadGraphNode(enum ModelExtendedId aModelId, enum ModelPool aModelPool, const char *aName, const void *aAsset, u8 aLayer, struct GraphNode *aGraphNode);
 struct GraphNode *DynOS_Model_GetGraphNode(enum ModelExtendedId aModelId);
 enum ModelExtendedId DynOS_Model_GetId(struct GraphNode *aNode);
+enum ModelExtendedId DynOS_Model_GetType(enum ModelExtendedId aModelId);
+bool DynOS_Model_IsSame(struct GraphNode *aNode, enum ModelExtendedId aModelId);
 const char *DynOS_Model_GetName(enum ModelExtendedId aModelId);
 const void *DynOS_Model_GetAssetFromName(const char *aName, enum ModelExtendedId *outModelType, u8 *outLayer);
 const char *DynOS_Model_GetNameFromAsset(const void *aAsset);

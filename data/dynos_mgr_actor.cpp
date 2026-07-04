@@ -37,10 +37,6 @@ std::map<const void *, ActorGfx> &DynOS_Actor_GetValidActors() {
     return DynosValidActors();
 }
 
-std::vector<std::pair<std::string, void *>> &DynOS_Actor_GetCustomActors() {
-    return DynosCustomActors();
-}
-
 // Only used for mods with custom actors.
 bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFilename, const char *aActorName) {
     const void* georef = DynOS_Model_GetBuiltinAssetFromName(aActorName, NULL);
@@ -62,7 +58,7 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     }
 
     // Load the graph node
-    enum ModelExtendedId modelType = is_mod_fs_file(aFilename.c_str()) ? E_MODEL_MOD_FS : E_MODEL_MOD_ACTOR;
+    enum ModelExtendedId modelType = is_mod_fs_file(aFilename.c_str()) ? E_MODEL_TYPE_MOD_FS : E_MODEL_TYPE_MOD_ACTOR;
     GraphNode *graphNode = DynOS_Model_LoadGeoLayout(modelType, MODEL_POOL_SESSION, aActorName, geoLayout);
     if (!graphNode) {
         PrintError("  ERROR: Couldn't load graph node for \"%s\"", actorName.c_str());
@@ -200,44 +196,11 @@ void DynOS_Actor_Override_All(void) {
     }
 }
 
-static std::unordered_map<s16, size_t> sGraphNodeSizeMap = {
-    { GRAPH_NODE_TYPE_ROOT,                 sizeof(GraphNodeRoot) },
-    { GRAPH_NODE_TYPE_ORTHO_PROJECTION,     sizeof(GraphNodeOrthoProjection) },
-    { GRAPH_NODE_TYPE_PERSPECTIVE,          sizeof(GraphNodePerspective) },
-    { GRAPH_NODE_TYPE_START,                sizeof(GraphNodeStart) },
-    { GRAPH_NODE_TYPE_MASTER_LIST,          sizeof(GraphNodeMasterList) },
-    { GRAPH_NODE_TYPE_LEVEL_OF_DETAIL,      sizeof(GraphNodeLevelOfDetail) },
-    { GRAPH_NODE_TYPE_SWITCH_CASE,          sizeof(GraphNodeSwitchCase) },
-    { GRAPH_NODE_TYPE_CAMERA,               sizeof(GraphNodeCamera) },
-    { GRAPH_NODE_TYPE_TRANSLATION_ROTATION, sizeof(GraphNodeTranslationRotation) },
-    { GRAPH_NODE_TYPE_TRANSLATION,          sizeof(GraphNodeTranslation) },
-    { GRAPH_NODE_TYPE_ROTATION,             sizeof(GraphNodeRotation) },
-    { GRAPH_NODE_TYPE_SCALE,                sizeof(GraphNodeScale) },
-    { GRAPH_NODE_TYPE_SCALE_XYZ,            sizeof(GraphNodeScaleXYZ) },
-    { GRAPH_NODE_TYPE_OBJECT,               sizeof(GraphNodeObject) },
-    { GRAPH_NODE_TYPE_CULLING_RADIUS,       sizeof(GraphNodeCullingRadius) },
-    { GRAPH_NODE_TYPE_ANIMATED_PART,        sizeof(GraphNodeAnimatedPart) },
-    { GRAPH_NODE_TYPE_BILLBOARD,            sizeof(GraphNodeBillboard) },
-    { GRAPH_NODE_TYPE_DISPLAY_LIST,         sizeof(GraphNodeDisplayList) },
-    { GRAPH_NODE_TYPE_SHADOW,               sizeof(GraphNodeShadow) },
-    { GRAPH_NODE_TYPE_OBJECT_PARENT,        sizeof(GraphNodeObjectParent) },
-    { GRAPH_NODE_TYPE_GENERATED_LIST,       sizeof(GraphNodeGenerated) },
-    { GRAPH_NODE_TYPE_BACKGROUND,           sizeof(GraphNodeBackground) },
-    { GRAPH_NODE_TYPE_HELD_OBJ,             sizeof(GraphNodeHeldObject) },
-    { GRAPH_NODE_TYPE_BONE,                 sizeof(GraphNodeBone) },
-    { GRAPH_NODE_TYPE_WATER_REGIONS,        sizeof(GraphNodeWaterRegions) },
-};
-
-size_t get_graph_node_size(s16 nodeType) {
-    auto it = sGraphNodeSizeMap.find(nodeType);
-    return it != sGraphNodeSizeMap.end() ? it->second : 0;
-}
-
 void DynOS_Actor_RegisterModifiedGraphNode(GraphNode *aNode) {
     if (sModifiedGraphNodes.find(aNode) == sModifiedGraphNodes.end()) {
         struct GraphNode *sharedChild = geo_find_shared_child(aNode);
         if (DynOS_Model_GetModelPool(sharedChild) != MODEL_POOL_PERMANENT) { return; } // Only need to reset permanent models
-        size_t size = get_graph_node_size(aNode->type);
+        size_t size = get_graph_node_type_size(aNode->type);
         if (size == 0) { return; } // Unexpected
         GraphNode *graphNodeCopy = (GraphNode *) malloc(size);
         memcpy(graphNodeCopy, aNode, size);
@@ -267,7 +230,7 @@ void DynOS_Actor_ModShutdown() {
 
     // Reset modified graph nodes
     for (auto& node : sModifiedGraphNodes) {
-        size_t size = get_graph_node_size(node.second->type);
+        size_t size = get_graph_node_type_size(node.second->type);
         if (size == 0) { continue; } // Unexpected
         memcpy(node.first, node.second, size);
         free(node.second);

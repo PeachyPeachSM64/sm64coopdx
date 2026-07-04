@@ -1,0 +1,4 @@
+MODEL_TYPE_CUSTOM(E_MODEL_TYPE_DYNOS_PACK, 1,           0)
+MODEL_TYPE_CUSTOM(E_MODEL_TYPE_MOD_ACTOR,  1,           0)
+MODEL_TYPE_CUSTOM(E_MODEL_TYPE_LEVEL_GEO,  MAX_PLAYERS, network_global_index_from_local(0))
+MODEL_TYPE_CUSTOM(E_MODEL_TYPE_MOD_FS,     MAX_PLAYERS, network_global_index_from_local(0))

@@ -176,15 +176,15 @@ void dynos_movtexqc_register(const char* name, s16 level, s16 area, s16 type) {
     DynOS_MovtexQC_Register(name, level, area, type);
 }
 
-struct MovtexQuadCollection* dynos_movtexqc_get_from_id(u32 id) {
-    DataNode<MovtexQC> *node = DynOS_MovtexQC_GetFromId(id);
+struct MovtexQuadCollection* dynos_movtexqc_get_from_id(s16 levelNum, s16 areaIndex, u32 id) {
+    DataNode<MovtexQC> *node = DynOS_MovtexQC_GetFromId(levelNum, areaIndex, id);
     if (node == NULL) { return NULL; }
 
     return node->mData;
 }
 
-struct MovtexQuadCollection* dynos_movtexqc_get_from_index(s32 index) {
-    DataNode<MovtexQC> *node = DynOS_MovtexQC_GetFromIndex(index);
+struct MovtexQuadCollection* dynos_movtexqc_get_from_index(const LevelScript *script, s32 index) {
+    DataNode<MovtexQC> *node = DynOS_MovtexQC_GetFromIndex(script, index);
     if (node == NULL) { return NULL; }
 
     return node->mData;
@@ -222,6 +222,10 @@ void dynos_level_parse_script(const void *script, s32 (*aPreprocessFunction)(u8,
 
 void* dynos_level_get_script(s32 level) {
     return (void *) DynOS_Level_GetScript(level);
+}
+
+s32 dynos_level_get_num(const LevelScript *script) {
+    return DynOS_Level_GetNum(script);
 }
 
 const void *dynos_level_get_vanilla_script(s32 level) {
@@ -293,6 +297,14 @@ struct GraphNode *dynos_model_get_graph_node(enum ModelExtendedId modelId) {
 
 enum ModelExtendedId dynos_model_get_id(struct GraphNode *node) {
     return DynOS_Model_GetId(node);
+}
+
+enum ModelExtendedId dynos_model_get_type(enum ModelExtendedId modelId) {
+    return DynOS_Model_GetType(modelId);
+}
+
+bool dynos_model_is_same(struct GraphNode *node, enum ModelExtendedId modelId) {
+    return DynOS_Model_IsSame(node, modelId);
 }
 
 const char *dynos_model_get_name(enum ModelExtendedId modelId) {

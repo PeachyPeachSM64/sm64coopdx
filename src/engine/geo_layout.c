@@ -12,6 +12,7 @@
 #include "game/geo_misc.h"
 #include "game/macro_special_objects.h"
 #include "pc/debuglog.h"
+#include "level_table.h"
 
 #define CUR_GRAPH_NODE_LIST_SIZE 32
 #define GEO_LAYOUT_STACK_SIZE 32
@@ -76,7 +77,6 @@ static GeoLayoutCommandProc GeoLayoutJumpTable[] = {
     geo_layout_cmd_node_switch_case_ext,
     geo_layout_cmd_node_generated_ext,
     geo_layout_cmd_node_bone,
-    geo_layout_cmd_node_water_regions,
 };
 
 struct GraphNode gObjParentGraphNode;
@@ -768,6 +768,164 @@ void geo_layout_cmd_node_object_parent(void) {
     sGeoLayoutCommand += 0x04 << CMD_SIZE_SHIFT;
 }
 
+//
+// Find water regions and fill `regions` with the water boxes data.
+// This is tricky.
+// From a geo layout, the goal is to find the water boxes that are normally used in `geo_movtex_draw_water_regions`.
+// For that, we need to find in which level and area this geo layout is used as an area layout.
+// Then, find the collision associated to that area.
+// And finally, parse the collision to retrieve the water boxes.
+//
+
+static struct WaterRegion *sRegions;
+static s16 sNumRegions;
+static s16 sAreaIndex;
+
+static bool find_water_regions_in_collision(Collision *data) {
+    while (true) {
+        s16 terrainLoadType = *data++;
+        switch (terrainLoadType) {
+            case TERRAIN_LOAD_VERTICES: {
+                s16 numVertices = *data++;
+                data += 3 * numVertices;
+            } break;
+
+            case TERRAIN_LOAD_OBJECTS: {
+                data += get_special_objects_size(data);
+            } break;
+
+            case TERRAIN_LOAD_ENVIRONMENT: {
+                sNumRegions = *data++;
+                sNumRegions = min(sNumRegions, MAX_WATER_REGIONS);
+                memcpy(sRegions, data, sizeof(*sRegions) * sNumRegions);
+            } return true;
+
+            case TERRAIN_LOAD_CONTINUE: {
+            } continue;
+
+            case TERRAIN_LOAD_END: {
+            } return false;
+
+            default: {
+                s16 numSurfaces = *data++;
+                data += (3 + surface_has_force(terrainLoadType)) * numSurfaces;
+            } break;
+        }
+    }
+}
+
+static s32 find_water_regions_in_level_script(u8 type, void *cmd) {
+    switch (type) {
+
+        // AREA
+        case 0x1F: {
+            s16 areaIndex = (s16) ((u8) dynos_level_cmd_get(cmd, 2));
+            const GeoLayout *geoLayout = (const GeoLayout *) dynos_level_cmd_get(cmd, 4);
+            if (geoLayout == sGeoLayout) {
+                sAreaIndex = areaIndex;
+            }
+        } break;
+
+        // TERRAIN
+        case 0x2E: {
+            if (sAreaIndex != -1) {
+                Collision *data = (Collision *) dynos_level_cmd_get(cmd, 4);
+                if (find_water_regions_in_collision(data)) {
+                    return 3; // Stop parsing
+                }
+                sAreaIndex = -1;
+            }
+        } break;
+    }
+    return 0;
+}
+
+static s16 find_water_regions(struct WaterRegion *regions, const LevelScript **script, s16 *levelNum, s16 *areaIndex) {
+    sRegions = regions;
+    sNumRegions = -1;
+    sAreaIndex = -1;
+
+    // Vanilla levels
+    extern const LevelScript level_wf_entry[];
+    extern const LevelScript level_jrb_entry[];
+    extern const LevelScript level_ccm_entry[];
+    extern const LevelScript level_bbh_entry[];
+    extern const LevelScript level_hmc_entry[];
+    extern const LevelScript level_lll_entry[];
+    extern const LevelScript level_ssl_entry[];
+    extern const LevelScript level_ddd_entry[];
+    extern const LevelScript level_sl_entry[];
+    extern const LevelScript level_wdw_entry[];
+    extern const LevelScript level_ttm_entry[];
+    extern const LevelScript level_thi_entry[];
+    extern const LevelScript level_castle_grounds_entry[];
+    extern const LevelScript level_castle_inside_entry[];
+    extern const LevelScript level_castle_courtyard_entry[];
+    static const struct { s16 levelNum; const LevelScript *script; } sVanillaLevelScriptsWithWaterRegions[] = {
+        { LEVEL_WF, level_wf_entry },
+        { LEVEL_JRB, level_jrb_entry },
+        { LEVEL_CCM, level_ccm_entry },
+        { LEVEL_BBH, level_bbh_entry },
+        { LEVEL_HMC, level_hmc_entry },
+        { LEVEL_LLL, level_lll_entry },
+        { LEVEL_SSL, level_ssl_entry },
+        { LEVEL_DDD, level_ddd_entry },
+        { LEVEL_SL, level_sl_entry },
+        { LEVEL_WDW, level_wdw_entry },
+        { LEVEL_TTM, level_ttm_entry },
+        { LEVEL_THI, level_thi_entry },
+        { LEVEL_CASTLE_GROUNDS, level_castle_grounds_entry },
+        { LEVEL_CASTLE, level_castle_inside_entry },
+        { LEVEL_CASTLE_COURTYARD, level_castle_courtyard_entry },
+    };
+    for (s32 i = 0; i < ARRAY_COUNT(sVanillaLevelScriptsWithWaterRegions); ++i) {
+        *levelNum = sVanillaLevelScriptsWithWaterRegions[i].levelNum;
+        *script = sVanillaLevelScriptsWithWaterRegions[i].script;
+        dynos_level_parse_script(*script, find_water_regions_in_level_script);
+        if (sAreaIndex != -1) {
+            *areaIndex = sAreaIndex;
+            return sNumRegions;
+        }
+    }
+
+    // Custom levels
+    for (u32 i = 0; i < dynos_level_get_array_count(); ++i) {
+        *script = dynos_level_get_array_script(i);
+        *levelNum = dynos_level_get_num(*script);
+        if (*levelNum != -1) {
+            dynos_level_parse_script(*script, find_water_regions_in_level_script);
+            if (sAreaIndex != -1) {
+                *areaIndex = sAreaIndex;
+                return sNumRegions;
+            }
+        }
+    }
+
+    return -1;
+}
+
+/*
+  Not a real command.
+  Called by `geo_layout_cmd_node_generated` if `geo_movtex_draw_water_regions` is detected.
+*/
+static void geo_layout_cmd_node_water_regions(void) {
+    if (!sIsAreaCommand) {
+        struct WaterRegion regions[MAX_WATER_REGIONS] = {0};
+        const LevelScript *script;
+        s16 levelNum, areaIndex;
+        s16 numRegions = find_water_regions(regions, &script, &levelNum, &areaIndex);
+        if (numRegions <= 0) {
+            return;
+        }
+
+        struct GraphNodeWaterRegions *graphNode;
+
+        graphNode = init_graph_node_water_regions(sGraphNodePool, NULL, script, levelNum, areaIndex, numRegions, regions);
+
+        register_scene_graph_node(&graphNode->node);
+    }
+}
+
 /*
   0x18: Create dynamically generated displaylist scene graph node
    cmd+0x02: s16 parameter
@@ -783,11 +941,6 @@ void geo_layout_cmd_node_generated(void) {
         graphNodeFunc != (GraphNodeFunc) geo_render_mirror_mario &&
         graphNodeFunc != (GraphNodeFunc) geo_wdw_set_initial_water_level &&
         graphNodeFunc != (GraphNodeFunc) geo_exec_flying_carpet_timer_update
-        // TODO MODELS: remove if it doesn't cause any issue
-        // graphNodeFunc != (GraphNodeFunc) geo_painting_update &&
-        // graphNodeFunc != (GraphNodeFunc) geo_painting_draw &&
-        // graphNodeFunc != (GraphNodeFunc) geo_movtex_draw_colored_no_update &&
-        // graphNodeFunc != (GraphNodeFunc) geo_movtex_draw_nocolor &&
     )) {
         // Try to create a water regions node if `geo_movtex_draw_water_regions` is detected and it's not an area layout
         if (!sIsAreaCommand && (
@@ -995,153 +1148,6 @@ void geo_layout_cmd_node_bone(void) {
     register_scene_graph_node(&graphNode->node);
 
     sGeoLayoutCommand = (u8 *) cmdPos;
-}
-
-//
-// Find water regions and fill `regions` with the water boxes data.
-// This is tricky.
-// From a geo layout, the goal is to find the water boxes that are normally used in `geo_movtex_draw_water_regions`.
-// For that, we need to find in which level and area this geo layout is used as an area layout.
-// Then, find the collision associated to that area.
-// And finally, parse the collision to retrieve the water boxes.
-//
-
-static struct WaterRegion *sRegions;
-static s16 sNumRegions;
-static bool sAreaFound;
-
-static bool find_water_regions_in_collision(Collision *data) {
-    while (true) {
-        s16 terrainLoadType = *data++;
-        switch (terrainLoadType) {
-            case TERRAIN_LOAD_VERTICES: {
-                s16 numVertices = *data++;
-                data += 3 * numVertices;
-            } break;
-
-            case TERRAIN_LOAD_OBJECTS: {
-                data += get_special_objects_size(data);
-            } break;
-
-            case TERRAIN_LOAD_ENVIRONMENT: {
-                sNumRegions = *data++;
-                sNumRegions = min(sNumRegions, MAX_WATER_REGIONS);
-                memcpy(sRegions, data, sizeof(*sRegions) * sNumRegions);
-            } return true;
-
-            case TERRAIN_LOAD_CONTINUE: {
-            } continue;
-
-            case TERRAIN_LOAD_END: {
-            } return false;
-
-            default: {
-                s16 numSurfaces = *data++;
-                data += (3 + surface_has_force(terrainLoadType)) * numSurfaces;
-            } break;
-        }
-    }
-}
-
-static s32 find_water_regions_in_level_script(u8 type, void *cmd) {
-    switch (type) {
-
-        // AREA
-        case 0x1F: {
-            const GeoLayout *geoLayout = (const GeoLayout *) dynos_level_cmd_get(cmd, 4);
-            if (geoLayout == sGeoLayout) {
-                sAreaFound = true;
-            }
-        } break;
-
-        // TERRAIN
-        case 0x2E: {
-            if (sAreaFound) {
-                Collision *data = (Collision *) dynos_level_cmd_get(cmd, 4);
-                if (find_water_regions_in_collision(data)) {
-                    return 3; // Stop parsing
-                }
-                sAreaFound = false;
-            }
-        } break;
-    }
-    return 0;
-}
-
-static s16 find_water_regions(struct WaterRegion *regions) {
-    sNumRegions = -1;
-    sRegions = regions;
-    sAreaFound = false;
-
-    // Vanilla levels
-    extern const LevelScript level_wf_entry[];
-    extern const LevelScript level_jrb_entry[];
-    extern const LevelScript level_ccm_entry[];
-    extern const LevelScript level_bbh_entry[];
-    extern const LevelScript level_hmc_entry[];
-    extern const LevelScript level_lll_entry[];
-    extern const LevelScript level_ssl_entry[];
-    extern const LevelScript level_ddd_entry[];
-    extern const LevelScript level_sl_entry[];
-    extern const LevelScript level_wdw_entry[];
-    extern const LevelScript level_ttm_entry[];
-    extern const LevelScript level_thi_entry[];
-    extern const LevelScript level_castle_grounds_entry[];
-    extern const LevelScript level_castle_inside_entry[];
-    extern const LevelScript level_castle_courtyard_entry[];
-    static const LevelScript *sVanillaLevelScriptsWithWaterRegions[] = {
-        level_wf_entry, // WF
-        level_jrb_entry, // JRB
-        level_ccm_entry, // CCM
-        level_bbh_entry, // BBH
-        level_hmc_entry, // HMC
-        level_lll_entry, // LLL
-        level_ssl_entry, // SSL
-        level_ddd_entry, // DDD
-        level_sl_entry, // SL
-        level_wdw_entry, // WDW
-        level_ttm_entry, // TTM
-        level_thi_entry, // THI
-        level_castle_grounds_entry, // Castle grounds
-        level_castle_inside_entry, // Castle inside
-        level_castle_courtyard_entry, // Castle courtyard
-    };
-    for (s32 i = 0; i < ARRAY_COUNT(sVanillaLevelScriptsWithWaterRegions); ++i) {
-        dynos_level_parse_script(sVanillaLevelScriptsWithWaterRegions[i], find_water_regions_in_level_script);
-        if (sAreaFound) {
-            return sNumRegions;
-        }
-    }
-
-    // Custom levels
-    for (u32 i = 0; i < dynos_level_get_array_count(); ++i) {
-        dynos_level_parse_script(dynos_level_get_array_script(i), find_water_regions_in_level_script);
-        if (sAreaFound) {
-            return sNumRegions;
-        }
-    }
-
-    return sNumRegions;
-}
-
-/*
-  Not a real command.
-  Called by `geo_layout_cmd_node_generated` if `geo_movtex_draw_water_regions` is detected.
-*/
-void geo_layout_cmd_node_water_regions(void) {
-    if (!sIsAreaCommand) {
-        struct WaterRegion regions[MAX_WATER_REGIONS] = {0};
-        s16 numRegions = find_water_regions(regions);
-        if (numRegions <= 0) {
-            return;
-        }
-
-        struct GraphNodeWaterRegions *graphNode;
-
-        graphNode = init_graph_node_water_regions(sGraphNodePool, NULL, numRegions, regions);
-
-        register_scene_graph_node(&graphNode->node);
-    }
 }
 
 struct GraphNode *process_geo_layout(struct DynamicPool *pool, const GeoLayout *geoLayout, bool isAreaCommand) {

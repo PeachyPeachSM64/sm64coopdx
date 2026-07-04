@@ -55,8 +55,8 @@ u8 *dynos_texture_convert_to_rgba32(const Texture *tex, u32 width, u32 height, u
 
 // -- movtexqcs -- //
 void dynos_movtexqc_register(const char* name, s16 level, s16 area, s16 type);
-struct MovtexQuadCollection* dynos_movtexqc_get_from_id(u32 id);
-struct MovtexQuadCollection* dynos_movtexqc_get_from_index(s32 index);
+struct MovtexQuadCollection* dynos_movtexqc_get_from_id(s16 levelNum, s16 areaIndex, u32 id);
+struct MovtexQuadCollection* dynos_movtexqc_get_from_index(const LevelScript *script, s32 index);
 
 // -- levels -- //
 void dynos_add_level(s32 modIndex, const char *filePath, const char* levelName);
@@ -67,6 +67,7 @@ u64 dynos_level_cmd_get(void *cmd, u64 offset);
 void dynos_level_cmd_next(void *cmd);
 void dynos_level_parse_script(const void *script, s32 (*aPreprocessFunction)(u8, void *));
 void* dynos_level_get_script(s32 level);
+s32 dynos_level_get_num(const LevelScript *script);
 const void *dynos_level_get_vanilla_script(s32 level);
 s32 dynos_level_get_mod_index(s32 level);
 bool dynos_level_is_vanilla_level(s32 level);
@@ -86,6 +87,8 @@ struct GraphNode *dynos_model_load_display_list(enum ModelExtendedId modelId, en
 struct GraphNode *dynos_model_load_graph_node(enum ModelExtendedId modelId, enum ModelPool modelPool, const char *name, const void *asset, u8 layer, struct GraphNode *node);
 struct GraphNode *dynos_model_get_graph_node(enum ModelExtendedId modelId);
 enum ModelExtendedId dynos_model_get_id(struct GraphNode *node);
+enum ModelExtendedId dynos_model_get_type(enum ModelExtendedId modelId);
+bool dynos_model_is_same(struct GraphNode *node, enum ModelExtendedId modelId);
 const char *dynos_model_get_name(enum ModelExtendedId modelId);
 const void *dynos_model_get_asset_from_name(const char *name, enum ModelExtendedId *modelType, u8 *layer);
 const char *dynos_model_get_name_from_asset(const void *asset);

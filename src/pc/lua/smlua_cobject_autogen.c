@@ -1224,8 +1224,10 @@ static struct LuaObjectField sGraphNodeTranslationRotationFields[LUA_GRAPH_NODE_
     { "translation", LVT_COBJECT,   offsetof(struct GraphNodeTranslationRotation, translation), true,  LOT_VEC3S     },
 };
 
-#define LUA_GRAPH_NODE_WATER_REGIONS_FIELD_COUNT 3
+#define LUA_GRAPH_NODE_WATER_REGIONS_FIELD_COUNT 5
 static struct LuaObjectField sGraphNodeWaterRegionsFields[LUA_GRAPH_NODE_WATER_REGIONS_FIELD_COUNT] = {
+    { "areaIndex",  LVT_S16,     offsetof(struct GraphNodeWaterRegions, areaIndex),  true, LOT_NONE                                                       },
+    { "levelNum",   LVT_S16,     offsetof(struct GraphNodeWaterRegions, levelNum),   true, LOT_NONE                                                       },
     { "node",       LVT_COBJECT, offsetof(struct GraphNodeWaterRegions, node),       true, LOT_GRAPHNODE                                                  },
     { "numRegions", LVT_S16,     offsetof(struct GraphNodeWaterRegions, numRegions), true, LOT_NONE                                                       },
     { "regions",    LVT_COBJECT, offsetof(struct GraphNodeWaterRegions, regions),    true, LOT_WATERREGION, MAX_WATER_REGIONS, sizeof(struct WaterRegion) },
