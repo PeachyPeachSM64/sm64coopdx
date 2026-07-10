@@ -45,6 +45,7 @@ void djui_fps_display_create(void) {
         djui_base_set_size_type(&text->base, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
         djui_base_set_size(&text->base, 1.0f, text->fontScale * 2);
         djui_base_set_location(&text->base, 0, -text->fontScale / 3.0f);
+        djui_base_set_color(&text->base, 220, 220, 220, 255);
 
         fpsDisplay->text = text;
     }
