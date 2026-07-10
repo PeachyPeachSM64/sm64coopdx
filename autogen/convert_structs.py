@@ -477,7 +477,7 @@ def build_struct(struct):
             if size != 1:
                 row.append('%s, '         % size )
                 row.append('sizeof(%s), ' % ftype)
-                if field['is_c_array']:
+                if is_c_array:
                     row.append('true')
                 else: row[-1] = row[-1][:-2]
             else: row[-1] = row[-1][:-2]
