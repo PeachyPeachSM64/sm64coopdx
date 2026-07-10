@@ -1228,21 +1228,22 @@ Checks whether Mario can become bubbled under certain game conditions (multiplay
 ## [mario_set_bubbled](#mario_set_bubbled)
 
 ### Description
-Transitions Mario into a bubbled state (if available in multiplayer), decrementing lives and preventing normal movement
+Transitions Mario into a bubbled state (if available in multiplayer), decrementing lives by default and preventing normal movement
 
 ### Lua Example
-`mario_set_bubbled(m)`
+`mario_set_bubbled(m, stayAlive)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
 | m | [MarioState](structs.md#MarioState) |
+| stayAlive | `boolean` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void mario_set_bubbled(struct MarioState* m);`
+`void mario_set_bubbled(struct MarioState* m, OPTIONAL bool stayAlive);`
 
 [:arrow_up_small:](#)
 
