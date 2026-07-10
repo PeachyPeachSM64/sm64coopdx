@@ -22,6 +22,8 @@
 #include "utils/smlua_collision_utils.h"
 #include "game/hardcoded.h"
 #include "include/macros.h"
+#include "include/surface_terrains.h"
+#include "include/special_presets.h"
 
 extern s16 convert_rotation(s16);
 extern void smlua_new_vec3s(Vec3s);
@@ -600,7 +602,201 @@ static void level_script_parse_convert_parameters(lua_State *L) {
         break; \
     })
 
-s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
+static inline s32 get_special_object_preset_index(u8 presetID) {
+    for (s32 index = 0; SpecialObjectPresets[index].preset_id != 0xFF; ++index) {
+        if (SpecialObjectPresets[index].preset_id == presetID) {
+            return index;
+        }
+    }
+    return -1;
+}
+
+static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 size) {
+
+    // Collision data
+    lua_newtable(L);
+    smlua_push_pointer(L, LVT_COLLISION_P, data, NULL); lua_setfield(L, -2, "data");
+    smlua_push_integer_field(-2, "size", size);
+
+    lua_setfield(L, -2, "collision");
+
+    // Special objects and water boxes
+    lua_newtable(L); int specialObjectsTable = lua_gettop(L); s32 specialObjectsTableIndex = 1;
+    lua_newtable(L); int waterBoxesTable = lua_gettop(L); s32 waterBoxesTableIndex = 1;
+
+    Collision *end = data + size;
+    while (data < end) {
+        s16 terrainLoadType = *data++;
+        switch (terrainLoadType) {
+            case TERRAIN_LOAD_VERTICES: {
+                s16 numVertices = *data++;
+                data += 3 * numVertices;
+            } break;
+
+            case TERRAIN_LOAD_OBJECTS: {
+                s16 numSpecialObjects = *data++;
+
+                for (s16 i = 0; i < numSpecialObjects; ++i) {
+                    u8 presetID = (u8) *data++;
+                    Vec3s pos;
+                    pos[0] = *data++;
+                    pos[1] = *data++;
+                    pos[2] = *data++;
+
+                    s32 index = get_special_object_preset_index(presetID);
+                    if (index == -1) {
+                        // If the preset cannot be identified, the rest of the collision data
+                        // can no longer be parsed properly; abort and return
+                        lua_pop(L, 2);
+                        return;
+                    }
+
+                    const struct SpecialPreset *preset = &SpecialObjectPresets[index];
+                    enum ModelExtendedId modelId = preset->modelId;
+                    enum BehaviorId behaviorId = get_id_from_behavior(preset->behavior);
+                    u8 defParam = preset->defParam;
+
+                    if (behaviorId != id_bhv_max_count) {
+                        lua_newtable(L);
+                        smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
+                        smlua_new_vec3s(gVec3sZero); lua_setfield(L, -2, "angle");
+                        smlua_push_integer_field(-2, "modelId", modelId);
+                        smlua_push_integer_field(-2, "behaviorId", behaviorId);
+                        smlua_push_integer_field(-2, "behParams", 0);
+                    }
+
+                    switch (preset->type) {
+                        case SPTYPE_NO_YROT_OR_PARAMS: {
+                            // Nothing to add
+                        } break;
+
+                        case SPTYPE_YROT_NO_PARAMS: {
+                            Vec3s angle = { 0, *data++, 0 };
+                            if (behaviorId != id_bhv_max_count) {
+                                smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
+                            }
+                        } break;
+
+                        case SPTYPE_PARAMS_AND_YROT: {
+                            Vec3s angle = { 0, *data++, 0 };
+                            u32 behParams = ((u32) (*data++)) << 16;
+                            if (behaviorId != id_bhv_max_count) {
+                                smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
+                                smlua_push_integer_field(-2, "behParams", behParams);
+                            }
+                        } break;
+
+                        case SPTYPE_UNKNOWN: { // Unused and unknown data
+                            f32 macroUnk108 = (f32) *data++;
+                            f32 macroUnk10C = (f32) *data++;
+                            f32 macroUnk110 = (f32) *data++;
+                            if (behaviorId != id_bhv_max_count) {
+                                smlua_push_number_field(-2, "oMacroUnk108", macroUnk108);
+                                smlua_push_number_field(-2, "oMacroUnk10C", macroUnk10C);
+                                smlua_push_number_field(-2, "oMacroUnk110", macroUnk110);
+                            }
+                        } break;
+
+                        case SPTYPE_DEF_PARAM_AND_YROT: {
+                            Vec3s angle = { 0, *data++, 0 };
+                            u32 behParams = ((u32) defParam) << 16;
+                            if (behaviorId != id_bhv_max_count) {
+                                smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
+                                smlua_push_integer_field(-2, "behParams", behParams);
+                            }
+                        } break;
+
+                        default: { // Undefined
+                            // Cannot tell how many extra bytes to read
+                            // The game assumes it's 0, but better abort here
+                            if (behaviorId != id_bhv_max_count) {
+                                lua_pop(L, 3);
+                            } else {
+                                lua_pop(L, 2);
+                            }
+                        } return;
+                    }
+
+                    if (behaviorId != id_bhv_max_count) {
+                        lua_rawseti(L, specialObjectsTable, specialObjectsTableIndex++);
+                    }
+                }
+
+            } break;
+
+            case TERRAIN_LOAD_ENVIRONMENT: {
+                s16 numRegions = *data++;
+
+                for (s16 i = 0; i < numRegions; ++i) {
+                    // WaterRegion
+                    s16 id = *data++;
+                    s16 xmin = *data++;
+                    s16 xmax = *data++;
+                    s16 zmin = *data++;
+                    s16 zmax = *data++;
+                    s16 height = *data++;
+
+                    lua_newtable(L);
+                    smlua_push_integer_field(-2, "id", id);
+                    smlua_push_integer_field(-2, "xmin", xmin);
+                    smlua_push_integer_field(-2, "xmax", xmax);
+                    smlua_push_integer_field(-2, "zmin", zmin);
+                    smlua_push_integer_field(-2, "zmax", zmax);
+                    smlua_push_integer_field(-2, "height", height);
+
+                    lua_rawseti(L, waterBoxesTable, waterBoxesTableIndex++);
+                }
+            } break;
+
+            case TERRAIN_LOAD_CONTINUE: {
+            } continue;
+
+            case TERRAIN_LOAD_END: {
+                data = end;
+            } break;
+
+            default: {
+                s16 numSurfaces = *data++;
+                data += (3 + surface_has_force(terrainLoadType)) * numSurfaces;
+            } break;
+        }
+    }
+
+    lua_setfield(L, -3, "waterBoxes");
+    lua_setfield(L, -2, "specialObjects");
+}
+
+static void smlua_func_level_parse_macro_objects(lua_State *L, MacroObject *macroData) {
+    for (s32 i = 1; *macroData != MACRO_OBJECT_END(); macroData += 5, i++) {
+        s16 presetId = (s16) ((macroData[0] & 0x1FF) - 0x1F);
+        if (presetId < 0) {
+            continue;
+        }
+
+        Vec3s pos = { macroData[1], macroData[2], macroData[3] };
+        Vec3s angle = { 0, convert_rotation(((macroData[0] >> 9) & 0x7F) << 1), 0 };
+        u16 objParams = macroData[4];
+        u16 presetParams = MacroObjectPresets[presetId].param;
+        if (presetParams != 0) {
+            objParams = (objParams & 0xFF00) + (presetParams & 0x00FF);
+        }
+
+        enum ModelExtendedId modelId = MacroObjectPresets[presetId].modelId;
+        enum BehaviorId behaviorId = get_id_from_behavior(MacroObjectPresets[presetId].behavior);
+        u32 behParams = ((objParams & 0x00FF) << 16) | (objParams & 0xFF00);
+
+        lua_newtable(L);
+        smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
+        smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
+        smlua_push_integer_field(-2, "modelId", modelId);
+        smlua_push_integer_field(-2, "behaviorId", behaviorId);
+        smlua_push_integer_field(-2, "behParams", behParams);
+
+        lua_rawseti(L, -2, i);
+    }
+}
+
+static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
     lua_State *L = gLuaState;
     if (L == NULL) { return 0; }
     int top = lua_gettop(L);
@@ -778,10 +974,9 @@ s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
             u32 size = get_area_terrain_size(data) * sizeof(Collision);
 
             lua_newtable(L);
-            smlua_push_pointer(L, LVT_COLLISION_P, data, NULL); lua_setfield(L, -2, "data");
-            smlua_push_integer_field(-2, "size", size);
+            smlua_func_level_parse_collision(L, data, size);
 
-            lua_setfield(L, -2, "collision");
+            lua_setfield(L, -2, "terrain");
         } break;
 
         // SHOW_DIALOG
@@ -857,33 +1052,7 @@ s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
             MacroObject *macroData = (MacroObject *) dynos_level_cmd_get(cmd, 4);
 
             lua_newtable(L);
-            for (s32 i = 1; *macroData != MACRO_OBJECT_END(); macroData += 5, i++) {
-                s16 presetId = (s16) ((macroData[0] & 0x1FF) - 0x1F);
-                if (presetId < 0) {
-                    continue;
-                }
-
-                Vec3s pos = { macroData[1], macroData[2], macroData[3] };
-                Vec3s angle = { 0, convert_rotation(((macroData[0] >> 9) & 0x7F) << 1), 0 };
-                u16 objParams = macroData[4];
-                u16 presetParams = MacroObjectPresets[presetId].param;
-                if (presetParams != 0) {
-                    objParams = (objParams & 0xFF00) + (presetParams & 0x00FF);
-                }
-
-                enum ModelExtendedId modelId = MacroObjectPresets[presetId].modelId;
-                enum BehaviorId behaviorId = get_id_from_behavior(MacroObjectPresets[presetId].behavior);
-                u32 behParams = ((objParams & 0x00FF) << 16) | (objParams & 0xFF00);
-
-                lua_newtable(L);
-                smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
-                smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
-                smlua_push_integer_field(-2, "modelId", modelId);
-                smlua_push_integer_field(-2, "behaviorId", behaviorId);
-                smlua_push_integer_field(-2, "behParams", behParams);
-
-                lua_rawseti(L, -2, i);
-            }
+            smlua_func_level_parse_macro_objects(L, macroData);
 
             lua_setfield(L, -2, "macroObjects");
         } break;

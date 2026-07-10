@@ -2013,6 +2013,9 @@ void geo_process_node_and_siblings(struct GraphNode *firstNode) {
                     case GRAPH_NODE_TYPE_BONE:
                         geo_process_bone((struct GraphNodeBone *) curGraphNode);
                         break;
+                    case GRAPH_NODE_TYPE_WATER_REGIONS:
+                        geo_try_process_children((struct GraphNode *) curGraphNode);
+                        break;
                     default:
                         geo_try_process_children((struct GraphNode *) curGraphNode);
                         break;
