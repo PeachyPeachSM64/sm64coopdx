@@ -7082,6 +7082,14 @@ function get_pos_from_transform_mtx(dest, objMtx, camMtx)
     -- ...
 end
 
+--- @param dest Mat4
+--- @param objMtx Mat4
+--- @param camMtx Mat4
+--- Strip the camera-view matrix `camMtx` off of a model-view matrix `objMtx` and store the resulting matrix in `dest`. This can be used to get the object's transforms in world space.
+function get_world_mtx_from_transform(dest, objMtx, camMtx)
+    -- ...
+end
+
 --- @param value number
 --- @param replacement number
 --- @return number
@@ -12148,6 +12156,15 @@ end
 --- @return boolean
 --- Retrieves the animated part rotation associated to `animPart` from the MarioState `m` and stores it into `rot`. Returns `true` on success or `false` on failure
 function get_mario_anim_part_rot(m, animPart, rot)
+    -- ...
+end
+
+--- @param m MarioState
+--- @param animPart integer
+--- @param mtx Mat4
+--- @return boolean
+--- Retrieves the animated part matrix associated to `animPart` from the MarioState `m` and stores it into `mtx`. Returns `true` on success or `false` on failure
+function get_mario_anim_part_mtx(m, animPart, mtx)
     -- ...
 end
 
