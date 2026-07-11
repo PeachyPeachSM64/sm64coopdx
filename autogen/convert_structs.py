@@ -543,18 +543,18 @@ def build_body(parsed):
 
     lot_names = '\nconst char *sLuaLotNames[] = {\n'
     for type_name in VEC_TYPES.keys():
-        lot_names += f'\t[LOT_{type_name.upper()}] = "{type_name}",\n'
+        lot_names += f'    [LOT_{type_name.upper()}] = "{type_name}",\n'
 
-    lot_names += f'\t[LOT_ARRAY] = "Array",\n'
-    lot_names += f'\t[LOT_POINTER] = "Pointer",\n'
-    lot_names += f'\t[LOT_MAX] = "Max",\n'
+    lot_names += f'    [LOT_ARRAY] = "Array",\n'
+    lot_names += f'    [LOT_POINTER] = "Pointer",\n'
+    lot_names += f'    [LOT_MAX] = "Max",\n'
     lot_names += '\n'
 
     for struct in parsed:
         sid = struct['identifier']
         if sid in structs_excluded:
             continue
-        lot_names += f'\t[LOT_{sid.upper()}] = "{sid}",\n'
+        lot_names += f'    [LOT_{sid.upper()}] = "{sid}",\n'
     lot_names += '};\n'
 
     return built + obj_table_built + lot_names
