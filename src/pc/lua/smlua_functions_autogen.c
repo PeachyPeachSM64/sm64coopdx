@@ -19456,21 +19456,14 @@ int smlua_func_get_world_mtx_from_transform(lua_State* L) {
         return 0;
     }
 
-
-    Mat4 dest;
-    smlua_get_mat4(dest, 1);
+    Mat4 dest; smlua_get_mat4(dest, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_world_mtx_from_transform"); return 0; }
-
-    Mat4 objMtx;
-    smlua_get_mat4(objMtx, 2);
+    Mat4 objMtx; smlua_get_mat4(objMtx, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "get_world_mtx_from_transform"); return 0; }
-
-    Mat4 camMtx;
-    smlua_get_mat4(camMtx, 3);
+    Mat4 camMtx; smlua_get_mat4(camMtx, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "get_world_mtx_from_transform"); return 0; }
 
     get_world_mtx_from_transform(dest, objMtx, camMtx);
-
     smlua_push_mat4(dest, 1);
 
     return 1;
@@ -32977,13 +32970,10 @@ int smlua_func_get_mario_anim_part_mtx(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_mario_anim_part_mtx"); return 0; }
     u32 animPart = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "get_mario_anim_part_mtx"); return 0; }
-
-    Mat4 mtx;
-    smlua_get_mat4(mtx, 3);
+    Mat4 mtx; smlua_get_mat4(mtx, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "get_mario_anim_part_mtx"); return 0; }
 
     lua_pushboolean(L, get_mario_anim_part_mtx(m, animPart, mtx));
-
     smlua_push_mat4(mtx, 3);
 
     return 1;
