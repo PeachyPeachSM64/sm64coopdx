@@ -764,7 +764,7 @@ u32 audio_get_sample_rate(struct ModAudio *audio) {
 //////////////////////////////////////
 
 void audio_custom_update_volume(void) {
-    bool shouldMute = (configMuteFocusLoss && !gWindowApi->has_focus());
+    bool shouldMute = (configMuteFocusLoss && !gfx_wm_has_focus());
 
     // Update master volume
     gMasterVolume = shouldMute ? 0 : (configMasterVolume / 127.0f * gLuaVolumeMaster / 127.0f);
