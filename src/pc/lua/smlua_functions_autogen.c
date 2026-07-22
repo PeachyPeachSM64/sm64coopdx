@@ -14525,6 +14525,25 @@ int smlua_func_lag_compensation_get_local_state_index(lua_State* L) {
  // level_info.h //
 //////////////////
 
+/*
+int smlua_func_strlen64(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "strlen64", 1, top);
+        return 0;
+    }
+
+    u8 * str64 = (u8 *)smlua_to_cpointer(L, 1, LVT_U8_P);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "strlen64"); return 0; }
+
+    UNIMPLEMENTED -->(L, strlen64(str64));
+
+    return 1;
+}
+*/
+
 int smlua_func_get_level_name_ascii(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -36785,6 +36804,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "lag_compensation_get_local_state_index", smlua_func_lag_compensation_get_local_state_index);
 
     // level_info.h
+    //smlua_bind_function(L, "strlen64", smlua_func_strlen64); <--- UNIMPLEMENTED
     smlua_bind_function(L, "get_level_name_ascii", smlua_func_get_level_name_ascii);
     smlua_bind_function(L, "get_level_name_sm64", smlua_func_get_level_name_sm64);
     smlua_bind_function(L, "get_level_name", smlua_func_get_level_name);
