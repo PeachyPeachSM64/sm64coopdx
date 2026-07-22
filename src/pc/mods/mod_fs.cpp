@@ -626,7 +626,7 @@ static bool mod_fs_read(const char *modPath, struct ModFs *modFs, bool checkExis
             if (!file) {
                 mod_fs_read_raise_error(
                     MOD_FS_ERR_ALLOC_FAILED,
-                    "modPath: %s, filepath: %s - Failed to allocate ModFS file object", modFs->modPath, file->filepath
+                    "modPath: %s, filepath: %s - Failed to allocate ModFS file object", modFs->modPath, fileRef.filepath
                 );
             }
             memcpy(file, &fileRef, sizeof(struct ModFsFile));
@@ -1128,7 +1128,7 @@ static bool mod_fs_copy_file(struct ModFs *modFs, const char *srcpath, const cha
     if (!buffer) {
         mod_fs_raise_error(
             MOD_FS_ERR_ALLOC_FAILED,
-            "modPath: %s, filepath: %s - Failed to allocate buffer for ModFS file data", modFs->modPath, dstfile->filepath
+            "modPath: %s, filepath: %s - Failed to allocate buffer for ModFS file data", modFs->modPath, dstpath
         );
         return false;
     }

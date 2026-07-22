@@ -547,9 +547,9 @@ def build_body(parsed):
     for type_name in VEC_TYPES.keys():
         lot_names += f'    [LOT_{type_name.upper()}] = "{type_name}",\n'
 
-    lot_names += f'    [LOT_ARRAY] = "Array",\n'
-    lot_names += f'    [LOT_POINTER] = "Pointer",\n'
-    lot_names += f'    [LOT_MAX] = "Max",\n'
+    lot_names += '    [LOT_ARRAY] = "Array",\n'
+    lot_names += '    [LOT_POINTER] = "Pointer",\n'
+    lot_names += '    [LOT_MAX] = "Max",\n'
     lot_names += '\n'
 
     for struct in parsed:
@@ -793,8 +793,8 @@ def def_struct(struct):
         if ftype[0].startswith('Pointer_') and ftype[0] not in def_pointers:
             def_pointers.append(ftype[0])
 
-        for type in ftype:
-            s += '--- @field public %s %s\n' % (fid, type)
+        for field_type in ftype:
+            s += '--- @field public %s %s\n' % (fid, field_type)
 
     return s
 
