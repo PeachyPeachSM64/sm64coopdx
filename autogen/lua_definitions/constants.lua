@@ -11404,7 +11404,7 @@ COOP_OBJ_FLAG_NON_SYNC = (1 << 2)
 COOP_OBJ_FLAG_INITIALIZED = (1 << 3)
 
 --- @type string
-SM64COOPDX_VERSION = "v1.5.2"
+SM64COOPDX_VERSION = "v1.6"
 
 --- @type string
 VERSION_TEXT = "v"

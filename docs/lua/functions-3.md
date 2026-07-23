@@ -2827,7 +2827,7 @@ Useful for keeping Mario's animations visually aligned, particularly when transi
 - None
 
 ### C Prototype
-`void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLevel level);`
+`void command_message_create(const char *message, OPTIONAL enum ConsoleMessageLevel level);`
 
 [:arrow_up_small:](#)
 
