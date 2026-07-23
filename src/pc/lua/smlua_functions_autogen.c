@@ -12,6 +12,7 @@
 #include "src/game/mario_step.h"
 #include "src/game/mario.h"
 #include "src/game/rumble_init.h"
+#include "src/pc/commands.h"
 #include "src/pc/djui/djui_popup.h"
 #include "src/pc/network/network_utils.h"
 #include "src/pc/djui/djui_console.h"
@@ -11447,6 +11448,32 @@ int smlua_func_update_character_anim_offset(lua_State* L) {
     return 1;
 }
 
+  ////////////////
+ // commands.h //
+////////////////
+
+int smlua_func_command_message_create(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "command_message_create", 1, 2, top);
+        return 0;
+    }
+
+    const char* message = smlua_to_string(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "command_message_create"); return 0; }
+    enum ConsoleMessageLevel level = (enum ConsoleMessageLevel) 0;
+    if (top >= 2) {
+        level = smlua_to_integer(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "command_message_create"); return 0; }
+    }
+
+    command_message_create(message, level);
+
+    return 1;
+}
+
   /////////////////////////
  // djui_chat_message.h //
 /////////////////////////
@@ -11471,6 +11498,20 @@ int smlua_func_djui_chat_message_create(lua_State* L) {
   ////////////////////
  // djui_console.h //
 ////////////////////
+
+int smlua_func_djui_console_clear(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_console_clear", 0, top);
+        return 0;
+    }
+
+    djui_console_clear();
+
+    return 1;
+}
 
 int smlua_func_djui_console_toggle(lua_State* L) {
     if (L == NULL) { return 0; }
@@ -14586,6 +14627,25 @@ int smlua_func_lag_compensation_get_local_state_index(lua_State* L) {
   //////////////////
  // level_info.h //
 //////////////////
+
+/*
+int smlua_func_strlen64(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "strlen64", 1, top);
+        return 0;
+    }
+
+    u8 * str64 = (u8 *)smlua_to_cpointer(L, 1, LVT_U8_P);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "strlen64"); return 0; }
+
+    UNIMPLEMENTED -->(L, strlen64(str64));
+
+    return 1;
+}
+*/
 
 int smlua_func_get_level_name_ascii(lua_State* L) {
     if (L == NULL) { return 0; }
@@ -36808,10 +36868,14 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "get_character_anim", smlua_func_get_character_anim);
     smlua_bind_function(L, "update_character_anim_offset", smlua_func_update_character_anim_offset);
 
+    // commands.h
+    smlua_bind_function(L, "command_message_create", smlua_func_command_message_create);
+
     // djui_chat_message.h
     smlua_bind_function(L, "djui_chat_message_create", smlua_func_djui_chat_message_create);
 
     // djui_console.h
+    smlua_bind_function(L, "djui_console_clear", smlua_func_djui_console_clear);
     smlua_bind_function(L, "djui_console_toggle", smlua_func_djui_console_toggle);
     smlua_bind_function(L, "djui_console_is_open", smlua_func_djui_console_is_open);
 
@@ -36999,6 +37063,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "lag_compensation_get_local_state_index", smlua_func_lag_compensation_get_local_state_index);
 
     // level_info.h
+    //smlua_bind_function(L, "strlen64", smlua_func_strlen64); <--- UNIMPLEMENTED
     smlua_bind_function(L, "get_level_name_ascii", smlua_func_get_level_name_ascii);
     smlua_bind_function(L, "get_level_name_sm64", smlua_func_get_level_name_sm64);
     smlua_bind_function(L, "get_level_name", smlua_func_get_level_name);

@@ -1185,6 +1185,7 @@
 <br />
 
 ## [djui_console.h](#djui_console.h)
+- MAX_CONSOLE_INPUT_LENGTH
 
 ### [enum ConsoleMessageLevel](#ConsoleMessageLevel)
 | Identifier | Value |
