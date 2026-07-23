@@ -1413,6 +1413,7 @@
    - [mod_fs_file_set_public](functions-5.md#mod_fs_file_set_public)
    - [mod_fs_file_set_compression](functions-5.md#mod_fs_file_set_compression)
    - [mod_fs_hide_errors](functions-5.md#mod_fs_hide_errors)
+   - [mod_fs_get_last_error_code](functions-5.md#mod_fs_get_last_error_code)
    - [mod_fs_get_last_error](functions-5.md#mod_fs_get_last_error)
 
 <br />
