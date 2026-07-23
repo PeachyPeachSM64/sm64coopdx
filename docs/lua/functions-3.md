@@ -2814,6 +2814,13 @@ Useful for keeping Mario's animations visually aligned, particularly when transi
 
 ## [command_message_create](#command_message_create)
 
+### Description
+Creates a message that goes into either the chat, console, or terminal.
+It decides by checking where you entered the command, and will output to that source directly.
+
+It should be used in any function that is ran from `hook_chat_command` or `hook_console_command`.
+If ran independently of any hook, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
+
 ### Lua Example
 `command_message_create(message, level)`
 
@@ -2867,24 +2874,6 @@ Creates a `message` in the game's chat box
 
 <br />
 
-
-## [djui_console_clear](#djui_console_clear)
-
-### Lua Example
-`djui_console_clear()`
-
-### Parameters
-- None
-
-### Returns
-- None
-
-### C Prototype
-`void djui_console_clear();`
-
-[:arrow_up_small:](#)
-
-<br />
 
 ## [djui_console_toggle](#djui_console_toggle)
 
