@@ -1020,6 +1020,9 @@ s16 level_trigger_warp(struct MarioState *m, enum WarpOperation warpOp) {
                 }
                 fadeMusic = FALSE;
                 break;
+
+            default:
+                break;
         }
 
         if (fadeMusic && gCurrDemoInput == NULL) {
