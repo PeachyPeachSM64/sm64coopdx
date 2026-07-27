@@ -3912,7 +3912,7 @@ end
 --- It decides by checking where you entered the command, and will output to that source directly.<br>
 --- <br>
 --- It should be used in any function that is ran from `hook_chat_command` or `hook_console_command`.<br>
---- If ran independently of any of these hooks, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
+--- If ran independently of any hook, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
 function command_message_create(message, level)
     -- ...
 end

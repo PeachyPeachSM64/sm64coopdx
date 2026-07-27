@@ -849,7 +849,7 @@ def build_overloaded_function(function, do_extern):
 
         if len(candidates) == 1:
             add_block(candidates[0], i + 1, True)
-            
+
         i += 1
 
     s += '\n}\n'
@@ -941,10 +941,13 @@ def build_function(function, do_extern):
         i += 1
     s += '\n'
 
+    vec_out_count = 0
+
     # To allow chaining vector functions calls, return the table corresponding to the `VEC_OUT` parameter
     if function['type'] in VECP_TYPES:
         for i, param in enumerate(function['params']):
             if 'VEC_OUT' in param:
+                vec_out_count += 1
                 s += '    lua_settop(L, %d);\n' % (i + 1)
                 break
 
@@ -956,7 +959,7 @@ def build_function(function, do_extern):
             s += build_return_value(pid, ptype)
         s += '\n'
 
-    num_returns = max(1, push_value + len(freturns))
+    num_returns = push_value + len(freturns) + vec_out_count
     s += '    return %d;\n}\n' % num_returns
 
     if fid in functions_version_excludes:
@@ -1400,7 +1403,7 @@ def def_overloaded_function(fname, function):
     s = ''
     for func in function['overload']:
         s += def_function(fname, func).replace(func['identifier'], function['identifier'])
-    
+
     return s
 
 def def_function(fname, function):
