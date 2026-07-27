@@ -11994,6 +11994,12 @@ function get_network_area_timer()
 end
 
 --- @return integer
+--- Gets the current area's networked random seed
+function get_network_area_random_seed()
+    -- ...
+end
+
+--- @return integer
 --- Gets the area update counter incremented when objects are updated
 function get_area_update_counter()
     -- ...
@@ -13478,6 +13484,13 @@ end
 --- @return boolean
 --- Checks if a surface has force
 function surface_has_force(surfaceType)
+    -- ...
+end
+
+--- @param syncId integer
+--- @return integer
+--- Retrieves the random seed of a sync object from its sync ID
+function sync_object_get_random_seed(syncId)
     -- ...
 end
 
