@@ -1329,6 +1329,8 @@ static struct LuaObjectField sLevelValuesFields[LUA_LEVEL_VALUES_FIELD_COUNT] = 
     { "shellSequence",                    LVT_S32,     offsetof(struct LevelValues, shellSequence),                    false, LOT_NONE          },
     { "showStarNumber",                   LVT_U8,      offsetof(struct LevelValues, showStarNumber),                   false, LOT_NONE          },
     { "skipCreditsAt",                    LVT_S32,     offsetof(struct LevelValues, skipCreditsAt),                    false, LOT_NONE          },
+    { "skipFileSelect",                   LVT_U8,      offsetof(struct LevelValues, skipFileSelect),                   false, LOT_NONE          },
+    { "skipGoddard",                      LVT_U8,      offsetof(struct LevelValues, skipGoddard),                      false, LOT_NONE          },
     { "starHeal",                         LVT_U8,      offsetof(struct LevelValues, starHeal),                         false, LOT_NONE          },
     { "starPositions",                    LVT_COBJECT, offsetof(struct LevelValues, starPositions),                    true,  LOT_STARPOSITIONS },
     { "useGlobalStarIds",                 LVT_U8,      offsetof(struct LevelValues, useGlobalStarIds),                 false, LOT_NONE          },

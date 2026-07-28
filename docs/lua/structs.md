@@ -1550,6 +1550,8 @@
 | wallMaxRadius | `number` |  |
 | floorNormalMinY | `number` |  |
 | ceilNormalMaxY | `number` |  |
+| skipGoddard | `integer` |  |
+| skipFileSelect | `integer` |  |
 
 [:arrow_up_small:](#)
 
