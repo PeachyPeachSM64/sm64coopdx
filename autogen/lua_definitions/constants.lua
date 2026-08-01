@@ -11454,10 +11454,10 @@ SM64COOPDX_VERSION = "v1.6"
 VERSION_TEXT = "v"
 
 --- @type integer
-VERSION_NUMBER = 42
+VERSION_NUMBER = 43
 
 --- @type integer
-MINOR_VERSION_NUMBER = 2
+MINOR_VERSION_NUMBER = 0
 
 --- @type string
 GAME_NAME = "sm64coopdx"
