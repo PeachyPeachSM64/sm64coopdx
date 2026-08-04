@@ -64,6 +64,8 @@ audio_stream_get_frequency = audio_get_frequency
 audio_stream_set_frequency = audio_set_frequency
 audio_stream_get_volume = audio_get_volume
 audio_stream_set_volume = audio_set_volume
+audio_stream_get_volume_channel = audio_get_volume_channel
+audio_stream_set_volume_channel = audio_set_volume_channel
 
 -- compatibility band-aid
 function return_self(self) return self end
