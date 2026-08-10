@@ -780,9 +780,15 @@ static u16 *smlua_to_u16_list(lua_State* L, int index, u32* length) {
         int indexKey = lua_gettop(L) - 1;
         int indexValue = lua_gettop(L) - 0;
 
-        s32 key = smlua_to_integer(L, indexKey);
+        lua_Integer key = smlua_to_integer(L, indexKey);
         if (!gSmLuaConvertSuccess) {
             LOG_LUA("smlua_to_u16_list: Failed to convert table key");
+            free(values);
+            return 0;
+        }
+
+        if (key < 1 || key > *length) {
+            LOG_LUA("smlua_to_u16_list: Table key out of bounds: " LUA_INTEGER_FMT, key);
             free(values);
             return 0;
         }
