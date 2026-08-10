@@ -690,6 +690,9 @@ s32 smlua_func_level_script_parse_callback(u8 type, void *cmd) {
         s32 macroBhvModelsIdx = lua_gettop(L);
         for (s32 i = 0; *macroData != MACRO_OBJECT_END(); macroData += 5, i++) {
             s32 presetId = (s32) ((macroData[0] & 0x1FF) - 0x1F);
+            if (presetId < 0 || presetId >= MACRO_OBJECT_PRESET_COUNT) {
+                continue;
+            }
             s32 presetParams = MacroObjectPresets[presetId].param;
             s32 objParams = (macroData[4] & 0xFF00) | (presetParams & 0x00FF);
             s32 bhvParams = ((objParams & 0x00FF) << 16) | (objParams & 0xFF00);

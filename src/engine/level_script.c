@@ -127,7 +127,7 @@ static void area_check_red_coin_or_secret(void *arg, bool isMacroObject) {
     const BehaviorScript *bhv = NULL;
     if (isMacroObject) {
         MacroObject index = (*((MacroObject *) arg) & 0x1FF) - 0x1F;
-        if (index >= 0 && index < 366) {
+        if (index >= 0 && index < MACRO_OBJECT_PRESET_COUNT) {
             bhv = MacroObjectPresets[index].behavior;
         }
     } else {

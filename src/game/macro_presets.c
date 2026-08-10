@@ -368,3 +368,5 @@ struct MacroPreset MacroObjectPresets[] = {
     {bhvYellowCoin, MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, MODEL_YELLOW_COIN, 0}
 };
+
+static_assert(ARRAY_COUNT(MacroObjectPresets) == MACRO_OBJECT_PRESET_COUNT);
