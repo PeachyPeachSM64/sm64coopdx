@@ -300,7 +300,7 @@ struct Character {
             /* 0xcf */s32 animForwardSpinningFlip;
             /* 0xd0 */s32 animTripleJumpFly;
         };
-        s32 anims[CHAR_ANIM_MAX];
+        C_ARRAY s32 anims[CHAR_ANIM_MAX];
     };
 
     // sounds
@@ -352,7 +352,7 @@ struct Character {
             s32 soundLetsAGo;
             s32 soundOkeyDokey;
         };
-        s32 sounds[CHAR_SOUND_MAX];
+        C_ARRAY s32 sounds[CHAR_SOUND_MAX];
     };
 };
 

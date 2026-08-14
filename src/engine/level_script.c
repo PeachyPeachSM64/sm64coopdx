@@ -130,7 +130,7 @@ static void area_check_red_coin_or_secret(void *arg, bool isMacroObject) {
     const BehaviorScript *bhv = NULL;
     if (isMacroObject) {
         MacroObject index = (*((MacroObject *) arg) & 0x1FF) - 0x1F;
-        if (index >= 0 && index < 366) {
+        if (index >= 0 && index < MACRO_OBJECT_PRESET_COUNT) {
             bhv = MacroObjectPresets[index].behavior;
         }
     } else {
@@ -537,11 +537,19 @@ static void level_cmd_init_mario(void) {
 }
 
 static void level_cmd_place_object(void) {
-    u8 val7 = 1 << (gCurrActNum - 1);
     u8 modelId;
     struct SpawnInfo *spawnInfo;
 
-    if (sCurrAreaIndex != -1 && (gLevelValues.disableActs || (CMD_GET(u8, 2) & val7) || CMD_GET(u8, 2) == 0x1F)) {
+    u8 actFlags = CMD_GET(u8, 2);
+    u8 actMatch;
+
+    if (gCurrActNum > 0) {
+        actMatch = actFlags & (1 << (gCurrActNum - 1)) || actFlags == ALL_ACTS_MACRO;
+    } else {
+        actMatch = (actFlags == ALL_ACTS_MACRO) || (actFlags == ALL_ACTS);
+    }
+
+    if (sCurrAreaIndex != -1 && (gLevelValues.disableActs || actMatch)) {
         modelId = CMD_GET(u8, 3);
         spawnInfo = dynamic_pool_alloc(gLevelPool, sizeof(struct SpawnInfo));
 

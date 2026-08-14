@@ -368,3 +368,5 @@ struct MacroPreset MacroObjectPresets[] = {
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0},
     {bhvYellowCoin, E_MODEL_YELLOW_COIN, 0}
 };
+
+STATIC_ASSERT(ARRAY_COUNT(MacroObjectPresets) == MACRO_OBJECT_PRESET_COUNT, "MACRO_OBJECT_PRESET_COUNT needs updating");
