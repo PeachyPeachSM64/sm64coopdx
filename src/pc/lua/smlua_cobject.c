@@ -799,7 +799,7 @@ int smlua__iter(lua_State *L) {
     lua_pop(L, 1);
 
     // Only support autogen objects
-    if (!cobj || cobj->lot <= LOT_AUTOGEN_MIN || cobj->lot >= LOT_AUTOGEN_MAX) {
+    if (!cobj || cobj->freed || cobj->lot <= LOT_AUTOGEN_MIN || cobj->lot >= LOT_AUTOGEN_MAX) {
         return 0;
     }
 
