@@ -1604,6 +1604,13 @@ void update_menu_level(void) {
     if (gIsDemoActive) { return; }
 
     struct Object *o;
+
+    // Remove the stars
+    o = find_object_with_behavior(bhvStar);
+    if (o != NULL) {
+        obj_mark_for_deletion(o);
+    }
+
     // set mario/camera pos
     switch (gCurrLevelNum) {
         case LEVEL_CASTLE_GROUNDS:
