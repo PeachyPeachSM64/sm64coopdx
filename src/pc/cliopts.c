@@ -15,9 +15,6 @@ struct CLIOptions gCLIOpts;
 
 static void print_help(void) {
     log_to_terminal("sm64coopdx\n");
-#if defined(_WIN32)
-    log_to_terminal("--console                 Enables the Windows console.\n");
-#endif
     log_to_terminal("--savepath SAVEPATH       Overrides the default save/config path ('!' expands to executable path).\n");
     log_to_terminal("--configfile CONFIGNAME   Saves the configuration file as CONFIGNAME.\n");
     log_to_terminal("--hide-loading-screen     Hides the loading screen before the menu boots up.\n");
@@ -66,13 +63,7 @@ bool parse_cli_opts(int argc, char* argv[]) {
 #endif
 
     for (int i = 1; i < argc; i++) {
-#if defined(_WIN32)
-        if (!strcmp(argv[i], "--console")) {
-            gCLIOpts.console = true;
-        } else if (!strcmp(argv[i], "--savepath") && (i + 1) < argc) {
-#else
         if (!strcmp(argv[i], "--savepath") && (i + 1) < argc) {
-#endif
             arg_string("--savepath", argv[++i], gCLIOpts.savePath, SYS_MAX_PATH);
         } else if (!strcmp(argv[i], "--configfile") && (i + 1) < argc) {
             arg_string("--configfile", argv[++i], gCLIOpts.configFile, SYS_MAX_PATH);
