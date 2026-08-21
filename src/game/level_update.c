@@ -1606,9 +1606,11 @@ void update_menu_level(void) {
     struct Object *o;
 
     // Remove the stars
-    o = find_object_with_behavior(bhvStar);
-    if (o != NULL) {
-        obj_mark_for_deletion(o);
+    for (u16 i = 0; i < OBJECT_POOL_CAPACITY; ++i) {
+        o = &gObjectPool[i];
+        if (o->behavior == bhvStar) {
+            obj_mark_for_deletion(o);
+        }
     }
 
     // set mario/camera pos
