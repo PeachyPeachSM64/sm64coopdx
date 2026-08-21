@@ -9557,6 +9557,12 @@ function count_objects_with_behavior(behavior)
 end
 
 --- @param behavior Pointer_BehaviorScript
+--- Deletes all objects with the specified behavior
+function delete_all_objects_with_behavior(behavior)
+    -- ...
+end
+
+--- @param behavior Pointer_BehaviorScript
 --- @return Object
 --- Finds any object with the specified behavior
 function find_object_with_behavior(behavior)

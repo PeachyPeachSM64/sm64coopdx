@@ -145,6 +145,7 @@ struct Object *find_object_with_behavior(const BehaviorScript *behavior);
 struct Object *find_unimportant_object(void);
 s32 count_unimportant_objects(void);
 s32 count_objects_with_behavior(const BehaviorScript *behavior);
+void delete_all_objects_with_behavior(const BehaviorScript *behavior);
 struct Object *cur_obj_find_nearby_held_actor(const BehaviorScript *behavior, f32 maxDist);
 void cur_obj_change_action(s32 action);
 void cur_obj_set_vel_from_mario_vel(struct MarioState* m, f32 f12,f32 f14);

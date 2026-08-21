@@ -25811,6 +25811,24 @@ int smlua_func_count_objects_with_behavior(lua_State* L) {
     return 1;
 }
 
+int smlua_func_delete_all_objects_with_behavior(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "delete_all_objects_with_behavior", 1, top);
+        return 0;
+    }
+
+    BehaviorScript * behavior = (BehaviorScript *)smlua_to_cpointer(L, 1, LVT_BEHAVIORSCRIPT_P);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "delete_all_objects_with_behavior"); return 0; }
+
+    extern void delete_all_objects_with_behavior(const BehaviorScript *behavior);
+    delete_all_objects_with_behavior(behavior);
+
+    return 0;
+}
+
 int smlua_func_find_object_with_behavior(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -37765,6 +37783,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "find_unimportant_object", smlua_func_find_unimportant_object);
     smlua_bind_function(L, "count_unimportant_objects", smlua_func_count_unimportant_objects);
     smlua_bind_function(L, "count_objects_with_behavior", smlua_func_count_objects_with_behavior);
+    smlua_bind_function(L, "delete_all_objects_with_behavior", smlua_func_delete_all_objects_with_behavior);
     smlua_bind_function(L, "find_object_with_behavior", smlua_func_find_object_with_behavior);
     smlua_bind_function(L, "cur_obj_find_nearby_held_actor", smlua_func_cur_obj_find_nearby_held_actor);
     smlua_bind_function(L, "cur_obj_reset_timer_and_subaction", smlua_func_cur_obj_reset_timer_and_subaction);

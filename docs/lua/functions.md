@@ -1625,6 +1625,7 @@
    - [find_unimportant_object](functions-6.md#find_unimportant_object)
    - [count_unimportant_objects](functions-6.md#count_unimportant_objects)
    - [count_objects_with_behavior](functions-6.md#count_objects_with_behavior)
+   - [delete_all_objects_with_behavior](functions-6.md#delete_all_objects_with_behavior)
    - [find_object_with_behavior](functions-6.md#find_object_with_behavior)
    - [cur_obj_find_nearby_held_actor](functions-6.md#cur_obj_find_nearby_held_actor)
    - [cur_obj_reset_timer_and_subaction](functions-6.md#cur_obj_reset_timer_and_subaction)

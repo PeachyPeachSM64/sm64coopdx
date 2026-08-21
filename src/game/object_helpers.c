@@ -1247,6 +1247,16 @@ s32 count_objects_with_behavior(const BehaviorScript *behavior) {
     return count;
 }
 
+/* |description|Deletes all objects with the specified behavior|descriptionEnd| */
+void delete_all_objects_with_behavior(const BehaviorScript *behavior) {
+    for (u16 i = 0; i < OBJECT_POOL_CAPACITY; ++i) {
+        struct Object *o = &gObjectPool[i];
+        if (o->behavior == behavior) {
+            obj_mark_for_deletion(o);
+        }
+    }
+}
+
 /* |description|Finds any object with the specified behavior|descriptionEnd| */
 struct Object *find_object_with_behavior(const BehaviorScript *behavior) {
     behavior = smlua_override_behavior(behavior);

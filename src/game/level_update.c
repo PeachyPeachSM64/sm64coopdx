@@ -1603,16 +1603,6 @@ void update_menu_level(void) {
     }
     if (gIsDemoActive) { return; }
 
-    struct Object *o;
-
-    // Remove the stars
-    for (u16 i = 0; i < OBJECT_POOL_CAPACITY; ++i) {
-        o = &gObjectPool[i];
-        if (o->behavior == bhvStar) {
-            obj_mark_for_deletion(o);
-        }
-    }
-
     // set mario/camera pos
     switch (gCurrLevelNum) {
         case LEVEL_CASTLE_GROUNDS:
@@ -1629,10 +1619,7 @@ void update_menu_level(void) {
             gMarioState->faceAngle[1] = 0x2000;
 
             // delete all goombas as they interfere with the main menu
-            o = find_object_with_behavior(bhvGoomba);
-            if (o != NULL) {
-                obj_mark_for_deletion(o);
-            }
+            delete_all_objects_with_behavior(bhvGoomba);
             break;
         case LEVEL_WF:
             vec3f_set(gMarioState->pos, -2904, 2560, -327);
@@ -1669,10 +1656,7 @@ void update_menu_level(void) {
             gMarioState->faceAngle[1] = 0;
 
             // delete all scuttlebugs as they interfere with the main menu
-            o = find_object_with_behavior(bhvScuttlebug);
-            if (o != NULL) {
-                obj_mark_for_deletion(o);
-            }
+            delete_all_objects_with_behavior(bhvScuttlebug);
             break;
         case LEVEL_LLL:
             vec3f_set(gMarioState->pos, -2376, 638, 956);
@@ -1685,15 +1669,15 @@ void update_menu_level(void) {
             gMarioState->faceAngle[1] = -0x4000;
 
             // delete all goombas as they interfere with the main menu
-            o = find_object_with_behavior(bhvGoomba);
-            if (o != NULL) {
-                obj_mark_for_deletion(o);
-            }
+            delete_all_objects_with_behavior(bhvGoomba);
             break;
         case LEVEL_HMC:
             vec3f_set(gMarioState->pos, -3600, -4279, 3616);
             vec3f_set(gLakituState.curPos, -6000, -2938, 600);
             gMarioState->faceAngle[1] = -0x6000;
+
+            // remove the stars
+            delete_all_objects_with_behavior(bhvStar);
             break;
         case LEVEL_CCM:
             vec3f_set(gMarioState->pos, -1127, -3580, 6162);

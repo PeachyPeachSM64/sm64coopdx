@@ -1576,6 +1576,29 @@ Counts the number of objects with the specified behavior
 
 <br />
 
+## [delete_all_objects_with_behavior](#delete_all_objects_with_behavior)
+
+### Description
+Deletes all objects with the specified behavior
+
+### Lua Example
+`delete_all_objects_with_behavior(behavior)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| behavior | `Pointer` <`BehaviorScript`> |
+
+### Returns
+- None
+
+### C Prototype
+`void delete_all_objects_with_behavior(const BehaviorScript *behavior);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [find_object_with_behavior](#find_object_with_behavior)
 
 ### Description
