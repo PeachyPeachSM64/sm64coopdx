@@ -274,7 +274,7 @@ s32 is_item_in_array(s8 item, s8 *array);
 void cur_obj_enable_rendering_if_mario_in_room(void);
 s32 cur_obj_set_hitbox_and_die_if_attacked(struct ObjectHitbox *hitbox, s32 deathSound, s32 noLootCoins);
 void obj_explode_and_spawn_coins(f32 mistSize, enum CoinType coinType);
-void obj_set_collision_data(struct Object *obj, const void *segAddr);
+void obj_set_collision_data(struct Object *obj, const void *collisionPtr);
 void cur_obj_if_hit_wall_bounce_away(void);
 s32 cur_obj_hide_if_mario_far_away_y(f32 distY);
 Gfx *geo_offset_klepto_held_object(s32 callContext, struct GraphNode *node, UNUSED Mat4 mtx);

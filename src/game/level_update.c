@@ -1603,6 +1603,13 @@ void update_menu_level(void) {
     }
     if (gIsDemoActive) { return; }
 
+    // remove the stars
+    delete_all_objects_with_behavior(bhvStar);
+    delete_all_objects_with_behavior(bhvSpawnedStar);
+    delete_all_objects_with_behavior(bhvSpawnedStarNoLevelExit);
+    delete_all_objects_with_behavior(bhvStarSpawnCoordinates);
+    delete_all_objects_with_behavior(bhvRedCoinStarMarker);
+
     // set mario/camera pos
     switch (gCurrLevelNum) {
         case LEVEL_CASTLE_GROUNDS:
@@ -1675,9 +1682,6 @@ void update_menu_level(void) {
             vec3f_set(gMarioState->pos, -3600, -4279, 3616);
             vec3f_set(gLakituState.curPos, -6000, -2938, 600);
             gMarioState->faceAngle[1] = -0x6000;
-
-            // remove the stars
-            delete_all_objects_with_behavior(bhvStar);
             break;
         case LEVEL_CCM:
             vec3f_set(gMarioState->pos, -1127, -3580, 6162);
