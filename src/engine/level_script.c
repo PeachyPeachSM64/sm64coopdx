@@ -964,7 +964,6 @@ static bool find_lua_param(uintptr_t *param, u32 offset, u32 luaParams, u32 luaP
     type name = (type) name##Param;
 
 static void level_cmd_place_object_ext_lua_params(void) {
-    u8 val7 = 1 << (gCurrActNum - 1);
     struct SpawnInfo *spawnInfo;
 
     u8 cmdType = sCurrentCmd->type;
@@ -974,9 +973,16 @@ static void level_cmd_place_object_ext_lua_params(void) {
         CMD_GET(u16, 2)
     )));
 
-    get_lua_param(acts, u8, OBJECT_EXT_LUA_ACTS);
+    get_lua_param(actFlags, u8, OBJECT_EXT_LUA_ACTS);
+    u8 actMatch;
 
-    if (sCurrAreaIndex != -1 && (gLevelValues.disableActs || (acts & val7) || acts == 0x1F)) {
+    if (gCurrActNum > 0) {
+        actMatch = actFlags & (1 << (gCurrActNum - 1)) || actFlags == ALL_ACTS_MACRO;
+    } else {
+        actMatch = (actFlags == ALL_ACTS_MACRO) || (actFlags == ALL_ACTS);
+    }
+
+    if (sCurrAreaIndex != -1 && (gLevelValues.disableActs || actMatch)) {
         spawnInfo = dynamic_pool_alloc(gLevelPool, sizeof(struct SpawnInfo));
 
         get_lua_param(modelId, u32, OBJECT_EXT_LUA_MODEL);
