@@ -11,6 +11,7 @@ extern "C" {
 #include "levels/scripts.h"
 #include "levels/menu/header.h"
 #include "game/area.h"
+#include "engine/level_script.h"
 }
 
 // Free data pointers, but keep nodes and tokens intact
@@ -394,11 +395,11 @@ static LevelScript ParseLevelScriptSymbolArgInternal(GfxData* aGfxData, DataNode
     }
 
     // Built-in functions
-    const void *_FunctionPtr = DynOS_Builtin_Func_GetFromName(_Arg.begin(), FUNCTION_LVL);
+    const void *_FunctionPtr = DynOS_Builtin_Func_GetFromName(_Arg.begin(), PTYPE_FUNC_LVL);
     if (_FunctionPtr != NULL) {
         return (s64) _FunctionPtr;
     }
-    String error = DynOS_Builtin_Func_CheckMisuse(_Arg.begin(), FUNCTION_LVL);
+    String error = DynOS_Builtin_Func_CheckMisuse(_Arg.begin(), PTYPE_FUNC_LVL);
     if (!error.Empty()) {
         PrintDataError("  ERROR: %s", error.begin());
         *found = false;
@@ -922,7 +923,7 @@ static void DynOS_Lvl_Write(BinFile* aFile, GfxData* aGfxData, DataNode<LevelScr
     for (u32 i = 0; i != aNode->mSize; ++i) {
         LevelScript *_Head = &aNode->mData[i];
         if (aGfxData->mPointerList.Find((void *) _Head) != -1) {
-            DynOS_Pointer_Write(aFile, (const void *) (*_Head), aGfxData, FUNCTION_LVL);
+            DynOS_Pointer_Write(aFile, (const void *) (*_Head), aGfxData, PTYPE_ALL);
         } else if (aGfxData->mLuaPointerList.Find((void *) _Head) != -1) {
             DynOS_Pointer_Lua_Write(aFile, *(u32 *)_Head, aGfxData);
         } else {
@@ -1036,12 +1037,7 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
 
     // Data
     _Node->mSize = aFile->Read<u32>();
-    _Node->mData = New<LevelScript>(_Node->mSize);
-
-    // Add it
-    if (aGfxData != NULL) {
-        aGfxData->mLevelScripts.Add(_Node);
-    }
+    _Node->mData = New<LevelScript>(_Node->mSize + 1);
 
     DynOS_Lvl_Validate_Begin();
 
@@ -1049,22 +1045,36 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
     for (u32 i = 0; i != _Node->mSize; ++i) {
         u32 _Value = aFile->Read<u32>();
 
-        bool requirePointer = DynOS_Lvl_Validate_RequirePointer(_Value);
+        u32 ptrTypes;
+        if (!DynOS_Lvl_Validate_GetPointerTypes(_Value, ptrTypes)) {
+            PrintError("  ERROR! Corrupted command in level script: %s, 0x%08X", _Node->mName.begin(), _Value);
+            Delete(_Node);
+            return NULL;
+        }
 
-        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, FUNCTION_LVL, &_Node->mFlags);
+        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, ptrTypes, &_Node->mFlags);
         if (_Ptr) {
-            if (!requirePointer && _Value != LUA_VAR_CODE) {
+            if (!ptrTypes) {
                 PrintError("Didn't expect a pointer while reading level script: %s, %u", _Node->mName.begin(), _Value);
             }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
-            if (requirePointer && _Value != LUA_VAR_CODE) {
+            if (ptrTypes & ~PTYPE_LUAV) { // Lua var is not mandatory
                 PrintError("Expected a pointer while reading level script: %s, %u", _Node->mName.begin(), _Value);
                 _Node->mData[i] = 0;
             } else {
                 _Node->mData[i] = (uintptr_t) _Value;
             }
         }
+    }
+
+    // Add sentinel
+    // Upon hitting this invalid command, the level script processor will restart the game
+    _Node->mData[_Node->mSize] = CMD_BBBB(0xFF, 0x00, 0xDE, 0xAD);
+
+    // Add it
+    if (aGfxData != NULL) {
+        aGfxData->mLevelScripts.Add(_Node);
     }
 
     return _Node;

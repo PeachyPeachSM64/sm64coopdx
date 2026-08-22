@@ -19,12 +19,36 @@ extern "C" {
 #define LUA_VAR_CODE    (u32) 0x5641554C
 #define TEX_REF_CODE    (u32) 0x52584554
 
-#define FUNCTION_GEO    1
-#define FUNCTION_BHV    2
-#define FUNCTION_LVL    3
-
 #define MOD_PACK_INDEX -1 // the pack index for actors loaded from mods
 #define PACK_MOD_INDEX -1 // the mod index for actors loaded from packs
+
+// Pointer types
+#define PTYPE_LUAV              (1 <<  0)
+#define PTYPE_FUNC_GEO          (1 <<  1)
+#define PTYPE_FUNC_BHV          (1 <<  2)
+#define PTYPE_FUNC_LVL          (1 <<  3)
+#define PTYPE_FUNC              (PTYPE_FUNC_GEO | PTYPE_FUNC_BHV | PTYPE_FUNC_LVL)
+#define PTYPE_PNTR_LIGHT        (1 <<  4)
+#define PTYPE_PNTR_LIGHT0       (1 <<  5)
+#define PTYPE_PNTR_LIGHTT       (1 <<  6)
+#define PTYPE_PNTR_AMBIENTT     (1 <<  7)
+#define PTYPE_PNTR_TEX          (1 <<  8)
+#define PTYPE_PNTR_TEXLIST      (1 <<  9)
+#define PTYPE_PNTR_GFX          (1 << 10)
+#define PTYPE_PNTR_GEO          (1 << 11)
+#define PTYPE_PNTR_VTX          (1 << 12)
+#define PTYPE_PNTR_COL          (1 << 13)
+#define PTYPE_PNTR_LVL          (1 << 14)
+#define PTYPE_PNTR_BHV          (1 << 15)
+#define PTYPE_PNTR_MACRO        (1 << 16)
+#define PTYPE_PNTR_TRAJ         (1 << 17)
+#define PTYPE_PNTR_MOVTEX       (1 << 18)
+#define PTYPE_PNTR_MOVTEXQC     (1 << 19)
+#define PTYPE_PNTR_ROOM         (1 << 20)
+#define PTYPE_PNTR_ANIM         (1 << 21)
+#define PTYPE_PNTR              (PTYPE_PNTR_LIGHT | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHTT | PTYPE_PNTR_AMBIENTT | PTYPE_PNTR_TEX | PTYPE_PNTR_TEXLIST | PTYPE_PNTR_GFX | PTYPE_PNTR_GEO | PTYPE_PNTR_VTX | PTYPE_PNTR_COL | PTYPE_PNTR_LVL | PTYPE_PNTR_BHV | PTYPE_PNTR_MACRO | PTYPE_PNTR_TRAJ | PTYPE_PNTR_MOVTEX | PTYPE_PNTR_MOVTEXQC | PTYPE_PNTR_ROOM | PTYPE_PNTR_ANIM)
+
+#define PTYPE_ALL (0xFFFFFFFF) // TODO: placeholder for not breaking everything
 
 //
 // Enums
@@ -671,11 +695,6 @@ struct PackData {
     bool mLoaded;
 };
 
-struct LvlCmd {
-    u8 mType;
-    u8 mSize;
-};
-
 //
 // Utils
 //
@@ -851,7 +870,6 @@ s16 *DynOS_Level_GetWarp(s32 aLevel, s32 aArea, s8 aWarpId);
 s16 *DynOS_Level_GetWarpEntry(s32 aLevel, s32 aArea);
 s16 *DynOS_Level_GetWarpDeath(s32 aLevel, s32 aArea);
 u64 DynOS_Level_CmdGet(void *aCmd, u64 aOffset);
-LvlCmd *DynOS_Level_CmdNext(LvlCmd *aCmd);
 void DynOS_Level_ParseScript(const void *aScript, s32 (*aPreprocessFunction)(u8, void *));
 
 //
@@ -889,13 +907,13 @@ const char*      DynOS_Builtin_Tex_GetFromData(const Texture* aData);
 const char*      DynOS_Builtin_Tex_GetNameFromFileName(const char* aDataName);
 const struct TextureInfo* DynOS_Builtin_Tex_GetInfoFromName(const char* aDataName);
 const struct TextureInfo* DynOS_Builtin_Tex_GetInfoFromData(const Texture* aData);
-const void*      DynOS_Builtin_Func_GetFromName(const char* aDataName, u8 aFuncType);
-const void*      DynOS_Builtin_Func_GetFromIndex(s32 aIndex, u8 aFuncType);
-const char *     DynOS_Builtin_Func_GetNameFromIndex(s32 aIndex, u8 aFuncType);
-s32              DynOS_Builtin_Func_GetIndexFromData(const void* aData, u8 aFuncType);
-String           DynOS_Builtin_Func_CheckMisuse(s32 aIndex, u8 aFuncType);
-String           DynOS_Builtin_Func_CheckMisuse(const char* aDataName, u8 aFuncType);
-String           DynOS_Builtin_Func_CheckMisuse(const void* aData, u8 aFuncType);
+const void*      DynOS_Builtin_Func_GetFromName(const char* aDataName, u32 aPtrType);
+const void*      DynOS_Builtin_Func_GetFromIndex(s32 aIndex, u32 aPtrType);
+const char *     DynOS_Builtin_Func_GetNameFromIndex(s32 aIndex, u32 aPtrType);
+s32              DynOS_Builtin_Func_GetIndexFromData(const void* aData, u32 aPtrType);
+String           DynOS_Builtin_Func_CheckMisuse(s32 aIndex, u32 aPtrType);
+String           DynOS_Builtin_Func_CheckMisuse(const char* aDataName, u32 aPtrType);
+String           DynOS_Builtin_Func_CheckMisuse(const void* aData, u32 aPtrType);
 const Gfx *      DynOS_Builtin_Gfx_GetFromName(const char *aDataName);
 const char *     DynOS_Builtin_Gfx_GetFromData(const Gfx *aData);
 
@@ -931,6 +949,7 @@ u8 DynOS_Audio_AllocSequence();
 std::map<const void *, ActorGfx> &DynOS_Actor_GetValidActors();
 bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFilename, const char *aActorName);
 const void *DynOS_Actor_GetLayoutFromName(const char *aActorName);
+const char *DynOS_Actor_GetNameFromLayout(const void *aGeoLayout);
 bool DynOS_Actor_GetModIndexAndToken(const GraphNode *aGraphNode, u32 aTokenIndex, s32 *outModIndex, s32 *outModFileIndex, const char **outToken);
 ActorGfx* DynOS_Actor_GetActorGfx(const GraphNode* aGraphNode);
 void DynOS_Actor_Valid(const void* aGeoref, ActorGfx& aActorGfx);
@@ -1143,8 +1162,8 @@ void DynOS_Vtx_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Vtx> *aNode);
 void DynOS_Vtx_Load(BinFile *aFile, GfxData *aGfxData);
 
 void DynOS_Pointer_Lua_Write(BinFile* aFile, u32 index, GfxData* aGfxData);
-void DynOS_Pointer_Write(BinFile* aFile, const void* aPtr, GfxData* aGfxData, u8 aFuncType);
-void *DynOS_Pointer_Load(BinFile *aFile, GfxData *aGfxData, u32 aValue, u8 aFuncType, u8* outFlags);
+void DynOS_Pointer_Write(BinFile* aFile, const void* aPtr, GfxData* aGfxData, u32 aPtrType);
+void *DynOS_Pointer_Load(BinFile *aFile, GfxData *aGfxData, u32 aValue, u32 aPtrTypes, u8* outFlags);
 
 void DynOS_GfxDynCmd_Load(BinFile *aFile, GfxData *aGfxData);
 
@@ -1157,7 +1176,8 @@ void DynOS_Lvl_GeneratePack(const SysPath &aPackFolder);
 s64 DynOS_Lvl_ParseLevelScriptConstants(const String& _Arg, bool* found);
 
 void DynOS_Lvl_Validate_Begin();
-bool DynOS_Lvl_Validate_RequirePointer(u32 value);
+bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes);
+u8 DynOS_Lvl_GetCommandSize(u8 aCmdType);
 
 DataNode<BehaviorScript> *DynOS_Bhv_Parse(GfxData *aGfxData, DataNode<BehaviorScript> *aNode, bool aDisplayPercent);
 GfxData *DynOS_Bhv_LoadFromBinary(const SysPath &aFilename, const char *aBehaviorName);

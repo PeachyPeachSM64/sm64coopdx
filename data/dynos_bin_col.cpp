@@ -5,6 +5,7 @@ extern "C" {
 #include "include/level_misc_macros.h"
 #include "include/special_presets.h"
 #include "include/special_preset_names.h"
+#include "src/game/macro_special_objects.h"
 #include "src/engine/surface_load.h"
 }
 
@@ -44,10 +45,9 @@ struct CollisionValidationData {
 };
 
 static u8 GetSpecialObjectType(u8 preset) {
-    for (s32 i = 0; i < ARRAY_COUNT(SpecialObjectPresets); ++i) {
-        if (SpecialObjectPresets[i].preset_id == preset) {
-            return SpecialObjectPresets[i].type;
-        }
+    s32 index = get_special_object_preset_index(preset);
+    if (index != -1) {
+        return SpecialObjectPresets[index].type;
     }
     return SPTYPE_UNKNOWN;
 }
