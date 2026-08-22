@@ -892,9 +892,13 @@ DataNode<LevelScript>* DynOS_Lvl_Parse(GfxData* aGfxData, DataNode<LevelScript>*
         ParseLevelScriptSymbol(aGfxData, aNode, _Head, _TokenIndex, _SwitchNodes);
         if (aDisplayPercent && aGfxData->mErrorCount == 0) { PrintNoNewLine("%3d%%\b\b\b\b", (s32) (_TokenIndex * 100) / aNode->mTokens.Count()); }
     }
-    if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     aNode->mSize = (u32)(_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
+
+    // Validate script
+    DynOS_Lvl_Validate_CheckCommands(aGfxData, aNode);
+
+    if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
 }
 
@@ -1065,6 +1069,12 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
     // Add sentinel
     // Upon hitting this invalid command, the level script processor will restart the game
     _Node->mData[_Node->mSize] = CMD_BBBB(0xFF, 0x00, 0xDE, 0xAD);
+
+    // Validate script
+    if (!DynOS_Lvl_Validate_CheckCommands(aGfxData, _Node)) {
+        Delete(_Node);
+        return NULL;
+    }
 
     // Add it
     if (aGfxData != NULL) {

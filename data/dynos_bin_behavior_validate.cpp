@@ -10,9 +10,12 @@ struct BehaviorScriptCommand {
     BehaviorScript command[16];
 };
 
+#define BHV_COMMAND_ID(...) \
+    (u8) (((BehaviorScript[]){ __VA_ARGS__ })[0] >> 24)
+
 #define BHV_COMMAND(cmd) { \
-    (u8) (((BehaviorScript[]){ cmd })[0] >> 24), { \
-        .id = (u8) (((BehaviorScript[]){ cmd })[0] >> 24), \
+    BHV_COMMAND_ID(cmd), { \
+        .id = BHV_COMMAND_ID(cmd), \
         .size = 4 * (u8) (sizeof((BehaviorScript[]){ cmd }) / sizeof(BehaviorScript)), \
         .command = { cmd } \
     } \
@@ -125,47 +128,53 @@ bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes) {
     return true;
 }
 
-static bool DynOS_Bhv_Validate_CheckCommand(const BehaviorScript *aBhv, const Array<BehaviorScript> &aCommands) {
-    u8 bhvCommand = (*aBhv >> 24) & 0xFF;
-    for (const auto &commandToCheck : aCommands) {
-        if (bhvCommand == ((commandToCheck >> 24) & 0xFF)) {
-            return true;
+static Array<u8> DynOS_Bhv_Validate_GetCommandIds(const DataNode<BehaviorScript> *aNode) {
+    Array<u8> bhvCommandIds;
+    for (s32 i = 0; i < aNode->mSize;) {
+        u8 id = (u8) (aNode->mData[i] >> 24);
+        if (sBehaviorScriptCommands.count(id) != 0) {
+            bhvCommandIds.Add(id);
+            i += sBehaviorScriptCommands[id].size / 4;
+        } else {
+            break;
         }
     }
-    return false;
+    return bhvCommandIds;
 }
 
 bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode) {
+    Array<u8> bhvCommandIds = DynOS_Bhv_Validate_GetCommandIds(aNode);
 
     // Behavior must have at least 2 commands
-    if (aNode->mSize < 2) {
-        PrintDataError("  ERROR: Validation failed for behavior %s: Not enough commands (%d).", aNode->mName.begin(), aNode->mSize);
+    if (bhvCommandIds.Count() < 2) {
+        PrintDataError("  ERROR: Validation failed for behavior %s: Not enough commands (%d).", aNode->mName.begin(), bhvCommandIds.Count());
         return false;
     }
 
     // 1st command must be BEGIN
-    if (!DynOS_Bhv_Validate_CheckCommand(aNode->mData + 0, { BEGIN(0) })) {
+    if (bhvCommandIds[0] != BHV_COMMAND_ID(BEGIN(0))) {
         PrintDataError("  ERROR: Validation failed for behavior %s: First command of the script must be BEGIN.", aNode->mName.begin());
         return false;
     }
 
     // 2nd command must be ID
-    if (!DynOS_Bhv_Validate_CheckCommand(aNode->mData + 1, { ID(0) })) {
+    if (bhvCommandIds[1] != BHV_COMMAND_ID(ID(0))) {
         PrintDataError("  ERROR: Validation failed for behavior %s: Second command of the script must be ID.", aNode->mName.begin());
         return false;
     }
 
     // Last command must be a terminating command
-    if (!DynOS_Bhv_Validate_CheckCommand(aNode->mData + aNode->mSize - 1, {
-        CALL(0),
-        RETURN(),
-        GOTO(0),
-        END_LOOP(),
-        BREAK(),
-        DEACTIVATE(),
-        CALL_EXT(0),
-        GOTO_EXT(0),
-    })) {
+    static const Array<u8> sBhvEndCommands = {
+        BHV_COMMAND_ID(CALL(0)),
+        BHV_COMMAND_ID(RETURN()),
+        BHV_COMMAND_ID(GOTO(0)),
+        BHV_COMMAND_ID(END_LOOP()),
+        BHV_COMMAND_ID(BREAK()),
+        BHV_COMMAND_ID(DEACTIVATE()),
+        BHV_COMMAND_ID(CALL_EXT(0)),
+        BHV_COMMAND_ID(GOTO_EXT(0)),
+    };
+    if (sBhvEndCommands.Find(bhvCommandIds[bhvCommandIds.Count() - 1]) == -1) {
         PrintDataError("  ERROR: Validation failed for behavior %s: Last command of the script must be one of:\n    CALL, RETURN, GOTO, END_LOOP, BREAK, DEACTIVATE", aNode->mName.begin());
         return false;
     }

@@ -1113,6 +1113,7 @@ void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData);
 s64 DynOS_Gfx_ParseGfxConstants(const String& _Arg, bool* found);
 
 bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u32 &outPtrTypes);
+bool DynOS_Gfx_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Gfx> *aNode);
 
 DataNode<Lights1>* DynOS_Lights_Parse(GfxData* aGfxData, DataNode<Lights1>* aNode);
 void DynOS_Lights_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Lights1> *aNode);
@@ -1181,6 +1182,7 @@ s64 DynOS_Lvl_ParseLevelScriptConstants(const String& _Arg, bool* found);
 
 void DynOS_Lvl_Validate_Begin();
 bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes);
+bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode);
 u8 DynOS_Lvl_GetCommandSize(u8 aCmdType);
 
 DataNode<BehaviorScript> *DynOS_Bhv_Parse(GfxData *aGfxData, DataNode<BehaviorScript> *aNode, bool aDisplayPercent);

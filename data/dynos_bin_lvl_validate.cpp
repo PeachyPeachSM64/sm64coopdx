@@ -10,9 +10,12 @@ struct LevelScriptCommand {
     LevelScript command[16];
 };
 
+#define LVL_COMMAND_ID(...) \
+    (u8) (((LevelScript[]){ __VA_ARGS__ })[0])
+
 #define LVL_COMMAND(cmd) { \
-    (u8) (((LevelScript[]){ cmd })[0]), { \
-        .id = (u8) (((LevelScript[]){ cmd })[0]), \
+    LVL_COMMAND_ID(cmd), { \
+        .id = LVL_COMMAND_ID(cmd), \
         .size = 4 * (u8) (sizeof((LevelScript[]){ cmd }) / sizeof(LevelScript)), \
         .command = { cmd } \
     } \
@@ -123,6 +126,55 @@ bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes) {
 
     // advance command index
     sCurCommandIndex++;
+
+    return true;
+}
+
+static Array<u8> DynOS_Lvl_Validate_GetCommandIds(const DataNode<LevelScript> *aNode) {
+    Array<u8> lvlCommandIds;
+    for (s32 i = 0; i < aNode->mSize;) {
+        u8 id = (u8) aNode->mData[i];
+        if (sLevelScriptCommands.count(id) != 0) {
+            lvlCommandIds.Add(id);
+            i += sLevelScriptCommands[id].size / 4;
+        } else {
+            break;
+        }
+    }
+    return lvlCommandIds;
+}
+
+bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode) {
+    Array<u8> lvlCommandIds = DynOS_Lvl_Validate_GetCommandIds(aNode);
+
+    // Level script must have at least 1 command
+    if (lvlCommandIds.Count() < 1) {
+        PrintDataError("  ERROR: Validation failed for level %s: Not enough commands (%d).", aNode->mName.begin(), lvlCommandIds.Count());
+        return false;
+    }
+
+    // Penultimate command cannot be a SKIP command
+    static const Array<u8> sLvlSkipCommands = {
+        LVL_COMMAND_ID(SKIP()),
+        LVL_COMMAND_ID(SKIP_IF(0, 0)),
+        LVL_COMMAND_ID(SKIP_NOP()),
+    };
+    if (lvlCommandIds.Count() >= 2 && sLvlSkipCommands.Find(lvlCommandIds[lvlCommandIds.Count() - 2]) != -1) {
+        PrintDataError("  ERROR: Validation failed for level %s: Penultimate command of the script cannot be one of:\n    SKIP, SKIP_IF, SKIP_NOP", aNode->mName.begin());
+        return false;
+    }
+
+    // Last command must be a terminating command
+    static const Array<u8> sLvlEndCommands = {
+        LVL_COMMAND_ID(EXIT()),
+        LVL_COMMAND_ID(EXIT_AND_EXECUTE(0, 0, 0, 0)),
+        LVL_COMMAND_ID(JUMP(0)),
+        LVL_COMMAND_ID(RETURN()),
+    };
+    if (sLvlEndCommands.Find(lvlCommandIds[lvlCommandIds.Count() - 1]) == -1) {
+        PrintDataError("  ERROR: Validation failed for level %s: Last command of the script must be one of:\n    EXIT, EXIT_AND_EXECUTE, JUMP, RETURN", aNode->mName.begin());
+        return false;
+    }
 
     return true;
 }

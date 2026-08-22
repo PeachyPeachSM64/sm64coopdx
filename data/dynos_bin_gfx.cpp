@@ -1119,6 +1119,10 @@ DataNode<Gfx>* DynOS_Gfx_Parse(GfxData* aGfxData, DataNode<Gfx>* aNode) {
     aNode->mSize = (u32) (_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
     memmove(aNode->mData + aNode->mSize, aNode->mData + _Length, sizeof(Gfx)); // Move the sentinel to the true end of the display list
+
+    // Validate display list
+    DynOS_Gfx_Validate_CheckCommands(aGfxData, aNode);
+
     return aNode;
 }
 
@@ -1149,6 +1153,7 @@ void DynOS_Gfx_Write(BinFile *aFile, GfxData *aGfxData, DataNode<Gfx> *aNode) {
         }
     }
 }
+
   /////////////
  // Reading //
 /////////////
@@ -1193,6 +1198,12 @@ void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData) {
             _Node->mData[i].words.w0 = (uintptr_t) _WordsW0;
             _Node->mData[i].words.w1 = (uintptr_t) _WordsW1;
         }
+    }
+
+    // Validate display list
+    if (!DynOS_Gfx_Validate_CheckCommands(aGfxData, _Node)) {
+        Delete(_Node);
+        return;
     }
 
     // Append

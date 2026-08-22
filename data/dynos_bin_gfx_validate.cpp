@@ -86,3 +86,24 @@ bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u32 &outPtrTypes) {
 
     return true;
 }
+
+bool DynOS_Gfx_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Gfx> *aNode) {
+
+    // Display list must have at least 1 command
+    if (aNode->mSize < 1) {
+        PrintDataError("  ERROR: Validation failed for display list %s: Not enough commands (%d).", aNode->mName.begin(), aNode->mSize);
+        return false;
+    }
+
+    // Last command must be a terminating command
+    static const Array<uintptr_t> sGfxEndCommands = {
+        Gfx(gsSPBranchList(0)).words.w0,
+        Gfx(gsSPEndDisplayList()).words.w0,
+    };
+    if (sGfxEndCommands.Find(aNode->mData[aNode->mSize - 1].words.w0) == -1) {
+        PrintDataError("  ERROR: Validation failed for display list %s: Last command must be one of:\n    gsSPBranchList, gsSPEndDisplayList", aNode->mName.begin());
+        return false;
+    }
+
+    return true;
+}
