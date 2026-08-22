@@ -2421,48 +2421,6 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
     PrintDataError("  ERROR: Unknown behavior symbol: %s", _Symbol.begin());
 }
 
-static bool DynOS_Bhv_CheckCommands(const BehaviorScript *aBhv, const Array<BehaviorScript> &aCommands) {
-    u8 bhvCommand = (*aBhv >> 24) & 0xFF;
-    for (const auto &commandToCheck : aCommands) {
-        if (bhvCommand == ((commandToCheck >> 24) & 0xFF)) {
-            return true;
-        }
-    }
-    return false;
-}
-
-static bool DynOS_Bhv_Validate(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode) {
-
-    // 1st command must be BEGIN
-    if (!DynOS_Bhv_CheckCommands(aNode->mData + 0, { BEGIN(0) })) {
-        PrintDataError("  ERROR: Validation failed for behavior %s: First command of the script must be BEGIN.", aNode->mName.begin());
-        return false;
-    }
-
-    // 2nd command must be ID
-    if (!DynOS_Bhv_CheckCommands(aNode->mData + 1, { ID(0) })) {
-        PrintDataError("  ERROR: Validation failed for behavior %s: Second command of the script must be ID.", aNode->mName.begin());
-        return false;
-    }
-
-    // Last command must be a terminating command
-    if (!DynOS_Bhv_CheckCommands(aNode->mData + aNode->mSize - 1, {
-        CALL(0),
-        RETURN(),
-        GOTO(0),
-        END_LOOP(),
-        BREAK(),
-        DEACTIVATE(),
-        CALL_EXT(0),
-        GOTO_EXT(0),
-    })) {
-        PrintDataError("  ERROR: Validation failed for behavior %s: Last command of the script must be one of:\n    CALL, RETURN, GOTO, END_LOOP, BREAK, DEACTIVATE", aNode->mName.begin());
-        return false;
-    }
-
-    return true;
-}
-
 DataNode<BehaviorScript> *DynOS_Bhv_Parse(GfxData *aGfxData, DataNode<BehaviorScript> *aNode, bool aDisplayPercent) {
     if (aNode->mData) return aNode;
 
@@ -2477,8 +2435,8 @@ DataNode<BehaviorScript> *DynOS_Bhv_Parse(GfxData *aGfxData, DataNode<BehaviorSc
     aNode->mSize = (u32)(_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
 
-    // Validate behavior script
-    DynOS_Bhv_Validate(aGfxData, aNode);
+    // Validate commands
+    DynOS_Bhv_Validate_CheckCommands(aGfxData, aNode);
 
     if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
@@ -2586,6 +2544,8 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
     _Node->mSize = dataSize;
     _Node->mData = New<BehaviorScript>(_Node->mSize);
 
+    DynOS_Bhv_Validate_Begin();
+
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
         if (aFile->EoF()) {
@@ -2593,16 +2553,34 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
             break;
         }
         u32 _Value = aFile->Read<u32>();
-        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_ALL, &_Node->mFlags);
+
+        u32 _PtrTypes;
+        if (!DynOS_Bhv_Validate_GetPointerTypes(_Value, _PtrTypes)) {
+            PrintError("  ERROR! Corrupted command in behavior script: %s, 0x%08X", _Node->mName.begin(), _Value);
+            Delete(_Node);
+            return NULL;
+        }
+
+        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, _PtrTypes, &_Node->mFlags);
         if (_Ptr) {
+            if (!_PtrTypes) {
+                PrintError("  ERROR! Didn't expect a pointer while reading behavior script: %s, 0x%08X", _Node->mName.begin(), _Value);
+                Delete(_Node);
+                return NULL;
+            }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
+            if (_PtrTypes) {
+                PrintError("  ERROR! Expected a pointer while reading behavior script: %s, 0x%08X", _Node->mName.begin(), _Value);
+                Delete(_Node);
+                return NULL;
+            }
             _Node->mData[i] = (uintptr_t) _Value;
         }
     }
 
-    // Validate it
-    if (!DynOS_Bhv_Validate(aGfxData, _Node)) {
+    // Validate commands
+    if (!DynOS_Bhv_Validate_CheckCommands(aGfxData, _Node)) {
         Delete(_Node);
         return NULL;
     }

@@ -1187,6 +1187,10 @@ void DynOS_Bhv_GeneratePack(const SysPath &aPackFolder);
 s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found);
 s64 DynOS_Bhv_ParseBehaviorIntegerScriptConstants(const String &_Arg, bool *found);
 
+void DynOS_Bhv_Validate_Begin();
+bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes);
+bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode);
+
 s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found);
 s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool *found);
 

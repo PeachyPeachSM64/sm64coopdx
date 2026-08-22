@@ -1037,26 +1037,28 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
     for (u32 i = 0; i != _Node->mSize; ++i) {
         u32 _Value = aFile->Read<u32>();
 
-        u32 ptrTypes;
-        if (!DynOS_Lvl_Validate_GetPointerTypes(_Value, ptrTypes)) {
+        u32 _PtrTypes;
+        if (!DynOS_Lvl_Validate_GetPointerTypes(_Value, _PtrTypes)) {
             PrintError("  ERROR! Corrupted command in level script: %s, 0x%08X", _Node->mName.begin(), _Value);
             Delete(_Node);
             return NULL;
         }
 
-        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, ptrTypes, &_Node->mFlags);
+        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, _PtrTypes, &_Node->mFlags);
         if (_Ptr) {
-            if (!ptrTypes) {
-                PrintError("Didn't expect a pointer while reading level script: %s, %u", _Node->mName.begin(), _Value);
+            if (!_PtrTypes) {
+                PrintError("  ERROR! Didn't expect a pointer while reading level script: %s, 0x%08X", _Node->mName.begin(), _Value);
+                Delete(_Node);
+                return NULL;
             }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
-            if (ptrTypes & ~PTYPE_LUAV) { // Lua var is not mandatory
-                PrintError("Expected a pointer while reading level script: %s, %u", _Node->mName.begin(), _Value);
-                _Node->mData[i] = 0;
-            } else {
-                _Node->mData[i] = (uintptr_t) _Value;
+            if (_PtrTypes & ~PTYPE_LUAV) { // Lua var is not mandatory
+                PrintError("  ERROR! Expected a pointer while reading level script: %s, 0x%08X", _Node->mName.begin(), _Value);
+                Delete(_Node);
+                return NULL;
             }
+            _Node->mData[i] = (uintptr_t) _Value;
         }
     }
 

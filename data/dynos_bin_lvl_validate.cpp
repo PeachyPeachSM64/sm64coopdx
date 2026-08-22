@@ -91,16 +91,16 @@ LVL_COMMAND( SHOW_DIALOG_EXT         (0, PTYPE_LUAV, PTYPE_LUAV)),
 };
 
 static u8 sCurCommandId = 0xFF;
-static size_t sCurCommandOffset = 0;
+static u8 sCurCommandIndex = 0;
 
 void DynOS_Lvl_Validate_Begin() {
     sCurCommandId = 0xFF;
-    sCurCommandOffset = 0;
+    sCurCommandIndex = 0;
 }
 
 bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes) {
     // figure out which command we're inside
-    if (sCurCommandId == 0xFF || sCurCommandOffset >= sLevelScriptCommands[sCurCommandId].size) {
+    if (sCurCommandId == 0xFF || sCurCommandIndex >= sLevelScriptCommands[sCurCommandId].size / 4) {
         u8 id = (u8) aValue;
 
         // verify id
@@ -110,19 +110,19 @@ bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes) {
 
         // set current
         sCurCommandId = id;
-        sCurCommandOffset = 0;
+        sCurCommandIndex = 0;
     }
 
     // figure out if we expect a pointer
-    // offset 0 contains the id and size, it's never a pointer
-    if (sCurCommandOffset == 0) {
+    // index 0 contains the id and size, it's never a pointer
+    if (sCurCommandIndex == 0) {
         outPtrTypes = 0;
     } else {
-        outPtrTypes = sLevelScriptCommands[sCurCommandId].command[sCurCommandOffset];
+        outPtrTypes = sLevelScriptCommands[sCurCommandId].command[sCurCommandIndex];
     }
 
-    // advance command offset
-    sCurCommandOffset++;
+    // advance command index
+    sCurCommandIndex++;
 
     return true;
 }
