@@ -176,7 +176,7 @@ static void DynOS_Actor_Generate(const SysPath &aPackFolder, Array<Pair<u64, Str
         _GfxData->mErrorCount                 = 0;
         _GfxData->mDataIdentifier             = _GeoNode->mDataIdentifier;
         _GfxData->mPackFolder                 = aPackFolder;
-        _GfxData->mPointerList                = { NULL }; // The NULL pointer is needed, so we add it here
+        _GfxData->mPointerList                = { {NULL, 0} }; // The NULL pointer is needed, so we add it here
         _GfxData->mPointerOffsetList          = { };
         _GfxData->mLuaPointerList             = { };
         _GfxData->mLuaTokenList               = { };

@@ -26,7 +26,7 @@ DataNode<TexData*>* DynOS_TexList_Parse(GfxData* aGfxData, DataNode<TexData*>* a
     aNode->mData = New<TexData*>(aNode->mSize);
     for (u32 i = 0; i != aNode->mSize; ++i) {
         aNode->mData[i] = ParseTexListSymbol(aGfxData, aNode, aNode->mTokens[i]);
-        aGfxData->mPointerList.Add(&aNode->mData[i]);
+        aGfxData->mPointerList.Add({&aNode->mData[i], PTYPE_PNTR_TEX});
     }
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
     return aNode;

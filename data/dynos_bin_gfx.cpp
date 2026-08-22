@@ -803,15 +803,15 @@ static void ParseGfxSymbol(GfxData* aGfxData, DataNode<Gfx>* aNode, Gfx*& aHead,
 #define HANDLE_PARAM(paramNum) s64 _Arg##paramNum = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", paramTypes[paramNum - 1]);
 #define GET_ARG(paramNum) _Arg##paramNum
 #define CALL_SYMB(symb, ...) symb(__VA_ARGS__)
-#define define_gfx_symbol(symb, params, addPtr, ...)                \
-if (_Symbol == #symb) {                                             \
-    UNUSED static const GfxParamType paramTypes[] = { __VA_ARGS__ };\
-    REPEAT(HANDLE_PARAM, params);                                   \
-    if (addPtr) { aGfxData->mPointerList.Add(aHead); }              \
-    Gfx _Gfx[] = { CALL_SYMB(symb, LIST_ARGS(GET_ARG, params)) };   \
-    memcpy(aHead, _Gfx, sizeof(_Gfx));                              \
-    aHead += (sizeof(_Gfx) / sizeof(_Gfx[0]));                      \
-    return;                                                         \
+#define define_gfx_symbol(symb, params, ptrType, ...)                   \
+if (_Symbol == #symb) {                                                 \
+    UNUSED static const GfxParamType paramTypes[] = { __VA_ARGS__ };    \
+    REPEAT(HANDLE_PARAM, params);                                       \
+    if (ptrType != 0) { aGfxData->mPointerList.Add({aHead, ptrType}); } \
+    Gfx _Gfx[] = { CALL_SYMB(symb, LIST_ARGS(GET_ARG, params)) };       \
+    memcpy(aHead, _Gfx, sizeof(_Gfx));                                  \
+    aHead += (sizeof(_Gfx) / sizeof(_Gfx[0]));                          \
+    return;                                                             \
 }
 #define define_gfx_symbol_manual(...)
 #include "gfx_symbols.h"
@@ -843,13 +843,13 @@ if (_Symbol == #symb) {                                             \
     }
     if (_Symbol == "gsSPDisplayList") {
         s64 _Arg0 = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_GFX);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_GFX});
         gSPDisplayList(aHead++, _Arg0);
         return;
     }
     if (_Symbol == "gsSPBranchList") {
         s64 _Arg0 = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_GFX);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_GFX});
         gSPBranchList(aHead++, _Arg0);
         return;
     }
@@ -877,18 +877,18 @@ if (_Symbol == #symb) {                                             \
     if (_Symbol == "gsSPSetLights0") {
         Lights0 *_Light = (Lights0 *) ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_PTR);
         gSPNumLights(aHead++, NUMLIGHTS_0);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_LIGHT0});
         gSPLight(aHead++, &_Light->l[0], 1);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_LIGHT0});
         gSPLight(aHead++, &_Light->a, 2);
         return;
     }
     if (_Symbol == "gsSPSetLights1") {
         Lights1 *_Light = (Lights1 *) ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_PTR);
         gSPNumLights(aHead++, NUMLIGHTS_1);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_LIGHT});
         gSPLight(aHead++, &_Light->l[0], 1);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_LIGHT});
         gSPLight(aHead++, &_Light->a, 2);
         return;
     }
@@ -934,7 +934,7 @@ if (_Symbol == #symb) {                                             \
         s64 _Arg2 = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_INT);
         s64 _Arg3 = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_TEX);
         UpdateTextureInfo(aGfxData, &_Arg3, (s32) _Arg0, (s32) _Arg1, -1, -1);
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_TEX});
         gDPSetTextureImage(aHead++, _Arg0, _Arg1, _Arg2, _Arg3);
         return;
     }
@@ -995,7 +995,7 @@ if (_Symbol == #symb) {                                             \
         s64 _ArgB = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_INT);
         UpdateTextureInfo(aGfxData, &_Arg0, (s32) _Arg1, (s32) _Arg2, (s32) _Arg3, (s32) _Arg4);
 
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_TEX});
         gDPSetTextureImage(aHead++, _Arg1, arg2_0, 1, _Arg0);
         gDPSetTile(aHead++, _Arg1, arg2_0, 0, 0, G_TX_LOADTILE, 0, _Arg7, _Arg9, _ArgB, _Arg6, _Arg8, _ArgA);
         gDPLoadSync(aHead++);
@@ -1019,7 +1019,7 @@ if (_Symbol == #symb) {                                             \
         UpdateTextureInfo(aGfxData, &_Arg1, G_IM_FMT_RGBA, G_IM_SIZ_16b, -1, -1);
         SetCurrentTextureAsPalette(aGfxData);
 
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_TEX});
         gDPSetTextureImage(aHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, _Arg1);
         gDPTileSync(aHead++);
         gDPSetTile(aHead++, 0, 0, 0, (256+(((_Arg0)&0xf)*16)), G_TX_LOADTILE, 0, 0, 0, 0, 0, 0, 0);
@@ -1033,7 +1033,7 @@ if (_Symbol == #symb) {                                             \
         UpdateTextureInfo(aGfxData, &_Arg0, G_IM_FMT_RGBA, G_IM_SIZ_16b, -1, -1);
         SetCurrentTextureAsPalette(aGfxData);
 
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_TEX});
         gDPSetTextureImage(aHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, _Arg0);
         gDPTileSync(aHead++);
         gDPSetTile(aHead++, 0, 0, 0, 256, G_TX_LOADTILE, 0 , 0, 0, 0, 0, 0, 0);
@@ -1056,7 +1056,7 @@ if (_Symbol == #symb) {                                             \
         s64 _ArgA = ParseGfxSymbolArg(aGfxData, aNode, &aTokenIndex, "", GFX_PARAM_TYPE_INT);
         UpdateTextureInfo(aGfxData, &_Arg0, (s32) _Arg1, G_IM_SIZ_4b, (s32) _Arg2, (s32) _Arg3);
 
-        aGfxData->mPointerList.Add(aHead);
+        aGfxData->mPointerList.Add({aHead, PTYPE_PNTR_TEX});
         gDPSetTextureImage(aHead++, _Arg1, G_IM_SIZ_4b, 1, _Arg0);
         gDPSetTile(aHead++, _Arg1, G_IM_SIZ_4b, 0, 0, G_TX_LOADTILE, 0, _Arg6, _Arg8, _ArgA, _Arg5, _Arg7, _Arg9);
         gDPLoadSync(aHead++);
@@ -1139,9 +1139,10 @@ void DynOS_Gfx_Write(BinFile *aFile, GfxData *aGfxData, DataNode<Gfx> *aNode) {
     aFile->Write<u32>(aNode->mSize);
     for (u32 i = 0; i != aNode->mSize; ++i) {
         Gfx *_Head = &aNode->mData[i];
-        if (aGfxData->mPointerList.Find((void *) _Head) != -1) {
+        s32 _PointerIndex = aGfxData->mPointerList.FindIf([_Head](const DataPointer &aPtr) { return aPtr.ptr == (void *) _Head; });
+        if (_PointerIndex != -1) {
             aFile->Write<u32>(_Head->words.w0);
-            DynOS_Pointer_Write(aFile, (const void *) _Head->words.w1, aGfxData, PTYPE_ALL);
+            DynOS_Pointer_Write(aFile, (const void *) _Head->words.w1, aGfxData, aGfxData->mPointerList[_PointerIndex].ptype);
         } else {
             aFile->Write<u32>(_Head->words.w0);
             aFile->Write<u32>(_Head->words.w1);

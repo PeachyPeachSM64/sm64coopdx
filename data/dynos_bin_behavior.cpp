@@ -2007,55 +2007,45 @@ static BehaviorScript ParseBehaviorScriptSymbolArg(GfxData *aGfxData, DataNode<B
     return value;
 }
 
-#define AddPointerToList(symbol, aGfxData, pointer) \
-    /*Print("%s: Adding pointer %x to list.", symbol, pointer);*/ \
-    aGfxData->mPointerList.Add(pointer); \
-
 #define bhv_symbol_0(symb)                       \
     if (_Symbol == #symb) {                      \
-        BehaviorScript _Bs[] = { symb() };          \
+        BehaviorScript _Bs[] = { symb() };       \
         memcpy(aHead, _Bs, sizeof(_Bs));         \
         aHead += (sizeof(_Bs) / sizeof(_Bs[0])); \
         return;                                  \
     }
 
-#define bhv_symbol_1(symb, n)                                                              \
+#define bhv_symbol_1(symb)                                                                 \
     if (_Symbol == #symb) {                                                                \
         BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        if (n != 0) { AddPointerToList(#symb, aGfxData, aHead + n); }                      \
         BehaviorScript _Bs[] = { symb(_Arg0) };                                            \
         memcpy(aHead, _Bs, sizeof(_Bs));                                                   \
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                           \
         return;                                                                            \
     }
 
-#define bhv_symbol_2(symb, n1, n2)                                                         \
+#define bhv_symbol_2(symb)                                                                 \
     if (_Symbol == #symb) {                                                                \
         BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
         BehaviorScript _Arg1 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        if (n1 != 0) { AddPointerToList(#symb, aGfxData, aHead + n1); }                    \
-        if (n2 != 0) { AddPointerToList(#symb, aGfxData, aHead + n2); }                    \
         BehaviorScript _Bs[] = { symb(_Arg0, _Arg1) };                                     \
         memcpy(aHead, _Bs, sizeof(_Bs));                                                   \
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                           \
         return;                                                                            \
     }
 
-#define bhv_symbol_3(symb, n1, n2, n3)                                                     \
+#define bhv_symbol_3(symb)                                                                 \
     if (_Symbol == #symb) {                                                                \
         BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
         BehaviorScript _Arg1 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
         BehaviorScript _Arg2 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        if (n1 != 0) { AddPointerToList(#symb, aGfxData, aHead + n1); }                    \
-        if (n2 != 0) { AddPointerToList(#symb, aGfxData, aHead + n2); }                    \
-        if (n3 != 0) { AddPointerToList(#symb, aGfxData, aHead + n3); }                    \
         BehaviorScript _Bs[] = { symb(_Arg0, _Arg1, _Arg2) };                              \
         memcpy(aHead, _Bs, sizeof(_Bs));                                                   \
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                           \
         return;                                                                            \
     }
 
-#define bhv_symbol_4(symb, n1, n2, n3, n4)                                                       \
+#define bhv_symbol_8(symb)                                                                       \
     if (_Symbol == #symb) {                                                                      \
         BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
         BehaviorScript _Arg1 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
@@ -2065,10 +2055,6 @@ static BehaviorScript ParseBehaviorScriptSymbolArg(GfxData *aGfxData, DataNode<B
         BehaviorScript _Arg5 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
         BehaviorScript _Arg6 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
         BehaviorScript _Arg7 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        if (n1 != 0) { AddPointerToList(#symb, aGfxData, aHead + n1); }                          \
-        if (n2 != 0) { AddPointerToList(#symb, aGfxData, aHead + n2); }                          \
-        if (n3 != 0) { AddPointerToList(#symb, aGfxData, aHead + n3); }                          \
-        if (n4 != 0) { AddPointerToList(#symb, aGfxData, aHead + n4); }                          \
         BehaviorScript _Bs[] = { symb(_Arg0, _Arg1, _Arg2, _Arg3, _Arg4, _Arg5, _Arg6, _Arg7) }; \
         memcpy(aHead, _Bs, sizeof(_Bs));                                                         \
         aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                                 \
@@ -2093,45 +2079,44 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
     bhv_symbol_0(SET_HOME);
     bhv_symbol_0(DISABLE_RENDERING);
 
-    bhv_symbol_1(ID, 0);
-    bhv_symbol_1(BEGIN, 0);
-    bhv_symbol_1(DELAY, 0);
-    bhv_symbol_1(BEGIN_REPEAT, 0);
-    bhv_symbol_1(CMD_NOP_1, 0);
-    bhv_symbol_1(CMD_NOP_2, 0);
-    bhv_symbol_1(CMD_NOP_3, 0);
-    bhv_symbol_1(SET_MODEL, 0);
-    bhv_symbol_1(DELAY_VAR, 0);
-    bhv_symbol_1(BEGIN_REPEAT_UNUSED, 0);
-    bhv_symbol_1(ANIMATE, 0);
-    bhv_symbol_1(SET_INTERACT_TYPE, 0);
-    bhv_symbol_1(SET_INTERACT_SUBTYPE, 0);
-    //bhv_symbol_1(SPAWN_WATER_DROPLET, 1);
+    bhv_symbol_1(ID);
+    bhv_symbol_1(BEGIN);
+    bhv_symbol_1(DELAY);
+    bhv_symbol_1(BEGIN_REPEAT);
+    bhv_symbol_1(CMD_NOP_1);
+    bhv_symbol_1(CMD_NOP_2);
+    bhv_symbol_1(CMD_NOP_3);
+    bhv_symbol_1(SET_MODEL);
+    bhv_symbol_1(DELAY_VAR);
+    bhv_symbol_1(BEGIN_REPEAT_UNUSED);
+    bhv_symbol_1(ANIMATE);
+    bhv_symbol_1(SET_INTERACT_TYPE);
+    bhv_symbol_1(SET_INTERACT_SUBTYPE);
 
-    bhv_symbol_2(ADD_FLOAT, 0, 0);
-    bhv_symbol_2(SET_FLOAT, 0, 0);
-    bhv_symbol_2(ADD_INT, 0, 0);
-    bhv_symbol_2(SET_INT, 0, 0);
-    bhv_symbol_2(OR_INT, 0, 0);
-    bhv_symbol_2(BIT_CLEAR, 0, 0);
-    bhv_symbol_2(SET_HITBOX, 0, 0);
-    bhv_symbol_2(CMD_NOP_4, 0, 0);
-    bhv_symbol_2(SET_HURTBOX, 0, 0);
-    bhv_symbol_2(SCALE, 0, 0);
-    bhv_symbol_2(PARENT_BIT_CLEAR, 0, 0);
-    bhv_symbol_2(ANIMATE_TEXTURE, 0, 0);
-    bhv_symbol_2(SET_INT_UNUSED, 0, 0);
+    bhv_symbol_2(ADD_FLOAT);
+    bhv_symbol_2(SET_FLOAT);
+    bhv_symbol_2(ADD_INT);
+    bhv_symbol_2(SET_INT);
+    bhv_symbol_2(OR_INT);
+    bhv_symbol_2(BIT_CLEAR);
+    bhv_symbol_2(SET_HITBOX);
+    bhv_symbol_2(CMD_NOP_4);
+    bhv_symbol_2(SET_HURTBOX);
+    bhv_symbol_2(SCALE);
+    bhv_symbol_2(PARENT_BIT_CLEAR);
+    bhv_symbol_2(ANIMATE_TEXTURE);
+    bhv_symbol_2(SET_INT_UNUSED);
 
-    bhv_symbol_3(SET_INT_RAND_RSHIFT, 0, 0, 0);
-    bhv_symbol_3(SET_RANDOM_INT, 0, 0, 0);
-    bhv_symbol_3(SET_RANDOM_FLOAT, 0, 0, 0);
-    bhv_symbol_3(ADD_RANDOM_FLOAT, 0, 0, 0);
-    bhv_symbol_3(ADD_INT_RAND_RSHIFT, 0, 0, 0);
-    bhv_symbol_3(SUM_FLOAT, 0, 0, 0);
-    bhv_symbol_3(SUM_INT, 0, 0, 0);
-    bhv_symbol_3(SET_HITBOX_WITH_OFFSET, 0, 0, 0);
+    bhv_symbol_3(SET_INT_RAND_RSHIFT);
+    bhv_symbol_3(SET_RANDOM_INT);
+    bhv_symbol_3(SET_RANDOM_FLOAT);
+    bhv_symbol_3(ADD_RANDOM_FLOAT);
+    bhv_symbol_3(ADD_INT_RAND_RSHIFT);
+    bhv_symbol_3(SUM_FLOAT);
+    bhv_symbol_3(SUM_INT);
+    bhv_symbol_3(SET_HITBOX_WITH_OFFSET);
 
-    bhv_symbol_4(SET_OBJ_PHYSICS, 0, 0, 0, 0);
+    bhv_symbol_8(SET_OBJ_PHYSICS);
 
     // Both CALL and GOTO can have a offset to their addresses
     // in their non-extended counterparts.
@@ -2146,7 +2131,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
-            aGfxData->mPointerList.Add(aHead + 1);
+            aGfxData->mPointerList.Add({aHead + 1, PTYPE_PNTR_BHV});
             BehaviorScript _Bs[] = { CALL(behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2168,7 +2153,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript function = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundFunc);
 
         if (foundFunc) {
-            aGfxData->mPointerList.Add(aHead + 1);
+            aGfxData->mPointerList.Add({aHead + 1, PTYPE_FUNC_BHV});
             BehaviorScript _Bs[] = { CALL_NATIVE(function) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2190,7 +2175,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
-            aGfxData->mPointerList.Add(aHead + 1);
+            aGfxData->mPointerList.Add({aHead + 1, PTYPE_PNTR_BHV});
             BehaviorScript _Bs[] = { GOTO(behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2214,7 +2199,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
-            aGfxData->mPointerList.Add(aHead + 2);
+            aGfxData->mPointerList.Add({aHead + 2, PTYPE_PNTR_BHV});
             BehaviorScript _Bs[] = { SPAWN_CHILD(modelID, behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2238,7 +2223,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
-            aGfxData->mPointerList.Add(aHead + 2);
+            aGfxData->mPointerList.Add({aHead + 2, PTYPE_PNTR_BHV});
             BehaviorScript _Bs[] = { SPAWN_CHILD_WITH_PARAM(bhvParam, modelID, behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2261,7 +2246,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript behavior = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundBeh);
 
         if (foundBeh) {
-            aGfxData->mPointerList.Add(aHead + 2);
+            aGfxData->mPointerList.Add({aHead + 2, PTYPE_PNTR_BHV});
             BehaviorScript _Bs[] = { SPAWN_OBJ(modelID, behavior) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2283,7 +2268,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript animations = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundAnimation);
 
         if (foundAnimation) {
-            aGfxData->mPointerList.Add(aHead + 1);
+            aGfxData->mPointerList.Add({aHead + 1, PTYPE_PNTR_ANIM});
             BehaviorScript _Bs[] = { LOAD_ANIMATIONS(field, animations) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2306,7 +2291,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         BehaviorScript collisionData = ParseBehaviorScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundCollisionData);
 
         if (foundCollisionData) {
-            aGfxData->mPointerList.Add(aHead + 1);
+            aGfxData->mPointerList.Add({aHead + 1, PTYPE_PNTR_COL});
             BehaviorScript _Bs[] = { LOAD_COLLISION_DATA(collisionData) };
             memcpy(aHead, _Bs, sizeof(_Bs));
             aHead += (sizeof(_Bs) / sizeof(_Bs[0]));
@@ -2519,8 +2504,9 @@ static void DynOS_Bhv_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Behavior
     aFile->Write<u32>(aNode->mSize);
     for (u32 i = 0; i != aNode->mSize; ++i) {
         BehaviorScript *_Head = &aNode->mData[i];
-        if (aGfxData->mPointerList.Find((void *) _Head) != -1) {
-            DynOS_Pointer_Write(aFile, (const void *) (*_Head), aGfxData, PTYPE_ALL);
+        s32 _PointerIndex = aGfxData->mPointerList.FindIf([_Head](const DataPointer &aPtr) { return aPtr.ptr == (void *) _Head; });
+        if (_PointerIndex != -1) {
+            DynOS_Pointer_Write(aFile, (const void *) (*_Head), aGfxData, aGfxData->mPointerList[_PointerIndex].ptype);
         } else if (aGfxData->mLuaPointerList.Find((void *) _Head) != -1) {
             DynOS_Pointer_Lua_Write(aFile, *(u32 *)_Head, aGfxData);
         } else {
@@ -2528,7 +2514,6 @@ static void DynOS_Bhv_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Behavior
         }
     }
 }
-
 
 static bool DynOS_Bhv_WriteBinary(const SysPath &aOutputFilename, GfxData *aGfxData) {
     BinFile *_File = BinFile::OpenW(aOutputFilename.c_str());
@@ -2678,7 +2663,7 @@ static void DynOS_Bhv_Generate(const SysPath &aPackFolder, Array<Pair<u64, Strin
         _GfxData->mErrorCount                 = 0;
         _GfxData->mDataIdentifier             = _BhvNode->mDataIdentifier;
         _GfxData->mPackFolder                 = aPackFolder;
-        _GfxData->mPointerList                = { NULL }; // The NULL pointer is needed, so we add it here
+        _GfxData->mPointerList                = { {NULL, 0} }; // The NULL pointer is needed, so we add it here
         _GfxData->mPointerOffsetList          = { };
         _GfxData->mLuaPointerList             = { };
         _GfxData->mLuaTokenList               = { };

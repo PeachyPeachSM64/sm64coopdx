@@ -46,7 +46,7 @@ extern "C" {
 #define PTYPE_PNTR_MOVTEXQC     (1 << 19)
 #define PTYPE_PNTR_ROOM         (1 << 20)
 #define PTYPE_PNTR_ANIM         (1 << 21)
-#define PTYPE_PNTR              (PTYPE_PNTR_LIGHT | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHTT | PTYPE_PNTR_AMBIENTT | PTYPE_PNTR_TEX | PTYPE_PNTR_TEXLIST | PTYPE_PNTR_GFX | PTYPE_PNTR_GEO | PTYPE_PNTR_VTX | PTYPE_PNTR_COL | PTYPE_PNTR_LVL | PTYPE_PNTR_BHV | PTYPE_PNTR_MACRO | PTYPE_PNTR_TRAJ | PTYPE_PNTR_MOVTEX | PTYPE_PNTR_MOVTEXQC | PTYPE_PNTR_ROOM | PTYPE_PNTR_ANIM)
+#define PTYPE_PNTR              (PTYPE_PNTR_LIGHT | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHTT | PTYPE_PNTR_AMBIENTT | PTYPE_PNTR_TEX | PTYPE_PNTR_TEXLIST | PTYPE_PNTR_GFX | PTYPE_PNTR_GEO | PTYPE_PNTR_VTX | PTYPE_PNTR_COL | PTYPE_PNTR_LVL | PTYPE_PNTR_BHV | PTYPE_PNTR_MACRO | PTYPE_PNTR_TRAJ | PTYPE_PNTR_MOVTEX | PTYPE_PNTR_MOVTEXQC | PTYPE_PNTR_ROOM | PTYPE_PNTR_ANIM)
 
 #define PTYPE_ALL (0xFFFFFFFF) // TODO: placeholder for not breaking everything
 
@@ -619,6 +619,8 @@ struct GfxContext {
     DataNode<TexData>* mCurrentPalette = NULL;
 };
 
+struct DataPointer { void *ptr; u32 ptype; };
+
 template <typename T>
 using AnimBuffer = Pair<String, Array<T>>;
 struct GfxData : NoCopy {
@@ -659,7 +661,7 @@ struct GfxData : NoCopy {
     s32 mModIndex = 0;
     s32 mModFileIndex = 0;
     SysPath mPackFolder;
-    Array<void *> mPointerList;
+    Array<DataPointer> mPointerList;
     Array<Pair<const void*, const void*>> mPointerOffsetList;
     Array<void *> mLuaPointerList;
     Array<String> mLuaTokenList;

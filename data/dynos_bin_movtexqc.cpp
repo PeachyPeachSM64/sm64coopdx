@@ -40,7 +40,7 @@ DataNode<MovtexQC>* DynOS_MovtexQC_Parse(GfxData* aGfxData, DataNode<MovtexQC>* 
         s16 id = (s16) aNode->mTokens[2 * i + 0].ParseInt();
         Movtex* quadArraySegmented = ParseMovtexQCSymbolArg(aGfxData, aNode, 2 * i + 1);
         aNode->mData[i] = { id, quadArraySegmented };
-        aGfxData->mPointerList.Add(aNode->mData[i].quadArraySegmented);
+        aGfxData->mPointerList.Add({aNode->mData[i].quadArraySegmented, PTYPE_PNTR_MOVTEX});
     }
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
     return aNode;
@@ -83,7 +83,7 @@ DataNode<MovtexQC>* DynOS_MovtexQC_Load(BinFile *aFile, GfxData *aGfxData) {
     for (u32 i = 0; i != _Node->mSize; ++i) {
         _Node->mData[i].id = aFile->Read<s16>();
         u32 _Value = aFile->Read<u32>();
-        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_ALL, &_Node->mFlags);
+        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_PNTR_MOVTEX, &_Node->mFlags);
         _Node->mData[i].quadArraySegmented = (Movtex*)_Ptr;
     }
 
