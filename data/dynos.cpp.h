@@ -1112,6 +1112,8 @@ void DynOS_Gfx_Write(BinFile *aFile, GfxData *aGfxData, DataNode<Gfx> *aNode);
 void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData);
 s64 DynOS_Gfx_ParseGfxConstants(const String& _Arg, bool* found);
 
+bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u32 &outPtrTypes);
+
 DataNode<Lights1>* DynOS_Lights_Parse(GfxData* aGfxData, DataNode<Lights1>* aNode);
 void DynOS_Lights_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Lights1> *aNode);
 void DynOS_Lights_Load(BinFile *aFile, GfxData *aGfxData);

@@ -29,8 +29,10 @@ LevelScript* DynOS_Lvl_GetScript(const char* aScriptEntryName) {
         auto& pair = _CustomLevelScripts[i];
         if (pair.first == aScriptEntryName) {
             auto& newScripts = pair.second->mLevelScripts;
-            auto& newScriptNode = newScripts[newScripts.Count() - 1];
-            return newScriptNode->mData;
+            if (newScripts.Count() > 0) {
+                auto& newScriptNode = newScripts[newScripts.Count() - 1];
+                return newScriptNode->mData;
+            }
         }
     }
     return NULL;

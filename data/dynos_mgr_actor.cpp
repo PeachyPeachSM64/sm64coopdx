@@ -51,8 +51,8 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     _GfxData->mModIndex = aModIndex;
     _GfxData->mModFileIndex = aModFileIndex;
 
-    void* geoLayout = (*(_GfxData->mGeoLayouts.end() - 1))->mData;
-    if (!geoLayout) {
+    void *geoLayout = NULL;
+    if (_GfxData->mGeoLayouts.Count() == 0 || (geoLayout = (void *) (*(_GfxData->mGeoLayouts.end() - 1))->mData) == NULL) {
         PrintError("  ERROR! Couldn't load geo layout for \"%s\"", actorName.c_str());
         return false;
     }

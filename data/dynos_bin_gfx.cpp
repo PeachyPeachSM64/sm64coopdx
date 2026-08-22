@@ -1162,14 +1162,34 @@ void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData) {
     // Data
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = gfx_allocate_internal(NULL, _Node->mSize);
+
+    // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
         u32 _WordsW0 = aFile->Read<u32>();
         u32 _WordsW1 = aFile->Read<u32>();
-        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _WordsW1, PTYPE_ALL, &_Node->mFlags);
+
+        u32 _PtrTypes;
+        if (!DynOS_Gfx_Validate_GetPointerTypes(_WordsW0, _PtrTypes)) {
+            PrintError("  ERROR! Corrupted command in display list: %s, 0x%08X 0x%08X", _Node->mName.begin(), _WordsW0, _WordsW1);
+            Delete(_Node);
+            return;
+        }
+
+        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _WordsW1, _PtrTypes, &_Node->mFlags);
         if (_Ptr) {
+            if (!_PtrTypes) {
+                PrintError("  ERROR! Didn't expect a pointer while reading display list: %s, 0x%08X 0x%08X", _Node->mName.begin(), _WordsW0, _WordsW1);
+                Delete(_Node);
+                return;
+            }
             _Node->mData[i].words.w0 = (uintptr_t) _WordsW0;
             _Node->mData[i].words.w1 = (uintptr_t) _Ptr;
         } else {
+            if (_PtrTypes) {
+                PrintError("  ERROR! Expected a pointer while reading display list: %s, 0x%08X 0x%08X", _Node->mName.begin(), _WordsW0, _WordsW1);
+                Delete(_Node);
+                return;
+            }
             _Node->mData[i].words.w0 = (uintptr_t) _WordsW0;
             _Node->mData[i].words.w1 = (uintptr_t) _WordsW1;
         }
