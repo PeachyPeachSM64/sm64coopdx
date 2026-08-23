@@ -155,7 +155,7 @@ static s32 eval_script_op(s8 op, s32 arg) {
 }
 
 struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u8 destNode, u8 checkpoint, struct Object *o) {
-    if (sCurrAreaIndex < 0 || sCurrAreaIndex >= MAX_AREAS) {
+    if (gCurrAreaIndex < 0 || gCurrAreaIndex >= MAX_AREAS) {
         return NULL;
     }
 
@@ -171,8 +171,8 @@ struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u
 
     warpNode->object = o;
 
-    warpNode->next = gAreas[sCurrAreaIndex].warpNodes;
-    gAreas[sCurrAreaIndex].warpNodes = warpNode;
+    warpNode->next = gAreas[gCurrAreaIndex].warpNodes;
+    gAreas[gCurrAreaIndex].warpNodes = warpNode;
 
     return warpNode;
 }
