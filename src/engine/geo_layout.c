@@ -192,7 +192,7 @@ void geo_layout_cmd_return(void) {
 
 // 0x04: Open node
 void geo_layout_cmd_open_node(void) {
-    if (gCurGraphNodeIndex < 0 || gCurGraphNodeIndex >= GRAPH_NODE_LIST_SIZE) {
+    if (gCurGraphNodeIndex < 0 || gCurGraphNodeIndex >= GRAPH_NODE_LIST_SIZE - 1) {
         LOG_ERROR("geo_layout_cmd_open_node: Invalid gCurGraphNodeIndex: %d", gCurGraphNodeIndex);
         gGeoLayoutCommand = NULL;
         sGeoProcessAborted = true;

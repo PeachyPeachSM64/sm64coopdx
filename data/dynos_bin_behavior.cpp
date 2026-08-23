@@ -2436,7 +2436,7 @@ DataNode<BehaviorScript> *DynOS_Bhv_Parse(GfxData *aGfxData, DataNode<BehaviorSc
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
 
     // Validate commands
-    DynOS_Bhv_Validate_CheckCommands(aGfxData, aNode);
+    DynOS_Bhv_Validate_CheckCommands(aGfxData, aNode, false);
 
     if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
@@ -2586,7 +2586,7 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
     _Node->mData[_Node->mSize] = BC_BBH(0xFF, 0x00, 0xDEAD);
 
     // Validate commands
-    if (!DynOS_Bhv_Validate_CheckCommands(aGfxData, _Node)) {
+    if (!DynOS_Bhv_Validate_CheckCommands(aGfxData, _Node, true)) {
         Delete(_Node);
         return NULL;
     }

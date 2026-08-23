@@ -54,6 +54,7 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     void *geoLayout = NULL;
     if (_GfxData->mGeoLayouts.Count() == 0 || (geoLayout = (void *) (*(_GfxData->mGeoLayouts.end() - 1))->mData) == NULL) {
         PrintError("  ERROR! Couldn't load geo layout for \"%s\"", actorName.c_str());
+        DynOS_Gfx_Free(_GfxData);
         return false;
     }
 
@@ -62,6 +63,7 @@ bool DynOS_Actor_AddCustom(s32 aModIndex, s32 aModFileIndex, const SysPath &aFil
     GraphNode *graphNode = (GraphNode *) DynOS_Model_LoadGeo(&id, MODEL_POOL_SESSION, geoLayout, true);
     if (!graphNode) {
         PrintError("  ERROR! Couldn't load graph node for \"%s\"", actorName.c_str());
+        DynOS_Gfx_Free(_GfxData);
         return false;
     }
     graphNode->georef = georef;

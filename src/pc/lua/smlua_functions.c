@@ -538,6 +538,7 @@ static struct LuaLevelParseScript {
     struct Mod *mod;
     struct ModFile *modFile;
     bool isLegacyFunc;
+    bool isParsing;
 } sLuaLevelParseScript = { 0 };
 
 //
@@ -652,7 +653,7 @@ static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 
     // Collision data
     lua_newtable(L);
     smlua_push_pointer(L, LVT_COLLISION_P, data, NULL); lua_setfield(L, -2, "data");
-    smlua_push_integer_field(-2, "size", size);
+    smlua_push_integer_field(-2, "size", size); // size in bytes
 
     lua_setfield(L, -2, "collision");
 
@@ -660,7 +661,7 @@ static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 
     lua_newtable(L); int specialObjectsTable = lua_gettop(L); s32 specialObjectsTableIndex = 1;
     lua_newtable(L); int waterBoxesTable = lua_gettop(L); s32 waterBoxesTableIndex = 1;
 
-    Collision *end = data + size;
+    Collision *end = data + (size / sizeof(Collision));
     while (data < end) {
         s16 terrainLoadType = *data++;
         switch (terrainLoadType) {
@@ -674,10 +675,6 @@ static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 
 
                 for (s16 i = 0; i < numSpecialObjects; ++i) {
                     u8 presetID = (u8) *data++;
-                    if (presetID == 0xFF) {
-                        continue;
-                    }
-
                     Vec3s pos;
                     pos[0] = *data++;
                     pos[1] = *data++;
@@ -806,7 +803,7 @@ static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 
 }
 
 static void smlua_func_level_parse_macro_objects(lua_State *L, MacroObject *macroData) {
-    for (s32 i = 1; *macroData != MACRO_OBJECT_END(); macroData += 5, i++) {
+    for (s32 i = 1; *macroData != MACRO_OBJECT_END(); macroData += 5) {
         s16 presetId = (s16) ((macroData[0] & 0x1FF) - 0x1F);
         if (presetId < 0 || presetId >= MACRO_OBJECT_PRESET_COUNT) {
             continue;
@@ -832,7 +829,7 @@ static void smlua_func_level_parse_macro_objects(lua_State *L, MacroObject *macr
         smlua_push_integer_field(-2, "behaviorId", behaviorId);
         smlua_push_integer_field(-2, "behParams", behParams);
 
-        lua_rawseti(L, -2, i);
+        lua_rawseti(L, -2, i++);
     }
 }
 
@@ -983,7 +980,6 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
                 } else {
                     smlua_push_integer_field(-2, "modelId", modelId);
                 }
-                smlua_push_integer_field(-2, "modelId", modelId);
                 smlua_push_integer_field(-2, "behaviorId", behaviorId);
                 smlua_push_integer_field(-2, "behParams", behParams);
 
@@ -1143,9 +1139,20 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
 int smlua_func_level_parse_script(lua_State* L) {
     if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
 
+    if (sLuaLevelParseScript.isParsing) {
+        LOG_LUA("Cannot call 'level_parse_script' inside itself");
+        return 0;
+    }
+
     enum LevelNum levelNum = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) {
         LOG_LUA("Failed to convert parameter 1 for function 'level_parse_script'");
+        return 0;
+    }
+
+    void *levelScript = dynos_level_get_script(levelNum);
+    if (levelScript == NULL) {
+        LOG_LUA_LINE("Could not find script for level num: %d", levelNum);
         return 0;
     }
 
@@ -1156,16 +1163,11 @@ int smlua_func_level_parse_script(lua_State* L) {
         return 0;
     }
 
-    void *levelScript = dynos_level_get_script(levelNum);
-    if (levelScript == NULL) {
-        LOG_LUA_LINE("Could not find script for level num: %d", levelNum);
-        return 0;
-    }
-
     // Setup Lua callback
     sLuaLevelParseScript.callback = ref;
     sLuaLevelParseScript.mod = gLuaActiveMod;
     sLuaLevelParseScript.modFile = gLuaActiveModFile;
+    sLuaLevelParseScript.isParsing = true;
 
     // Back up current values
     LevelScript *currLevelScript = gLevelScriptActive;
@@ -1179,6 +1181,10 @@ int smlua_func_level_parse_script(lua_State* L) {
     // Restore current values
     gLevelScriptActive = currLevelScript;
     gLevelScriptModIndex = currModIndex;
+
+    // Cleanup Lua callback
+    luaL_unref(L, LUA_REGISTRYINDEX, ref);
+    sLuaLevelParseScript.isParsing = false;
 
     return 1;
 }

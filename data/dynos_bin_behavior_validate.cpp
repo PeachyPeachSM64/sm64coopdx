@@ -143,11 +143,11 @@ static Array<u8> DynOS_Bhv_Validate_GetCommandIds(const DataNode<BehaviorScript>
     return bhvCommandIds;
 }
 
-bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode) {
+bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode, bool isLoad) {
     Array<u8> bhvCommandIds = DynOS_Bhv_Validate_GetCommandIds(aNode);
 
-    // Check unterminated command
-    if (sCurCommandId != 0xFF && sCurCommandIndex < sBehaviorScriptCommands[sCurCommandId].size / 4) {
+    // Check unterminated command (Load only)
+    if (isLoad && sCurCommandId != 0xFF && sCurCommandIndex < sBehaviorScriptCommands[sCurCommandId].size / 4) {
         PrintDataError("  ERROR: Validation failed for behavior %s: Unterminated command: %02X", aNode->mName.begin(), sCurCommandId);
         return false;
     }

@@ -321,7 +321,7 @@ static void level_cmd_skip_if(void) {
     if (eval_script_op(CMD_GET(u8, 2), CMD_GET(s32, 4)) == 0) {
         do {
             sCurrentCmd = CMD_NEXT;
-        } while (sCurrentCmd->type == 0x0F || sCurrentCmd->type == 0x10);
+        } while (sCurrentCmd != NULL && (sCurrentCmd->type == 0x0F || sCurrentCmd->type == 0x10));
     }
 
     sCurrentCmd = CMD_NEXT;
@@ -330,7 +330,7 @@ static void level_cmd_skip_if(void) {
 static void level_cmd_skip(void) {
     do {
         sCurrentCmd = CMD_NEXT;
-    } while (sCurrentCmd->type == 0x10);
+    } while (sCurrentCmd != NULL && sCurrentCmd->type == 0x10);
 
     sCurrentCmd = CMD_NEXT;
 }
@@ -1182,7 +1182,7 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
         sCurrentCmd = dynos_swap_cmd(sCurrentCmd);
         void *dynosCurrCmd = (void *) sCurrentCmd;
 
-        if (sCurrentCmd->type < ARRAY_COUNT(LevelScriptJumpTable)) {
+        if (sCurrentCmd != NULL && sCurrentCmd->type < ARRAY_COUNT(LevelScriptJumpTable)) {
             LevelScriptJumpTable[sCurrentCmd->type]();
         } else {
             sCurrentCmd = NULL; // Hit sentinel or invalid cmd type

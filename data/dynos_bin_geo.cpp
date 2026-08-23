@@ -485,7 +485,7 @@ DataNode<GeoLayout>* DynOS_Geo_Parse(GfxData* aGfxData, DataNode<GeoLayout>* aNo
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
 
     // Validate geo layout
-    DynOS_Geo_Validate_CheckCommands(aGfxData, aNode);
+    DynOS_Geo_Validate_CheckCommands(aGfxData, aNode, false);
 
     if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
@@ -537,6 +537,11 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(u32));
+            Delete(_Node);
+            return;
+        }
         u32 _Value = aFile->Read<u32>();
 
         u16 _CommandId;
@@ -570,7 +575,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mData[_Node->mSize] = CMD_BBH(0xFF, 0x00, 0xDEAD);
 
     // Validate geo layout
-    if (!DynOS_Geo_Validate_CheckCommands(aGfxData, _Node)) {
+    if (!DynOS_Geo_Validate_CheckCommands(aGfxData, _Node, true)) {
         Delete(_Node);
         return;
     }

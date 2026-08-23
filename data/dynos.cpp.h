@@ -1126,7 +1126,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData);
 
 void DynOS_Geo_Validate_Begin();
 bool DynOS_Geo_Validate_GetPointerTypes(u32 aValue, u16 &outCommandId, u32 &outPtrTypes);
-bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayout> *aNode);
+bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayout> *aNode, bool isLoad);
 
 DataNode<Gfx>* DynOS_Gfx_Parse(GfxData* aGfxData, DataNode<Gfx>* aNode);
 void DynOS_Gfx_Write(BinFile *aFile, GfxData *aGfxData, DataNode<Gfx> *aNode);
@@ -1209,7 +1209,7 @@ s64 DynOS_Lvl_ParseLevelScriptConstants(const String& _Arg, bool* found);
 
 void DynOS_Lvl_Validate_Begin();
 bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPtrTypes);
-bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode);
+bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode, bool isLoad);
 u8 DynOS_Lvl_GetCommandSize(u8 aCmdType);
 
 DataNode<BehaviorScript> *DynOS_Bhv_Parse(GfxData *aGfxData, DataNode<BehaviorScript> *aNode, bool aDisplayPercent);
@@ -1220,7 +1220,7 @@ s64 DynOS_Bhv_ParseBehaviorIntegerScriptConstants(const String &_Arg, bool *foun
 
 void DynOS_Bhv_Validate_Begin();
 bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPtrTypes);
-bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode);
+bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode, bool isLoad);
 
 s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found);
 s64 DynOS_Common_ParseModelConstants(const String &_Arg, bool *found);

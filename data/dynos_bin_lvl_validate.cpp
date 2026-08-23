@@ -55,7 +55,7 @@ LVL_COMMAND( ALLOC_LEVEL_POOL        ()),
 LVL_COMMAND( FREE_LEVEL_POOL         ()),
 LVL_COMMAND( AREA                    (0, PTYPE_PNTR_GEO)),
 LVL_COMMAND( END_AREA                ()),
-LVL_COMMAND( LOAD_MODEL_FROM_DL      (0, 0, 0)),
+LVL_COMMAND( LOAD_MODEL_FROM_DL      (0, PTYPE_PNTR_GFX, 0)),
 LVL_COMMAND( LOAD_MODEL_FROM_GEO     (0, PTYPE_PNTR_GEO)),
 LVL_COMMAND( CMD23                   (0, PTYPE_PNTR_GEO, 0)),
 LVL_COMMAND( OBJECT_WITH_ACTS        (0, 0, 0, 0, 0, 0, 0, 0, PTYPE_PNTR_BHV, 0)),
@@ -146,11 +146,11 @@ static Array<u8> DynOS_Lvl_Validate_GetCommandIds(const DataNode<LevelScript> *a
     return lvlCommandIds;
 }
 
-bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode) {
+bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode, bool isLoad) {
     Array<u8> lvlCommandIds = DynOS_Lvl_Validate_GetCommandIds(aNode);
 
-    // Check unterminated command
-    if (sCurCommandId != 0xFF && sCurCommandIndex < sLevelScriptCommands[sCurCommandId].size / 4) {
+    // Check unterminated command (Load only)
+    if (isLoad && sCurCommandId != 0xFF && sCurCommandIndex < sLevelScriptCommands[sCurCommandId].size / 4) {
         PrintDataError("  ERROR: Validation failed for level %s: Unterminated command: %02X", aNode->mName.begin(), sCurCommandId);
         return false;
     }

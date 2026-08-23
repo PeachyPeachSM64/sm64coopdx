@@ -60,7 +60,7 @@ void DynOS_Col_Validate_SectionChange(GfxData *aGfxData, u8 section) {
             PrintDataError("  ERROR: Improper triangle count found in section. Allocated: %u, Defined: %u", sColValData.triAlloc, sColValData.triCount);
         }
         if (sColValData.specialAlloc != sColValData.specialCount) {
-            PrintDataError("  ERROR: Improper special count found in section. Allocated: %u, Defined: %u", sColValData.triAlloc, sColValData.triCount);
+            PrintDataError("  ERROR: Improper special count found in section. Allocated: %u, Defined: %u", sColValData.specialAlloc, sColValData.specialCount);
         }
         if (sColValData.waterBoxAlloc != sColValData.waterBoxCount) {
             PrintDataError("  ERROR: Improper water box count found in section. Allocated: %u, Defined: %u", sColValData.waterBoxAlloc, sColValData.waterBoxCount);
@@ -75,7 +75,9 @@ void DynOS_Col_Validate_Init(GfxData *aGfxData) {
 }
 
 void DynOS_Col_Validate_VertexInit(GfxData *aGfxData, s16 vertexCount) {
-    if (strcmp(sColValData.lastSymbol, "COL_INIT") != 0) {
+    if (!sColValData.lastSymbol) {
+        PrintDataError("  ERROR: Missing COL_INIT command");
+    } else if (strcmp(sColValData.lastSymbol, "COL_INIT") != 0) {
         PrintDataError("  ERROR: COL_VERTEX_INIT found outside of vertex section");
     }
     if (vertexCount < 0) {
@@ -109,13 +111,13 @@ void DynOS_Col_Validate_Tri(GfxData *aGfxData, s16 vertex0, s16 vertex1, s16 ver
     if (surface_has_force(sColValData.surfaceType)) {
         PrintDataError("  ERROR: COL_TRI cannot be used by surface types with a force parameter: %d (use COL_TRI_SPECIAL instead)", sColValData.surfaceType);
     }
-    if (vertex0 < 0 || vertex0 > sColValData.vtxCount) {
+    if (vertex0 < 0 || vertex0 >= sColValData.vtxCount) {
         PrintDataError("  ERROR: COL_TRI used vertex outside of known range for first param: %d", vertex0);
     }
-    if (vertex1 < 0 || vertex1 > sColValData.vtxCount) {
+    if (vertex1 < 0 || vertex1 >= sColValData.vtxCount) {
         PrintDataError("  ERROR: COL_TRI used vertex outside of known range for second param: %d", vertex1);
     }
-    if (vertex2 < 0 || vertex2 > sColValData.vtxCount) {
+    if (vertex2 < 0 || vertex2 >= sColValData.vtxCount) {
         PrintDataError("  ERROR: COL_TRI used vertex outside of known range for third param: %d", vertex2);
     }
     sColValData.triCount++;
@@ -128,13 +130,13 @@ void DynOS_Col_Validate_TriSpecial(GfxData *aGfxData, s16 vertex0, s16 vertex1, 
     if (!surface_has_force(sColValData.surfaceType)) {
         PrintDataError("  ERROR: COL_TRI_SPECIAL cannot be used by surface types with no force parameter: %d (use COL_TRI instead)", sColValData.surfaceType);
     }
-    if (vertex0 < 0 || vertex0 > sColValData.vtxCount) {
+    if (vertex0 < 0 || vertex0 >= sColValData.vtxCount) {
         PrintDataError("  ERROR: COL_TRI_SPECIAL used vertex outside of known range for first param: %d", vertex0);
     }
-    if (vertex1 < 0 || vertex1 > sColValData.vtxCount) {
+    if (vertex1 < 0 || vertex1 >= sColValData.vtxCount) {
         PrintDataError("  ERROR: COL_TRI_SPECIAL used vertex outside of known range for second param: %d", vertex1);
     }
-    if (vertex2 < 0 || vertex2 > sColValData.vtxCount) {
+    if (vertex2 < 0 || vertex2 >= sColValData.vtxCount) {
         PrintDataError("  ERROR: COL_TRI_SPECIAL used vertex outside of known range for third param: %d", vertex2);
     }
     sColValData.triCount++;
@@ -274,7 +276,7 @@ static void DynOS_Col_Validate_CheckSurfaceData(GfxData *aGfxData, const DataNod
         return;
     }
 
-    s16 index2 = sColData[0];
+    s16 index2 = sColData[1];
     if (index2 < 0) {
         PrintDataError("  ERROR: Validation failed for collision %s: Triangle vertex index 2 is negative (%d)", aNode->mName.begin(), index2);
         sColValidationAborted = true;
@@ -286,7 +288,7 @@ static void DynOS_Col_Validate_CheckSurfaceData(GfxData *aGfxData, const DataNod
         return;
     }
 
-    s16 index3 = sColData[0];
+    s16 index3 = sColData[2];
     if (index3 < 0) {
         PrintDataError("  ERROR: Validation failed for collision %s: Triangle vertex index 3 is negative (%d)", aNode->mName.begin(), index3);
         sColValidationAborted = true;
@@ -417,6 +419,11 @@ static void DynOS_Col_Validate_CheckSpecialObjects(GfxData *aGfxData, const Data
 }
 
 bool DynOS_Col_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Collision> *aNode) {
+    if (aNode->mSize < 1) {
+        PrintDataError("  ERROR: Validation failed for collision %s: Not enough commands (%d)", aNode->mName.begin(), aNode->mSize);
+        return false;
+    }
+
     sColBegin = aNode->mData;
     sColEnd = aNode->mData + aNode->mSize;
     sColData = sColBegin;

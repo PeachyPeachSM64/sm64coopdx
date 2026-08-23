@@ -896,7 +896,7 @@ DataNode<LevelScript>* DynOS_Lvl_Parse(GfxData* aGfxData, DataNode<LevelScript>*
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
 
     // Validate script
-    DynOS_Lvl_Validate_CheckCommands(aGfxData, aNode);
+    DynOS_Lvl_Validate_CheckCommands(aGfxData, aNode, false);
 
     if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
@@ -1039,6 +1039,11 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(u32));
+            Delete(_Node);
+            return NULL;
+        }
         u32 _Value = aFile->Read<u32>();
 
         u8 _CommandId;
@@ -1069,10 +1074,10 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
 
     // Add sentinel
     // Upon hitting this invalid command, the level script processor will restart the game
-    _Node->mData[_Node->mSize] = CMD_BBBB(0xFF, 0x00, 0xDE, 0xAD);
+    _Node->mData[_Node->mSize] = CMD_BBH(0xFF, 0x00, 0xDEAD);
 
     // Validate script
-    if (!DynOS_Lvl_Validate_CheckCommands(aGfxData, _Node)) {
+    if (!DynOS_Lvl_Validate_CheckCommands(aGfxData, _Node, true)) {
         Delete(_Node);
         return NULL;
     }

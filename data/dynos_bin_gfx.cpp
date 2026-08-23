@@ -1170,6 +1170,11 @@ void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * 2 * sizeof(u32));
+            Delete(_Node);
+            return;
+        }
         u32 _WordsW0 = aFile->Read<u32>();
         u32 _WordsW1 = aFile->Read<u32>();
 

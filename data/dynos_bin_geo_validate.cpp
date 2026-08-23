@@ -288,11 +288,11 @@ static Array<u16> DynOS_Geo_Validate_GetCommandIds(const DataNode<GeoLayout> *aN
     return geoCommandIds;
 }
 
-bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayout> *aNode) {
+bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayout> *aNode, bool isLoad) {
     Array<u16> geoCommandIds = DynOS_Geo_Validate_GetCommandIds(aNode);
 
-    // Check unterminated command
-    if (sCurCommandId != 0xFFFF && sCurCommandIndex < sGeoLayoutCommands[sCurCommandId].size / 4) {
+    // Check unterminated command (Load only)
+    if (isLoad && sCurCommandId != 0xFFFF && sCurCommandIndex < sGeoLayoutCommands[sCurCommandId].size / 4) {
         PrintDataError("  ERROR: Validation failed for geo layout %s: Unterminated command: %04X", aNode->mName.begin(), sCurCommandId);
         return false;
     }

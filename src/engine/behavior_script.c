@@ -181,7 +181,7 @@ void obj_update_gfx_pos_and_angle(struct Object *obj) {
 
 // Set the object's current behavior command.
 static bool cur_obj_bhv_command_set(const BehaviorScript *command) {
-    if (!gCurBhvCommand) {
+    if (!gCurBhvCommand || !command) {
         return false;
     }
 
@@ -1024,8 +1024,14 @@ static s32 bhv_cmd_call_ext(void) {
         return BHV_PROC_CONTINUE;
     }
 
-    stack_push(BHV_CMD_GET_ADDR_OF_CMD(2)); // Store address of the next bhv command in the stack.
     const BehaviorScript *jumpAddress = (BehaviorScript *)get_behavior_from_id(behId);
+    if (jumpAddress == NULL) {
+        LOG_LUA("Failed to call address, could not get behavior '%s' from the id %u.", behStr, behId);
+        cmd_next(2);
+        return BHV_PROC_CONTINUE;
+    }
+
+    stack_push(BHV_CMD_GET_ADDR_OF_CMD(2)); // Store address of the next bhv command in the stack.
     cmd_set(jumpAddress); // Jump to the new address.
 
     return BHV_PROC_CONTINUE;
@@ -1060,7 +1066,14 @@ static s32 bhv_cmd_goto_ext(void) {
         return BHV_PROC_CONTINUE;
     }
 
-    cmd_set(get_behavior_from_id(behId)); // Jump directly to address
+    const BehaviorScript *jumpAddress = (BehaviorScript *)get_behavior_from_id(behId);
+    if (jumpAddress == NULL) {
+        LOG_LUA("Failed to call address, could not get behavior '%s' from the id %u.", behStr, behId);
+        cmd_next(2);
+        return BHV_PROC_CONTINUE;
+    }
+
+    cmd_set(jumpAddress); // Jump directly to address
     return BHV_PROC_CONTINUE;
 }
 

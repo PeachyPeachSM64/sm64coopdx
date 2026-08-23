@@ -744,6 +744,11 @@ bool smlua_find_lua_param(uintptr_t *param, uintptr_t value, u32 luaParams, u32 
         }
 
         const char *paramStr = dynos_level_get_token(*param);
+        if (!paramStr) {
+            LOG_ERROR("smlua_find_lua_param: Invalid token index: %u", (u32) *param);
+            return false;
+        }
+
         gSmLuaConvertSuccess = true;
         *param = smlua_get_integer_mod_variable(gLevelScriptModIndex, paramStr);
 
