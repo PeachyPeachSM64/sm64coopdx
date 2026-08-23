@@ -1,10 +1,7 @@
 #include "dynos.cpp.h"
-// #include <map>
 extern "C" {
 #include "include/surface_terrains.h"
-#include "include/level_misc_macros.h"
 #include "include/special_presets.h"
-#include "include/special_preset_names.h"
 #include "src/game/macro_special_objects.h"
 #include "src/engine/surface_load.h"
 }

@@ -468,6 +468,10 @@ DataNode<MacroObject>* DynOS_MacroObject_Parse(GfxData* aGfxData, DataNode<Macro
     if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     aNode->mSize = (u32)(_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
+
+    // Validate commands
+    DynOS_MacroObject_Validate_CheckCommands(aGfxData, aNode);
+
     return aNode;
 }
 
@@ -505,7 +509,18 @@ DataNode<MacroObject>* DynOS_MacroObject_Load(BinFile *aFile, GfxData *aGfxData)
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = New<MacroObject>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(MacroObject));
+            Delete(_Node);
+            return NULL;
+        }
         _Node->mData[i] = aFile->Read<MacroObject>();
+    }
+
+    // Validate commands
+    if (!DynOS_MacroObject_Validate_CheckCommands(aGfxData, _Node)) {
+        Delete(_Node);
+        return NULL;
     }
 
     // Add it
