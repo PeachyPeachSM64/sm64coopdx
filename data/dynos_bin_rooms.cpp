@@ -52,6 +52,11 @@ DataNode<u8>* DynOS_Rooms_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = New<u8>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(u8));
+            Delete(_Node);
+            return NULL;
+        }
         _Node->mData[i] = aFile->Read<u8>();
     }
 

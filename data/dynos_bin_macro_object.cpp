@@ -465,13 +465,13 @@ DataNode<MacroObject>* DynOS_MacroObject_Parse(GfxData* aGfxData, DataNode<Macro
         ParseMacroObjectSymbol(aGfxData, aNode, _Head, _TokenIndex, _SwitchNodes);
         if (aDisplayPercent && aGfxData->mErrorCount == 0) { PrintNoNewLine("%3d%%\b\b\b\b", (s32) (_TokenIndex * 100) / aNode->mTokens.Count()); }
     }
-    if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     aNode->mSize = (u32)(_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
 
     // Validate commands
     DynOS_MacroObject_Validate_CheckCommands(aGfxData, aNode);
 
+    if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
 }
 

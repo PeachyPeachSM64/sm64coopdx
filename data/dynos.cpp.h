@@ -1158,13 +1158,19 @@ DataNode<MacroObject>* DynOS_MacroObject_Parse(GfxData* aGfxData, DataNode<Macro
 void DynOS_MacroObject_Write(BinFile* aFile, GfxData* aGfxData, DataNode<MacroObject> *aNode);
 DataNode<MacroObject>* DynOS_MacroObject_Load(BinFile *aFile, GfxData *aGfxData);
 
+bool DynOS_MacroObject_Validate_CheckCommands(GfxData *aGfxData, const DataNode<MacroObject> *aNode);
+
 DataNode<Trajectory>* DynOS_Trajectory_Parse(GfxData* aGfxData, DataNode<Trajectory>* aNode, bool aDisplayPercent);
 void DynOS_Trajectory_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Trajectory> *aNode);
 DataNode<Trajectory>* DynOS_Trajectory_Load(BinFile *aFile, GfxData *aGfxData);
 
+bool DynOS_Trajectory_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Trajectory> *aNode);
+
 DataNode<Movtex>* DynOS_Movtex_Parse(GfxData* aGfxData, DataNode<Movtex>* aNode, bool aDisplayPercent);
 void DynOS_Movtex_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Movtex> *aNode);
 DataNode<Movtex>* DynOS_Movtex_Load(BinFile *aFile, GfxData *aGfxData);
+
+bool DynOS_Movtex_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Movtex> *aNode);
 
 DataNode<MovtexQC>* DynOS_MovtexQC_Parse(GfxData* aGfxData, DataNode<MovtexQC>* aNode);
 void DynOS_MovtexQC_Write(BinFile* aFile, GfxData* aGfxData, DataNode<MovtexQC> *aNode);
