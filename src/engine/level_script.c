@@ -81,7 +81,7 @@ inline static struct LevelCommand *cmd_next() {
     return NULL;
 }
 
-inline static bool stack_push_(uintptr_t value) {
+inline static bool level_stack_push(uintptr_t value) {
     if (sStackTop < sStack || sStackTop >= sStackLimit) {
         return false;
     }
@@ -91,7 +91,7 @@ inline static bool stack_push_(uintptr_t value) {
     return true;
 }
 
-inline static bool stack_pop_(uintptr_t *output) {
+inline static bool level_stack_pop(uintptr_t *output) {
     if (sStackTop <= sStack || sStackTop > sStackLimit) {
         return false;
     }
@@ -102,7 +102,7 @@ inline static bool stack_pop_(uintptr_t *output) {
 }
 
 #define stack_push(value) { \
-    if (!stack_push_((uintptr_t) value)) { \
+    if (!level_stack_push((uintptr_t) value)) { \
         sCurrentCmd = NULL; \
         return; \
     } \
@@ -110,7 +110,7 @@ inline static bool stack_pop_(uintptr_t *output) {
 
 #define stack_pop(value) { \
     uintptr_t _value_; \
-    if (!stack_pop_(&_value_)) { \
+    if (!level_stack_pop(&_value_)) { \
         sCurrentCmd = NULL; \
         return; \
     } \

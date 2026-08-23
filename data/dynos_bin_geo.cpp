@@ -531,7 +531,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Data
     _Node->mSize = aFile->Read<u32>();
-    _Node->mData = New<GeoLayout>(_Node->mSize);
+    _Node->mData = New<GeoLayout>(_Node->mSize + 1);
 
     DynOS_Geo_Validate_Begin();
 
@@ -564,6 +564,10 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
             _Node->mData[i] = (uintptr_t) _Value;
         }
     }
+
+    // Add sentinel
+    // Upon hitting this invalid command, the geo layout processor will not generate the graph node
+    _Node->mData[_Node->mSize] = CMD_BBH(0xFF, 0x00, 0xDEAD);
 
     // Validate geo layout
     if (!DynOS_Geo_Validate_CheckCommands(aGfxData, _Node)) {
