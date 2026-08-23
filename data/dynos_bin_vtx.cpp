@@ -118,6 +118,11 @@ void DynOS_Vtx_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = vtx_allocate_internal(NULL, _Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * (isUsingF32Vtx ? 22 : 16));
+            Delete(_Node);
+            return;
+        }
         if (isUsingF32Vtx) {
             _Node->mData[i].n.ob[0] = aFile->Read<f32>();
             _Node->mData[i].n.ob[1] = aFile->Read<f32>();

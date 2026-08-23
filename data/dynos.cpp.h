@@ -794,10 +794,10 @@ void PrintError(const char *aFmt, Args... aArgs) {
     PrintConsole(CONSOLE_MESSAGE_ERROR, aFmt, aArgs...);
 }
 #define PrintDataError(...) { \
-    if (aGfxData->mErrorCount == 0) Print("  ERROR!"); \
+    if (aGfxData && aGfxData->mErrorCount == 0) { Print("  ERROR!"); } \
     Print(__VA_ARGS__); \
     PrintConsole(CONSOLE_MESSAGE_ERROR, __VA_ARGS__); \
-    aGfxData->mErrorCount++; \
+    if (aGfxData) { aGfxData->mErrorCount++; } \
 }
 
 #if DEBUG
@@ -1102,6 +1102,25 @@ void DynOS_Col_Write(BinFile* aFile, GfxData* aGfxData, DataNode<Collision> *aNo
 DataNode<Collision>* DynOS_Col_Load(BinFile *aFile, GfxData *aGfxData);
 DataNode<Collision>* DynOS_Col_LoadFromBinary(const SysPath &aFilename, const char *aCollisionName);
 void DynOS_Col_Generate(const SysPath &aPackFolder, Array<Pair<u64, String>> _ActorsFolders, GfxData *_GfxData);
+
+void DynOS_Col_Validate_Begin();
+bool DynOS_Col_Validate_CheckSectionEnd();
+bool DynOS_Col_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Collision> *aNode);
+void DynOS_Col_Validate_SetLastSymbol(const char *aLastSymbol);
+void DynOS_Col_Validate_Init(GfxData *aGfxData);
+void DynOS_Col_Validate_VertexInit(GfxData *aGfxData, s16 vertexCount);
+void DynOS_Col_Validate_Vertex(GfxData *aGfxData, s16 x, s16 y, s16 z);
+void DynOS_Col_Validate_TriInit(GfxData *aGfxData, s16 surfaceType, s16 triangleCount);
+void DynOS_Col_Validate_Tri(GfxData *aGfxData, s16 vertex0, s16 vertex1, s16 vertex2);
+void DynOS_Col_Validate_TriSpecial(GfxData *aGfxData, s16 vertex0, s16 vertex1, s16 vertex2, s16 force);
+void DynOS_Col_Validate_Stop(GfxData *aGfxData);
+void DynOS_Col_Validate_End(GfxData *aGfxData);
+void DynOS_Col_Validate_SpecialInit(GfxData *aGfxData, s16 specialCount);
+void DynOS_Col_Validate_WaterBoxInit(GfxData *aGfxData, s16 waterBoxCount);
+void DynOS_Col_Validate_WaterBox(GfxData *aGfxData, s16 id, s16 x1, s16 z1, s16 x2, s16 z2, s16 y);
+void DynOS_Col_Validate_SpecialObject(GfxData *aGfxData, s16 preset, s16 posX, s16 posY, s16 posZ);
+void DynOS_Col_Validate_SpecialObjectWithYaw(GfxData *aGfxData, s16 preset, s16 posX, s16 posY, s16 posZ, s16 yaw);
+void DynOS_Col_Validate_SpecialObjectWithYawAndParam(GfxData *aGfxData, s16 preset, s16 posX, s16 posY, s16 posZ, s16 yaw, s16 param);
 
 DataNode<GeoLayout>* DynOS_Geo_Parse(GfxData* aGfxData, DataNode<GeoLayout>* aNode, bool aDisplayPercent);
 void DynOS_Geo_Write(BinFile *aFile, GfxData *aGfxData, DataNode<GeoLayout> *aNode);

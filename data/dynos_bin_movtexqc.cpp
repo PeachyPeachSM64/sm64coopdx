@@ -81,6 +81,11 @@ DataNode<MovtexQC>* DynOS_MovtexQC_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = New<MovtexQC>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * (sizeof(s16) + sizeof(u32)));
+            Delete(_Node);
+            return NULL;
+        }
         _Node->mData[i].id = aFile->Read<s16>();
         u32 _Value = aFile->Read<u32>();
         void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_PNTR_MOVTEX, &_Node->mFlags);
