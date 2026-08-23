@@ -74,15 +74,15 @@ GFX_COMMAND( G_STATE_EXT,        0),
 // GFX_COMMAND( G_SETKEYGB,         0),
 };
 
-bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u32 &outPtrTypes) {
-    u8 id = (u8) (aWordsW0 >> 24);
+bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u8 &outCommandId, u32 &outPtrTypes) {
+    outCommandId = (u8) (aWordsW0 >> 24);
 
     // verify id
-    if (sGfxCommands.count(id) == 0) {
+    if (sGfxCommands.count(outCommandId) == 0) {
         return false;
     }
 
-    outPtrTypes = sGfxCommands[id];
+    outPtrTypes = sGfxCommands[outCommandId];
 
     return true;
 }

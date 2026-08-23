@@ -250,7 +250,7 @@ static PointerData GetDataFromPointer(const void* aPtr, GfxData* aGfxData, u32 a
         }
     }
 
-    PrintDataError("Unable to find pointer: %x", aPtr);
+    PrintDataError("  ERROR: Unable to find pointer: %x", aPtr);
     return { "", 0 };
 }
 
@@ -306,7 +306,7 @@ void DynOS_Pointer_Write(BinFile* aFile, const void* aPtr, GfxData* aGfxData, u3
     }
 
     // No valid pointer
-    PrintDataError("Not a valid pointer: %x", aPtr);
+    PrintDataError("  ERROR: Not a valid pointer: %x", aPtr);
 }
 
   /////////////

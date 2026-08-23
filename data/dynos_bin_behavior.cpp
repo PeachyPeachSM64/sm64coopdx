@@ -2554,9 +2554,10 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
         }
         u32 _Value = aFile->Read<u32>();
 
+        u8 _CommandId;
         u32 _PtrTypes;
-        if (!DynOS_Bhv_Validate_GetPointerTypes(_Value, _PtrTypes)) {
-            PrintError("  ERROR! Corrupted command in behavior script: %s, 0x%08X", _Node->mName.begin(), _Value);
+        if (!DynOS_Bhv_Validate_GetPointerTypes(_Value, _CommandId, _PtrTypes)) {
+            PrintDataError("  ERROR: Corrupted command in behavior script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
             Delete(_Node);
             return NULL;
         }
@@ -2564,14 +2565,14 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
         void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, _PtrTypes, &_Node->mFlags);
         if (_Ptr) {
             if (!_PtrTypes) {
-                PrintError("  ERROR! Didn't expect a pointer while reading behavior script: %s, 0x%08X", _Node->mName.begin(), _Value);
+                PrintDataError("  ERROR: Didn't expect a pointer while reading behavior script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
                 Delete(_Node);
                 return NULL;
             }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
-            if (_PtrTypes) {
-                PrintError("  ERROR! Expected a pointer while reading behavior script: %s, 0x%08X", _Node->mName.begin(), _Value);
+            if (_PtrTypes && _Value != 0) {
+                PrintDataError("  ERROR: Expected a pointer while reading behavior script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
                 Delete(_Node);
                 return NULL;
             }
@@ -2606,8 +2607,18 @@ GfxData *DynOS_Bhv_LoadFromBinary(const SysPath &aFilename, const char *aBehavio
                 case DATA_TYPE_BEHAVIOR_SCRIPT: DynOS_Bhv_Load(_File, _GfxData); break;
                 default:                        _Done = true;                    break;
             }
+            if (_GfxData->mErrorCount > 0) {
+                PrintError("  %u error(s): Failed to load behavior '%s'", _GfxData->mErrorCount, aBehaviorName);
+                break;
+            }
         }
         BinFile::Close(_File);
+    }
+
+    // If something went wrong, do not register behavior
+    if (_GfxData && _GfxData->mErrorCount > 0) {
+        DynOS_Gfx_Free(_GfxData);
+        return NULL;
     }
 
     return _GfxData;

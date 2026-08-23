@@ -1107,12 +1107,16 @@ DataNode<GeoLayout>* DynOS_Geo_Parse(GfxData* aGfxData, DataNode<GeoLayout>* aNo
 void DynOS_Geo_Write(BinFile *aFile, GfxData *aGfxData, DataNode<GeoLayout> *aNode);
 void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData);
 
+void DynOS_Geo_Validate_Begin();
+bool DynOS_Geo_Validate_GetPointerTypes(u32 aValue, u16 &outCommandId, u32 &outPtrTypes);
+bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayout> *aNode);
+
 DataNode<Gfx>* DynOS_Gfx_Parse(GfxData* aGfxData, DataNode<Gfx>* aNode);
 void DynOS_Gfx_Write(BinFile *aFile, GfxData *aGfxData, DataNode<Gfx> *aNode);
 void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData);
 s64 DynOS_Gfx_ParseGfxConstants(const String& _Arg, bool* found);
 
-bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u32 &outPtrTypes);
+bool DynOS_Gfx_Validate_GetPointerTypes(u32 aWordsW0, u8 &outCommandId, u32 &outPtrTypes);
 bool DynOS_Gfx_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Gfx> *aNode);
 
 DataNode<Lights1>* DynOS_Lights_Parse(GfxData* aGfxData, DataNode<Lights1>* aNode);
@@ -1181,7 +1185,7 @@ void DynOS_Lvl_GeneratePack(const SysPath &aPackFolder);
 s64 DynOS_Lvl_ParseLevelScriptConstants(const String& _Arg, bool* found);
 
 void DynOS_Lvl_Validate_Begin();
-bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes);
+bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPtrTypes);
 bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode);
 u8 DynOS_Lvl_GetCommandSize(u8 aCmdType);
 
@@ -1192,7 +1196,7 @@ s64 DynOS_Bhv_ParseBehaviorScriptConstants(const String &_Arg, bool *found);
 s64 DynOS_Bhv_ParseBehaviorIntegerScriptConstants(const String &_Arg, bool *found);
 
 void DynOS_Bhv_Validate_Begin();
-bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes);
+bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPtrTypes);
 bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode);
 
 s64 DynOS_Common_ParseBhvConstants(const String &_Arg, bool *found);

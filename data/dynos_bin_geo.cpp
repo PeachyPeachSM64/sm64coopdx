@@ -481,9 +481,13 @@ DataNode<GeoLayout>* DynOS_Geo_Parse(GfxData* aGfxData, DataNode<GeoLayout>* aNo
         ParseGeoSymbol(aGfxData, aNode, _Head, _TokenIndex, _SwitchNodes);
         if (aDisplayPercent && aGfxData->mErrorCount == 0) { PrintNoNewLine("%3d%%\b\b\b\b", (s32) (_TokenIndex * 100) / aNode->mTokens.Count()); }
     }
-    if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     aNode->mSize = (u32)(_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
+
+    // Validate geo layout
+    DynOS_Geo_Validate_CheckCommands(aGfxData, aNode);
+
+    if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     return aNode;
 }
 
@@ -528,14 +532,43 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
     // Data
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = New<GeoLayout>(_Node->mSize);
+
+    DynOS_Geo_Validate_Begin();
+
+    // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
         u32 _Value = aFile->Read<u32>();
-        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_ALL, &_Node->mFlags);
+
+        u16 _CommandId;
+        u32 _PtrTypes;
+        if (!DynOS_Geo_Validate_GetPointerTypes(_Value, _CommandId, _PtrTypes)) {
+            PrintDataError("  ERROR: Corrupted command in geo layout: %s, 0x%04X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
+            Delete(_Node);
+            return;
+        }
+
+        void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, _PtrTypes, &_Node->mFlags);
         if (_Ptr) {
+            if (!_PtrTypes) {
+                PrintDataError("  ERROR: Didn't expect a pointer while reading geo layout: %s, 0x%04X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
+                Delete(_Node);
+                return;
+            }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
+            if (_PtrTypes && _Value != 0) {
+                PrintDataError("  ERROR: Expected a pointer while reading geo layout: %s, 0x%04X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
+                Delete(_Node);
+                return;
+            }
             _Node->mData[i] = (uintptr_t) _Value;
         }
+    }
+
+    // Validate geo layout
+    if (!DynOS_Geo_Validate_CheckCommands(aGfxData, _Node)) {
+        Delete(_Node);
+        return;
     }
 
     // Append

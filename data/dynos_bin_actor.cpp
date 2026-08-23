@@ -114,13 +114,16 @@ GfxData *DynOS_Actor_LoadFromBinary(const SysPath &aPackFolder, const char *aAct
                 case DATA_TYPE_GFXDYNCMD:       DynOS_GfxDynCmd_Load (_File, _GfxData); break;
                 default:                        _Done = true;                           break;
             }
+            if (_GfxData->mErrorCount > 0) {
+                PrintError("  %u error(s): Failed to load actor '%s'", _GfxData->mErrorCount, aActorName);
+                break;
+            }
         }
         BinFile::Close(_File);
     }
 
     // If something went wrong, do not register actor
     if (_GfxData && _GfxData->mErrorCount > 0) {
-        PrintError("  %u error(s) occurred during loading: Actor '%s' will not be enabled", _GfxData->mErrorCount, aActorName);
         DynOS_Gfx_Free(_GfxData);
         return NULL;
     }

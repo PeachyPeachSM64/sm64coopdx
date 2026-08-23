@@ -99,13 +99,14 @@ void DynOS_Bhv_Validate_Begin() {
     sCurCommandIndex = 0;
 }
 
-bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes) {
+bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPtrTypes) {
     // figure out which command we're inside
     if (sCurCommandId == 0xFF || sCurCommandIndex >= sBehaviorScriptCommands[sCurCommandId].size / 4) {
         u8 id = (u8) (aValue >> 24);
 
         // verify id
         if (sBehaviorScriptCommands.count(id) == 0) {
+            outCommandId = sCurCommandId;
             return false;
         }
 
@@ -125,6 +126,7 @@ bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u32 &outPtrTypes) {
     // advance command index
     sCurCommandIndex++;
 
+    outCommandId = sCurCommandId;
     return true;
 }
 
