@@ -1193,9 +1193,9 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
 
         // Failsafe: restart the game
         if (sCurrentCmd == NULL) {
-            LOG_ERROR("--------------------------------------------------------");
-            LOG_ERROR("Level script corruption detected! Restarting the game...");
-            LOG_ERROR("--------------------------------------------------------");
+            LOG_ERROR("==========================================================");
+            LOG_ERROR(" Level script corruption detected! Restarting the game... ");
+            LOG_ERROR("==========================================================");
             network_shutdown(true, false, false, false);
             gLevelScriptModIndex = -1;
             gLevelScriptActive = NULL;

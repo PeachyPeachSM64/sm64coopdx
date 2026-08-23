@@ -149,6 +149,12 @@ static Array<u8> DynOS_Lvl_Validate_GetCommandIds(const DataNode<LevelScript> *a
 bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode) {
     Array<u8> lvlCommandIds = DynOS_Lvl_Validate_GetCommandIds(aNode);
 
+    // Check unterminated command
+    if (sCurCommandId != 0xFF && sCurCommandIndex < sLevelScriptCommands[sCurCommandId].size / 4) {
+        PrintDataError("  ERROR: Validation failed for level %s: Unterminated command: %02X", aNode->mName.begin(), sCurCommandId);
+        return false;
+    }
+
     // Level script must have at least 1 command
     if (lvlCommandIds.Count() < 1) {
         PrintDataError("  ERROR: Validation failed for level %s: Not enough commands (%d).", aNode->mName.begin(), lvlCommandIds.Count());

@@ -2542,7 +2542,7 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
 
     // Data
     _Node->mSize = dataSize;
-    _Node->mData = New<BehaviorScript>(_Node->mSize);
+    _Node->mData = New<BehaviorScript>(_Node->mSize + 1);
 
     DynOS_Bhv_Validate_Begin();
 
@@ -2550,7 +2550,8 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
     for (u32 i = 0; i != _Node->mSize; ++i) {
         if (aFile->EoF()) {
             PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(u32));
-            break;
+            Delete(_Node);
+            return NULL;
         }
         u32 _Value = aFile->Read<u32>();
 
@@ -2579,6 +2580,10 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
             _Node->mData[i] = (uintptr_t) _Value;
         }
     }
+
+    // Add sentinel
+    // Upon hitting this invalid command, the behavior script processor will delete the object
+    _Node->mData[_Node->mSize] = BC_BBH(0xFF, 0x00, 0xDEAD);
 
     // Validate commands
     if (!DynOS_Bhv_Validate_CheckCommands(aGfxData, _Node)) {

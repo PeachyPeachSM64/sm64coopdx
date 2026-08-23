@@ -88,7 +88,6 @@ BHV_COMMAND( SPAWN_CHILD_WITH_PARAM_EXT (0, 0, PTYPE_LUAV)),
 BHV_COMMAND( SPAWN_OBJ_EXT              (0, PTYPE_LUAV)),
 BHV_COMMAND( LOAD_ANIMATIONS_EXT        (0, PTYPE_LUAV)),
 BHV_COMMAND( LOAD_COLLISION_DATA_EXT    (PTYPE_LUAV)),
-BHV_COMMAND( CALL_LUA_FUNC              (PTYPE_LUAV)),
 };
 
 static u8 sCurCommandId = 0xFF;
@@ -146,6 +145,12 @@ static Array<u8> DynOS_Bhv_Validate_GetCommandIds(const DataNode<BehaviorScript>
 
 bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode) {
     Array<u8> bhvCommandIds = DynOS_Bhv_Validate_GetCommandIds(aNode);
+
+    // Check unterminated command
+    if (sCurCommandId != 0xFF && sCurCommandIndex < sBehaviorScriptCommands[sCurCommandId].size / 4) {
+        PrintDataError("  ERROR: Validation failed for behavior %s: Unterminated command: %02X", aNode->mName.begin(), sCurCommandId);
+        return false;
+    }
 
     // Behavior must have at least 2 commands
     if (bhvCommandIds.Count() < 2) {
