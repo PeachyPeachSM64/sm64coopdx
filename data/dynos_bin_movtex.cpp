@@ -160,6 +160,10 @@ DataNode<Movtex>* DynOS_Movtex_Parse(GfxData* aGfxData, DataNode<Movtex>* aNode,
     if (aDisplayPercent && aGfxData->mErrorCount == 0) { Print("100%%"); }
     aNode->mSize = (u32)(_Head - aNode->mData);
     aNode->mLoadIndex = aGfxData->mLoadIndex++;
+
+    // Validate commands
+    DynOS_Movtex_Validate_CheckCommands(aGfxData, aNode);
+
     return aNode;
 }
 
@@ -197,7 +201,18 @@ DataNode<Movtex>* DynOS_Movtex_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mSize = aFile->Read<u32>();
     _Node->mData = New<Movtex>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        if (aFile->EoF()) {
+            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(Movtex));
+            Delete(_Node);
+            return NULL;
+        }
         _Node->mData[i] = aFile->Read<Movtex>();
+    }
+
+    // Validate commands
+    if (!DynOS_Movtex_Validate_CheckCommands(aGfxData, _Node)) {
+        Delete(_Node);
+        return NULL;
     }
 
     // Add it
