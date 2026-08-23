@@ -28068,11 +28068,11 @@ int smlua_func_obj_set_collision_data(lua_State* L) {
 
     struct Object* obj = (struct Object*)smlua_to_cobject(L, 1, LOT_OBJECT);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "obj_set_collision_data"); return 0; }
-//  void * segAddr = (void *)smlua_to_cobject(L, 2, LOT_???); <--- UNIMPLEMENTED
+//  void * collisionPtr = (void *)smlua_to_cobject(L, 2, LOT_???); <--- UNIMPLEMENTED
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "obj_set_collision_data"); return 0; }
 
-    extern void obj_set_collision_data(struct Object *obj, const void *segAddr);
-    obj_set_collision_data(obj, segAddr);
+    extern void obj_set_collision_data(struct Object *obj, const void *collisionPtr);
+    obj_set_collision_data(obj, collisionPtr);
 
     return 0;
 }
