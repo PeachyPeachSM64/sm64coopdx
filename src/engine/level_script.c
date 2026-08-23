@@ -105,22 +105,26 @@ static s32 eval_script_op(s8 op, s32 arg) {
 }
 
 struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u8 destNode, u8 checkpoint, struct Object *o) {
-    if (sCurrAreaIndex != -1) {
-        struct ObjectWarpNode *warpNode = dynamic_pool_alloc(gLevelPool, sizeof(struct ObjectWarpNode));
-
-        warpNode->node.id = id;
-        warpNode->node.destLevel = destLevel + checkpoint;
-        warpNode->node.destArea = destArea;
-        warpNode->node.destNode = destNode;
-
-        warpNode->object = o;
-
-        warpNode->next = gAreas[sCurrAreaIndex].warpNodes;
-        gAreas[sCurrAreaIndex].warpNodes = warpNode;
-
-        return warpNode;
+    if (gCurrAreaIndex < 0 || gCurrAreaIndex >= MAX_AREAS) {
+        return NULL;
     }
-    return NULL;
+
+    struct ObjectWarpNode *warpNode = dynamic_pool_alloc(gLevelPool, sizeof(struct ObjectWarpNode));
+    if (!warpNode) {
+        return NULL;
+    }
+
+    warpNode->node.id = id;
+    warpNode->node.destLevel = destLevel + checkpoint;
+    warpNode->node.destArea = destArea;
+    warpNode->node.destNode = destNode;
+
+    warpNode->object = o;
+
+    warpNode->next = gAreas[gCurrAreaIndex].warpNodes;
+    gAreas[gCurrAreaIndex].warpNodes = warpNode;
+
+    return warpNode;
 }
 
 static void area_check_red_coin_or_secret(void *arg, bool isMacroObject) {
