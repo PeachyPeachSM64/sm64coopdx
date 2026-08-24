@@ -220,6 +220,39 @@ u8 *DynOS_Tex_ConvertToRGBA32(const u8 *aData, u64 aLength, s32 aFormat, s32 aSi
 // Upload
 //
 
+static bool DynOS_Tex_Validate(const DataNode<TexData> *aNode) {
+    if (!aNode || !aNode->mData || aNode->mData->mInvalidated) {
+        return false;
+    }
+
+    // Check dimensions
+    if (aNode->mData->mRawWidth <= 0) {
+        LOG_ERROR("Texture '%s': Invalid width: %d", aNode->mName.begin(), aNode->mData->mRawWidth);
+        aNode->mData->mInvalidated = true;
+        return false;
+    }
+    if (aNode->mData->mRawHeight <= 0) {
+        LOG_ERROR("Texture '%s': Invalid height: %d", aNode->mName.begin(), aNode->mData->mRawHeight);
+        aNode->mData->mInvalidated = true;
+        return false;
+    }
+
+    // Check texture data
+    if (aNode->mData->mRawData.begin() == NULL) {
+        LOG_ERROR("Texture '%s': NULL buffer", aNode->mName.begin());
+        aNode->mData->mInvalidated = true;
+        return false;
+    }
+    u32 textureSize = aNode->mData->mRawWidth * aNode->mData->mRawHeight * sizeof(u32);
+    if (aNode->mData->mRawData.Count() != textureSize) {
+        LOG_ERROR("Texture '%s': Invalid size: %u, should be %u", aNode->mName.begin(), aNode->mData->mRawData.Count(), textureSize);
+        aNode->mData->mInvalidated = true;
+        return false;
+    }
+
+    return true;
+}
+
 typedef struct GfxRenderingAPI GRAPI;
 static void DynOS_Tex_Upload(DataNode<TexData> *aNode, GRAPI *aGfxRApi, s32 aTile, s32 aTexId) {
     aGfxRApi->select_texture(aTile, aTexId);
@@ -351,7 +384,7 @@ static DataNode<TexData> *DynOS_Tex_RetrieveNode(void *aPtr) {
 static bool DynOS_Tex_Import_Typed(THN **aOutput, void *aPtr, s32 aTile, GRAPI *aGfxRApi, THN **aHashMap, THN *aPool, u32 *aPoolPos, u32 aPoolSize) {
     DataNode<TexData> *_Node = DynOS_Tex_RetrieveNode(aPtr);
     if (_Node) {
-        if (!DynOS_Tex_Cache(aOutput, _Node, aTile, aGfxRApi, aHashMap, aPool, aPoolPos, aPoolSize)) {
+        if (DynOS_Tex_Validate(_Node) && !DynOS_Tex_Cache(aOutput, _Node, aTile, aGfxRApi, aHashMap, aPool, aPoolPos, aPoolSize)) {
             DynOS_Tex_Upload(_Node, aGfxRApi, aTile, (*aOutput)->texture_id);
         }
         return true;

@@ -545,6 +545,7 @@ struct TexData : NoCopy {
     s32 mRawFormat = -1;
     s32 mRawSize   = -1;
     bool mUploaded = false;
+    bool mInvalidated = false;
 };
 
 struct AnimData : NoCopy {
