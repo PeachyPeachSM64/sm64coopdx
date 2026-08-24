@@ -2007,116 +2007,43 @@ static BehaviorScript ParseBehaviorScriptSymbolArg(GfxData *aGfxData, DataNode<B
     return value;
 }
 
-#define bhv_symbol_0(symb)                       \
-    if (_Symbol == #symb) {                      \
-        BehaviorScript _Bs[] = { symb() };       \
-        memcpy(aHead, _Bs, sizeof(_Bs));         \
-        aHead += (sizeof(_Bs) / sizeof(_Bs[0])); \
-        return;                                  \
-    }
-
-#define bhv_symbol_1(symb)                                                                 \
-    if (_Symbol == #symb) {                                                                \
-        BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        BehaviorScript _Bs[] = { symb(_Arg0) };                                            \
-        memcpy(aHead, _Bs, sizeof(_Bs));                                                   \
-        aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                           \
-        return;                                                                            \
-    }
-
-#define bhv_symbol_2(symb)                                                                 \
-    if (_Symbol == #symb) {                                                                \
-        BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        BehaviorScript _Arg1 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        BehaviorScript _Bs[] = { symb(_Arg0, _Arg1) };                                     \
-        memcpy(aHead, _Bs, sizeof(_Bs));                                                   \
-        aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                           \
-        return;                                                                            \
-    }
-
-#define bhv_symbol_3(symb)                                                                 \
-    if (_Symbol == #symb) {                                                                \
-        BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        BehaviorScript _Arg1 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        BehaviorScript _Arg2 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex); \
-        BehaviorScript _Bs[] = { symb(_Arg0, _Arg1, _Arg2) };                              \
-        memcpy(aHead, _Bs, sizeof(_Bs));                                                   \
-        aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                           \
-        return;                                                                            \
-    }
-
-#define bhv_symbol_8(symb)                                                                       \
-    if (_Symbol == #symb) {                                                                      \
-        BehaviorScript _Arg0 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg1 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg2 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg3 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg4 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg5 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg6 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Arg7 = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);       \
-        BehaviorScript _Bs[] = { symb(_Arg0, _Arg1, _Arg2, _Arg3, _Arg4, _Arg5, _Arg6, _Arg7) }; \
-        memcpy(aHead, _Bs, sizeof(_Bs));                                                         \
-        aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                                 \
-        return;                                                                                  \
-    }
-
 static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript> *aNode, BehaviorScript *&aHead, u64 &aTokenIndex, Array<u64> &aSwitchNodes) {
     const String &_Symbol = aNode->mTokens[aTokenIndex++];
 
-    bhv_symbol_0(RETURN);
-    bhv_symbol_0(END_REPEAT);
-    bhv_symbol_0(END_REPEAT_CONTINUE);
-    bhv_symbol_0(BEGIN_LOOP);
-    bhv_symbol_0(END_LOOP);
-    bhv_symbol_0(BREAK);
-    bhv_symbol_0(BREAK_UNUSED);
-    bhv_symbol_0(DEACTIVATE);
-    bhv_symbol_0(DROP_TO_FLOOR);
-    bhv_symbol_0(BILLBOARD);
-    bhv_symbol_0(CYLBOARD);
-    bhv_symbol_0(HIDE);
-    bhv_symbol_0(SET_HOME);
-    bhv_symbol_0(DISABLE_RENDERING);
+    // Preprocessor magic
+    // `BHV_SYMBOL_0` defines the code that's run for the specific symbol
+    // `REPEAT(PARSE_ARG, _numArgs_);` parses a behavior arg `_numArgs_` times, once for each argument
+    // `CALL_MACRO(_symb_, LIST_ARGS(GET_ARG, _numArgs_))` constructs the behavior command with the parsed args
+    // `BHV_SYMBOL` writes the code for each command, depending on its category (category 1 is manually written, that's why `BHV_SYMBOL_1` is empty)
 
-    bhv_symbol_1(ID);
-    bhv_symbol_1(BEGIN);
-    bhv_symbol_1(DELAY);
-    bhv_symbol_1(BEGIN_REPEAT);
-    bhv_symbol_1(CMD_NOP_1);
-    bhv_symbol_1(CMD_NOP_2);
-    bhv_symbol_1(CMD_NOP_3);
-    bhv_symbol_1(SET_MODEL);
-    bhv_symbol_1(DELAY_VAR);
-    bhv_symbol_1(BEGIN_REPEAT_UNUSED);
-    bhv_symbol_1(ANIMATE);
-    bhv_symbol_1(SET_INTERACT_TYPE);
-    bhv_symbol_1(SET_INTERACT_SUBTYPE);
+#define PARSE_ARG(_num_) \
+    BehaviorScript _Arg##_num_ = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
 
-    bhv_symbol_2(ADD_FLOAT);
-    bhv_symbol_2(SET_FLOAT);
-    bhv_symbol_2(ADD_INT);
-    bhv_symbol_2(SET_INT);
-    bhv_symbol_2(OR_INT);
-    bhv_symbol_2(BIT_CLEAR);
-    bhv_symbol_2(SET_HITBOX);
-    bhv_symbol_2(CMD_NOP_4);
-    bhv_symbol_2(SET_HURTBOX);
-    bhv_symbol_2(SCALE);
-    bhv_symbol_2(PARENT_BIT_CLEAR);
-    bhv_symbol_2(ANIMATE_TEXTURE);
-    bhv_symbol_2(SET_INT_UNUSED);
+#define GET_ARG(_num_) \
+    _Arg##_num_
 
-    bhv_symbol_3(SET_INT_RAND_RSHIFT);
-    bhv_symbol_3(SET_RANDOM_INT);
-    bhv_symbol_3(SET_RANDOM_FLOAT);
-    bhv_symbol_3(ADD_RANDOM_FLOAT);
-    bhv_symbol_3(ADD_INT_RAND_RSHIFT);
-    bhv_symbol_3(SUM_FLOAT);
-    bhv_symbol_3(SUM_INT);
-    bhv_symbol_3(SET_HITBOX_WITH_OFFSET);
+#define BHV_SYMBOL_0(_symb_, _numArgs_, ...) {                                        \
+    if (_Symbol == #_symb_) {                                                         \
+        REPEAT(PARSE_ARG, _numArgs_);                                                 \
+        BehaviorScript _Bs[] = { CALL_MACRO(_symb_, LIST_ARGS(GET_ARG, _numArgs_)) }; \
+        memcpy(aHead, _Bs, sizeof(_Bs));                                              \
+        aHead += (sizeof(_Bs) / sizeof(_Bs[0]));                                      \
+        return;                                                                       \
+    }                                                                                 \
+}
 
-    bhv_symbol_8(SET_OBJ_PHYSICS);
+#define BHV_SYMBOL_1(...)
+
+#define BHV_SYMBOL(_cat_, ...) \
+    BHV_SYMBOL_##_cat_(__VA_ARGS__)
+
+#include "behavior_symbols.h"
+
+#undef PARSE_ARG
+#undef GET_ARG
+#undef BHV_SYMBOL_0
+#undef BHV_SYMBOL_1
+#undef BHV_SYMBOL
 
     // Both CALL and GOTO can have a offset to their addresses
     // in their non-extended counterparts.
@@ -2306,7 +2233,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
 
     // We support directly using some extended types if needed.
 
-    if (_Symbol == "CALL_EXT" || _Symbol == "CALL_CUSTOM") {
+    if (_Symbol == "CALL_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundBeh = true;
@@ -2319,7 +2246,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         return;
     }
 
-    if (_Symbol == "CALL_NATIVE_EXT" || _Symbol == "CALL_CUSTOM_NATIVE") {
+    if (_Symbol == "CALL_NATIVE_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundFunc = true;
@@ -2345,7 +2272,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         return;
     }
 
-    if (_Symbol == "SPAWN_CHILD_EXT" || _Symbol == "SPAWN_LUA_CHILD") {
+    if (_Symbol == "SPAWN_CHILD_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundBeh = true;
@@ -2359,7 +2286,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         return;
     }
 
-    if (_Symbol == "SPAWN_CHILD_WITH_PARAM_EXT" || _Symbol == "SPAWN_LUA_CHILD_WITH_PARAM") {
+    if (_Symbol == "SPAWN_CHILD_WITH_PARAM_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundBeh = true;
@@ -2374,7 +2301,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         return;
     }
 
-    if (_Symbol == "SPAWN_OBJ_EXT" || _Symbol == "SPAWN_LUA_OBJ") {
+    if (_Symbol == "SPAWN_OBJ_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundBeh = true;
@@ -2389,7 +2316,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
     }
 
     /*
-    if (_Symbol == "LOAD_ANIMATIONS_EXT" || _Symbol == "LOAD_CUSTOM_ANIMATIONS") {
+    if (_Symbol == "LOAD_ANIMATIONS_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundAnimation = true;
@@ -2404,7 +2331,7 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
     }
     */
 
-    if (_Symbol == "LOAD_COLLISION_DATA_EXT" || _Symbol == "LOAD_CUSTOM_COLLISION_DATA") {
+    if (_Symbol == "LOAD_COLLISION_DATA_EXT") {
         u64 topTokenIndex = aTokenIndex;
 
         bool foundCollisionData = true;
