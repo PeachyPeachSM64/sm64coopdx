@@ -1380,7 +1380,7 @@ static const char *mod_fs_file_read_string(struct ModFsFile *file, enum ModFsErr
     u32 length = 0;
     const char *start = (const char *) (file->data.bin + file->offset);
     const char *end = (const char *) (file->data.bin + file->size);
-    for (const char *c = start; *c && c < end; c++) {
+    for (const char *c = start; c < end && *c; c++) {
         length++;
     }
     return mod_fs_file_read_string_buffer(file, length, true, err);
@@ -1404,7 +1404,7 @@ static const char *mod_fs_file_read_line(struct ModFsFile *file, enum ModFsError
     u32 length = 0;
     const char *start = (const char *) (file->data.text + file->offset);
     const char *end = (const char *) (file->data.text + file->size);
-    for (const char *c = start; *c != '\n' && c < end; c++) {
+    for (const char *c = start; c < end && *c != '\n'; c++) {
         length++;
     }
     return mod_fs_file_read_string_buffer(file, length, true, err);
