@@ -23,7 +23,7 @@ struct BehaviorScriptCommand {
 
 static std::map<u8, struct BehaviorScriptCommand> sBehaviorScriptCommands = {
 #define BHV_SYMBOL(_cat_, _symb_, _numArgs_, ...) BHV_COMMAND(CALL_MACRO(_symb_, __VA_ARGS__)),
-#include "behavior_symbols.h"
+#include "dynos_bin_behavior_symbols.inl"
 #undef BHV_SYMBOL
 };
 

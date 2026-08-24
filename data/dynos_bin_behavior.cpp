@@ -2011,10 +2011,10 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
     const String &_Symbol = aNode->mTokens[aTokenIndex++];
 
     // Preprocessor magic
-    // `BHV_SYMBOL_0` defines the code that's run for the specific symbol
+    // `BHV_SYMBOL_1` defines the code that's run for the specific symbol
     // `REPEAT(PARSE_ARG, _numArgs_);` parses a behavior arg `_numArgs_` times, once for each argument
     // `CALL_MACRO(_symb_, LIST_ARGS(GET_ARG, _numArgs_))` constructs the behavior command with the parsed args
-    // `BHV_SYMBOL` writes the code for each command, depending on its category (category 1 is manually written, that's why `BHV_SYMBOL_1` is empty)
+    // `BHV_SYMBOL` writes the code for each command, depending on its category (category 0 is manually written, that's why `BHV_SYMBOL_0` is empty)
 
 #define PARSE_ARG(_num_) \
     BehaviorScript _Arg##_num_ = ParseBehaviorScriptSymbolArg(aGfxData, aNode, aTokenIndex);
@@ -2022,7 +2022,9 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
 #define GET_ARG(_num_) \
     _Arg##_num_
 
-#define BHV_SYMBOL_0(_symb_, _numArgs_, ...) {                                        \
+#define BHV_SYMBOL_0(...)
+
+#define BHV_SYMBOL_1(_symb_, _numArgs_, ...) {                                        \
     if (_Symbol == #_symb_) {                                                         \
         REPEAT(PARSE_ARG, _numArgs_);                                                 \
         BehaviorScript _Bs[] = { CALL_MACRO(_symb_, LIST_ARGS(GET_ARG, _numArgs_)) }; \
@@ -2032,12 +2034,10 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
     }                                                                                 \
 }
 
-#define BHV_SYMBOL_1(...)
-
 #define BHV_SYMBOL(_cat_, ...) \
     BHV_SYMBOL_##_cat_(__VA_ARGS__)
 
-#include "behavior_symbols.h"
+#include "dynos_bin_behavior_symbols.inl"
 
 #undef PARSE_ARG
 #undef GET_ARG

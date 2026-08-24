@@ -532,98 +532,6 @@ static LevelScript ParseLevelScriptSymbolArg(GfxData* aGfxData, DataNode<LevelSc
     return value;
 }
 
-#define lvl_symbol_0(symb)                       \
-    if (_Symbol == #symb) {                      \
-        LevelScript _Ls[] = { symb() };          \
-        memcpy(aHead, _Ls, sizeof(_Ls));         \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0])); \
-        return;                                  \
-    }
-
-#define lvl_symbol_1(symb, ptrOffset, ptrType)                                            \
-    if (_Symbol == #symb) {                                                               \
-        LevelScript _Arg0 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        if (ptrOffset != 0) { aGfxData->mPointerList.Add({aHead + ptrOffset, ptrType}); } \
-        LevelScript _Ls[] = { symb(_Arg0) };                                              \
-        memcpy(aHead, _Ls, sizeof(_Ls));                                                  \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                          \
-        return;                                                                           \
-    }
-
-#define lvl_symbol_2(symb, ptrOffset, ptrType)                                            \
-    if (_Symbol == #symb) {                                                               \
-        LevelScript _Arg0 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg1 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        if (ptrOffset != 0) { aGfxData->mPointerList.Add({aHead + ptrOffset, ptrType}); } \
-        LevelScript _Ls[] = { symb(_Arg0, _Arg1) };                                       \
-        memcpy(aHead, _Ls, sizeof(_Ls));                                                  \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                          \
-        return;                                                                           \
-    }
-
-#define lvl_symbol_3(symb, ptrOffset, ptrType)                                            \
-    if (_Symbol == #symb) {                                                               \
-        LevelScript _Arg0 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg1 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg2 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        if (ptrOffset != 0) { aGfxData->mPointerList.Add({aHead + ptrOffset, ptrType}); } \
-        LevelScript _Ls[] = { symb(_Arg0, _Arg1, _Arg2) };                                \
-        memcpy(aHead, _Ls, sizeof(_Ls));                                                  \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                          \
-        return;                                                                           \
-    }
-
-#define lvl_symbol_4(symb, ptrOffset, ptrType)                                            \
-    if (_Symbol == #symb) {                                                               \
-        LevelScript _Arg0 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg1 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg2 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg3 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        if (ptrOffset != 0) { aGfxData->mPointerList.Add({aHead + ptrOffset, ptrType}); } \
-        LevelScript _Ls[] = { symb(_Arg0, _Arg1, _Arg2, _Arg3) };                         \
-        memcpy(aHead, _Ls, sizeof(_Ls));                                                  \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                          \
-        return;                                                                           \
-    }
-
-#define lvl_symbol_5(symb, ptrOffset, ptrType)                                            \
-    if (_Symbol == #symb) {                                                               \
-        LevelScript _Arg0 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg1 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg2 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg3 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg4 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        if (ptrOffset != 0) { aGfxData->mPointerList.Add({aHead + ptrOffset, ptrType}); } \
-        LevelScript _Ls[] = { symb(_Arg0, _Arg1, _Arg2, _Arg3, _Arg4) };                  \
-        memcpy(aHead, _Ls, sizeof(_Ls));                                                  \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                          \
-        return;                                                                           \
-    }
-
-#define lvl_symbol_6(symb, ptrOffset, ptrType)                                            \
-    if (_Symbol == #symb) {                                                               \
-        LevelScript _Arg0 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg1 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg2 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg3 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg4 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        LevelScript _Arg5 = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);      \
-        if (ptrOffset != 0) { aGfxData->mPointerList.Add({aHead + ptrOffset, ptrType}); } \
-        LevelScript _Ls[] = { symb(_Arg0, _Arg1, _Arg2, _Arg3, _Arg4, _Arg5) };           \
-        memcpy(aHead, _Ls, sizeof(_Ls));                                                  \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                          \
-        return;                                                                           \
-    }
-
-#define lvl_symbol_noop_3(symb)                  \
-    if (_Symbol == #symb) {                      \
-        aTokenIndex += 3;                        \
-        LevelScript _Ls[] = { symb(0, 0, 0) };   \
-        memcpy(aHead, _Ls, sizeof(_Ls));         \
-        aHead += (sizeof(_Ls) / sizeof(_Ls[0])); \
-        return;                                  \
-    }
-
 static LevelScript ParseLevelScriptObjectSymbolArgInternal(GfxData* aGfxData, DataNode<LevelScript>* aNode, u64& aTokenIndex, u32 *luaParams, u32 luaParamFlag) {
     bool foundParam = true;
     LevelScript value = ParseLevelScriptSymbolArgInternal(aGfxData, aNode, aTokenIndex, &foundParam);
@@ -636,93 +544,52 @@ static LevelScript ParseLevelScriptObjectSymbolArgInternal(GfxData* aGfxData, Da
 static void ParseLevelScriptSymbol(GfxData* aGfxData, DataNode<LevelScript>* aNode, LevelScript*& aHead, u64& aTokenIndex, Array<u64>& aSwitchNodes) {
     const String& _Symbol = aNode->mTokens[aTokenIndex++];
 
-    // execution
-    lvl_symbol_4(EXECUTE, 3, PTYPE_PNTR_LVL);
-    lvl_symbol_4(EXIT_AND_EXECUTE, 3, PTYPE_PNTR_LVL);
-    lvl_symbol_0(EXIT);
+    // Preprocessor magic
+    // `LVL_SYMBOL_1` and `LVL_SYMBOL_2` define the code that's run for the specific symbol (the second one skipping the argument parsing)
+    // `REPEAT(PARSE_ARG, _numArgs_);` parses a level script arg `_numArgs_` times, once for each argument
+    // `CALL_MACRO(_symb_, LIST_ARGS(GET_ARG, _numArgs_))` constructs the level command with the parsed args
+    // `LVL_SYMBOL` writes the code for each command, depending on its category (category 0 is manually written, that's why `LVL_SYMBOL_0` is empty)
 
-    // sleep
-    lvl_symbol_1(SLEEP, 0, 0);
-    lvl_symbol_1(SLEEP_BEFORE_EXIT, 0, 0);
+#define PARSE_ARG(_num_) \
+    LevelScript _Arg##_num_ = ParseLevelScriptSymbolArg(aGfxData, aNode, aTokenIndex);
 
-    // jumps
-    lvl_symbol_1(JUMP, 1, PTYPE_PNTR_LVL);
-    lvl_symbol_1(JUMP_LINK, 1, PTYPE_PNTR_LVL);
-    lvl_symbol_0(RETURN);
-    lvl_symbol_1(JUMP_LINK_PUSH_ARG, 0, 0);
-    lvl_symbol_0(JUMP_N_TIMES);
-    lvl_symbol_0(LOOP_BEGIN);
-    lvl_symbol_2(LOOP_UNTIL, 0, 0);
-    lvl_symbol_3(JUMP_IF, 2, PTYPE_PNTR_LVL);
-    lvl_symbol_2(SKIP_IF, 0, 0);
-    lvl_symbol_0(SKIP);
-    lvl_symbol_0(SKIP_NOP);
-    lvl_symbol_3(JUMP_AREA_EXT, 2, PTYPE_PNTR_LVL);
+#define GET_ARG(_num_) \
+    _Arg##_num_
 
-    // calls
-    lvl_symbol_2(CALL, 1, PTYPE_FUNC_LVL);
-    lvl_symbol_2(CALL_LOOP, 1, PTYPE_FUNC_LVL);
+#define LVL_SYMBOL_0(...)
 
-    // misc memory
-    lvl_symbol_1(SET_REG, 0, 0);
-    lvl_symbol_0(PUSH_POOL);
-    lvl_symbol_0(POP_POOL);
-    lvl_symbol_noop_3(FIXED_LOAD);
-    lvl_symbol_noop_3(LOAD_RAW);
-    lvl_symbol_noop_3(LOAD_MIO0);
-    lvl_symbol_noop_3(LOAD_YAY0);
-    lvl_symbol_1(LOAD_MARIO_HEAD, 0, 0);
-    lvl_symbol_noop_3(LOAD_MIO0_TEXTURE);
-    lvl_symbol_noop_3(LOAD_YAY0_TEXTURE);
+#define LVL_SYMBOL_1(_symb_, _numArgs_, _ptrOff_, _ptrType_, ...) {                  \
+    if (_Symbol == #_symb_) {                                                        \
+        REPEAT(PARSE_ARG, _numArgs_);                                                \
+        if (_ptrOff_) { aGfxData->mPointerList.Add({aHead + _ptrOff_, _ptrType_}); } \
+        LevelScript _Ls[] = { CALL_MACRO(_symb_, LIST_ARGS(GET_ARG, _numArgs_)) };   \
+        memcpy(aHead, _Ls, sizeof(_Ls));                                             \
+        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                                     \
+        return;                                                                      \
+    }                                                                                \
+}
 
-    // levels
-    lvl_symbol_0(INIT_LEVEL);
-    lvl_symbol_0(CLEAR_LEVEL);
-    lvl_symbol_0(ALLOC_LEVEL_POOL);
-    lvl_symbol_0(FREE_LEVEL_POOL);
+#define LVL_SYMBOL_2(_symb_, _numArgs_, ...) {                               \
+    if (_Symbol == #_symb_) {                                                \
+        aTokenIndex += _numArgs_;                                            \
+        LevelScript _Ls[] = { CALL_MACRO(_symb_, LIST_ARGS(0, _numArgs_)) }; \
+        memcpy(aHead, _Ls, sizeof(_Ls));                                     \
+        aHead += (sizeof(_Ls) / sizeof(_Ls[0]));                             \
+        return;                                                              \
+    }                                                                        \
+}
 
-    // areas
-    lvl_symbol_2(AREA, 1, PTYPE_PNTR_GEO);
-    lvl_symbol_0(END_AREA);
+#define LVL_SYMBOL(_cat_, ...) \
+    LVL_SYMBOL_##_cat_(__VA_ARGS__)
 
-    // models
-    lvl_symbol_3(LOAD_MODEL_FROM_DL, 1, PTYPE_PNTR_GFX);
-    lvl_symbol_3(CMD23, 1, PTYPE_PNTR_GEO);
+#include "dynos_bin_lvl_symbols.inl"
 
-    // objects
-    lvl_symbol_3(MARIO, 2, PTYPE_PNTR_BHV);
-
-    // warps
-    lvl_symbol_5(INSTANT_WARP, 0, 0);
-
-    // misc
-    lvl_symbol_1(LOAD_AREA, 0, 0);
-    lvl_symbol_1(CMD2A, 0, 0);
-    lvl_symbol_5(MARIO_POS, 0, 0);
-    lvl_symbol_0(CMD2C);
-    lvl_symbol_0(CMD2D);
-    lvl_symbol_1(TERRAIN, 1, PTYPE_PNTR_COL);
-    lvl_symbol_1(ROOMS, 1, PTYPE_PNTR_ROOM);
-    lvl_symbol_1(TERRAIN_TYPE, 0, 0);
-    lvl_symbol_0(NOP);
-
-    // transitions
-    lvl_symbol_5(TRANSITION, 0, 0);
-    lvl_symbol_1(BLACKOUT, 0, 0);
-    lvl_symbol_1(GAMMA, 0, 0);
-
-    // music
-    lvl_symbol_2(SET_BACKGROUND_MUSIC, 0, 0);
-    lvl_symbol_1(SET_MENU_MUSIC, 0, 0);
-    lvl_symbol_1(STOP_MUSIC, 0, 0);
-
-    // misc
-    lvl_symbol_1(MACRO_OBJECTS, 1, PTYPE_PNTR_MACRO);
-    lvl_symbol_5(CMD3A, 0, 0);
-    lvl_symbol_6(WHIRLPOOL, 0, 0);
-    lvl_symbol_2(GET_OR_SET, 0, 0);
-    lvl_symbol_0(ADV_DEMO);
-    lvl_symbol_0(CLEAR_DEMO_PTR);
+#undef PARSE_ARG
+#undef GET_ARG
+#undef LVL_SYMBOL_0
+#undef LVL_SYMBOL_1
+#undef LVL_SYMBOL_2
+#undef LVL_SYMBOL
 
     // dialog
     if (_Symbol == "SHOW_DIALOG") {
