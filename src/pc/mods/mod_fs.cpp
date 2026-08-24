@@ -1254,9 +1254,10 @@ static const char *mod_fs_file_read_string_buffer(struct ModFsFile *file, u32 le
     static u32 sModFsFileReadStringBufLength = 0;
 
     // grow buffer if needed
-    if (length > sModFsFileReadStringBufLength) {
+    u32 neededCapacity = length + 1;
+    if (neededCapacity > sModFsFileReadStringBufLength) {
         free(sModFsFileReadStringBuf);
-        sModFsFileReadStringBuf = (char *) malloc(length + 1);
+        sModFsFileReadStringBuf = (char *) malloc(neededCapacity);
         if (!sModFsFileReadStringBuf) {
             sModFsFileReadStringBufLength = 0;
             mod_fs_raise_error(
@@ -1266,7 +1267,7 @@ static const char *mod_fs_file_read_string_buffer(struct ModFsFile *file, u32 le
             );
             return NULL;
         }
-        sModFsFileReadStringBufLength = length;
+        sModFsFileReadStringBufLength = neededCapacity;
     }
 
     memcpy(sModFsFileReadStringBuf, file->data.bin + file->offset, length);
