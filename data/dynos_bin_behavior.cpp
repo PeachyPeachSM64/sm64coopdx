@@ -2115,7 +2115,6 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         return;
     }
 
-
     // Spawn Child
     if (_Symbol == "SPAWN_CHILD") {
         u64 topTokenIndex = aTokenIndex;
@@ -2208,7 +2207,6 @@ static void ParseBehaviorScriptSymbol(GfxData *aGfxData, DataNode<BehaviorScript
         }
         return;
     }
-
 
     if (_Symbol == "LOAD_COLLISION_DATA") {
         u64 topTokenIndex = aTokenIndex;
