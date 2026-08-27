@@ -250,7 +250,7 @@ public:
             mCapacity = MAX(aCount, MAX(16, mCapacity * 2));
             T *_Buffer = (T *) calloc(mCapacity, sizeof(T));
             if (mBuffer) {
-                memcpy(_Buffer, mBuffer, mCount * sizeof(T));
+                memcpy((void *)_Buffer, mBuffer, mCount * sizeof(T));
                 free(mBuffer);
             }
             mBuffer = _Buffer;
