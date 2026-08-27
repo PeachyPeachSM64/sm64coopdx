@@ -232,12 +232,12 @@ public:
 
     inline Array(const Array &aOther) : mBuffer(NULL), mCount(0), mCapacity(0) {
         Resize(aOther.mCount);
-        memcpy(mBuffer, aOther.mBuffer, mCount * sizeof(T));
+        memcpy((void *)mBuffer, aOther.mBuffer, mCount * sizeof(T));
     }
 
     inline void operator=(const Array &aOther) {
         Resize(aOther.mCount);
-        memcpy(mBuffer, aOther.mBuffer, mCount * sizeof(T));
+        memcpy((void *)mBuffer, aOther.mBuffer, mCount * sizeof(T));
     }
 
     inline ~Array() {
