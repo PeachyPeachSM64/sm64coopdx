@@ -718,6 +718,13 @@ static struct LuaObjectField sCustomLevelInfoFields[LUA_CUSTOM_LEVEL_INFO_FIELD_
     { "shortName",       LVT_STRING_P,      offsetof(struct CustomLevelInfo, shortName),       true,  LOT_NONE            },
 };
 
+#define LUA_CUSTOM_WARP_NODE_FIELD_COUNT 3
+static struct LuaObjectField sCustomWarpNodeFields[LUA_CUSTOM_WARP_NODE_FIELD_COUNT] = {
+    { "marioSpawnType", LVT_S32,     offsetof(struct CustomWarpNode, marioSpawnType), false, LOT_NONE           },
+    { "node",           LVT_COBJECT, offsetof(struct CustomWarpNode, node),           true,  LOT_OBJECTWARPNODE },
+    { "spawnInfo",      LVT_COBJECT, offsetof(struct CustomWarpNode, spawnInfo),      true,  LOT_SPAWNINFO      },
+};
+
 #define LUA_DATE_TIME_FIELD_COUNT 6
 static struct LuaObjectField sDateTimeFields[LUA_DATE_TIME_FIELD_COUNT] = {
     { "day",    LVT_S32, offsetof(struct DateTime, day),    false, LOT_NONE },
@@ -2715,6 +2722,7 @@ struct LuaObjectTable sLuaObjectAutogenTable[LOT_AUTOGEN_MAX - LOT_AUTOGEN_MIN] 
     { LOT_CHARACTER,                    sCharacterFields,                    LUA_CHARACTER_FIELD_COUNT                       },
     { LOT_CONTROLLER,                   sControllerFields,                   LUA_CONTROLLER_FIELD_COUNT                      },
     { LOT_CUSTOMLEVELINFO,              sCustomLevelInfoFields,              LUA_CUSTOM_LEVEL_INFO_FIELD_COUNT               },
+    { LOT_CUSTOMWARPNODE,               sCustomWarpNodeFields,               LUA_CUSTOM_WARP_NODE_FIELD_COUNT                },
     { LOT_DATETIME,                     sDateTimeFields,                     LUA_DATE_TIME_FIELD_COUNT                       },
     { LOT_DIALOGENTRY,                  sDialogEntryFields,                  LUA_DIALOG_ENTRY_FIELD_COUNT                    },
     { LOT_DISPLAYLISTNODE,              sDisplayListNodeFields,              LUA_DISPLAY_LIST_NODE_FIELD_COUNT               },
@@ -2821,6 +2829,7 @@ const char *sLuaLotNames[] = {
     [LOT_CHARACTER] = "Character",
     [LOT_CONTROLLER] = "Controller",
     [LOT_CUSTOMLEVELINFO] = "CustomLevelInfo",
+    [LOT_CUSTOMWARPNODE] = "CustomWarpNode",
     [LOT_DATETIME] = "DateTime",
     [LOT_DIALOGENTRY] = "DialogEntry",
     [LOT_DISPLAYLISTNODE] = "DisplayListNode",

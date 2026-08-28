@@ -13,6 +13,7 @@
 - [Color](#Color)
 - [Controller](#Controller)
 - [CustomLevelInfo](#CustomLevelInfo)
+- [CustomWarpNode](#CustomWarpNode)
 - [DateTime](#DateTime)
 - [DialogEntry](#DialogEntry)
 - [DisplayListNode](#DisplayListNode)
@@ -713,6 +714,18 @@
 | echoLevel3 | `integer` |  |
 | modIndex | `integer` |  |
 | next | [CustomLevelInfo](structs.md#CustomLevelInfo) | read-only |
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [CustomWarpNode](#CustomWarpNode)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| node | [ObjectWarpNode](structs.md#ObjectWarpNode) | read-only |
+| spawnInfo | [SpawnInfo](structs.md#SpawnInfo) | read-only |
+| marioSpawnType | [enum MarioSpawnType](constants.md#enum-MarioSpawnType) |  |
 
 [:arrow_up_small:](#)
 

@@ -526,6 +526,11 @@
 --- @field public modIndex integer
 --- @field public next CustomLevelInfo
 
+--- @class CustomWarpNode
+--- @field public node ObjectWarpNode
+--- @field public spawnInfo SpawnInfo
+--- @field public marioSpawnType MarioSpawnType
+
 --- @class DateTime
 --- @field public year integer
 --- @field public month integer
