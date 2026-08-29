@@ -278,7 +278,7 @@ void clear_area_graph_nodes(void) {
 }
 
 void load_area(s32 index) {
-    if (gCurrentArea == NULL && gAreaData[index].root != NULL) {
+    if (gCurrentArea == NULL && index >= 0 && index < MAX_AREAS && gAreaData[index].root != NULL) {
         gCurrentArea = &gAreaData[index];
         gCurrentArea->localAreaTimer = 0;
         if (gCurrentArea->objectSpawnInfos) {
@@ -295,6 +295,7 @@ void load_area(s32 index) {
             spawn_objects_from_info(0, gCurrentArea->objectSpawnInfos);
         }
 
+        level_clear_warp_node_objects(gCurrLevelNum, index);
         load_obj_warp_nodes();
         geo_call_global_function_nodes(&gCurrentArea->root->node, GEO_CONTEXT_AREA_LOAD);
     }

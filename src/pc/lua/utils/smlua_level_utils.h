@@ -88,6 +88,7 @@ Only the warp nodes created by `level_create_warp_node` or `level_create_warp_no
 void level_clear_warp_nodes(u8 levelNum);
 
 void level_register_custom_warp_nodes(u8 levelNum, u8 areaIndex);
+void level_clear_warp_node_objects(u8 levelNum, u8 areaIndex);
 enum MarioSpawnType level_get_warp_spawn_type_from_object(u8 levelNum, u8 areaIndex, struct Object *obj);
 
 #endif

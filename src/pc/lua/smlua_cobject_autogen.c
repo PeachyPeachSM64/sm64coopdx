@@ -2680,7 +2680,7 @@ static struct LuaObjectField sWarpNodeFields[LUA_WARP_NODE_FIELD_COUNT] = {
     { "destArea",  LVT_U8, offsetof(struct WarpNode, destArea),  false, LOT_NONE },
     { "destLevel", LVT_U8, offsetof(struct WarpNode, destLevel), false, LOT_NONE },
     { "destNode",  LVT_U8, offsetof(struct WarpNode, destNode),  false, LOT_NONE },
-    { "id",        LVT_U8, offsetof(struct WarpNode, id),        false, LOT_NONE },
+    { "id",        LVT_U8, offsetof(struct WarpNode, id),        true,  LOT_NONE },
 };
 
 #define LUA_WATER_DROPLET_PARAMS_FIELD_COUNT 11

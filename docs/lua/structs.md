@@ -3174,7 +3174,7 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| id | `integer` |  |
+| id | `integer` | read-only |
 | destLevel | `integer` |  |
 | destArea | `integer` |  |
 | destNode | `integer` |  |

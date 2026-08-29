@@ -4,6 +4,7 @@
 #include "pc/lua/smlua.h"
 #include "game/area.h"
 #include "game/level_update.h"
+#include "game/object_helpers.h"
 #include "data/dynos_cmap.cpp.h"
 #include "level_commands.h"
 
@@ -231,6 +232,61 @@ static struct LevelWarpNodes *level_get_warp_nodes(u8 levelNum, bool create) {
     return warpNodes;
 }
 
+static void level_clear_warp_node(struct CustomWarpNode *warpNode, u8 areaIndex, bool delete) {
+    if (!warpNode) { return; }
+
+    // Remove the node from the current level
+    if (delete) {
+        if (warpNode->node.node.id != 0) {
+            struct Area *area = &gAreas[areaIndex];
+
+            // Unlink warp node
+            for (struct ObjectWarpNode *node = area->warpNodes, *prev = NULL; node != NULL; node = node->next) {
+                if (node == &warpNode->node) {
+                    if (prev != NULL) {
+                        prev->next = node->next;
+                    } else {
+                        area->warpNodes = node->next;
+                    }
+
+                    // Delete the corresponding object if current area
+                    if (areaIndex == gCurrAreaIndex && warpNode->node.object) {
+                        obj_mark_for_deletion(warpNode->node.object);
+                    }
+                    break;
+                }
+                prev = node;
+            }
+
+            // Unlink warp object spawn info
+            for (struct SpawnInfo *spawnInfo = area->objectSpawnInfos, *prev = NULL; spawnInfo != NULL; spawnInfo = spawnInfo->next) {
+                if (spawnInfo == &warpNode->spawnInfo) {
+                    if (prev != NULL) {
+                        prev->next = spawnInfo->next;
+                    } else {
+                        area->objectSpawnInfos = spawnInfo->next;
+                    }
+                    break;
+                }
+                prev = spawnInfo;
+            }
+        }
+
+        memset(warpNode, 0, sizeof(*warpNode));
+        return;
+    }
+
+    // Keep the important fields
+    struct ObjectWarpNode *nextWarpNode = warpNode->node.next;
+    struct SpawnInfo *nextSpawnInfo = warpNode->spawnInfo.next;
+
+    memset(warpNode, 0, sizeof(*warpNode));
+
+    // Restore fields
+    warpNode->node.next = nextWarpNode;
+    warpNode->spawnInfo.next = nextSpawnInfo;
+}
+
 struct CustomWarpNode *level_create_warp_node(u8 levelNum, u8 areaIndex, u8 id, enum MarioSpawnType marioSpawnType, u8 destLevel, u8 destArea, u8 destNode, bool checkpoint) {
     if (levelNum == LEVEL_NONE || (levelNum & WARP_CHECKPOINT) != 0 || (destLevel & WARP_CHECKPOINT) != 0 ||
         areaIndex >= MAX_AREAS || destArea >= MAX_AREAS ||
@@ -246,7 +302,7 @@ struct CustomWarpNode *level_create_warp_node(u8 levelNum, u8 areaIndex, u8 id, 
 
     // Create warp node
     struct CustomWarpNode *warpNode = &levelWarps->warpNodes[areaIndex][id];
-    memset(warpNode, 0, sizeof(*warpNode));
+    level_clear_warp_node(warpNode, areaIndex, false);
 
     warpNode->node.node.id = id;
     warpNode->node.node.destLevel = destLevel | (checkpoint ? WARP_CHECKPOINT : WARP_NO_CHECKPOINT);
@@ -311,7 +367,7 @@ void level_delete_warp_node(u8 levelNum, u8 areaIndex, u8 id) {
     }
 
     struct CustomWarpNode *warpNode = &levelWarps->warpNodes[areaIndex][id];
-    memset(warpNode, 0, sizeof(*warpNode));
+    level_clear_warp_node(warpNode, areaIndex, true);
 }
 
 void level_clear_warp_nodes(u8 levelNum) {
@@ -325,7 +381,13 @@ void level_clear_warp_nodes(u8 levelNum) {
         return;
     }
 
-    memset(levelWarps, 0, sizeof(*levelWarps));
+    for (u8 areaIndex = 0; areaIndex < MAX_AREAS; areaIndex++) {
+        struct CustomWarpNode *warpNodes = levelWarps->warpNodes[areaIndex];
+        for (u16 id = 1; id < 0x100; ++id) {
+            struct CustomWarpNode *warpNode = &warpNodes[id];
+            level_clear_warp_node(warpNode, areaIndex, true);
+        }
+    }
 }
 
 void level_register_custom_warp_nodes(u8 levelNum, u8 areaIndex) {
@@ -359,6 +421,24 @@ void level_register_custom_warp_nodes(u8 levelNum, u8 areaIndex) {
                 area_check_red_coin_or_secret(warpNode->spawnInfo.behaviorScript, false);
             }
         }
+    }
+}
+
+void level_clear_warp_node_objects(u8 levelNum, u8 areaIndex) {
+    if (levelNum == LEVEL_NONE || (levelNum & WARP_CHECKPOINT) != 0 || areaIndex >= MAX_AREAS) {
+        return;
+    }
+
+    // Find level warp nodes
+    struct LevelWarpNodes *levelWarps = level_get_warp_nodes(levelNum, false);
+    if (!levelWarps) {
+        return;
+    }
+
+    struct CustomWarpNode *warpNodes = levelWarps->warpNodes[areaIndex];
+    for (u16 id = 1; id < 0x100; ++id) {
+        struct CustomWarpNode *warpNode = &warpNodes[id];
+        warpNode->node.object = NULL;
     }
 }
 
