@@ -248,7 +248,7 @@ enum ModelPool DynOS_Model_GetModelPoolFromGraphNode(struct GraphNode* aNode) {
     return MODEL_POOL_MAX;
 }
 
-const char *DynOS_Model_GetNameFromVanillaAsset(void *aAsset) {
+const char *DynOS_Model_GetNameFromVanillaAsset(const void *aAsset) {
 
     // Built-in Actors
     auto builtinActor = DynOS_Builtin_Actor_GetFromData((const GeoLayout*) aAsset);
