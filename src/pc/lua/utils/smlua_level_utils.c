@@ -279,14 +279,14 @@ static void level_clear_warp_node(struct CustomWarpNode *warpNode, u8 areaIndex)
         // Unlink warp node
         if (prevWarpNode != NULL) {
             prevWarpNode->next = warpNode->node.next;
-        } else {
+        } else if (area->warpNodes == &warpNode->node) {
             area->warpNodes = warpNode->node.next;
         }
 
         // Unlink warp object spawn info
         if (prevSpawnInfo != NULL) {
             prevSpawnInfo->next = warpNode->spawnInfo.next;
-        } else {
+        } else if (area->objectSpawnInfos == &warpNode->spawnInfo) {
             area->objectSpawnInfos = warpNode->spawnInfo.next;
         }
 
