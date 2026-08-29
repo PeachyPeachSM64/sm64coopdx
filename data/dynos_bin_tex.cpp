@@ -238,7 +238,7 @@ static bool DynOS_Tex_WriteBinary(GfxData* aGfxData, const SysPath &aOutputFilen
 /////////////
 
 DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
-    if (!aFile || !aGfxData) { return NULL; }
+    if (!aFile) { return NULL; }
 
     DataNode<TexData> *_Node = New<DataNode<TexData>>();
 
@@ -253,6 +253,12 @@ DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
     s32 _FileOffset = aFile->Offset();
     u32 _TexRefCode = aFile->Read<u32>();
     if (_TexRefCode == TEX_REF_CODE) {
+        if (!aGfxData) {
+            PrintDataError("  ERROR: Cannot load texture ref \"%s\" from \"%s\"", _Node->mName.begin(), aFile->GetFilename());
+            Delete(_Node->mData);
+            Delete(_Node);
+            return NULL;
+        }
 
         // That's a duplicate, find the original node and copy its content
         String _NodeName; _NodeName.Read(aFile);
@@ -264,6 +270,11 @@ DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
             _Node->mData->mRawHeight = _LoadedNode->mData->mRawHeight;
             _Node->mData->mRawFormat = _LoadedNode->mData->mRawFormat;
             _Node->mData->mRawSize   = _LoadedNode->mData->mRawSize;
+        } else {
+            PrintDataError("  ERROR: Texture ref \"%s\" not found in file \"%s\"", _Node->mName.begin(), aFile->GetFilename());
+            Delete(_Node->mData);
+            Delete(_Node);
+            return NULL;
         }
     } else {
         aFile->SetOffset(_FileOffset);
@@ -282,6 +293,53 @@ DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
             _Node->mData->mRawSize   = 0;
         }
     }
+
+    // Append
+    if (aGfxData) {
+        aGfxData->mTextures.Add(_Node);
+    }
+
+    return _Node;
+}
+
+DataNode<TexData>* DynOS_Tex_LoadRaw(BinFile *aFile, GfxData *aGfxData) {
+    if (!aFile) { return NULL; }
+
+    DataNode<TexData> *_Node = New<DataNode<TexData>>();
+
+    // Name
+    _Node->mName.Read(aFile);
+
+    // Data
+    _Node->mData = New<TexData>();
+    _Node->mData->mUploaded = false;
+    _Node->mData->mRawFormat = aFile->Read<s32>();
+    _Node->mData->mRawSize = aFile->Read<s32>();
+    _Node->mData->mRawWidth = aFile->Read<s32>();
+    _Node->mData->mRawHeight = aFile->Read<s32>();
+    _Node->mData->mRawData.Read(aFile);
+
+    // Append
+    if (aGfxData) {
+        aGfxData->mTextures.Add(_Node);
+    }
+
+    return _Node;
+}
+
+DataNode<TexData>* DynOS_Tex_LoadPng(BinFile *aFile, GfxData *aGfxData) {
+    if (!aFile) { return NULL; }
+
+    DataNode<TexData> *_Node = New<DataNode<TexData>>();
+
+    // Name
+    _Node->mName = aFile->GetFilename();
+
+    // Data
+    _Node->mData = New<TexData>();
+    _Node->mData->mUploaded = false;
+    _Node->mData->mPngData.Resize(aFile->Size());
+    aFile->Read<u8>(_Node->mData->mPngData.begin(), aFile->Size());
 
     // Append
     if (aGfxData) {
@@ -320,34 +378,12 @@ DataNode<TexData>* DynOS_Tex_LoadFromBinary(const SysPath &aPackFolder, const Sy
 
     u8 type = _File->Read<u8>();
     if (type == DATA_TYPE_TEXTURE) {
-
-        // load png-texture
-        _TexNode = New<DataNode<TexData>>();
-        _TexNode->mName.Read(_File);
-        _TexNode->mData = New<TexData>();
-        _TexNode->mData->mPngData.Read(_File);
-
+        _TexNode = DynOS_Tex_Load(_File, NULL);
     } else if (type == DATA_TYPE_TEXTURE_RAW) {
-
-        // load raw-texture
-        _TexNode = New<DataNode<TexData>>();
-        _TexNode->mName.Read(_File);
-        _TexNode->mData = New<TexData>();
-        _TexNode->mData->mRawFormat = _File->Read<s32>();
-        _TexNode->mData->mRawSize = _File->Read<s32>();
-        _TexNode->mData->mRawWidth = _File->Read<s32>();
-        _TexNode->mData->mRawHeight = _File->Read<s32>();
-        _TexNode->mData->mRawData.Read(_File);
-
+        _TexNode = DynOS_Tex_LoadRaw(_File, NULL);
     } else if ((_File->SetOffset(0), _File->Read<u64>() == PNG_SIGNATURE)) {
         _File->SetOffset(0);
-
-        // load PNG file
-        _TexNode = New<DataNode<TexData>>();
-        _TexNode->mName = aFilename.c_str();
-        _TexNode->mData = New<TexData>();
-        _TexNode->mData->mPngData.Resize(_File->Size());
-        _File->Read<u8>(_TexNode->mData->mPngData.begin(), _File->Size());
+        _TexNode = DynOS_Tex_LoadPng(_File, NULL);
     }
 
     BinFile::Close(_File);

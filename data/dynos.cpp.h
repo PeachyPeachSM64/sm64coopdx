@@ -1183,6 +1183,8 @@ DataNode<u8>* DynOS_Rooms_Load(BinFile *aFile, GfxData *aGfxData);
 DataNode<TexData>* DynOS_Tex_Parse(GfxData* aGfxData, DataNode<TexData>* aNode);
 void DynOS_Tex_Write(BinFile* aFile, GfxData* aGfxData, DataNode<TexData> *aNode);
 DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData);
+DataNode<TexData>* DynOS_Tex_LoadRaw(BinFile *aFile, GfxData *aGfxData);
+DataNode<TexData>* DynOS_Tex_LoadPng(BinFile *aFile, GfxData *aGfxData);
 DataNode<TexData>* DynOS_Tex_LoadFromBinary(const SysPath &aPackFolder, const SysPath &aFilename, const char *aTexName, bool aAddToPack);
 void DynOS_Tex_ConvertTextureDataToPng(GfxData *aGfxData, TexData* aTexture);
 void DynOS_Tex_GeneratePack(const SysPath &aPackFolder, SysPath &aOutputFolder, bool aAllowCustomTextures);

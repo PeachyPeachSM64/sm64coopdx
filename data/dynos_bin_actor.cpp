@@ -105,6 +105,7 @@ GfxData *DynOS_Actor_LoadFromBinary(const SysPath &aPackFolder, const char *aAct
                 case DATA_TYPE_LIGHT_T:         DynOS_LightT_Load    (_File, _GfxData); break;
                 case DATA_TYPE_AMBIENT_T:       DynOS_AmbientT_Load  (_File, _GfxData); break;
                 case DATA_TYPE_TEXTURE:         DynOS_Tex_Load       (_File, _GfxData); break;
+                case DATA_TYPE_TEXTURE_RAW:     DynOS_Tex_LoadRaw    (_File, _GfxData); break;
                 case DATA_TYPE_TEXTURE_LIST:    DynOS_TexList_Load   (_File, _GfxData); break;
                 case DATA_TYPE_VERTEX:          DynOS_Vtx_Load       (_File, _GfxData); break;
                 case DATA_TYPE_DISPLAY_LIST:    DynOS_Gfx_Load       (_File, _GfxData); break;
