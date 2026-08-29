@@ -66,7 +66,7 @@ bool DynOS_Lvl_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPt
     return true;
 }
 
-static Array<u8> DynOS_Lvl_Validate_GetCommandIds(const DataNode<LevelScript> *aNode) {
+static Array<u8> DynOS_Lvl_Validate_GetCommandIds(GfxData *aGfxData, const DataNode<LevelScript> *aNode) {
     Array<u8> lvlCommandIds;
     for (s32 i = 0; i < aNode->mSize;) {
         u8 id = (u8) aNode->mData[i];
@@ -74,6 +74,7 @@ static Array<u8> DynOS_Lvl_Validate_GetCommandIds(const DataNode<LevelScript> *a
             lvlCommandIds.Add(id);
             i += sLevelScriptCommands[id].size / 4;
         } else {
+            PrintDataError("  ERROR: Validation failed for level %s: Invalid command: %02X %016llX", aNode->mName.begin(), id, aNode->mData[i]);
             break;
         }
     }
@@ -81,13 +82,14 @@ static Array<u8> DynOS_Lvl_Validate_GetCommandIds(const DataNode<LevelScript> *a
 }
 
 bool DynOS_Lvl_Validate_CheckCommands(GfxData *aGfxData, const DataNode<LevelScript> *aNode, bool isLoad) {
-    Array<u8> lvlCommandIds = DynOS_Lvl_Validate_GetCommandIds(aNode);
 
     // Check unterminated command (Load only)
     if (isLoad && sCurCommandId != 0xFF && sCurCommandIndex < sLevelScriptCommands[sCurCommandId].size / 4) {
         PrintDataError("  ERROR: Validation failed for level %s: Unterminated command: %02X", aNode->mName.begin(), sCurCommandId);
         return false;
     }
+
+    Array<u8> lvlCommandIds = DynOS_Lvl_Validate_GetCommandIds(aGfxData, aNode);
 
     // Level script must have at least 1 command
     if (lvlCommandIds.Count() < 1) {
