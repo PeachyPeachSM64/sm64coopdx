@@ -242,7 +242,6 @@ static PointerData GetDataFromPointer(const void* aPtr, GfxData* aGfxData, u32 a
 
     // Vertices
     if (aPtrType & PTYPE_PNTR_VTX) {
-        String _VtxArrayName = "";
         for (auto& _Node : aGfxData->mVertices) {
             if (_Node->mData == aPtr) {
                 return { _Node->mName, _Offset };
