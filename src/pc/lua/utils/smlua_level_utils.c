@@ -232,59 +232,72 @@ static struct LevelWarpNodes *level_get_warp_nodes(u8 levelNum, bool create) {
     return warpNodes;
 }
 
-static void level_clear_warp_node(struct CustomWarpNode *warpNode, u8 areaIndex, bool delete) {
-    if (!warpNode) { return; }
+static bool level_find_warp_node_in_current_level(struct CustomWarpNode *warpNode, u8 areaIndex,
+    struct ObjectWarpNode **prevWarpNode, struct SpawnInfo **prevSpawnInfo
+) {
+    if (!warpNode || warpNode->node.node.id == 0) { return false; }
 
-    // Remove the node from the current level
-    if (delete) {
-        if (warpNode->node.node.id != 0) {
-            struct Area *area = &gAreas[areaIndex];
+    struct Area *area = &gAreas[areaIndex];
+    bool found = false;
 
-            // Unlink warp node
-            for (struct ObjectWarpNode *node = area->warpNodes, *prev = NULL; node != NULL; node = node->next) {
-                if (node == &warpNode->node) {
-                    if (prev != NULL) {
-                        prev->next = node->next;
-                    } else {
-                        area->warpNodes = node->next;
-                    }
-
-                    // Delete the corresponding object if current area
-                    if (areaIndex == gCurrAreaIndex && warpNode->node.object) {
-                        obj_mark_for_deletion(warpNode->node.object);
-                    }
-                    break;
-                }
-                prev = node;
-            }
-
-            // Unlink warp object spawn info
-            for (struct SpawnInfo *spawnInfo = area->objectSpawnInfos, *prev = NULL; spawnInfo != NULL; spawnInfo = spawnInfo->next) {
-                if (spawnInfo == &warpNode->spawnInfo) {
-                    if (prev != NULL) {
-                        prev->next = spawnInfo->next;
-                    } else {
-                        area->objectSpawnInfos = spawnInfo->next;
-                    }
-                    break;
-                }
-                prev = spawnInfo;
-            }
+    // Warp node
+    if (prevWarpNode) { *prevWarpNode = NULL; }
+    for (struct ObjectWarpNode *node = area->warpNodes, *prev = NULL; node != NULL; node = node->next) {
+        if (node == &warpNode->node) {
+            found = true;
+            if (prevWarpNode) { *prevWarpNode = prev; }
+            break;
         }
-
-        memset(warpNode, 0, sizeof(*warpNode));
-        return;
+        prev = node;
     }
 
-    // Keep the important fields
-    struct ObjectWarpNode *nextWarpNode = warpNode->node.next;
-    struct SpawnInfo *nextSpawnInfo = warpNode->spawnInfo.next;
+    // Spawn info
+    if (prevSpawnInfo) { *prevSpawnInfo = NULL; }
+    if (found) {
+        for (struct SpawnInfo *spawnInfo = area->objectSpawnInfos, *prev = NULL; spawnInfo != NULL; spawnInfo = spawnInfo->next) {
+            if (spawnInfo == &warpNode->spawnInfo) {
+                if (prevSpawnInfo) { *prevSpawnInfo = prev; }
+                break;
+            }
+            prev = spawnInfo;
+        }
+    }
 
+    return found;
+}
+
+static void level_clear_warp_node(struct CustomWarpNode *warpNode, u8 areaIndex) {
+    if (!warpNode) { return; }
+
+    struct ObjectWarpNode *prevWarpNode = NULL;
+    struct SpawnInfo *prevSpawnInfo = NULL;
+
+    // Remove node from current area
+    if (level_find_warp_node_in_current_level(warpNode, areaIndex, &prevWarpNode, &prevSpawnInfo)) {
+        struct Area *area = &gAreas[areaIndex];
+
+        // Unlink warp node
+        if (prevWarpNode != NULL) {
+            prevWarpNode->next = warpNode->node.next;
+        } else {
+            area->warpNodes = warpNode->node.next;
+        }
+
+        // Unlink warp object spawn info
+        if (prevSpawnInfo != NULL) {
+            prevSpawnInfo->next = warpNode->spawnInfo.next;
+        } else {
+            area->objectSpawnInfos = warpNode->spawnInfo.next;
+        }
+
+        // Delete the corresponding object if current area
+        if (areaIndex == gCurrAreaIndex && warpNode->node.object) {
+            obj_mark_for_deletion(warpNode->node.object);
+        }
+    }
+
+    // Clear node
     memset(warpNode, 0, sizeof(*warpNode));
-
-    // Restore fields
-    warpNode->node.next = nextWarpNode;
-    warpNode->spawnInfo.next = nextSpawnInfo;
 }
 
 struct CustomWarpNode *level_create_warp_node(u8 levelNum, u8 areaIndex, u8 id, enum MarioSpawnType marioSpawnType, u8 destLevel, u8 destArea, u8 destNode, bool checkpoint) {
@@ -300,9 +313,15 @@ struct CustomWarpNode *level_create_warp_node(u8 levelNum, u8 areaIndex, u8 id, 
         return NULL;
     }
 
-    // Create warp node
     struct CustomWarpNode *warpNode = &levelWarps->warpNodes[areaIndex][id];
-    level_clear_warp_node(warpNode, areaIndex, false);
+
+    // If the node already exists in the current level, abort
+    if (level_find_warp_node_in_current_level(warpNode, areaIndex, NULL, NULL)) {
+        LOG_LUA_WARNING("Node %u already exists in the current level. To modify it, retrieve it with `level_get_warp_node` first.", id);
+        return NULL;
+    }
+
+    level_clear_warp_node(warpNode, areaIndex);
 
     warpNode->node.node.id = id;
     warpNode->node.node.destLevel = destLevel | (checkpoint ? WARP_CHECKPOINT : WARP_NO_CHECKPOINT);
@@ -367,7 +386,7 @@ void level_delete_warp_node(u8 levelNum, u8 areaIndex, u8 id) {
     }
 
     struct CustomWarpNode *warpNode = &levelWarps->warpNodes[areaIndex][id];
-    level_clear_warp_node(warpNode, areaIndex, true);
+    level_clear_warp_node(warpNode, areaIndex);
 }
 
 void level_clear_warp_nodes(u8 levelNum) {
@@ -385,7 +404,7 @@ void level_clear_warp_nodes(u8 levelNum) {
         struct CustomWarpNode *warpNodes = levelWarps->warpNodes[areaIndex];
         for (u16 id = 1; id < 0x100; ++id) {
             struct CustomWarpNode *warpNode = &warpNodes[id];
-            level_clear_warp_node(warpNode, areaIndex, true);
+            level_clear_warp_node(warpNode, areaIndex);
         }
     }
 }
