@@ -71,15 +71,19 @@ DataNode<TexData*>* DynOS_TexList_Load(BinFile *aFile, GfxData *aGfxData) {
     // Name
     _Node->mName.Read(aFile);
 
+    // Size check
+    u32 dataSize = aFile->Read<u32>();
+    u32 remainingSize = (u32) MAX(0, aFile->Size() - aFile->Offset()) / sizeof(u32);
+    if (dataSize == 0 || dataSize > remainingSize) {
+        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), dataSize, remainingSize);
+        Delete(_Node);
+        return NULL;
+    }
+
     // Data
-    _Node->mSize = aFile->Read<u32>();
+    _Node->mSize = dataSize;
     _Node->mData = New<TexData*>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        if (aFile->EoF()) {
-            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(u32));
-            Delete(_Node);
-            return NULL;
-        }
         u32 _Value = aFile->Read<u32>();
         void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_PNTR_TEX, &_Node->mFlags);
         if (_Ptr == NULL) {

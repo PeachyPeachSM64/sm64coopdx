@@ -22,6 +22,8 @@ extern "C" {
 #define MOD_PACK_INDEX -1 // the pack index for actors loaded from mods
 #define PACK_MOD_INDEX -1 // the mod index for actors loaded from packs
 
+#define DYNOS_BIN_FILE_MAX_SIZE (s32) 0x40000000 // 1 GiB
+
 // Pointer types
 #define PTYPE_LUAV              (1 <<  0)
 #define PTYPE_FUNC_GEO          (1 <<  1)
@@ -103,10 +105,16 @@ enum {
 
 class BinFile {
 private:
-    void Grow(s32 newSize) {
-        if (newSize >= mCapacity) {
+    bool Grow(s32 newSize) {
+        if (newSize > DYNOS_BIN_FILE_MAX_SIZE) {
+            return false;
+        }
+        if (newSize > mCapacity) {
             mCapacity = MAX(newSize, MAX(256, mCapacity * 2));
             u8 *newBuffer = (u8 *) calloc(mCapacity, 1);
+            if (!newBuffer) {
+                return false;
+            }
             if (mData) {
                 memcpy(newBuffer, mData, mSize);
                 free(mData);
@@ -114,6 +122,7 @@ private:
             mData = newBuffer;
         }
         mSize = MAX(mSize, newSize);
+        return true;
     }
 
 public:
@@ -128,10 +137,19 @@ public:
         FILE *f = f_open_r(aFilename);
         if (f) {
             f_seek(f, 0, SEEK_END);
+            s32 _FileSize = f_tell(f);
+            if (_FileSize > DYNOS_BIN_FILE_MAX_SIZE) {
+                f_close(f);
+                return NULL;
+            }
             BinFile *_BinFile = (BinFile *) calloc(1, sizeof(BinFile));
             _BinFile->mFilename = (const char *) memcpy(calloc(strlen(aFilename) + 1, 1), aFilename, strlen(aFilename));
             _BinFile->mReadOnly = true;
-            _BinFile->Grow(f_tell(f));
+            if (!_BinFile->Grow(_FileSize)) {
+                free(_BinFile);
+                f_close(f);
+                return NULL;
+            }
             f_rewind(f);
             f_read(_BinFile->mData, 1, _BinFile->mSize, f);
             f_close(f);
@@ -148,16 +166,22 @@ public:
     }
 
     static BinFile *OpenB(const u8 *aBuffer, s32 aSize) {
+        if (aSize > DYNOS_BIN_FILE_MAX_SIZE) {
+            return NULL;
+        }
         BinFile *_BinFile = (BinFile *) calloc(1, sizeof(BinFile));
         _BinFile->mReadOnly = true;
-        _BinFile->Grow(aSize);
+        if (!_BinFile->Grow(aSize)) {
+            free(_BinFile);
+            return NULL;
+        }
         memcpy(_BinFile->mData, aBuffer, aSize);
         return _BinFile;
     }
 
     static void Close(BinFile *&aBinFile) {
         if (aBinFile) {
-            if (!aBinFile->mReadOnly && aBinFile->mFilename && aBinFile->mData && aBinFile->mSize) {
+            if (!aBinFile->mReadOnly && aBinFile->mFilename && aBinFile->mData && aBinFile->mSize > 0 && aBinFile->mSize <= DYNOS_BIN_FILE_MAX_SIZE) {
                 FILE *f = fopen(aBinFile->mFilename, "wb");
                 if (f) {
                     fwrite(aBinFile->mData, 1, aBinFile->mSize, f);
@@ -195,8 +219,7 @@ public:
 
     template <typename T>
     void Write(const T& aItem) {
-        if (!mReadOnly) {
-            Grow(mOffset + sizeof(T));
+        if (!mReadOnly && Grow(mOffset + sizeof(T))) {
             memcpy(mData + mOffset, &aItem, sizeof(T));
             mOffset += sizeof(T);
         }
@@ -207,15 +230,10 @@ public:
         if (aCount <= 0 || aBuffer == NULL) {
             return;
         }
-        if (!mReadOnly) {
-            Grow(mOffset + aCount * sizeof(T));
+        if (!mReadOnly && Grow(mOffset + aCount * sizeof(T))) {
             memcpy(mData + mOffset, aBuffer, aCount * sizeof(T));
             mOffset += aCount * sizeof(T);
         }
-    }
-
-    void Skip(s32 aAmount) const {
-        mOffset += aAmount;
     }
 
 private:

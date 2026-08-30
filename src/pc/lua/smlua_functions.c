@@ -627,7 +627,7 @@ static void level_script_parse_convert_parameters(lua_State *L) {
             lua_rawseti(L, macroBhvModelsIndex, i);
             lua_pop(L, 1);
         }
-        lua_pop(L, 1);
+        lua_pop(L, 1); // Pop the nil from the last lua_rawgeti
     } else {
         lua_pushnil(L);
         lua_pushnil(L);

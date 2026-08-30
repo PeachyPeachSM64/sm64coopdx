@@ -2454,30 +2454,23 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
         return NULL;
     }
 
-    // If we have nothing in the .bhv file, It compiled incorrectly or is maliciously crafted.
-    // We also check if the specified behavior size is valid for the file.
+    // Size check
     u32 dataSize = aFile->Read<u32>();
-    if (dataSize == 0 || (dataSize > (aFile->Size() - aFile->Offset()))) {
-        PrintDataError("  ERROR: Behavior file has a invalid behavior in it! Rejecting '%s'.", aFile->GetFilename());
-        // We don't return this since we failed to read the behavior.
+    u32 remainingSize = (u32) MAX(0, aFile->Size() - aFile->Offset()) / sizeof(u32);
+    if (dataSize == 0 || dataSize > remainingSize) {
+        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), dataSize, remainingSize);
         Delete(_Node);
-        // We have nothing to return, So return NULL.
         return NULL;
     }
 
     // Data
     _Node->mSize = dataSize;
-    _Node->mData = New<BehaviorScript>(_Node->mSize + 1);
+    _Node->mData = New<BehaviorScript>(_Node->mSize + 1llu); // Add sentinel at the end
 
     DynOS_Bhv_Validate_Begin();
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        if (aFile->EoF()) {
-            PrintDataError("  ERROR: Reached EOF when reading file! Expected %llx bytes!", _Node->mSize * sizeof(u32));
-            Delete(_Node);
-            return NULL;
-        }
         u32 _Value = aFile->Read<u32>();
 
         u8 _CommandId;

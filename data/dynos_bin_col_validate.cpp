@@ -448,6 +448,9 @@ bool DynOS_Col_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Collisio
             break;
         } else if (TERRAIN_LOAD_IS_SURFACE_TYPE_HIGH(command)) {
             DynOS_Col_Validate_CheckSurfaces(aGfxData, aNode, command);
+        } else {
+            PrintDataError("  ERROR: Validation failed for collision %s: Invalid command: %04X", aNode->mName.begin(), (u16) command);
+            return false;
         }
 
         if (sColData >= sColEnd) {
