@@ -1031,10 +1031,7 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
             Collision *data = (Collision *) dynos_level_cmd_get(cmd, 4);
             u32 size = get_area_terrain_size(data) * sizeof(Collision);
 
-            lua_newtable(L);
             smlua_func_level_parse_collision(L, data, size);
-
-            lua_setfield(L, -2, "terrain");
         } break;
 
         // SHOW_DIALOG
