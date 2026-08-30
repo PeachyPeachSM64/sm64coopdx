@@ -984,7 +984,7 @@ static s32 bhv_cmd_animate_texture(void) {
         cur_obj_add_int(field, 1);
     }
 
-    cmd_next(2);
+    cmd_next(1);
     return BHV_PROC_CONTINUE;
 }
 
