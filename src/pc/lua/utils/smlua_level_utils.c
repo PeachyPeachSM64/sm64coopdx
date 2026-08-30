@@ -11,12 +11,13 @@
 extern void area_check_red_coin_or_secret(void *arg, bool isMacroObject);
 
 #define MIN_AREA_INDEX 0
+#define MAX_WARP_NODES_PER_AREA 0x100
 
 struct CustomLevelInfo* sCustomLevelHead = NULL;
 static s16 sCustomLevelNumNext = CUSTOM_LEVEL_NUM_START;
 
 struct LevelWarpNodes {
-    struct CustomWarpNode warpNodes[MAX_AREAS][0x100];
+    struct CustomWarpNode warpNodes[MAX_AREAS][MAX_WARP_NODES_PER_AREA];
 };
 
 static void *sCustomWarpNodes = NULL;
@@ -252,11 +253,11 @@ static bool level_find_warp_node_in_current_level(struct CustomWarpNode *warpNod
     }
 
     // Spawn info
-    if (prevSpawnInfo) { *prevSpawnInfo = NULL; }
-    if (found) {
+    if (found && prevSpawnInfo) {
+        *prevSpawnInfo = NULL;
         for (struct SpawnInfo *spawnInfo = area->objectSpawnInfos, *prev = NULL; spawnInfo != NULL; spawnInfo = spawnInfo->next) {
             if (spawnInfo == &warpNode->spawnInfo) {
-                if (prevSpawnInfo) { *prevSpawnInfo = prev; }
+                *prevSpawnInfo = prev;
                 break;
             }
             prev = spawnInfo;
@@ -302,8 +303,7 @@ static void level_clear_warp_node(struct CustomWarpNode *warpNode, u8 areaIndex)
 
 struct CustomWarpNode *level_create_warp_node(u8 levelNum, u8 areaIndex, u8 id, enum MarioSpawnType marioSpawnType, u8 destLevel, u8 destArea, u8 destNode, bool checkpoint) {
     if (levelNum == LEVEL_NONE || (levelNum & WARP_CHECKPOINT) != 0 || (destLevel & WARP_CHECKPOINT) != 0 ||
-        areaIndex >= MAX_AREAS || destArea >= MAX_AREAS ||
-        id == 0 || destNode == 0) {
+        areaIndex >= MAX_AREAS || destArea >= MAX_AREAS || id == 0 || destNode == 0) {
         return NULL;
     }
 
@@ -402,7 +402,7 @@ void level_clear_warp_nodes(u8 levelNum) {
 
     for (u8 areaIndex = 0; areaIndex < MAX_AREAS; areaIndex++) {
         struct CustomWarpNode *warpNodes = levelWarps->warpNodes[areaIndex];
-        for (u16 id = 1; id < 0x100; ++id) {
+        for (u16 id = 1; id < MAX_WARP_NODES_PER_AREA; ++id) {
             struct CustomWarpNode *warpNode = &warpNodes[id];
             level_clear_warp_node(warpNode, areaIndex);
         }
@@ -421,7 +421,7 @@ void level_register_custom_warp_nodes(u8 levelNum, u8 areaIndex) {
     }
 
     struct CustomWarpNode *warpNodes = levelWarps->warpNodes[areaIndex];
-    for (u16 id = 1; id < 0x100; ++id) {
+    for (u16 id = 1; id < MAX_WARP_NODES_PER_AREA; ++id) {
         struct CustomWarpNode *warpNode = &warpNodes[id];
         if (warpNode->node.node.id == id) {
 
@@ -455,7 +455,7 @@ void level_clear_warp_node_objects(u8 levelNum, u8 areaIndex) {
     }
 
     struct CustomWarpNode *warpNodes = levelWarps->warpNodes[areaIndex];
-    for (u16 id = 1; id < 0x100; ++id) {
+    for (u16 id = 1; id < MAX_WARP_NODES_PER_AREA; ++id) {
         struct CustomWarpNode *warpNode = &warpNodes[id];
         warpNode->node.object = NULL;
     }
