@@ -354,7 +354,7 @@ bool packet_write_lnt(struct Packet* p, struct LSTNetworkType* lnt) {
 
         case LST_NETWORK_TYPE_STRING: {
             u64 valueLength = strlen(lnt->value.string);
-            if (valueLength > PACKET_LENGTH - (p->cursor + sizeof(u16))) {
+            if (valueLength > PACKET_LENGTH) {
                 LOG_ERROR("attempted to send lua variable with invalid string length: %u", valueLength);
                 return false;
             }
