@@ -243,9 +243,9 @@ static bool DynOS_Tex_Validate(const DataNode<TexData> *aNode) {
         aNode->mData->mInvalidated = true;
         return false;
     }
-    u32 textureSize = aNode->mData->mRawWidth * aNode->mData->mRawHeight * sizeof(u32);
-    if (aNode->mData->mRawData.Count() != textureSize) {
-        LOG_ERROR("Texture '%s': Invalid size: %u, should be %u", aNode->mName.begin(), aNode->mData->mRawData.Count(), textureSize);
+    u64 textureSize = (u64) aNode->mData->mRawWidth * (u64) aNode->mData->mRawHeight * sizeof(u32);
+    if ((u64) aNode->mData->mRawData.Count() != textureSize) {
+        LOG_ERROR("Texture '%s': Invalid size: %u, should be %llu", aNode->mName.begin(), aNode->mData->mRawData.Count(), textureSize);
         aNode->mData->mInvalidated = true;
         return false;
     }
