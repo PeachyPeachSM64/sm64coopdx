@@ -62,9 +62,13 @@ bool DynOS_Gfx_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Gfx> *aN
 
                 // Check bounds for loaded vertices
                 size_t numVertices = C0(gfx, 12, 8);
-                size_t destIndex = C0(gfx, 1, 7) - numVertices;
-                if (destIndex + numVertices > MAX_VERTICES_WITH_RECT) {
-                    PrintDataError("  ERROR: Validation failed for display list %s: Vertices exceed the maximum allowed (destIndex: %llu, numVertices: %llu)", aNode->mName.begin(), destIndex, numVertices);
+                size_t endIndex = C0(gfx, 1, 7);
+                if (endIndex < numVertices) {
+                    PrintDataError("  ERROR: Validation failed for display list %s: Invalid end vertex, must be greater than or equal to num vertices (endIndex: %llu, numVertices: %llu)", aNode->mName.begin(), endIndex, numVertices);
+                    return false;
+                }
+                if (endIndex > MAX_VERTICES_WITH_RECT) {
+                    PrintDataError("  ERROR: Validation failed for display list %s: Vertices exceed the maximum allowed, must be lower than or equal to %u (endIndex: %llu, numVertices: %llu)", aNode->mName.begin(), MAX_VERTICES_WITH_RECT, endIndex, numVertices);
                     return false;
                 }
 
