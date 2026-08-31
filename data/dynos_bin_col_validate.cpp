@@ -443,7 +443,7 @@ bool DynOS_Col_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Collisio
         } else if (command == TERRAIN_LOAD_ENVIRONMENT) {
             DynOS_Col_Validate_CheckEnvironmentalRegions(aGfxData, aNode);
         } else if (command == TERRAIN_LOAD_CONTINUE) {
-            continue;
+            // continue, but check bounds at the end
         } else if (command == TERRAIN_LOAD_END) {
             break;
         } else if (TERRAIN_LOAD_IS_SURFACE_TYPE_HIGH(command)) {
