@@ -198,18 +198,15 @@ DataNode<Movtex>* DynOS_Movtex_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mName.Read(aFile);
 
     // Size check
-    u32 dataSize = aFile->Read<u32>();
-    u32 remainingSize = (u32) MAX(0, aFile->Size() - aFile->Offset()) / sizeof(Movtex);
-    if (dataSize == 0 || dataSize > remainingSize) {
-        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), dataSize, remainingSize);
-        Delete(_Node);
-        return NULL;
-    }
+    u32 _DataSize = aFile->Read<u32>();
+    DynOS_Bin_ValidateSize(_DataSize, sizeof(Movtex), NULL);
 
     // Data
-    _Node->mSize = dataSize;
+    _Node->mSize = _DataSize;
     _Node->mData = New<Movtex>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        DynOS_Bin_ValidateOffset(NULL);
+
         _Node->mData[i] = aFile->Read<Movtex>();
     }
 

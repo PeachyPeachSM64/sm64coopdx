@@ -1253,5 +1253,23 @@ BinFile *DynOS_Bin_Decompress(const SysPath &aFilename);
 
 void DynOS_Add_Scroll_Target(u32 index, const char *name, u32 offset, u32 size);
 
+#define DynOS_Bin_ValidateSize(aDataSize, aElemBytes, aReturnValue) \
+    u32 _ElemBytes = (aElemBytes); \
+    u32 _RemainingBytes = (u32) MAX(0, aFile->Size() - aFile->Offset()); \
+    u32 _RemainingSize = _RemainingBytes / _ElemBytes; \
+    if (aDataSize == 0 || aDataSize > _RemainingSize) { \
+        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), aDataSize, _RemainingSize); \
+        Delete(_Node); \
+        return aReturnValue; \
+    }
+
+#define DynOS_Bin_ValidateOffset(aReturnValue) \
+    if (aFile->EoF()) { \
+        u32 _ExpectedBytes = _RemainingBytes + (_Node->mSize - i) * _ElemBytes; \
+        PrintDataError("  ERROR: Reached EOF when reading file '%s': Expected at least %u bytes, got only %u", aFile->GetFilename(), _ExpectedBytes, _RemainingBytes); \
+        Delete(_Node); \
+        return aReturnValue; \
+    }
+
 #endif
 #endif

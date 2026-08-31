@@ -386,22 +386,19 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mName.Read(aFile);
 
     // Size check
-    u32 dataSize = aFile->Read<u32>();
-    u32 remainingSize = (u32) MAX(0, aFile->Size() - aFile->Offset()) / sizeof(u32);
-    if (dataSize == 0 || dataSize > remainingSize) {
-        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), dataSize, remainingSize);
-        Delete(_Node);
-        return;
-    }
+    u32 _DataSize = aFile->Read<u32>();
+    DynOS_Bin_ValidateSize(_DataSize, sizeof(u32),);
 
     // Data
-    _Node->mSize = dataSize;
+    _Node->mSize = _DataSize;
     _Node->mData = New<GeoLayout>(_Node->mSize + 1llu); // Add sentinel at the end
 
     DynOS_Geo_Validate_Begin();
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        DynOS_Bin_ValidateOffset();
+
         u32 _Value = aFile->Read<u32>();
 
         u16 _CommandId;

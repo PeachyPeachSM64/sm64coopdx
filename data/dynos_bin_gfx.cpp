@@ -1179,20 +1179,17 @@ void DynOS_Gfx_Load(BinFile *aFile, GfxData *aGfxData) {
     _Node->mName.Read(aFile);
 
     // Size check
-    u32 dataSize = aFile->Read<u32>();
-    u32 remainingSize = (u32) MAX(0, aFile->Size() - aFile->Offset()) / (2 * sizeof(u32));
-    if (dataSize == 0 || dataSize > remainingSize) {
-        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), dataSize, remainingSize);
-        Delete(_Node);
-        return;
-    }
+    u32 _DataSize = aFile->Read<u32>();
+    DynOS_Bin_ValidateSize(_DataSize, 2 * sizeof(u32),);
 
     // Data
-    _Node->mSize = dataSize;
+    _Node->mSize = _DataSize;
     _Node->mData = gfx_allocate_internal(NULL, _Node->mSize);
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        DynOS_Bin_ValidateOffset();
+
         u32 _WordsW0 = aFile->Read<u32>();
         u32 _WordsW1 = aFile->Read<u32>();
 

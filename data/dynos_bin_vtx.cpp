@@ -113,41 +113,40 @@ void DynOS_Vtx_Load(BinFile *aFile, GfxData *aGfxData) {
     // Name
     _Node->mName.Read(aFile);
 
-    u32 dataSize = aFile->Read<u32>();
+    u32 _DataSize = aFile->Read<u32>();
 
     // Check F32VTX sentinel
+    u32 _VtxSize = (
+        3 * sizeof(s16) +
+        3 * sizeof(s16) +
+        3 * sizeof(s8) +
+        sizeof(u8)
+    );
     bool isUsingF32Vtx = false;
-    if (dataSize > 0) {
+    if (_DataSize > 0) {
         s32 _FileOffset = aFile->Offset();
         s16 x = aFile->Read<s16>();
         s16 y = aFile->Read<s16>();
         s16 z = aFile->Read<s16>();
         isUsingF32Vtx = IsUsingF32Vtx(x, y, z);
         if (isUsingF32Vtx) {
-            dataSize--;
+            aFile->SetOffset(_FileOffset + _VtxSize); // Skip first vertex (sentinel)
+            _VtxSize += 3 * (sizeof(f32) - sizeof(s16)); // Correct element size
+            _DataSize--;
         } else {
             aFile->SetOffset(_FileOffset);
         }
     }
 
     // Size check
-    u32 vtxSize = (
-        3 * (isUsingF32Vtx ? sizeof(f32) : sizeof(s16)) +
-        3 * sizeof(s16) +
-        3 * sizeof(s8) +
-        sizeof(u8)
-    );
-    u32 remainingSize = (u32) MAX(0, aFile->Size() - aFile->Offset()) / vtxSize;
-    if (dataSize == 0 || dataSize > remainingSize) {
-        PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), dataSize, remainingSize);
-        Delete(_Node);
-        return;
-    }
+    DynOS_Bin_ValidateSize(_DataSize, _VtxSize,);
 
     // Data
-    _Node->mSize = dataSize;
+    _Node->mSize = _DataSize;
     _Node->mData = vtx_allocate_internal(NULL, _Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
+        DynOS_Bin_ValidateOffset();
+
         if (isUsingF32Vtx) {
             _Node->mData[i].n.ob[0] = aFile->Read<f32>();
             _Node->mData[i].n.ob[1] = aFile->Read<f32>();
