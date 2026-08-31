@@ -91,8 +91,8 @@ GFX_SYMBOL(0, gsDPLoadTextureBlock,      12, PTYPE_PNTR_TEX,    GFX_PARAM_TEX, G
                                                                 GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT,
                                                                 GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT)
 GFX_SYMBOL(0, gsDPLoadTLUTCmd,           2,  0,                 GFX_PARAM_INT, GFX_PARAM_INT)
-GFX_SYMBOL(0, gsDPLoadTLUT_pal16,        2,  PTYPE_PNTR_TEX,    GFX_PARAM_INT, GFX_PARAM_INT)
-GFX_SYMBOL(0, gsDPLoadTLUT_pal256,       1,  PTYPE_PNTR_TEX,    GFX_PARAM_INT)
+GFX_SYMBOL(0, gsDPLoadTLUT_pal16,        2,  PTYPE_PNTR_TEX,    GFX_PARAM_INT, GFX_PARAM_TEX)
+GFX_SYMBOL(0, gsDPLoadTLUT_pal256,       1,  PTYPE_PNTR_TEX,    GFX_PARAM_TEX)
 GFX_SYMBOL(0, gsDPLoadTextureBlock_4b,   11, PTYPE_PNTR_TEX,    GFX_PARAM_TEX, GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT,
                                                                 GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT,
                                                                 GFX_PARAM_INT, GFX_PARAM_INT, GFX_PARAM_INT)
