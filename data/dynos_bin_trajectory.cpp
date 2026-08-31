@@ -115,13 +115,13 @@ DataNode<Trajectory>* DynOS_Trajectory_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Size check
     u32 _DataSize = aFile->Read<u32>();
-    DynOS_Bin_ValidateSize(_DataSize, sizeof(Trajectory), NULL);
+    DynOS_Bin_Validate_CheckSize(_DataSize, sizeof(Trajectory), NULL);
 
     // Data
     _Node->mSize = _DataSize;
     _Node->mData = New<Trajectory>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        DynOS_Bin_ValidateOffset(NULL);
+        DynOS_Bin_Validate_CheckEoF(NULL);
 
         _Node->mData[i] = aFile->Read<Trajectory>();
     }

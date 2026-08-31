@@ -139,13 +139,13 @@ void DynOS_Vtx_Load(BinFile *aFile, GfxData *aGfxData) {
     }
 
     // Size check
-    DynOS_Bin_ValidateSize(_DataSize, _VtxSize,);
+    DynOS_Bin_Validate_CheckSize(_DataSize, _VtxSize,);
 
     // Data
     _Node->mSize = _DataSize;
     _Node->mData = vtx_allocate_internal(NULL, _Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        DynOS_Bin_ValidateOffset();
+        DynOS_Bin_Validate_CheckEoF();
 
         if (isUsingF32Vtx) {
             _Node->mData[i].n.ob[0] = aFile->Read<f32>();

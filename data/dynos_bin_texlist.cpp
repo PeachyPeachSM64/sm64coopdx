@@ -73,13 +73,13 @@ DataNode<TexData*>* DynOS_TexList_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Size check
     u32 _DataSize = aFile->Read<u32>();
-    DynOS_Bin_ValidateSize(_DataSize, sizeof(u32), NULL);
+    DynOS_Bin_Validate_CheckSize(_DataSize, sizeof(u32), NULL);
 
     // Data
     _Node->mSize = _DataSize;
     _Node->mData = New<TexData*>(_Node->mSize);
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        DynOS_Bin_ValidateOffset(NULL);
+        DynOS_Bin_Validate_CheckEoF(NULL);
 
         u32 _Value = aFile->Read<u32>();
         void *_Ptr = DynOS_Pointer_Load(aFile, aGfxData, _Value, PTYPE_PNTR_TEX, &_Node->mFlags);

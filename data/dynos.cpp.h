@@ -1253,7 +1253,11 @@ BinFile *DynOS_Bin_Decompress(const SysPath &aFilename);
 
 void DynOS_Add_Scroll_Target(u32 index, const char *name, u32 offset, u32 size);
 
-#define DynOS_Bin_ValidateSize(aDataSize, aElemBytes, aReturnValue) \
+//
+// Validation
+//
+
+#define DynOS_Bin_Validate_CheckSize(aDataSize, aElemBytes, aReturnValue) \
     u32 _ElemBytes = (aElemBytes); \
     u32 _RemainingBytes = (u32) MAX(0, aFile->Size() - aFile->Offset()); \
     u32 _RemainingSize = _RemainingBytes / _ElemBytes; \
@@ -1263,13 +1267,37 @@ void DynOS_Add_Scroll_Target(u32 index, const char *name, u32 offset, u32 size);
         return aReturnValue; \
     }
 
-#define DynOS_Bin_ValidateOffset(aReturnValue) \
+#define DynOS_Bin_Validate_CheckEoF(aReturnValue) \
     if (aFile->EoF()) { \
         u32 _ExpectedBytes = _RemainingBytes + (_Node->mSize - i) * _ElemBytes; \
         PrintDataError("  ERROR: Reached EOF when reading file '%s': Expected at least %u bytes, got only %u", aFile->GetFilename(), _ExpectedBytes, _RemainingBytes); \
         Delete(_Node); \
         return aReturnValue; \
     }
+
+template <typename CommandType, u32 CommandIdShift, typename NodeType, typename MapType, typename CommandIdType>
+static bool DynOS_Bin_Validate_GetCommandIds(
+    GfxData *aGfxData, const DataNode<NodeType> *aNode,
+    const MapType &aCommandsMap, Array<CommandIdType> &outCommandIds
+) {
+    outCommandIds.Clear();
+    for (s32 i = 0; i < aNode->mSize;) {
+        CommandIdType id = (CommandIdType) (aNode->mData[i] >> CommandIdShift);
+        if (aCommandsMap.count(id) != 0) {
+            outCommandIds.Add(id);
+            s32 commandSize = aCommandsMap.at(id).size / 4;
+            if (i + commandSize > aNode->mSize) {
+                PrintDataError("  ERROR: Validation failed for '%s': Unterminated command: %X %016llX", aNode->mName.begin(), id, aNode->mData[i]);
+                return false;
+            }
+            i += commandSize;
+        } else {
+            PrintDataError("  ERROR: Validation failed for '%s': Invalid command: %X %016llX", aNode->mName.begin(), id, aNode->mData[i]);
+            return false;
+        }
+    }
+    return true;
+}
 
 #endif
 #endif

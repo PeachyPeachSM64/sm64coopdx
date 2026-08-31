@@ -387,7 +387,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Size check
     u32 _DataSize = aFile->Read<u32>();
-    DynOS_Bin_ValidateSize(_DataSize, sizeof(u32),);
+    DynOS_Bin_Validate_CheckSize(_DataSize, sizeof(u32),);
 
     // Data
     _Node->mSize = _DataSize;
@@ -397,7 +397,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        DynOS_Bin_ValidateOffset();
+        DynOS_Bin_Validate_CheckEoF();
 
         u32 _Value = aFile->Read<u32>();
 

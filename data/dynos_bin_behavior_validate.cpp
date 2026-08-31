@@ -66,21 +66,6 @@ bool DynOS_Bhv_Validate_GetPointerTypes(u32 aValue, u8 &outCommandId, u32 &outPt
     return true;
 }
 
-static Array<u8> DynOS_Bhv_Validate_GetCommandIds(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode) {
-    Array<u8> bhvCommandIds;
-    for (s32 i = 0; i < aNode->mSize;) {
-        u8 id = (u8) (aNode->mData[i] >> 24);
-        if (sBehaviorScriptCommands.count(id) != 0) {
-            bhvCommandIds.Add(id);
-            i += sBehaviorScriptCommands[id].size / 4;
-        } else {
-            PrintDataError("  ERROR: Validation failed for behavior %s: Invalid command: %02X %016llX", aNode->mName.begin(), id, aNode->mData[i]);
-            break;
-        }
-    }
-    return bhvCommandIds;
-}
-
 bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<BehaviorScript> *aNode, bool isLoad) {
 
     // Check unterminated command (Load only)
@@ -89,7 +74,11 @@ bool DynOS_Bhv_Validate_CheckCommands(GfxData *aGfxData, const DataNode<Behavior
         return false;
     }
 
-    Array<u8> bhvCommandIds = DynOS_Bhv_Validate_GetCommandIds(aGfxData, aNode);
+    // Check commands
+    Array<u8> bhvCommandIds;
+    if (!DynOS_Bin_Validate_GetCommandIds<u8, 24>(aGfxData, aNode, sBehaviorScriptCommands, bhvCommandIds)) {
+        return false;
+    }
 
     // Behavior must have at least 2 commands
     if (bhvCommandIds.Count() < 2) {

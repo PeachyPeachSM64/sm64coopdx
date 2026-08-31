@@ -900,7 +900,7 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
 
     // Size check
     u32 _DataSize = aFile->Read<u32>();
-    DynOS_Bin_ValidateSize(_DataSize, sizeof(u32), NULL);
+    DynOS_Bin_Validate_CheckSize(_DataSize, sizeof(u32), NULL);
 
     // Data
     _Node->mSize = _DataSize;
@@ -910,7 +910,7 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
 
     // Read it
     for (u32 i = 0; i != _Node->mSize; ++i) {
-        DynOS_Bin_ValidateOffset(NULL);
+        DynOS_Bin_Validate_CheckEoF(NULL);
 
         u32 _Value = aFile->Read<u32>();
 

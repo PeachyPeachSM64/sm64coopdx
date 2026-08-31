@@ -79,21 +79,6 @@ bool DynOS_Geo_Validate_GetPointerTypes(u32 aValue, u16 &outCommandId, u32 &outP
     return true;
 }
 
-static Array<u16> DynOS_Geo_Validate_GetCommandIds(GfxData *aGfxData, const DataNode<GeoLayout> *aNode) {
-    Array<u16> geoCommandIds;
-    for (s32 i = 0; i < aNode->mSize;) {
-        u16 id = (u16) aNode->mData[i];
-        if (sGeoLayoutCommands.count(id) != 0) {
-            geoCommandIds.Add(id);
-            i += sGeoLayoutCommands[id].size / 4;
-        } else {
-            PrintDataError("  ERROR: Validation failed for geo layout %s: Invalid command: %04X %016llX", aNode->mName.begin(), id, aNode->mData[i]);
-            break;
-        }
-    }
-    return geoCommandIds;
-}
-
 bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayout> *aNode, bool isLoad) {
 
     // Check unterminated command (Load only)
@@ -102,7 +87,11 @@ bool DynOS_Geo_Validate_CheckCommands(GfxData *aGfxData, const DataNode<GeoLayou
         return false;
     }
 
-    Array<u16> geoCommandIds = DynOS_Geo_Validate_GetCommandIds(aGfxData, aNode);
+    // Check commands
+    Array<u16> geoCommandIds;
+    if (!DynOS_Bin_Validate_GetCommandIds<u16, 0>(aGfxData, aNode, sGeoLayoutCommands, geoCommandIds)) {
+        return false;
+    }
 
     // Geo layout must have at least 1 command
     if (geoCommandIds.Count() < 1) {
