@@ -226,13 +226,13 @@ static bool DynOS_Tex_Validate(const DataNode<TexData> *aNode) {
     }
 
     // Check dimensions
-    if (aNode->mData->mRawWidth <= 0) {
-        LOG_ERROR("Texture '%s': Invalid width: %d", aNode->mName.begin(), aNode->mData->mRawWidth);
+    if (aNode->mData->mRawWidth < DYNOS_TEX_MIN_WIDTH_HEIGHT || aNode->mData->mRawWidth > DYNOS_TEX_MAX_WIDTH_HEIGHT) {
+        LOG_ERROR("Texture '%s': Invalid width: %d (should be between %u and %u)", aNode->mName.begin(), aNode->mData->mRawWidth, DYNOS_TEX_MIN_WIDTH_HEIGHT, DYNOS_TEX_MAX_WIDTH_HEIGHT);
         aNode->mData->mInvalidated = true;
         return false;
     }
-    if (aNode->mData->mRawHeight <= 0) {
-        LOG_ERROR("Texture '%s': Invalid height: %d", aNode->mName.begin(), aNode->mData->mRawHeight);
+    if (aNode->mData->mRawHeight < DYNOS_TEX_MIN_WIDTH_HEIGHT || aNode->mData->mRawHeight > DYNOS_TEX_MAX_WIDTH_HEIGHT) {
+        LOG_ERROR("Texture '%s': Invalid height: %d (should be between %u and %u)", aNode->mName.begin(), aNode->mData->mRawHeight, DYNOS_TEX_MIN_WIDTH_HEIGHT, DYNOS_TEX_MAX_WIDTH_HEIGHT);
         aNode->mData->mInvalidated = true;
         return false;
     }

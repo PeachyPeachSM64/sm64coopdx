@@ -520,7 +520,7 @@ DataNode<MacroObject>* DynOS_MacroObject_Load(BinFile *aFile, GfxData *aGfxData)
 
     // Validate commands
     if (!DynOS_MacroObject_Validate_CheckCommands(aGfxData, _Node)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return NULL;
     }
 

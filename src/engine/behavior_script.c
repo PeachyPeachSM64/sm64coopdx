@@ -1321,7 +1321,7 @@ void stub_behavior_script_2(void) {
 }
 
 typedef s32 (*BhvCommandProc)(void);
-static BhvCommandProc BehaviorCmdTable[BEHAVIOR_CMD_TABLE_SIZE] = {
+static BhvCommandProc BehaviorCmdTable[] = {
     bhv_cmd_begin, //00
     bhv_cmd_delay, //01
     bhv_cmd_call,  //02
@@ -1389,6 +1389,8 @@ static BhvCommandProc BehaviorCmdTable[BEHAVIOR_CMD_TABLE_SIZE] = {
     bhv_cmd_load_animations_ext, //40
     bhv_cmd_load_collision_data_ext, //41
 };
+
+STATIC_ASSERT(ARRAY_COUNT(BehaviorCmdTable) == BEHAVIOR_CMD_TABLE_SIZE, "BEHAVIOR_CMD_TABLE_SIZE no longer matches BehaviorCmdTable size!");
 
 // Execute the behavior script of the current object, process the object flags, and other miscellaneous code for updating objects.
 void cur_obj_update(void) {

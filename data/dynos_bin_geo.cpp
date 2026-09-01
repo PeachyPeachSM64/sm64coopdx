@@ -405,7 +405,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
         u32 _PtrTypes;
         if (!DynOS_Geo_Validate_GetPointerTypes(_Value, _CommandId, _PtrTypes)) {
             PrintDataError("  ERROR: Corrupted command in geo layout: %s, 0x%04X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-            Delete(_Node);
+            DeleteNode(_Node);
             return;
         }
 
@@ -413,14 +413,14 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
         if (_Ptr) {
             if (!_PtrTypes) {
                 PrintDataError("  ERROR: Didn't expect a pointer while reading geo layout: %s, 0x%04X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return;
             }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
             if (_PtrTypes && _Value != 0) {
                 PrintDataError("  ERROR: Expected a pointer while reading geo layout: %s, 0x%04X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return;
             }
             _Node->mData[i] = (uintptr_t) _Value;
@@ -433,7 +433,7 @@ void DynOS_Geo_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Validate geo layout
     if (!DynOS_Geo_Validate_CheckCommands(aGfxData, _Node, true)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return;
     }
 

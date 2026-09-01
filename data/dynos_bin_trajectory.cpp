@@ -128,7 +128,7 @@ DataNode<Trajectory>* DynOS_Trajectory_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Validate trajectory
     if (!DynOS_Trajectory_Validate_CheckCommands(aGfxData, _Node)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return NULL;
     }
 

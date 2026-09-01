@@ -506,7 +506,7 @@ DataNode<Collision>* DynOS_Col_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Validate
     if (!DynOS_Col_Validate_CheckCommands(aGfxData, _Node)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return NULL;
     }
 

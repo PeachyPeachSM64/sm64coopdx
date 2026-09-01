@@ -22,7 +22,10 @@ extern "C" {
 #define MOD_PACK_INDEX -1 // the pack index for actors loaded from mods
 #define PACK_MOD_INDEX -1 // the mod index for actors loaded from packs
 
+// Size limits
 #define DYNOS_BIN_FILE_MAX_SIZE (s32) 0x40000000 // 1 GiB
+#define DYNOS_TEX_MIN_WIDTH_HEIGHT 1
+#define DYNOS_TEX_MAX_WIDTH_HEIGHT 4096
 
 // Pointer types
 #define PTYPE_LUAV              (1 <<  0)
@@ -736,6 +739,28 @@ void Delete(T *& aPtr) {
     aPtr = NULL;
 }
 
+template <typename T>
+void DeleteNode(DataNode<T> *&aNode) {
+    if (aNode) {
+        Delete(aNode->mData);
+        Delete(aNode);
+    }
+}
+
+static void DeleteNode(DataNode<Vtx> *&aNode) {
+    if (aNode) {
+        free(aNode->mData);
+        Delete(aNode);
+    }
+}
+
+static void DeleteNode(DataNode<Gfx> *&aNode) {
+    if (aNode) {
+        free(aNode->mData);
+        Delete(aNode);
+    }
+}
+
 template <typename T = void>
 Array<String> Split(const char *aBuffer, const String &aDelimiters, const String &aEndCharacters = {}, bool aHandleDoubleQuotedStrings = false) {
     Array<String> _Tokens;
@@ -1260,7 +1285,7 @@ void DynOS_Add_Scroll_Target(u32 index, const char *name, u32 offset, u32 size);
     u32 _RemainingSize = _RemainingBytes / _ElemBytes; \
     if (aDataSize == 0 || aDataSize > _RemainingSize) { \
         PrintDataError("  ERROR: Invalid data size in file '%s': %u (should be > 0 and <= %u)", aFile->GetFilename(), aDataSize, _RemainingSize); \
-        Delete(_Node); \
+        DeleteNode(_Node); \
         return aReturnValue; \
     }
 
@@ -1268,7 +1293,7 @@ void DynOS_Add_Scroll_Target(u32 index, const char *name, u32 offset, u32 size);
     if (aFile->EoF()) { \
         u32 _ExpectedBytes = _RemainingBytes + (_Node->mSize - i) * _ElemBytes; \
         PrintDataError("  ERROR: Reached EOF when reading file '%s': Expected at least %u bytes, got only %u", aFile->GetFilename(), _ExpectedBytes, _RemainingBytes); \
-        Delete(_Node); \
+        DeleteNode(_Node); \
         return aReturnValue; \
     }
 

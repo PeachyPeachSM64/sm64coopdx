@@ -212,7 +212,7 @@ DataNode<Movtex>* DynOS_Movtex_Load(BinFile *aFile, GfxData *aGfxData) {
 
     // Validate commands
     if (!DynOS_Movtex_Validate_CheckCommands(aGfxData, _Node)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return NULL;
     }
 

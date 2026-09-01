@@ -255,8 +255,7 @@ DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
     if (_TexRefCode == TEX_REF_CODE) {
         if (!aGfxData) {
             PrintDataError("  ERROR: Cannot load texture ref \"%s\" from \"%s\"", _Node->mName.begin(), aFile->GetFilename());
-            Delete(_Node->mData);
-            Delete(_Node);
+            DeleteNode(_Node);
             return NULL;
         }
 
@@ -272,8 +271,7 @@ DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
             _Node->mData->mRawSize   = _LoadedNode->mData->mRawSize;
         } else {
             PrintDataError("  ERROR: Texture ref \"%s\" not found in file \"%s\"", _Node->mName.begin(), aFile->GetFilename());
-            Delete(_Node->mData);
-            Delete(_Node);
+            DeleteNode(_Node);
             return NULL;
         }
     } else {
@@ -283,8 +281,7 @@ DataNode<TexData>* DynOS_Tex_Load(BinFile *aFile, GfxData *aGfxData) {
             u8 *_RawData = stbi_load_from_memory(_Node->mData->mPngData.begin(), _Node->mData->mPngData.Count(), &_Node->mData->mRawWidth, &_Node->mData->mRawHeight, NULL, 4);
             if (!_RawData || _Node->mData->mRawWidth * _Node->mData->mRawHeight == 0) {
                 PrintDataError("  ERROR: Invalid PNG data in file \"%s\"", _Node->mName.begin(), aFile->GetFilename());
-                Delete(_Node->mData);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return NULL;
             }
             _Node->mData->mRawFormat = G_IM_FMT_RGBA;

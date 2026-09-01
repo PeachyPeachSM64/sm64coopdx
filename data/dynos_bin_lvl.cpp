@@ -918,7 +918,7 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
         u32 _PtrTypes;
         if (!DynOS_Lvl_Validate_GetPointerTypes(_Value, _CommandId, _PtrTypes)) {
             PrintDataError("  ERROR: Corrupted command in level script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-            Delete(_Node);
+            DeleteNode(_Node);
             return NULL;
         }
 
@@ -926,14 +926,14 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
         if (_Ptr) {
             if (!_PtrTypes) {
                 PrintDataError("  ERROR: Didn't expect a pointer while reading level script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return NULL;
             }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
             if ((_PtrTypes & ~PTYPE_LUAV) && _Value != 0) { // Lua var is not mandatory
                 PrintDataError("  ERROR: Expected a pointer while reading level script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return NULL;
             }
             _Node->mData[i] = (uintptr_t) _Value;
@@ -946,7 +946,7 @@ static DataNode<LevelScript>* DynOS_Lvl_Load(BinFile *aFile, GfxData *aGfxData) 
 
     // Validate script
     if (!DynOS_Lvl_Validate_CheckCommands(aGfxData, _Node, true)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return NULL;
     }
 

@@ -1199,7 +1199,6 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
             LOG_ERROR("==========================================================");
             LOG_ERROR(" Level script corruption detected! Restarting the game... ");
             LOG_ERROR("==========================================================");
-            network_shutdown(true, false, false, false);
             gLevelScriptModIndex = -1;
             gLevelScriptActive = NULL;
             sStackTop = sStack;
@@ -1210,6 +1209,7 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
             sScriptStatus = SCRIPT_PAUSED;
             sRegister = 0;
             sCurrentCmd = (struct LevelCommand *) level_script_entry;
+            network_shutdown(true, false, false, false);
         }
     }
     CTX_END(CTX_LEVEL_SCRIPT);

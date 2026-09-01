@@ -2449,7 +2449,7 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
     if (majorVersion != BEHAVIOR_MIN_MAJOR_VER || (minorVersion < BEHAVIOR_MIN_MINOR_VER || patchVersion < BEHAVIOR_MIN_PATCH_VER)) {
         PrintDataError("  ERROR: Behavior file is version %u.%u.%u, which is not supported! Rejecting '%s'.", majorVersion, minorVersion, patchVersion, aFile->GetFilename());
         // We don't return this since we failed to read the behavior.
-        Delete(_Node);
+        DeleteNode(_Node);
         // We have nothing to return, So return NULL.
         return NULL;
     }
@@ -2474,7 +2474,7 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
         u32 _PtrTypes;
         if (!DynOS_Bhv_Validate_GetPointerTypes(_Value, _CommandId, _PtrTypes)) {
             PrintDataError("  ERROR: Corrupted command in behavior script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-            Delete(_Node);
+            DeleteNode(_Node);
             return NULL;
         }
 
@@ -2482,14 +2482,14 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
         if (_Ptr) {
             if (!_PtrTypes) {
                 PrintDataError("  ERROR: Didn't expect a pointer while reading behavior script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return NULL;
             }
             _Node->mData[i] = (uintptr_t) _Ptr;
         } else {
             if (_PtrTypes && _Value != 0) {
                 PrintDataError("  ERROR: Expected a pointer while reading behavior script: %s, 0x%02X 0x%08X", _Node->mName.begin(), _CommandId, _Value);
-                Delete(_Node);
+                DeleteNode(_Node);
                 return NULL;
             }
             _Node->mData[i] = (uintptr_t) _Value;
@@ -2502,7 +2502,7 @@ static DataNode<BehaviorScript> *DynOS_Bhv_Load(BinFile *aFile, GfxData *aGfxDat
 
     // Validate commands
     if (!DynOS_Bhv_Validate_CheckCommands(aGfxData, _Node, true)) {
-        Delete(_Node);
+        DeleteNode(_Node);
         return NULL;
     }
 
