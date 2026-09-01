@@ -368,7 +368,7 @@ end
 ---             <td rowspan=7 valign="top"><code>waterBoxes</code></td>
 ---             <td></td>
 ---             <td><code>list&lt;table&gt;</code></td>
----             <td>List of water boxes.<br><i>Level commands: <code>TERRAIN</code></i></td>
+---             <td>List of water boxes. Loaded from the collision data.<br><i>Level commands: <code>TERRAIN</code></i></td>
 ---         </tr>
 ---         <tr>
 ---             <td><code>id</code></td>
@@ -404,7 +404,7 @@ end
 ---             <td rowspan=6 valign="top"><code>specialObjects</code></td>
 ---             <td></td>
 ---             <td><code>list&lt;table&gt;</code></td>
----             <td>List of special objects.<br><i>Level commands: <code>TERRAIN</code></i></td>
+---             <td>List of special objects. Loaded from the collision data.<br><i>Level commands: <code>TERRAIN</code></i></td>
 ---         </tr>
 ---         <tr>
 ---             <td><code>pos</code></td>

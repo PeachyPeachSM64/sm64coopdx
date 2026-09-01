@@ -114,10 +114,18 @@ const void *DynOS_Actor_GetLayoutFromName(const char *aActorName) {
     }
 
     // check built in actors
-    for (s32 i = 0; i < DynOS_Builtin_Actor_GetCount(); ++i) {
-        auto name = DynOS_Builtin_Actor_GetNameFromIndex(i);
-        if (!strcmp(aActorName, name)) {
-            return DynOS_Builtin_Actor_GetFromIndex(i);
+    {
+        auto geoLayout = DynOS_Builtin_Actor_GetFromName(aActorName);
+        if (geoLayout) {
+            return geoLayout;
+        }
+    }
+
+    // check built in levels
+    {
+        auto geoLayout = DynOS_Builtin_LvlGeo_GetFromName(aActorName);
+        if (geoLayout) {
+            return geoLayout;
         }
     }
 
@@ -161,10 +169,18 @@ const char *DynOS_Actor_GetNameFromLayout(const void *aGeoLayout) {
     }
 
     // check built in actors
-    for (s32 i = 0; i < DynOS_Builtin_Actor_GetCount(); ++i) {
-        auto geoLayout = DynOS_Builtin_Actor_GetFromIndex(i);
-        if (geoLayout == aGeoLayout) {
-            return DynOS_Builtin_Actor_GetNameFromIndex(i);
+    {
+        const char *name = DynOS_Builtin_Actor_GetFromData((const GeoLayout *) aGeoLayout);
+        if (name) {
+            return name;
+        }
+    }
+
+    // check built in levels
+    {
+        const char *name = DynOS_Builtin_LvlGeo_GetFromData((const GeoLayout *) aGeoLayout);
+        if (name) {
+            return name;
         }
     }
 
