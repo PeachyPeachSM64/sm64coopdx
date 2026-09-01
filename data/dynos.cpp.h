@@ -51,7 +51,7 @@ extern "C" {
 #define PTYPE_PNTR_MOVTEXQC     (1 << 19)
 #define PTYPE_PNTR_ROOM         (1 << 20)
 #define PTYPE_PNTR_ANIM         (1 << 21)
-#define PTYPE_PNTR              (PTYPE_PNTR_LIGHT | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHTT | PTYPE_PNTR_AMBIENTT | PTYPE_PNTR_TEX | PTYPE_PNTR_TEXLIST | PTYPE_PNTR_GFX | PTYPE_PNTR_GEO | PTYPE_PNTR_VTX | PTYPE_PNTR_COL | PTYPE_PNTR_LVL | PTYPE_PNTR_BHV | PTYPE_PNTR_MACRO | PTYPE_PNTR_TRAJ | PTYPE_PNTR_MOVTEX | PTYPE_PNTR_MOVTEXQC | PTYPE_PNTR_ROOM | PTYPE_PNTR_ANIM)
+#define PTYPE_PNTR              (PTYPE_PNTR_LIGHT | PTYPE_PNTR_LIGHT0 | PTYPE_PNTR_LIGHTT | PTYPE_PNTR_AMBIENTT | PTYPE_PNTR_TEX | PTYPE_PNTR_TEXLIST | PTYPE_PNTR_GFX | PTYPE_PNTR_GEO | PTYPE_PNTR_VTX | PTYPE_PNTR_COL | PTYPE_PNTR_LVL | PTYPE_PNTR_BHV | PTYPE_PNTR_MACRO | PTYPE_PNTR_TRAJ | PTYPE_PNTR_MOVTEX | PTYPE_PNTR_MOVTEXQC | PTYPE_PNTR_ROOM | PTYPE_PNTR_ANIM)
 
 //
 // Enums
@@ -1303,12 +1303,12 @@ static bool DynOS_Bin_Validate_GetCommandIds(
     const MapType &aCommandsMap, Array<CommandIdType> &outCommandIds
 ) {
     outCommandIds.Clear();
-    for (s32 i = 0; i < aNode->mSize;) {
+    for (u32 i = 0; i < aNode->mSize;) {
         CommandIdType id = (CommandIdType) (aNode->mData[i] >> CommandIdShift);
         if (aCommandsMap.count(id) != 0) {
             outCommandIds.Add(id);
-            s32 commandSize = aCommandsMap.at(id).size / 4;
-            if (i + commandSize > aNode->mSize) {
+            u32 commandSize = aCommandsMap.at(id).size / 4;
+            if ((u64) i + (u64) commandSize > (u64) aNode->mSize) {
                 PrintDataError("  ERROR: Validation failed for '%s': Unterminated command: %X %016llX", aNode->mName.begin(), id, aNode->mData[i]);
                 return false;
             }
