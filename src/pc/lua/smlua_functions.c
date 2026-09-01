@@ -589,7 +589,7 @@ static void level_script_parse_convert_parameters(lua_State *L) {
         lua_newtable(L);
         level_script_parse_push_field(L, -2, "behaviorId", -1, "behavior", LUA_TNUMBER);
         level_script_parse_push_field(L, -2, "behParams", -1, "behaviorArg", LUA_TNUMBER);
-        level_script_parse_push_field(L, -2, "modelId", -1, "model", LUA_TNUMBER);
+        level_script_parse_push_field(L, -2, "vanillaModelId", -1, "model", LUA_TNUMBER);
         if (level_script_parse_get_value(L, -2, "pos", LUA_TTABLE)) {
             level_script_parse_push_field(L, -1, "x", -2, "posX", LUA_TNUMBER);
             level_script_parse_push_field(L, -1, "y", -2, "posY", LUA_TNUMBER);
@@ -621,7 +621,7 @@ static void level_script_parse_convert_parameters(lua_State *L) {
                 lua_pushinteger(L, 0);
             }
             lua_rawseti(L, macroBhvArgsIndex, i);
-            if (!level_script_parse_get_value(L, -1, "modelId", LUA_TNUMBER)) {
+            if (!level_script_parse_get_value(L, -1, "vanillaModelId", LUA_TNUMBER)) {
                 lua_pushinteger(L, E_MODEL_NONE);
             }
             lua_rawseti(L, macroBhvModelsIndex, i);
@@ -689,7 +689,7 @@ static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 
                     }
 
                     const struct SpecialPreset *preset = &SpecialObjectPresets[index];
-                    u8 modelId = preset->model;
+                    u8 vanillaModelId = preset->model;
                     enum BehaviorId behaviorId = get_id_from_behavior(preset->behavior);
                     u8 defParam = preset->defParam;
 
@@ -697,7 +697,7 @@ static void smlua_func_level_parse_collision(lua_State *L, Collision *data, u32 
                         lua_newtable(L);
                         smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
                         smlua_new_vec3s(gVec3sZero); lua_setfield(L, -2, "angle");
-                        smlua_push_integer_field(-2, "modelId", modelId);
+                        smlua_push_integer_field(-2, "vanillaModelId", vanillaModelId);
                         smlua_push_integer_field(-2, "behaviorId", behaviorId);
                         smlua_push_integer_field(-2, "behParams", 0);
                     }
@@ -818,14 +818,14 @@ static void smlua_func_level_parse_macro_objects(lua_State *L, MacroObject *macr
             objParams = (objParams & 0xFF00) + (presetParams & 0x00FF);
         }
 
-        u8 modelId = (u8) preset->model;
+        u8 vanillaModelId = (u8) preset->model;
         enum BehaviorId behaviorId = get_id_from_behavior(preset->behavior);
         u32 behParams = ((objParams & 0x00FF) << 16) | (objParams & 0xFF00);
 
         lua_newtable(L);
         smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
         smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
-        smlua_push_integer_field(-2, "modelId", modelId);
+        smlua_push_integer_field(-2, "vanillaModelId", vanillaModelId);
         smlua_push_integer_field(-2, "behaviorId", behaviorId);
         smlua_push_integer_field(-2, "behParams", behParams);
 
@@ -855,8 +855,8 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
             lua_newtable(L);
             smlua_push_integer_field(-2, "index", index);
             if (modelName) {
-                enum ModelExtendedId modelExtId = smlua_model_util_get_id(modelName);
-                smlua_push_integer_field(-2, "modelExtId", modelExtId);
+                enum ModelExtendedId modelId = smlua_model_util_get_id(modelName);
+                smlua_push_integer_field(-2, "modelId", modelId);
                 smlua_push_string_field(-2, "modelName", modelName);
             }
 
@@ -865,12 +865,12 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
 
         // LOAD_MODEL_FROM_DL
         case 0x21: {
-            u8 modelId = (u8) dynos_level_cmd_get(cmd, 2); // vanilla model id
+            u8 vanillaModelId = (u8) dynos_level_cmd_get(cmd, 2);
             u8 layer = (u8) (dynos_level_cmd_get(cmd, 2) >> 12);
             const Gfx *displayList = (const Gfx *) dynos_level_cmd_get(cmd, 4);
 
             lua_newtable(L);
-            smlua_push_integer_field(-2, "modelId", modelId);
+            smlua_push_integer_field(-2, "vanillaModelId", vanillaModelId);
             if (displayList) {
                 Gfx *wDisplayList = dynos_gfx_get_writable_display_list((Gfx *) displayList);
                 if (wDisplayList) {
@@ -884,15 +884,15 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
 
         // LOAD_MODEL_FROM_GEO
         case 0x22: {
-            u8 modelId = (u8) dynos_level_cmd_get(cmd, 2); // vanilla model id
+            u8 vanillaModelId = (u8) dynos_level_cmd_get(cmd, 2);
             const GeoLayout *geoLayout = (const GeoLayout *) dynos_level_cmd_get(cmd, 4);
             const char *modelName = dynos_geolayout_get_name(geoLayout);
 
             lua_newtable(L);
-            smlua_push_integer_field(-2, "modelId", modelId);
+            smlua_push_integer_field(-2, "vanillaModelId", vanillaModelId);
             if (modelName) {
-                enum ModelExtendedId modelExtId = smlua_model_util_get_id(modelName);
-                smlua_push_integer_field(-2, "modelExtId", modelExtId);
+                enum ModelExtendedId modelId = smlua_model_util_get_id(modelName);
+                smlua_push_integer_field(-2, "modelId", modelId);
                 smlua_push_string_field(-2, "modelName", modelName);
             }
 
@@ -901,14 +901,14 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
 
         // LOAD_MODEL_FROM_GEO_EXT
         case 0x41: {
-            u8 modelId = (u8) dynos_level_cmd_get(cmd, 2); // vanilla model id
+            u8 vanillaModelId = (u8) dynos_level_cmd_get(cmd, 2);
             const char *modelName = dynos_level_get_token((u32) dynos_level_cmd_get(cmd, 4));
 
             lua_newtable(L);
-            smlua_push_integer_field(-2, "modelId", modelId);
+            smlua_push_integer_field(-2, "vanillaModelId", vanillaModelId);
             if (modelName) {
-                enum ModelExtendedId modelExtId = smlua_model_util_get_id(modelName);
-                smlua_push_integer_field(-2, "modelExtId", modelExtId);
+                enum ModelExtendedId modelId = smlua_model_util_get_id(modelName);
+                smlua_push_integer_field(-2, "modelId", modelId);
                 smlua_push_string_field(-2, "modelName", modelName);
             }
 
@@ -928,7 +928,7 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
                 (s16) ((((u16) dynos_level_cmd_get(cmd, 12)) * 0x8000) / 180),
                 (s16) ((((u16) dynos_level_cmd_get(cmd, 14)) * 0x8000) / 180)
             };
-            u8 modelId = (u8) dynos_level_cmd_get(cmd, 3); // vanilla model id
+            u8 vanillaModelId = (u8) dynos_level_cmd_get(cmd, 3);
             enum BehaviorId behaviorId = get_id_from_behavior((const BehaviorScript *) dynos_level_cmd_get(cmd, 20));
             u32 behParams = (u32) dynos_level_cmd_get(cmd, 16);
 
@@ -936,7 +936,7 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
             smlua_push_integer_field(-2, "acts", acts);
             smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
             smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
-            smlua_push_integer_field(-2, "modelId", modelId);
+            smlua_push_integer_field(-2, "vanillaModelId", vanillaModelId);
             smlua_push_integer_field(-2, "behaviorId", behaviorId);
             smlua_push_integer_field(-2, "behParams", behParams);
 
@@ -975,10 +975,10 @@ static s32 smlua_func_level_parse_script_callback(u8 type, void *cmd) {
                 smlua_new_vec3s(pos); lua_setfield(L, -2, "pos");
                 smlua_new_vec3s(angle); lua_setfield(L, -2, "angle");
                 if (luaParams & OBJECT_EXT_LUA_MODEL) {
-                    smlua_push_integer_field(-2, "modelId", smlua_model_util_load((enum ModelExtendedId) modelId));
-                    smlua_push_integer_field(-2, "modelExtId", modelId);
-                } else {
+                    smlua_push_integer_field(-2, "vanillaModelId", smlua_model_util_load((enum ModelExtendedId) modelId));
                     smlua_push_integer_field(-2, "modelId", modelId);
+                } else {
+                    smlua_push_integer_field(-2, "vanillaModelId", modelId);
                 }
                 smlua_push_integer_field(-2, "behaviorId", behaviorId);
                 smlua_push_integer_field(-2, "behParams", behParams);

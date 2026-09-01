@@ -2600,9 +2600,9 @@ When `func` is called, the parameter `levelData` is filled with level data depen
             <td>Area index.</td>
         </tr>
         <tr>
-            <td><code>modelExtId</code></td>
+            <td><code>modelId</code></td>
             <td><code>integer</code></td>
-            <td>Model extended ID of the area layout.</td>
+            <td>Model ID of the area layout.</td>
         </tr>
         <tr>
             <td><code>modelName</code></td>
@@ -2616,14 +2616,14 @@ When `func` is called, the parameter `levelData` is filled with level data depen
             <td>Load model in vanilla ID.<br><i>Level commands: <code>LOAD_MODEL_FROM_DL</code>, <code>LOAD_MODEL_FROM_GEO</code>, <code>LOAD_MODEL_FROM_GEO_EXT</code></i></td>
         </tr>
         <tr>
-            <td><code>modelId</code></td>
+            <td><code>vanillaModelId</code></td>
             <td><code>integer</code></td>
-            <td>Vanilla model ID.</td>
+            <td>Vanilla model ID. Objects use these temporary IDs to load their model.</td>
         </tr>
         <tr>
-            <td><code>modelExtId</code></td>
+            <td><code>modelId</code></td>
             <td><code>integer</code></td>
-            <td>Model extended ID.</td>
+            <td>Model ID.</td>
         </tr>
         <tr>
             <td><code>modelName</code></td>
@@ -2662,14 +2662,14 @@ When `func` is called, the parameter `levelData` is filled with level data depen
             <td>Object's initial angle (in SM64 units).</td>
         </tr>
         <tr>
-            <td><code>modelId</code></td>
+            <td><code>vanillaModelId</code></td>
             <td><code>integer</code></td>
-            <td>Object's vanilla model ID.</td>
+            <td>Object's vanilla model ID. Previously filled by <code>LOAD_MODEL_FROM_DL</code>, <code>LOAD_MODEL_FROM_GEO</code> or <code>LOAD_MODEL_FROM_GEO_EXT</code>, it references the object's model ID.</td>
         </tr>
         <tr>
-            <td><code>modelExtId</code></td>
+            <td><code>modelId</code></td>
             <td><code>integer</code></td>
-            <td>Object's model extended ID.</td>
+            <td>Object's model ID. Only available from commands <code>OBJECT_EXT2</code>, <code>OBJECT_WITH_ACTS_EXT2</code> and <code>OBJECT_EXT_LUA_PARAMS</code> if the object's model is a custom model.</td>
         </tr>
         <tr>
             <td><code>behaviorId</code></td>
@@ -2818,9 +2818,9 @@ When `func` is called, the parameter `levelData` is filled with level data depen
             <td>Object's initial angle (in SM64 units).</td>
         </tr>
         <tr>
-            <td><code>modelId</code></td>
+            <td><code>vanillaModelId</code></td>
             <td><code>integer</code></td>
-            <td>Object's vanilla model ID.</td>
+            <td>Object's vanilla model ID. Previously filled by <code>LOAD_MODEL_FROM_DL</code>, <code>LOAD_MODEL_FROM_GEO</code> or <code>LOAD_MODEL_FROM_GEO_EXT</code>, it references the object's model ID.</td>
         </tr>
         <tr>
             <td><code>behaviorId</code></td>
@@ -2907,9 +2907,9 @@ When `func` is called, the parameter `levelData` is filled with level data depen
             <td>Object's initial angle (in SM64 units).</td>
         </tr>
         <tr>
-            <td><code>modelId</code></td>
-            <td><code>Vec3s</code></td>
-            <td>Object's vanilla model ID.</td>
+            <td><code>vanillaModelId</code></td>
+            <td><code>integer</code></td>
+            <td>Object's vanilla model ID. Previously filled by <code>LOAD_MODEL_FROM_DL</code>, <code>LOAD_MODEL_FROM_GEO</code> or <code>LOAD_MODEL_FROM_GEO_EXT</code>, it references the object's model ID.</td>
         </tr>
         <tr>
             <td><code>behaviorId</code></td>
