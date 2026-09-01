@@ -188,7 +188,7 @@ end
 ---     </thead>
 ---     <tbody>
 ---         <tr>
----             <td rowspan=4 style="vertical-align:top"><code>area</code></td>
+---             <td rowspan=4 valign="top"><code>area</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Start of area data.<br><i>Level commands: <code>AREA</code></i></td>
@@ -209,7 +209,7 @@ end
 ---             <td>Model name of the area layout.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=6 style="vertical-align:top"><code>model</code></td>
+---             <td rowspan=6 valign="top"><code>model</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Load model in vanilla ID.<br><i>Level commands: <code>LOAD_MODEL_FROM_DL</code>, <code>LOAD_MODEL_FROM_GEO</code>, <code>LOAD_MODEL_FROM_GEO_EXT</code></i></td>
@@ -240,7 +240,7 @@ end
 ---             <td>Display list layer (if the model is not a Geo layout).</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=8 style="vertical-align:top"><code>object</code></td>
+---             <td rowspan=8 valign="top"><code>object</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Object spawn information.<br><i>Level commands: <code>OBJECT</code>, <code>OBJECT_WITH_ACTS</code>, <code>OBJECT_EXT</code>, <code>OBJECT_WITH_ACTS_EXT</code>, <code>OBJECT_EXT2</code>, <code>OBJECT_WITH_ACTS_EXT2</code>, <code>OBJECT_EXT_LUA_PARAMS</code></i></td>
@@ -281,7 +281,7 @@ end
 ---             <td>Object's behavior parameters.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=7 style="vertical-align:top"><code>warpNode</code></td>
+---             <td rowspan=7 valign="top"><code>warpNode</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Warp node data.<br><i>Level commands: <code>WARP_NODE</code>, <code>PAINTING_WARP_NODE</code></i></td>
@@ -317,7 +317,7 @@ end
 ---             <td><code>true</code> if it's a painting warp node, <code>false</code> otherwise.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=4 style="vertical-align:top"><code>instantWarp</code></td>
+---             <td rowspan=4 valign="top"><code>instantWarp</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Instant warp data.<br><i>Level commands: <code>INSTANT_WARP</code></i></td>
@@ -338,7 +338,7 @@ end
 ---             <td>Instant displacement.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=2 style="vertical-align:top"><code>terrain</code></td>
+---             <td rowspan=2 valign="top"><code>terrain</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Terrain data.<br><i>Level commands: <code>TERRAIN_TYPE</code></i></td>
@@ -349,7 +349,7 @@ end
 ---             <td>Terrain type. One of the <code>TERRAIN_*</code> constants.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=3 style="vertical-align:top"><code>collision</code></td>
+---             <td rowspan=3 valign="top"><code>collision</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Collision data.<br><i>Level commands: <code>TERRAIN</code></i></td>
@@ -365,7 +365,7 @@ end
 ---             <td>Size of collision data in bytes.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=7 style="vertical-align:top"><code>waterBoxes</code></td>
+---             <td rowspan=7 valign="top"><code>waterBoxes</code></td>
 ---             <td></td>
 ---             <td><code>list&lt;table&gt;</code></td>
 ---             <td>List of water boxes.<br><i>Level commands: <code>TERRAIN</code></i></td>
@@ -401,7 +401,7 @@ end
 ---             <td>Water box top height.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=6 style="vertical-align:top"><code>specialObjects</code></td>
+---             <td rowspan=6 valign="top"><code>specialObjects</code></td>
 ---             <td></td>
 ---             <td><code>list&lt;table&gt;</code></td>
 ---             <td>List of special objects.<br><i>Level commands: <code>TERRAIN</code></i></td>
@@ -432,7 +432,7 @@ end
 ---             <td>Object's behavior parameters.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=3 style="vertical-align:top"><code>dialog</code></td>
+---             <td rowspan=3 valign="top"><code>dialog</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Entry dialog data.<br><i>Level commands: <code>SHOW_DIALOG</code>, <code>SHOW_DIALOG_EXT</code></i></td>
@@ -448,7 +448,7 @@ end
 ---             <td>Dialog ID. One of the <code>DIALOG_*</code> constants.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=3 style="vertical-align:top"><code>music</code></td>
+---             <td rowspan=3 valign="top"><code>music</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Background music of the level.<br><i>Level commands: <code>SET_BACKGROUND_MUSIC</code></i></td>
@@ -464,7 +464,7 @@ end
 ---             <td>Sequence ID. One of the <code>SEQ_*</code> constants.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=5 style="vertical-align:top"><code>whirlpool</code></td>
+---             <td rowspan=5 valign="top"><code>whirlpool</code></td>
 ---             <td></td>
 ---             <td><code>table</code></td>
 ---             <td>Whirlpool data.<br><i>Level commands: <code>WHIRLPOOL</code></i></td>
@@ -490,7 +490,7 @@ end
 ---             <td>Whirlpool strength. Positive values pull Mario in.</td>
 ---         </tr>
 ---         <tr>
----             <td rowspan=6 style="vertical-align:top"><code>macroObjects</code></td>
+---             <td rowspan=6 valign="top"><code>macroObjects</code></td>
 ---             <td></td>
 ---             <td><code>list&lt;table&gt;</code></td>
 ---             <td>List of macro objects.<br><i>Level commands: <code>MACRO_OBJECTS</code></i></td>
