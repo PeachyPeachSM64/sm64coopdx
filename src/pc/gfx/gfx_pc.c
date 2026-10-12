@@ -1179,11 +1179,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     if (prg != rendering_state.shader_program) {
         gfx_flush();
         gfx_rapi->unload_shader(rendering_state.shader_program);
-
-        extern struct ColorCombiner *gCC;
-
-        gCC = comb;
-
         gfx_rapi->load_shader(prg);
         rendering_state.shader_program = prg;
     }
