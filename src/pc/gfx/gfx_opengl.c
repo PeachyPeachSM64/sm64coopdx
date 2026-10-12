@@ -176,26 +176,38 @@ static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, co
 }
 
 static void gfx_opengl_unload_shader(struct ShaderProgram *old_prg) {
-    if (old_prg != NULL) {
-        for (int i = 0; i < old_prg->num_attribs; i++)
-            glDisableVertexAttribArray(old_prg->attrib_locations[i]);
-        if (old_prg == opengl_prg)
-            opengl_prg = NULL;
-    } else {
-        opengl_prg = NULL;
-    }
+    // old_prg = opengl_prg;
+
+    // if (old_prg != NULL) {
+    //     for (int i = 0; i < old_prg->num_attribs; i++)
+    //         glDisableVertexAttribArray(old_prg->attrib_locations[i]);
+    //     // if (old_prg == opengl_prg)
+    //     //     opengl_prg = NULL;
+    // } else {
+    //     // opengl_prg = NULL;
+    // }
 }
 
 static void gfx_opengl_load_shader(struct ShaderProgram *new_prg) {
-    opengl_prg = new_prg;
-    glUseProgram(new_prg->opengl_program_id);
-    gfx_opengl_vertex_array_set_attribs(new_prg);
+    // opengl_prg = new_prg;
+    new_prg = opengl_prg;
+
+    // glUseProgram(new_prg->opengl_program_id);
+    // gfx_opengl_vertex_array_set_attribs(new_prg);
     gfx_opengl_set_shader_uniforms(new_prg);
     gfx_opengl_set_texture_uniforms(new_prg, 0);
     gfx_opengl_set_texture_uniforms(new_prg, 1);
 }
 
 static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorCombiner* cc) {
+    if (opengl_prg) {
+        opengl_prg->cc = cc;
+        opengl_prg->hash = cc->hash;
+        gfx_opengl_load_shader(opengl_prg);
+        return (void *) cc;
+    }
+
+
     char vs_buf[8192];
     char fs_buf[32768];
     size_t vs_len = 0;
@@ -319,22 +331,27 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     prg->uniform_locations[UNIFORM_FILTERING] = glGetUniformLocation(shader_program, "uFilter");
 
     prg->cc = cc;
+    prg->hash = cc->hash;
+
+    opengl_prg = prg;
 
     gfx_opengl_load_shader(prg);
 
-    return prg;
+    gfx_opengl_vertex_array_set_attribs(prg);
+
+    return (void *) cc;
 }
 
 static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner* cc) {
-    for (size_t i = 0; i < shader_program_pool_size; i++) {
-        if (shader_program_pool[i].hash == cc->hash) {
-            return &shader_program_pool[i];
-        }
+    if (opengl_prg && opengl_prg->cc == cc) {
+        return (void *) cc;
     }
     return NULL;
 }
 
 static void gfx_opengl_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
+    prg = opengl_prg;
+
     *num_inputs = prg->num_inputs;
 
     // if (gCC) {

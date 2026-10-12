@@ -1178,8 +1178,9 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct ShaderProgram *prg = comb->prg;
     if (prg != rendering_state.shader_program) {
         gfx_flush();
-        gfx_rapi->unload_shader(rendering_state.shader_program);
-        gfx_rapi->load_shader(prg);
+        // gfx_rapi->unload_shader(rendering_state.shader_program);
+        // gfx_rapi->load_shader(prg);
+        gfx_rapi->create_and_load_new_shader(comb);
         rendering_state.shader_program = prg;
     }
     if (cm->use_alpha != rendering_state.alpha_blend) {
@@ -2494,12 +2495,6 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
 }
 
 void gfx_pc_precomp_shader(uint32_t rgb1, uint32_t alpha1, uint32_t rgb2, uint32_t alpha2, uint32_t flags) {
-    gfx_dp_set_combine_mode(rgb1, alpha1, rgb2, alpha2);
-
-    struct CombineMode* cm = &rdp.combine_mode;
-    cm->flags = flags;
-
-    gfx_lookup_or_create_color_combiner(cm);
 }
 
 void OPTIMIZE_O3 ext_gfx_run_dl(Gfx* cmd) {
