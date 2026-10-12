@@ -112,7 +112,7 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 
 static bool dropped_frame = false;
 
-static float buf_vbo[MAX_BUFFERED * (26 * 3)] = { 0.0f }; // 3 vertices in a triangle and 26 floats per vtx
+static float buf_vbo[MAX_BUFFERED * (46 * 3)] = { 0.0f }; // 3 vertices in a triangle and 26 floats per vtx
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -1179,6 +1179,11 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     if (prg != rendering_state.shader_program) {
         gfx_flush();
         gfx_rapi->unload_shader(rendering_state.shader_program);
+
+        extern struct ColorCombiner *gCC;
+
+        gCC = comb;
+
         gfx_rapi->load_shader(prg);
         rendering_state.shader_program = prg;
     }
@@ -1257,6 +1262,9 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
 
                 buf_vbo[buf_vbo_len++] = u / tex_width;
                 buf_vbo[buf_vbo_len++] = v / tex_height;
+            } else {
+                buf_vbo[buf_vbo_len++] = 0;
+                buf_vbo[buf_vbo_len++] = 0;
             }
         }
 
@@ -1268,15 +1276,32 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             buf_vbo[buf_vbo_len++] = (rdp.fog_color.g / 255.0f) * g;
             buf_vbo[buf_vbo_len++] = (rdp.fog_color.b / 255.0f) * b;
             buf_vbo[buf_vbo_len++] = v_arr[i]->fog_z / 255.0f; // fog factor (not alpha)
+        } else {
+            buf_vbo[buf_vbo_len++] = 0;
+            buf_vbo[buf_vbo_len++] = 0;
+            buf_vbo[buf_vbo_len++] = 0;
+            buf_vbo[buf_vbo_len++] = 0;
         }
 
         if (cm->light_map) {
             struct RGBA* col = &v_arr[i]->color;
             buf_vbo[buf_vbo_len++] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) ) / 65535.0f;
             buf_vbo[buf_vbo_len++] = 1.0f - (( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) ) / 65535.0f);
+        } else {
+            buf_vbo[buf_vbo_len++] = 0;
+            buf_vbo[buf_vbo_len++] = 0;
         }
 
-        for (int j = 0; j < num_inputs; j++) {
+        for (int j = 0; j < 8/*num_inputs*/; j++) {
+
+            if (j >= num_inputs) {
+                buf_vbo[buf_vbo_len++] = 0;
+                buf_vbo[buf_vbo_len++] = 0;
+                buf_vbo[buf_vbo_len++] = 0;
+                buf_vbo[buf_vbo_len++] = 0;
+                continue;
+            }
+
             struct RGBA *color = NULL;
             struct RGBA tmp = { 0 };
             for (int a = 0; a < (cm->use_alpha ? 2 : 1 ); a++) {
@@ -1330,6 +1355,9 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                         buf_vbo[buf_vbo_len++] = color->a / 255.0f;
                     }
                 }
+            }
+            if (!cm->use_alpha) {
+                buf_vbo[buf_vbo_len++] = 1.0f;
             }
         }
         /*struct RGBA *color = &v_arr[i]->color;
