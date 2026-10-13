@@ -111,7 +111,8 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 
 static bool dropped_frame = false;
 
-static float buf_vbo[MAX_BUFFERED * (46 * 3)] = { 0.0f }; // 3 vertices in a triangle and 26 floats per vtx
+static struct VertexAttribs buf_vbo[MAX_BUFFERED * 3] = {0}; // 3 vertices in a triangle
+// static float buf_vbo[MAX_BUFFERED * (46 * 3)] = { 0.0f }; // 3 vertices in a triangle and 26 floats per vtx
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -1175,14 +1176,18 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     bool z_is_from_0_to_1 = gfx_rapi->z_is_from_0_to_1();
 
     for (int32_t i = 0; i < 3; i++) {
+        struct VertexAttribs *attribs = &buf_vbo[buf_vbo_len++];
+        memset(attribs, 0, sizeof(*attribs));
+
         float z = v_arr[i]->z, w = v_arr[i]->w;
         if (z_is_from_0_to_1) {
             z = (z + w) / 2.0f;
         }
-        buf_vbo[buf_vbo_len++] = v_arr[i]->x;
-        buf_vbo[buf_vbo_len++] = v_arr[i]->y;
-        buf_vbo[buf_vbo_len++] = z;
-        buf_vbo[buf_vbo_len++] = w;
+        attribs->pos[0] = v_arr[i]->x;
+        attribs->pos[1] = v_arr[i]->y;
+        attribs->pos[2] = z;
+        attribs->pos[3] = w;
+
         for (int32_t j = 0; j < 2; j++) {
             if (used_textures[j]) {
                 uint32_t tex_width = (rdp.texture_tile[j].lrs - rdp.texture_tile[j].uls + 4) / 4;
@@ -1215,11 +1220,8 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                     v += 0.5f;
                 }
 
-                buf_vbo[buf_vbo_len++] = u / tex_width;
-                buf_vbo[buf_vbo_len++] = v / tex_height;
-            } else {
-                buf_vbo[buf_vbo_len++] = 0;
-                buf_vbo[buf_vbo_len++] = 0;
+                attribs->tex_coords[j][0] = u / tex_width;
+                attribs->tex_coords[j][1] = v / tex_height;
             }
         }
 
@@ -1227,36 +1229,37 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             f32 r = gFogColor[0] / 255.0f;
             f32 g = gFogColor[1] / 255.0f;
             f32 b = gFogColor[2] / 255.0f;
-            buf_vbo[buf_vbo_len++] = (rdp.fog_color.r / 255.0f) * r;
-            buf_vbo[buf_vbo_len++] = (rdp.fog_color.g / 255.0f) * g;
-            buf_vbo[buf_vbo_len++] = (rdp.fog_color.b / 255.0f) * b;
-            buf_vbo[buf_vbo_len++] = v_arr[i]->fog_z / 255.0f; // fog factor (not alpha)
-        } else {
-            buf_vbo[buf_vbo_len++] = 0;
-            buf_vbo[buf_vbo_len++] = 0;
-            buf_vbo[buf_vbo_len++] = 0;
-            buf_vbo[buf_vbo_len++] = 0;
+            attribs->fog[0] = rdp.fog_color.r * r;
+            attribs->fog[1] = rdp.fog_color.g * g;
+            attribs->fog[2] = rdp.fog_color.b * b;
+            attribs->fog[3] = v_arr[i]->fog_z;
+            // attribs->fog = (
+            //     _SHIFTL(rdp.fog_color.r * r, 24, 8) |
+            //     _SHIFTL(rdp.fog_color.g * g, 16, 8) |
+            //     _SHIFTL(rdp.fog_color.b * b,  8, 8) |
+            //     _SHIFTL(v_arr[i]->fog_z,      0, 8)
+            // );
+            // buf_vbo[buf_vbo_len++] = (rdp.fog_color.r / 255.0f) * r;
+            // buf_vbo[buf_vbo_len++] = (rdp.fog_color.g / 255.0f) * g;
+            // buf_vbo[buf_vbo_len++] = (rdp.fog_color.b / 255.0f) * b;
+            // buf_vbo[buf_vbo_len++] = v_arr[i]->fog_z / 255.0f; // fog factor (not alpha)
         }
 
         if (cm->light_map) {
             struct RGBA* col = &v_arr[i]->color;
-            buf_vbo[buf_vbo_len++] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) ) / 65535.0f;
-            buf_vbo[buf_vbo_len++] = 1.0f - (( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) ) / 65535.0f);
-        } else {
-            buf_vbo[buf_vbo_len++] = 0;
-            buf_vbo[buf_vbo_len++] = 0;
+            attribs->light_map[0] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) );
+            attribs->light_map[1] = 0xFFFF - ( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) );
+            // attribs->light_map = (
+            //     _SHIFTL(col->g, 24, 8) |
+            //     _SHIFTL(col->r, 16, 8) |
+            //     _SHIFTL(col->a,  8, 8) |
+            //     _SHIFTL(col->b,  0, 8)
+            // );
+            // buf_vbo[buf_vbo_len++] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) ) / 65535.0f;
+            // buf_vbo[buf_vbo_len++] = 1.0f - (( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) ) / 65535.0f);
         }
 
-        for (int j = 0; j < SHADER_MAX_INPUTS; j++) {
-
-            if (j >= num_inputs) {
-                buf_vbo[buf_vbo_len++] = 0;
-                buf_vbo[buf_vbo_len++] = 0;
-                buf_vbo[buf_vbo_len++] = 0;
-                buf_vbo[buf_vbo_len++] = 0;
-                continue;
-            }
-
+        for (int j = 0; j < num_inputs; j++) {
             struct RGBA *color = NULL;
             struct RGBA tmp = { 0 };
             for (int a = 0; a < (cm->use_alpha ? 2 : 1 ); a++) {
@@ -1299,20 +1302,34 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                         break;
                 }
                 if (a == 0) {
-                    buf_vbo[buf_vbo_len++] = color->r / 255.0f;
-                    buf_vbo[buf_vbo_len++] = color->g / 255.0f;
-                    buf_vbo[buf_vbo_len++] = color->b / 255.0f;
+                    attribs->inputs[j][0] = color->r;
+                    attribs->inputs[j][1] = color->g;
+                    attribs->inputs[j][2] = color->b;
+                    // attribs->inputs[j] = (
+                    //     _SHIFTL(color->r, 24, 8) |
+                    //     _SHIFTL(color->g, 16, 8) |
+                    //     _SHIFTL(color->b,  8, 8)
+                    // );
+                    // buf_vbo[buf_vbo_len++] = color->r / 255.0f;
+                    // buf_vbo[buf_vbo_len++] = color->g / 255.0f;
+                    // buf_vbo[buf_vbo_len++] = color->b / 255.0f;
                 } else {
                     if (cm->use_fog && (color == &v_arr[i]->color || cm->light_map)) {
                         // Shade alpha is 100% for fog
-                        buf_vbo[buf_vbo_len++] = 1.0f;
+                        // buf_vbo[buf_vbo_len++] = 1.0f;
+                        // attribs->inputs[j] |= 0xFF;
+                        attribs->inputs[j][3] = 0xFF;
                     } else {
-                        buf_vbo[buf_vbo_len++] = color->a / 255.0f;
+                        // buf_vbo[buf_vbo_len++] = color->a / 255.0f;
+                        // attribs->inputs[j] |= color->a;
+                        attribs->inputs[j][3] = color->a;
                     }
                 }
             }
             if (!cm->use_alpha) {
-                buf_vbo[buf_vbo_len++] = 1.0f;
+                // buf_vbo[buf_vbo_len++] = 1.0f;
+                // attribs->inputs[j] |= 0xFF;
+                attribs->inputs[j][3] = 0xFF;
             }
         }
     }

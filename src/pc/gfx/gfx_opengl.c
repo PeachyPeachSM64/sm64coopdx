@@ -41,6 +41,16 @@
 
 
 
+enum {
+    ATTRIBUTE_POS,
+    ATTRIBUTE_TEX_COORDS,
+    ATTRIBUTE_FOG = ATTRIBUTE_TEX_COORDS + 2,
+    ATTRIBUTE_LIGHT_MAP,
+    ATTRIBUTE_INPUTS,
+
+    ATTRIBUTE_COUNT = ATTRIBUTE_INPUTS + SHADER_MAX_INPUTS,
+};
+
 
 enum {
     UNIFORM_CCF = NUM_TEX_UNIFORMS * NUM_TEXTURES,
@@ -67,12 +77,12 @@ static const char UBER_FRAG[] = {
 
 struct ShaderProgram {
     GLuint opengl_program_id;
-    uint8_t num_inputs;
-    uint8_t num_floats;
-    GLint attrib_locations[16];
+    // uint8_t num_inputs;
+    // uint8_t num_floats;
+    GLint attrib_locations[ATTRIBUTE_COUNT];
     GLint uniform_locations[UNIFORM_COUNT];
-    uint8_t attrib_sizes[16];
-    uint8_t num_attribs;
+    // uint8_t attrib_sizes[16];
+    // uint8_t num_attribs;
     struct ColorCombiner *cc;
     struct CCFeatures ccf;
 };
@@ -100,43 +110,84 @@ static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
 }
 
-static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
-    size_t num_floats = prg->num_floats;
-    size_t pos = 0;
+// static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
+//     size_t num_floats = prg->num_floats;
+//     size_t pos = 0;
 
-    for (int i = 0; i < prg->num_attribs; i++) {
-        glEnableVertexAttribArray(prg->attrib_locations[i]);
-        glVertexAttribPointer(prg->attrib_locations[i], prg->attrib_sizes[i], GL_FLOAT, GL_FALSE, num_floats * sizeof(float), (void *) (pos * sizeof(float)));
-        pos += prg->attrib_sizes[i];
+//     printf("===== gfx_opengl_vertex_array_set_attribs =====\n");
+//     printf("num_floats: %d\n", num_floats);
+//     printf("stride: %d\n", num_floats * sizeof(float));
+//     printf("\n");
+
+//     for (int i = 0; i < prg->num_attribs; i++) {
+
+//         printf("attrib: %2d | loc: %2d | size: %1d | pos: %2X | offset: %2X\n",
+//             i,
+//             prg->attrib_locations[i],
+//             prg->attrib_sizes[i],
+//             pos,
+//             pos * sizeof(float)
+//         );
+
+//         glEnableVertexAttribArray(prg->attrib_locations[i]);
+//         glVertexAttribPointer(prg->attrib_locations[i], prg->attrib_sizes[i], GL_FLOAT, GL_FALSE, num_floats * sizeof(float), (void *) (pos * sizeof(float)));
+//         pos += prg->attrib_sizes[i];
+//     }
+// }
+
+#define tsizeof(TYPE, MEMBER) sizeof(((TYPE *)0)->MEMBER)
+
+static inline void gfx_opengl_vertex_array_set_attrib(struct ShaderProgram *prg, int attrib, size_t attrib_size, GLenum attrib_type, bool normalized, size_t stride, uintptr_t offset) {
+    glEnableVertexAttribArray(prg->attrib_locations[attrib]);
+    glVertexAttribPointer(prg->attrib_locations[attrib], attrib_size, attrib_type, normalized, stride, (const void *) offset);
+}
+
+static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
+    const size_t stride = sizeof(struct VertexAttribs);
+
+    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_POS, 4, GL_FLOAT, false, stride, offsetof(struct VertexAttribs, pos));
+
+    for (int i = 0; i < 2; ++i) {
+        gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_TEX_COORDS + i, 2, GL_FLOAT, false, stride,
+            offsetof(struct VertexAttribs, tex_coords) + i * tsizeof(struct VertexAttribs, tex_coords[0]));
+    }
+
+    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_FOG, 4, GL_UNSIGNED_BYTE, true, stride, offsetof(struct VertexAttribs, fog));
+    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_LIGHT_MAP, 2, GL_UNSIGNED_SHORT, true, stride, offsetof(struct VertexAttribs, light_map));
+
+    for (int i = 0; i < SHADER_MAX_INPUTS; ++i) {
+        gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_INPUTS + i, 4, GL_UNSIGNED_BYTE, true, stride,
+            offsetof(struct VertexAttribs, inputs) + i * tsizeof(struct VertexAttribs, inputs[0]));
     }
 }
 
 static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
     int ccf_flags = 0;
-    ccf_flags |= (1 <<  4) * prg->ccf.used_textures[0];
-    ccf_flags |= (1 <<  5) * prg->ccf.used_textures[1];
-    ccf_flags |= (1 <<  6) * prg->ccf.color_alpha_same[0];
-    ccf_flags |= (1 <<  7) * prg->ccf.color_alpha_same[1];
-    ccf_flags |= (1 <<  8) * prg->ccf.do_single[0];
-    ccf_flags |= (1 <<  9) * prg->ccf.do_single[1];
-    ccf_flags |= (1 << 10) * prg->ccf.do_single[2];
-    ccf_flags |= (1 << 11) * prg->ccf.do_single[3];
-    ccf_flags |= (1 << 12) * prg->ccf.do_multiply[0];
-    ccf_flags |= (1 << 13) * prg->ccf.do_multiply[1];
-    ccf_flags |= (1 << 14) * prg->ccf.do_multiply[2];
-    ccf_flags |= (1 << 15) * prg->ccf.do_multiply[3];
-    ccf_flags |= (1 << 16) * prg->ccf.do_mix[0];
-    ccf_flags |= (1 << 17) * prg->ccf.do_mix[1];
-    ccf_flags |= (1 << 18) * prg->ccf.do_mix[2];
-    ccf_flags |= (1 << 19) * prg->ccf.do_mix[3];
-    ccf_flags |= (1 << 20) * prg->ccf.do_noise;
-    ccf_flags |= (1 << 21) * prg->cc->cm.use_alpha;
-    ccf_flags |= (1 << 22) * prg->cc->cm.use_fog;
-    ccf_flags |= (1 << 23) * prg->cc->cm.texture_edge;
-    ccf_flags |= (1 << 24) * prg->cc->cm.use_dither;
-    ccf_flags |= (1 << 25) * prg->cc->cm.use_2cycle;
-    ccf_flags |= (1 << 26) * prg->cc->cm.light_map;
-    ccf_flags |= (1 << 27) * prg->cc->cm.world_geometry;
+    ccf_flags |= (1 << (CCF_FLAG_COLOR_ALPHA_SAME + 0)) * prg->ccf.color_alpha_same[0];
+    ccf_flags |= (1 << (CCF_FLAG_COLOR_ALPHA_SAME + 1)) * prg->ccf.color_alpha_same[1];
+    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 0)) * prg->ccf.do_single[0];
+    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 1)) * prg->ccf.do_single[1];
+    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 2)) * prg->ccf.do_single[2];
+    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 3)) * prg->ccf.do_single[3];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 0)) * prg->ccf.do_multiply[0];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 1)) * prg->ccf.do_multiply[1];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 2)) * prg->ccf.do_multiply[2];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 3)) * prg->ccf.do_multiply[3];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 0)) * prg->ccf.do_mix[0];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 1)) * prg->ccf.do_mix[1];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 2)) * prg->ccf.do_mix[2];
+    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 3)) * prg->ccf.do_mix[3];
+    ccf_flags |= (1 << CCF_FLAG_DO_NOISE) * prg->ccf.do_noise;
+    ccf_flags |= (1 << CCF_FLAG_USE_ALPHA) * prg->cc->cm.use_alpha;
+    ccf_flags |= (1 << CCF_FLAG_USE_FOG) * prg->cc->cm.use_fog;
+    ccf_flags |= (1 << CCF_FLAG_TEX_EDGE) * prg->cc->cm.texture_edge;
+    ccf_flags |= (1 << CCF_FLAG_USE_DITHER) * prg->cc->cm.use_dither;
+    ccf_flags |= (1 << CCF_FLAG_USE_2CYCLE) * prg->cc->cm.use_2cycle;
+    ccf_flags |= (1 << CCF_FLAG_LIGHT_MAP) * prg->cc->cm.light_map;
+    ccf_flags |= (1 << CCF_FLAG_WORLD_GEOMETRY) * prg->cc->cm.world_geometry;
+    for (int i = 0; i < SHADER_MAX_TEXTURES; ++i) {
+        ccf_flags |= (1 << (CCF_FLAG_USED_TEXTURE + i)) * prg->ccf.used_textures[0];
+    }
     glUniform1i(prg->uniform_locations[UNIFORM_CCF], ccf_flags);
 
     static int sShaderCommands[16];
@@ -207,42 +258,56 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
-    size_t num_attribs = 0;
+    // size_t num_attribs = 0;
 
     struct ShaderProgram *prg = calloc(1, sizeof(struct ShaderProgram));
     prg->opengl_program_id = shader_program;
 
-    prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aVtxPos");
-    prg->attrib_sizes[num_attribs] = 4;
-    ++num_attribs;
-
+    prg->attrib_locations[ATTRIBUTE_POS] = glGetAttribLocation(shader_program, "aVtxPos");
     for (int t = 0; t < 2; t++) {
         char name[16];
         sprintf(name, "aTexCoord%d", t);
-        prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
-        prg->attrib_sizes[num_attribs] = 2;
-        ++num_attribs;
+        prg->attrib_locations[ATTRIBUTE_TEX_COORDS + t] = glGetAttribLocation(shader_program, name);
     }
-
-    prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aFog");
-    prg->attrib_sizes[num_attribs] = 4;
-    ++num_attribs;
-
-    prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aLightMap");
-    prg->attrib_sizes[num_attribs] = 2;
-    ++num_attribs;
-
+    prg->attrib_locations[ATTRIBUTE_FOG] = glGetAttribLocation(shader_program, "aFog");
+    prg->attrib_locations[ATTRIBUTE_LIGHT_MAP] = glGetAttribLocation(shader_program, "aLightMap");
     for (int i = 0; i < SHADER_MAX_INPUTS; i++) {
         char name[16];
         sprintf(name, "aInput%d", i + 1);
-        prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
-        prg->attrib_sizes[num_attribs] = 4;
-        ++num_attribs;
+        prg->attrib_locations[ATTRIBUTE_INPUTS + i] = glGetAttribLocation(shader_program, name);
     }
 
-    prg->num_inputs = 8;//ccf.num_inputs;
-    prg->num_floats = 4 + 2 * NUM_TEXTURES + 4 + 2 + /*ccf.num_inputs*/SHADER_MAX_INPUTS * 4;
-    prg->num_attribs = num_attribs;
+    // prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aVtxPos");
+    // prg->attrib_sizes[num_attribs] = 4;
+    // ++num_attribs;
+
+    // for (int t = 0; t < 2; t++) {
+    //     char name[16];
+    //     sprintf(name, "aTexCoord%d", t);
+    //     prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
+    //     prg->attrib_sizes[num_attribs] = 2;
+    //     ++num_attribs;
+    // }
+
+    // prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aFog");
+    // prg->attrib_sizes[num_attribs] = 4;
+    // ++num_attribs;
+
+    // prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aLightMap");
+    // prg->attrib_sizes[num_attribs] = 2;
+    // ++num_attribs;
+
+    // for (int i = 0; i < SHADER_MAX_INPUTS; i++) {
+    //     char name[16];
+    //     sprintf(name, "aInput%d", i + 1);
+    //     prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
+    //     prg->attrib_sizes[num_attribs] = 4;
+    //     ++num_attribs;
+    // }
+
+    // prg->num_inputs = 8;//ccf.num_inputs;
+    // prg->num_floats = 4 + 2 * NUM_TEXTURES + 4 + 2 + /*ccf.num_inputs*/SHADER_MAX_INPUTS * 4;
+    // prg->num_attribs = num_attribs;
 
     glUseProgram(shader_program);
     for (int t = 0; t < 2; t++) {
@@ -259,7 +324,7 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     prg->uniform_locations[UNIFORM_CCF] = glGetUniformLocation(shader_program, "uCCF");
     prg->uniform_locations[UNIFORM_SHADER_COMMANDS] = glGetUniformLocation(shader_program, "uShaderCommands");
     prg->uniform_locations[UNIFORM_FRAME_COUNT] = glGetUniformLocation(shader_program, "uFrameCount");
-    prg->uniform_locations[UNIFORM_LIGHT_MAP] = glGetUniformLocation(shader_program, "uLightmapColor");
+    prg->uniform_locations[UNIFORM_LIGHT_MAP] = glGetUniformLocation(shader_program, "uLightMapColor");
     prg->uniform_locations[UNIFORM_SHADER_FLAGS] = glGetUniformLocation(shader_program, "uShaderFlags");
     prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES] = glGetUniformLocation(shader_program, "uShaderFlagValues");
     prg->uniform_locations[UNIFORM_FILTERING] = glGetUniformLocation(shader_program, "uFilter");
@@ -377,9 +442,9 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
     }
 }
 
-static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
+static void gfx_opengl_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(struct VertexAttribs) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }
 

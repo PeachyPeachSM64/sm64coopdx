@@ -44,9 +44,24 @@ enum {
     SHADER_NOISE,
 };
 
-#define SHADER_MAX_INPUTS 8
-#define SHADER_CMD_LENGTH 16
-#define CC_MAX_SHADERS 64 // Keeping this here for now as it's needed for DirectX declarations
+#define SHADER_MAX_TEXTURES 2
+#define SHADER_MAX_INPUTS   8
+#define SHADER_CMD_LENGTH   16
+#define CC_MAX_SHADERS      64 // Keeping this here for now as it's needed for DirectX declarations
+
+#define CCF_FLAG_COLOR_ALPHA_SAME   0   // 2 bits
+#define CCF_FLAG_DO_SINGLE          2   // 4 bits
+#define CCF_FLAG_DO_MULTIPLY        6   // 4 bits
+#define CCF_FLAG_DO_MIX             10  // 4 bits
+#define CCF_FLAG_DO_NOISE           14  // 1 bit
+#define CCF_FLAG_USE_ALPHA          15  // 1 bit
+#define CCF_FLAG_USE_FOG            16  // 1 bit
+#define CCF_FLAG_TEX_EDGE           17  // 1 bit
+#define CCF_FLAG_USE_DITHER         18  // 1 bit
+#define CCF_FLAG_USE_2CYCLE         19  // 1 bit
+#define CCF_FLAG_LIGHT_MAP          20  // 1 bit
+#define CCF_FLAG_WORLD_GEOMETRY     21  // 1 bit
+#define CCF_FLAG_USED_TEXTURE       22  // SHADER_MAX_TEXTURES bits
 
 struct CCFeatures {
     bool used_textures[2];
@@ -89,6 +104,14 @@ struct ColorCombiner {
     struct CombineMode cm;
     uint8_t shader_input_mapping[16];
     uint8_t shader_commands[SHADER_CMD_LENGTH];
+};
+
+struct VertexAttribs {
+    float pos[4];
+    float tex_coords[2][2];
+    uint8_t fog[4];
+    uint16_t light_map[2];
+    uint8_t inputs[SHADER_MAX_INPUTS][4];
 };
 
 #ifdef __cplusplus

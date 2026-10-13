@@ -7,6 +7,7 @@
 
 struct ShaderProgram; // Keeping this here for now as it's needed for DirectX declarations
 struct ColorCombiner;
+struct VertexAttribs;
 
 struct GfxRenderingAPI {
     bool (*z_is_from_0_to_1)(void);
@@ -23,7 +24,7 @@ struct GfxRenderingAPI {
     void (*set_viewport)(int x, int y, int width, int height);
     void (*set_scissor)(int x, int y, int width, int height);
     void (*set_use_alpha)(bool use_alpha);
-    void (*draw_triangles)(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris);
+    void (*draw_triangles)(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris);
     void (*init)(void);
     void (*on_resize)(void);
     void (*start_frame)(void);
