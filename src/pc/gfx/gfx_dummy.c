@@ -63,10 +63,10 @@ static struct ShaderProgram *gfx_dummy_renderer_lookup_shader(UNUSED struct Colo
     return NULL;
 }
 
-static void gfx_dummy_renderer_shader_get_info(UNUSED struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
-    *num_inputs = 0;
-    used_textures[0] = false;
-    used_textures[1] = false;
+static void gfx_dummy_renderer_shader_get_info(/*UNUSED struct ShaderProgram *prg,*/ uint8_t *num_inputs, bool used_textures[2]) {
+    // *num_inputs = 0;
+    // used_textures[0] = false;
+    // used_textures[1] = false;
 }
 
 static uint32_t gfx_dummy_renderer_new_texture(void) {

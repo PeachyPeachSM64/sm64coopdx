@@ -5,16 +5,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-struct ShaderProgram;
+struct ShaderProgram; // Keeping this here for now as it's needed for DirectX declarations
 struct ColorCombiner;
 
 struct GfxRenderingAPI {
     bool (*z_is_from_0_to_1)(void);
-    void (*unload_shader)(struct ShaderProgram *old_prg);
-    void (*load_shader)(struct ShaderProgram *new_prg);
-    struct ShaderProgram *(*create_and_load_new_shader)(struct ColorCombiner* cc);
-    struct ShaderProgram *(*lookup_shader)(struct ColorCombiner* cc);
-    void (*shader_get_info)(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]);
+    bool (*update_cc)(struct ColorCombiner *cc);
+    void (*update_uniforms)();
+    void (*shader_get_info)(uint8_t *num_inputs, bool used_textures[2]);
     uint32_t (*new_texture)(void);
     void (*select_texture)(int tile, uint32_t texture_id);
     void (*upload_texture)(const uint8_t *rgba32_buf, int width, int height);

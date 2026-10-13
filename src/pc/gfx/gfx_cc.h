@@ -44,10 +44,9 @@ enum {
     SHADER_NOISE,
 };
 
-#define SHADER_OPT_ALPHA (1 << 24)
-#define SHADER_OPT_FOG (1 << 25)
-#define SHADER_OPT_TEXTURE_EDGE (1 << 26)
-#define SHADER_OPT_NOISE (1 << 27)
+#define SHADER_MAX_INPUTS 8
+#define SHADER_CMD_LENGTH 16
+#define CC_MAX_SHADERS 64 // Keeping this here for now as it's needed for DirectX declarations
 
 struct CCFeatures {
     bool used_textures[2];
@@ -68,7 +67,7 @@ struct CombineMode {
             uint32_t rgb2;
             uint32_t alpha2;
         };
-        uint8_t all_values[16];
+        uint8_t all_values[SHADER_CMD_LENGTH];
     };
     union {
         struct {
@@ -86,21 +85,10 @@ struct CombineMode {
 };
 #pragma pack()
 
-#define SHADER_CMD_LENGTH 16
-#define CC_MAX_SHADERS 64
-
 struct ColorCombiner {
     struct CombineMode cm;
-    struct ShaderProgram *prg;
-    union {
-        uint8_t shader_input_mapping[16];
-        uint64_t shader_input_mapping_as_u64[8];
-    };
-    union {
-        uint8_t shader_commands[16];
-        uint64_t shader_commands_as_u64[8];
-    };
-    uint64_t hash;
+    uint8_t shader_input_mapping[16];
+    uint8_t shader_commands[SHADER_CMD_LENGTH];
 };
 
 #ifdef __cplusplus
@@ -110,7 +98,6 @@ extern "C" {
 bool gfx_cm_uses_second_texture(struct CombineMode* cm);
 void gfx_cc_get_features(struct ColorCombiner* cc, struct CCFeatures *cc_features);
 void gfx_cc_print(struct ColorCombiner *cc);
-void gfx_cc_precomp(void);
 uint32_t color_comb_rgb(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle);
 uint32_t color_comb_alpha(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle);
 

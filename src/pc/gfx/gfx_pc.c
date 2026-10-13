@@ -26,6 +26,8 @@
 #include "game/object_helpers.h"
 #include "game/rendering_graph_node.h"
 
+#include "data/dynos_cmap.cpp.h"
+
 #include "pc/configfile.h"
 #include "pc/debug_context.h"
 #include "pc/pc_main.h"
@@ -44,9 +46,7 @@
 u8 gGfxPcResetTex1 = 0;
 
 static struct TextureCache gfx_texture_cache = { 0 };
-static struct ColorCombiner color_combiner_pool[CC_MAX_SHADERS] = { 0 };
-static uint8_t color_combiner_pool_size = 0;
-static uint8_t color_combiner_pool_index = 0;
+static void *color_combiners = NULL;
 
 struct RSP {
     ALIGNED16 Mat4 MP_matrix;
@@ -104,7 +104,6 @@ static struct RenderingState {
     bool decal_mode;
     bool alpha_blend;
     struct Box viewport, scissor;
-    struct ShaderProgram *shader_program;
     struct TextureHashmapNode *textures[2];
 } rendering_state;
 
@@ -190,47 +189,26 @@ static void gfx_flush(void) {
     }
 }
 
-static void combine_mode_update_hash(struct CombineMode* cm) {
+static void combine_mode_update_hash(struct CombineMode *cm) {
     uint64_t hash = 5381;
 
     cm->hash = 0;
 
-    hash = (hash << 5) + hash + ((u64)cm->rgb1 << 32);
+    hash = (hash << 5) + hash + ((uint64_t)cm->rgb1 << 32);
     if (cm->use_alpha) {
-        hash = (hash << 5) + hash + ((u64)cm->alpha1);
+        hash = (hash << 5) + hash + ((uint64_t)cm->alpha1);
     }
 
     if (cm->use_2cycle) {
-        hash = (hash << 5) + hash + ((u64)cm->rgb2 << 32);
+        hash = (hash << 5) + hash + ((uint64_t)cm->rgb2 << 32);
         if (cm->use_alpha) {
-            hash = (hash << 5) + hash + ((u64)cm->alpha2);
+            hash = (hash << 5) + hash + ((uint64_t)cm->alpha2);
         }
     }
 
     hash = (hash << 5) + hash + cm->flags;
 
     cm->hash = hash;
-}
-
-static void color_combiner_update_hash(struct ColorCombiner* cc) {
-    uint64_t hash = cc->cm.hash;
-
-    for (int i = 0; i < 8; i++) {
-        hash = (hash << 5) + hash + cc->shader_input_mapping_as_u64[i];
-        hash = (hash << 5) + hash + cc->shader_commands_as_u64[i];
-    }
-
-    cc->hash = hash;
-}
-
-static struct ShaderProgram *gfx_lookup_or_create_shader_program(struct ColorCombiner* cc) {
-    struct ShaderProgram *prg = gfx_rapi->lookup_shader(cc);
-    if (prg == NULL) {
-        gfx_rapi->unload_shader(rendering_state.shader_program);
-        prg = gfx_rapi->create_and_load_new_shader(cc);
-        rendering_state.shader_program = prg;
-    }
-    return prg;
 }
 
 static void gfx_generate_cc(struct ColorCombiner *cc) {
@@ -289,35 +267,20 @@ static void gfx_generate_cc(struct ColorCombiner *cc) {
         cc->shader_commands[i] = shader_cmd;
     }
 
-    color_combiner_update_hash(cc);
-    cc->prg = gfx_lookup_or_create_shader_program(cc);
     gfx_cc_print(cc);
 }
 
-static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineMode* cm) {
+static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineMode *cm) {
     combine_mode_update_hash(cm);
 
-    static struct ColorCombiner *prev_combiner;
-    if (prev_combiner != NULL && prev_combiner->cm.hash == cm->hash) {
-        return prev_combiner;
-    }
+    struct ColorCombiner *cc = hmap_get(color_combiners, cm->hash);
+    if (cc) { return cc; }
 
-    for (size_t i = 0; i < color_combiner_pool_size; i++) {
-        if (color_combiner_pool[i].cm.hash == cm->hash) {
-            return prev_combiner = &color_combiner_pool[i];
-        }
-    }
+    cc = calloc(1, sizeof(struct ColorCombiner));
+    cc->cm = *cm;
+    gfx_generate_cc(cc);
 
-    gfx_flush();
-
-    struct ColorCombiner *comb = &color_combiner_pool[color_combiner_pool_index];
-    color_combiner_pool_index = (color_combiner_pool_index + 1) % CC_MAX_SHADERS;
-    if (color_combiner_pool_size < CC_MAX_SHADERS) { color_combiner_pool_size++; }
-
-    memcpy(&comb->cm, cm, sizeof(struct CombineMode));
-    gfx_generate_cc(comb);
-
-    return prev_combiner = comb;
+    return cc;
 }
 
 void gfx_texture_cache_clear(void) {
@@ -1172,16 +1135,12 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         cm->use_2cycle = false;
     }
 
-    struct ColorCombiner *comb = gfx_lookup_or_create_color_combiner(cm);
-    cm = &comb->cm;
+    struct ColorCombiner *cc = gfx_lookup_or_create_color_combiner(cm);
+    cm = &cc->cm;
 
-    struct ShaderProgram *prg = comb->prg;
-    if (prg != rendering_state.shader_program) {
+    if (gfx_rapi->update_cc(cc)) {
         gfx_flush();
-        // gfx_rapi->unload_shader(rendering_state.shader_program);
-        // gfx_rapi->load_shader(prg);
-        gfx_rapi->create_and_load_new_shader(comb);
-        rendering_state.shader_program = prg;
+        gfx_rapi->update_uniforms();
     }
     if (cm->use_alpha != rendering_state.alpha_blend) {
         gfx_flush();
@@ -1190,7 +1149,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     }
     uint8_t num_inputs;
     bool used_textures[2];
-    gfx_rapi->shader_get_info(prg, &num_inputs, used_textures);
+    gfx_rapi->shader_get_info(&num_inputs, used_textures);
 
     for (int32_t i = 0; i < 2; i++) {
         if (used_textures[i]) {
@@ -1288,7 +1247,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             buf_vbo[buf_vbo_len++] = 0;
         }
 
-        for (int j = 0; j < 8/*num_inputs*/; j++) {
+        for (int j = 0; j < SHADER_MAX_INPUTS; j++) {
 
             if (j >= num_inputs) {
                 buf_vbo[buf_vbo_len++] = 0;
@@ -1301,7 +1260,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             struct RGBA *color = NULL;
             struct RGBA tmp = { 0 };
             for (int a = 0; a < (cm->use_alpha ? 2 : 1 ); a++) {
-                u8 mapping = comb->shader_input_mapping[j];
+                u8 mapping = cc->shader_input_mapping[j];
 
                 switch (mapping) {
                     case CC_PRIM:
@@ -1356,11 +1315,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                 buf_vbo[buf_vbo_len++] = 1.0f;
             }
         }
-        /*struct RGBA *color = &v_arr[i]->color;
-        buf_vbo[buf_vbo_len++] = color->r / 255.0f;
-        buf_vbo[buf_vbo_len++] = color->g / 255.0f;
-        buf_vbo[buf_vbo_len++] = color->b / 255.0f;
-        buf_vbo[buf_vbo_len++] = color->a / 255.0f;*/
     }
     if (++buf_vbo_num_tris == MAX_BUFFERED) {
         gfx_flush();
@@ -2102,8 +2056,7 @@ void gfx_init(struct GfxRenderingAPI *rapi, const char *window_title) {
     gfx_wm_init(window_title);
     gfx_rapi = rapi;
     gfx_rapi->init();
-
-    gfx_cc_precomp();
+    color_combiners = hmap_create(false);
 
     gGfxInited = true;
 }
@@ -2492,9 +2445,6 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
         }
         return;
     }
-}
-
-void gfx_pc_precomp_shader(uint32_t rgb1, uint32_t alpha1, uint32_t rgb2, uint32_t alpha2, uint32_t flags) {
 }
 
 void OPTIMIZE_O3 ext_gfx_run_dl(Gfx* cmd) {

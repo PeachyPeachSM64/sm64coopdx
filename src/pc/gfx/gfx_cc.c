@@ -24,7 +24,7 @@ void gfx_cc_get_features(struct ColorCombiner* cc, struct CCFeatures* ccf) {
     int cmd_length = cc->cm.use_2cycle ? 16 : 8;
     for (int i = 0; i < cmd_length; i++) {
         u8 c = cc->shader_commands[i];
-        if (c >= SHADER_INPUT_1 && c <= SHADER_INPUT_8) {
+        if (c >= SHADER_INPUT_1 && c < SHADER_INPUT_1 + SHADER_MAX_INPUTS) {
             if (c > ccf->num_inputs) { ccf->num_inputs = c; }
         }
         ccf->used_textures[0] = ccf->used_textures[0] || c == SHADER_TEXEL0 || c == SHADER_TEXEL0A;
@@ -76,51 +76,6 @@ void gfx_cc_print(UNUSED struct ColorCombiner *cc) {
     printf("\n");
 #endif*/
 }
-
-void gfx_cc_precomp(void) {
-    sAllowCCPrint = 0;
-
-    gfx_pc_precomp_shader(0x00030001, 0x02000000, 0x000a0004, 0x0a000b0b, 0x00000011);    // 741f2ad014006ca1
-    gfx_pc_precomp_shader(0x00040001, 0x00010005, 0x00040002, 0x0b020b05, 0x00000001);    // 110404410ba7b38b
-    gfx_pc_precomp_shader(0x00040001, 0x00030001, 0x00040002, 0x0b030b02, 0x00000001);    // 110404410be9b307
-    gfx_pc_precomp_shader(0x00040001, 0x00040001, 0x00040002, 0x0b040b02, 0x00000000);    // 0084002100596a45
-    gfx_pc_precomp_shader(0x00040001, 0x00040001, 0x00040002, 0x0b040b02, 0x00000001);    // 110404410c0ab307
-    gfx_pc_precomp_shader(0x00040001, 0x00040001, 0x00040002, 0x0b040b02, 0x00000005);    // 110404410c0ab30b
-    gfx_pc_precomp_shader(0x00040001, 0x00050001, 0x00040002, 0x0b050b02, 0x00000001);    // 110404410c2bb307
-    gfx_pc_precomp_shader(0x00040001, 0x00050001, 0x00040002, 0x0b050b02, 0x00000009);    // 110404410c2bb30f
-    gfx_pc_precomp_shader(0x00040001, 0x01000000, 0x00040002, 0x02000b0b, 0x00000001);    // 110404412c86b2e6
-    gfx_pc_precomp_shader(0x00040001, 0x04000000, 0x00040002, 0x04000b0b, 0x00000001);    // 110404418f86b2e6
-    gfx_pc_precomp_shader(0x00040001, 0x04000000, 0x0a000000, 0x0a000b0b, 0x00000013);    // ec161ae4d6006ca3
-    gfx_pc_precomp_shader(0x00040001, 0x05000000, 0x00040002, 0x05000b0b, 0x00000001);    // 11040441b086b2e6
-    gfx_pc_precomp_shader(0x00040001, 0x05000000, 0x00040002, 0x05000b0b, 0x00000009);    // 11040441b086b2ee
-    gfx_pc_precomp_shader(0x00040001, 0x05000000, 0x0a000000, 0x0a000b0b, 0x00000013);    // ec161b7137006ca3
-    gfx_pc_precomp_shader(0x00050001, 0x00050001, 0x00050002, 0x0b050b02, 0x00000001);    // 154504410c2bb307
-    gfx_pc_precomp_shader(0x00050004, 0x00050004, 0x00050004, 0x0b050b04, 0x00000001);    // 154511040c2bb36a
-    gfx_pc_precomp_shader(0x01000000, 0x00050001, 0x02000000, 0x0b050b02, 0x00000001);    // 410000000c2bb307
-    gfx_pc_precomp_shader(0x01000000, 0x01000000, 0x02000000, 0x02000000, 0x00000001);    // 410000002c86b2e6
-    gfx_pc_precomp_shader(0x01000000, 0x01000000, 0x02000000, 0x02000b0b, 0x00000005);    // 410000002c86b2ea
-    gfx_pc_precomp_shader(0x01000000, 0x01000000, 0x0a000000, 0x0a000b0b, 0x00000017);    // 0b0000beb3006ca7
-    gfx_pc_precomp_shader(0x01000000, 0x04000000, 0x02000000, 0x04000b0b, 0x00000000);    // 2100000000596a45
-    gfx_pc_precomp_shader(0x01000000, 0x04000000, 0x0a000000, 0x0a000b0b, 0x00000013);    // 0b000263d6006ca3
-    gfx_pc_precomp_shader(0x01000000, 0x05000000, 0x02000000, 0x05000b0b, 0x00000001);    // 41000000b086b2e6
-    gfx_pc_precomp_shader(0x01000000, 0x05000000, 0x0a000000, 0x0a000b0b, 0x00000013);    // 0b0002f037006ca3
-    gfx_pc_precomp_shader(0x01070102, 0x01000102, 0x0a000000, 0x04000b0b, 0x00000011);    // c8c3b2bfed8de663
-    gfx_pc_precomp_shader(0x04000000, 0x04000000, 0x04000000, 0x04000000, 0x00000001);    // 040000008f86b2e6
-    gfx_pc_precomp_shader(0x04000000, 0x04000000, 0x04000000, 0x04000b0b, 0x00000000);    // 8400000000596a45
-    gfx_pc_precomp_shader(0x04000000, 0x04000000, 0x04000000, 0x04000b0b, 0x00000005);    // 040000008f86b2ea
-    gfx_pc_precomp_shader(0x04000000, 0x04000000, 0x0a000000, 0x0a000b0b, 0x00000013);    // 8e000263d6006ca3
-    gfx_pc_precomp_shader(0x04000000, 0x05000000, 0x04000000, 0x05000b0b, 0x00000001);    // 04000000b086b2e6
-    gfx_pc_precomp_shader(0x04000000, 0x05000000, 0x04000000, 0x05000b0b, 0x00000005);    // 04000000b086b2ea
-    gfx_pc_precomp_shader(0x04000000, 0x05000000, 0x04000000, 0x05000b0b, 0x00000009);    // 04000000b086b2ee
-    gfx_pc_precomp_shader(0x04060401, 0x04000000, 0x04060402, 0x04000b0b, 0x00000000);    // 84c6842100596a45
-    gfx_pc_precomp_shader(0x04060401, 0x05000000, 0x04060402, 0x05000b0b, 0x00000001);    // 1d970841b086b2e6
-    gfx_pc_precomp_shader(0x01000000, 0x04000000, 0x02000000, 0x04000b0b, 0x00000001);    // 410000008f86b2e6
-    gfx_pc_precomp_shader(0x04060401, 0x05000000, 0x04060402, 0x05000b0b, 0x00000009);    // 1d970841b086b2ee
-    gfx_pc_precomp_shader(0x00040001, 0x00040001, 0x00040002, 0x0b040b02, 0x00000009);    // 110404410c0ab30f
-
-    sAllowCCPrint = 1;
-}
-
 
 static uint8_t color_comb_component_a(uint32_t v, uint8_t cycle) {
     switch (v) {

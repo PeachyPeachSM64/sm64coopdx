@@ -432,7 +432,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
 
     // Save some values
 
-    prg->hash = cc->hash;
+    // prg->hash = cc->hash;
     prg->num_inputs = cc_features.num_inputs;
     prg->num_floats = num_floats;
     prg->used_textures[0] = cc_features.used_textures[0];
@@ -443,20 +443,20 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
 }
 
 static struct ShaderProgram *gfx_d3d11_lookup_shader(struct ColorCombiner* cc) {
-    for (size_t i = 0; i < d3d.shader_program_pool_size; i++) {
-        if (d3d.shader_program_pool[i].hash == cc->hash) {
-            return (struct ShaderProgram *)&d3d.shader_program_pool[i];
-        }
-    }
+    // for (size_t i = 0; i < d3d.shader_program_pool_size; i++) {
+    //     if (d3d.shader_program_pool[i].hash == cc->hash) {
+    //         return (struct ShaderProgram *)&d3d.shader_program_pool[i];
+    //     }
+    // }
     return nullptr;
 }
 
-static void gfx_d3d11_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
-    struct ShaderProgramD3D11 *p = (struct ShaderProgramD3D11 *)prg;
+static void gfx_d3d11_shader_get_info(/*struct ShaderProgram *prg,*/ uint8_t *num_inputs, bool used_textures[2]) {
+    // struct ShaderProgramD3D11 *p = (struct ShaderProgramD3D11 *)prg;
 
-    *num_inputs = p->num_inputs;
-    used_textures[0] = p->used_textures[0];
-    used_textures[1] = p->used_textures[1];
+    // *num_inputs = p->num_inputs;
+    // used_textures[0] = p->used_textures[0];
+    // used_textures[1] = p->used_textures[1];
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {

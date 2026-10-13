@@ -66,7 +66,6 @@ static const char UBER_FRAG[] = {
 };
 
 struct ShaderProgram {
-    uint64_t hash;
     GLuint opengl_program_id;
     uint8_t num_inputs;
     uint8_t num_floats;
@@ -75,6 +74,7 @@ struct ShaderProgram {
     uint8_t attrib_sizes[16];
     uint8_t num_attribs;
     struct ColorCombiner *cc;
+    struct CCFeatures ccf;
 };
 
 struct GLTexture {
@@ -83,9 +83,6 @@ struct GLTexture {
     bool filter;
 };
 
-static struct ShaderProgram shader_program_pool[CC_MAX_SHADERS];
-static uint8_t shader_program_pool_size = 0;
-static uint8_t shader_program_pool_index = 0;
 static GLuint opengl_vbo;
 static GLuint opengl_vao;
 
@@ -115,28 +112,24 @@ static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
 }
 
 static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
-
-    struct CCFeatures ccf = { 0 };
-    gfx_cc_get_features(prg->cc, &ccf);
-
     int ccf_flags = 0;
-    ccf_flags |= (1 <<  4) * ccf.used_textures[0];
-    ccf_flags |= (1 <<  5) * ccf.used_textures[1];
-    ccf_flags |= (1 <<  6) * ccf.color_alpha_same[0];
-    ccf_flags |= (1 <<  7) * ccf.color_alpha_same[1];
-    ccf_flags |= (1 <<  8) * ccf.do_single[0];
-    ccf_flags |= (1 <<  9) * ccf.do_single[1];
-    ccf_flags |= (1 << 10) * ccf.do_single[2];
-    ccf_flags |= (1 << 11) * ccf.do_single[3];
-    ccf_flags |= (1 << 12) * ccf.do_multiply[0];
-    ccf_flags |= (1 << 13) * ccf.do_multiply[1];
-    ccf_flags |= (1 << 14) * ccf.do_multiply[2];
-    ccf_flags |= (1 << 15) * ccf.do_multiply[3];
-    ccf_flags |= (1 << 16) * ccf.do_mix[0];
-    ccf_flags |= (1 << 17) * ccf.do_mix[1];
-    ccf_flags |= (1 << 18) * ccf.do_mix[2];
-    ccf_flags |= (1 << 19) * ccf.do_mix[3];
-    ccf_flags |= (1 << 20) * ccf.do_noise;
+    ccf_flags |= (1 <<  4) * prg->ccf.used_textures[0];
+    ccf_flags |= (1 <<  5) * prg->ccf.used_textures[1];
+    ccf_flags |= (1 <<  6) * prg->ccf.color_alpha_same[0];
+    ccf_flags |= (1 <<  7) * prg->ccf.color_alpha_same[1];
+    ccf_flags |= (1 <<  8) * prg->ccf.do_single[0];
+    ccf_flags |= (1 <<  9) * prg->ccf.do_single[1];
+    ccf_flags |= (1 << 10) * prg->ccf.do_single[2];
+    ccf_flags |= (1 << 11) * prg->ccf.do_single[3];
+    ccf_flags |= (1 << 12) * prg->ccf.do_multiply[0];
+    ccf_flags |= (1 << 13) * prg->ccf.do_multiply[1];
+    ccf_flags |= (1 << 14) * prg->ccf.do_multiply[2];
+    ccf_flags |= (1 << 15) * prg->ccf.do_multiply[3];
+    ccf_flags |= (1 << 16) * prg->ccf.do_mix[0];
+    ccf_flags |= (1 << 17) * prg->ccf.do_mix[1];
+    ccf_flags |= (1 << 18) * prg->ccf.do_mix[2];
+    ccf_flags |= (1 << 19) * prg->ccf.do_mix[3];
+    ccf_flags |= (1 << 20) * prg->ccf.do_noise;
     ccf_flags |= (1 << 21) * prg->cc->cm.use_alpha;
     ccf_flags |= (1 << 22) * prg->cc->cm.use_fog;
     ccf_flags |= (1 << 23) * prg->cc->cm.texture_edge;
@@ -151,90 +144,34 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
         sShaderCommands[i] = prg->cc->shader_commands[i];
     }
 
-
     glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_COMMANDS], 16, sShaderCommands);
 
-    // (opt_alpha && opt_dither) || ccf.do_noise
-    /*if (prg->used_noise ccf.do_noise) {*/ glUniform1f(prg->uniform_locations[UNIFORM_FRAME_COUNT], (float)frame_count); /*}*/
-    if (/*prg->used_lightmap*/ prg->cc->cm.light_map) { glUniform3f(prg->uniform_locations[UNIFORM_LIGHT_MAP], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f); }
-    if (/*prg->world_geometry*/ prg->cc->cm.world_geometry) {
+    if ((prg->cc->cm.use_alpha && prg->cc->cm.use_dither) || prg->ccf.do_noise) {
+        glUniform1f(prg->uniform_locations[UNIFORM_FRAME_COUNT], (float)frame_count);
+    }
+
+    if (prg->cc->cm.light_map) {
+        glUniform3f(prg->uniform_locations[UNIFORM_LIGHT_MAP], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
+    }
+
+    if (prg->cc->cm.world_geometry) {
         glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_FLAGS], SHADER_FLAG_MAX, gShaderFlags);
         glUniform1fv(prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES], SHADER_FLAG_MAX, gShaderFlagValues);
     }
+
     glUniform1i(prg->uniform_locations[UNIFORM_FILTERING], configFiltering);
 }
 
 static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, const int tile) {
-
-    struct CCFeatures ccf = { 0 };
-    gfx_cc_get_features(prg->cc, &ccf);
-
-    if (/*prg->used_textures[tile]*/ ccf.used_textures[tile] && opengl_tex[tile]) {
+    if (prg->ccf.used_textures[tile] && opengl_tex[tile]) {
         glUniform2f(prg->uniform_locations[tile*2 + 0], opengl_tex[tile]->size[0], opengl_tex[tile]->size[1]);
         glUniform1i(prg->uniform_locations[tile*2 + 1], opengl_tex[tile]->filter);
     }
 }
 
-static void gfx_opengl_unload_shader(struct ShaderProgram *old_prg) {
-    // old_prg = opengl_prg;
-
-    // if (old_prg != NULL) {
-    //     for (int i = 0; i < old_prg->num_attribs; i++)
-    //         glDisableVertexAttribArray(old_prg->attrib_locations[i]);
-    //     // if (old_prg == opengl_prg)
-    //     //     opengl_prg = NULL;
-    // } else {
-    //     // opengl_prg = NULL;
-    // }
-}
-
-static void gfx_opengl_load_shader(struct ShaderProgram *new_prg) {
-    // opengl_prg = new_prg;
-    new_prg = opengl_prg;
-
-    // glUseProgram(new_prg->opengl_program_id);
-    // gfx_opengl_vertex_array_set_attribs(new_prg);
-    gfx_opengl_set_shader_uniforms(new_prg);
-    gfx_opengl_set_texture_uniforms(new_prg, 0);
-    gfx_opengl_set_texture_uniforms(new_prg, 1);
-}
-
-static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorCombiner* cc) {
-    if (opengl_prg) {
-        opengl_prg->cc = cc;
-        opengl_prg->hash = cc->hash;
-        gfx_opengl_load_shader(opengl_prg);
-        return (void *) cc;
-    }
-
-
-    char vs_buf[8192];
-    char fs_buf[32768];
-    size_t vs_len = 0;
-    size_t fs_len = 0;
-    size_t num_floats = 4;
-
-    // Vertex shader
-    num_floats = 4 + 2 * NUM_TEXTURES + 4 + 2 + /*ccf.num_inputs*/8 * 4;
-
-    strcpy(vs_buf, UBER_VERT);
-    vs_len = strlen(vs_buf);
-
-    // Fragment shader
-    strcpy(fs_buf, UBER_FRAG);
-    fs_len = strlen(fs_buf);
-
-    vs_buf[vs_len] = '\0';
-    fs_buf[fs_len] = '\0';
-
-    // puts("Vertex shader:");
-    // puts(vs_buf);
-    // puts("Fragment shader:");
-    // puts(fs_buf);
-    // puts("End");
-
-    const GLchar *sources[2] = { vs_buf, fs_buf };
-    const GLint lengths[2] = { vs_len, fs_len };
+static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
+    const GLchar *sources[2] = { UBER_VERT, UBER_FRAG };
+    const GLint lengths[2] = { sizeof(UBER_VERT) - 1, sizeof(UBER_FRAG) - 1 };
     GLint success;
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -272,9 +209,8 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     size_t num_attribs = 0;
 
-    struct ShaderProgram *prg = &shader_program_pool[shader_program_pool_index];
-    shader_program_pool_index = (shader_program_pool_index + 1) % CC_MAX_SHADERS;
-    if (shader_program_pool_size < CC_MAX_SHADERS) { shader_program_pool_size++; }
+    struct ShaderProgram *prg = calloc(1, sizeof(struct ShaderProgram));
+    prg->opengl_program_id = shader_program;
 
     prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aVtxPos");
     prg->attrib_sizes[num_attribs] = 4;
@@ -296,7 +232,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     prg->attrib_sizes[num_attribs] = 2;
     ++num_attribs;
 
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < SHADER_MAX_INPUTS; i++) {
         char name[16];
         sprintf(name, "aInput%d", i + 1);
         prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
@@ -304,10 +240,8 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         ++num_attribs;
     }
 
-    prg->hash = cc->hash;
-    prg->opengl_program_id = shader_program;
     prg->num_inputs = 8;//ccf.num_inputs;
-    prg->num_floats = num_floats;
+    prg->num_floats = 4 + 2 * NUM_TEXTURES + 4 + 2 + /*ccf.num_inputs*/SHADER_MAX_INPUTS * 4;
     prg->num_attribs = num_attribs;
 
     glUseProgram(shader_program);
@@ -330,41 +264,30 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES] = glGetUniformLocation(shader_program, "uShaderFlagValues");
     prg->uniform_locations[UNIFORM_FILTERING] = glGetUniformLocation(shader_program, "uFilter");
 
-    prg->cc = cc;
-    prg->hash = cc->hash;
-
-    opengl_prg = prg;
-
-    gfx_opengl_load_shader(prg);
-
     gfx_opengl_vertex_array_set_attribs(prg);
 
-    return (void *) cc;
+    return prg;
 }
 
-static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner* cc) {
-    if (opengl_prg && opengl_prg->cc == cc) {
-        return (void *) cc;
+static bool gfx_opengl_update_cc(struct ColorCombiner *cc) {
+    if (opengl_prg && opengl_prg->cc != cc) {
+        opengl_prg->cc = cc;
+        gfx_cc_get_features(opengl_prg->cc, &opengl_prg->ccf);
+        return true;
     }
-    return NULL;
+    return false;
 }
 
-static void gfx_opengl_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
-    prg = opengl_prg;
+static void gfx_opengl_update_uniforms(void) {
+    gfx_opengl_set_shader_uniforms(opengl_prg);
+    gfx_opengl_set_texture_uniforms(opengl_prg, 0);
+    gfx_opengl_set_texture_uniforms(opengl_prg, 1);
+}
 
-    *num_inputs = prg->num_inputs;
-
-    // if (gCC) {
-
-    struct CCFeatures ccf = { 0 };
-    gfx_cc_get_features(prg->cc, &ccf);
-    used_textures[0] = ccf.used_textures[0];
-    used_textures[1] = ccf.used_textures[1];
-
-    // }
-
-    // used_textures[0] = prg->used_textures[0];
-    // used_textures[1] = prg->used_textures[1];
+static void gfx_opengl_shader_get_info(uint8_t *num_inputs, bool used_textures[2]) {
+    *num_inputs = opengl_prg->ccf.num_inputs;
+    used_textures[0] = opengl_prg->ccf.used_textures[0];
+    used_textures[1] = opengl_prg->ccf.used_textures[1];
 }
 
 static GLuint gfx_opengl_new_texture(void) {
@@ -512,6 +435,8 @@ static void gfx_opengl_init(void) {
 
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    opengl_prg = gfx_opengl_load_ubershader();
 }
 
 bool gfx_opengl_check_compatibility(void) {
@@ -544,7 +469,7 @@ static void gfx_opengl_end_frame(void) {
 static void gfx_opengl_finish_render(void) {
 }
 
-static const char* gfx_opengl_get_name(void) {
+static const char *gfx_opengl_get_name(void) {
     return "OpenGL";
 }
 
@@ -552,28 +477,26 @@ static void gfx_opengl_shutdown(void) {
 }
 
 struct GfxRenderingAPI gfx_opengl_api = {
-    gfx_opengl_z_is_from_0_to_1,
-    gfx_opengl_unload_shader,
-    gfx_opengl_load_shader,
-    gfx_opengl_create_and_load_new_shader,
-    gfx_opengl_lookup_shader,
-    gfx_opengl_shader_get_info,
-    gfx_opengl_new_texture,
-    gfx_opengl_select_texture,
-    gfx_opengl_upload_texture,
-    gfx_opengl_set_sampler_parameters,
-    gfx_opengl_set_depth_test,
-    gfx_opengl_set_depth_mask,
-    gfx_opengl_set_zmode_decal,
-    gfx_opengl_set_viewport,
-    gfx_opengl_set_scissor,
-    gfx_opengl_set_use_alpha,
-    gfx_opengl_draw_triangles,
-    gfx_opengl_init,
-    gfx_opengl_on_resize,
-    gfx_opengl_start_frame,
-    gfx_opengl_end_frame,
-    gfx_opengl_finish_render,
-    gfx_opengl_get_name,
-    gfx_opengl_shutdown
+    .z_is_from_0_to_1 = gfx_opengl_z_is_from_0_to_1,
+    .update_cc = gfx_opengl_update_cc,
+    .update_uniforms = gfx_opengl_update_uniforms,
+    .shader_get_info = gfx_opengl_shader_get_info,
+    .new_texture = gfx_opengl_new_texture,
+    .select_texture = gfx_opengl_select_texture,
+    .upload_texture = gfx_opengl_upload_texture,
+    .set_sampler_parameters = gfx_opengl_set_sampler_parameters,
+    .set_depth_test = gfx_opengl_set_depth_test,
+    .set_depth_mask = gfx_opengl_set_depth_mask,
+    .set_zmode_decal = gfx_opengl_set_zmode_decal,
+    .set_viewport = gfx_opengl_set_viewport,
+    .set_scissor = gfx_opengl_set_scissor,
+    .set_use_alpha = gfx_opengl_set_use_alpha,
+    .draw_triangles = gfx_opengl_draw_triangles,
+    .init = gfx_opengl_init,
+    .on_resize = gfx_opengl_on_resize,
+    .start_frame = gfx_opengl_start_frame,
+    .end_frame = gfx_opengl_end_frame,
+    .finish_render = gfx_opengl_finish_render,
+    .get_name = gfx_opengl_get_name,
+    .shutdown = gfx_opengl_shutdown
 };
