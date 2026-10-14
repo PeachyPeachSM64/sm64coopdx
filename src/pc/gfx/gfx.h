@@ -24,7 +24,6 @@
 #define MAX_LIGHTS 18
 #define MAX_VERTICES 64
 #define MAX_TILES 8
-#define MAX_TEXTURES 2
 #define MAX_CACHED_TEXTURES 4096 // for preloading purposes
 #define MAX_GFX_STATES 8
 

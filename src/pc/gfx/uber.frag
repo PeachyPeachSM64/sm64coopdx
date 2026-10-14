@@ -1,44 +1,13 @@
-#version 130
 
-// defined in gfx_pc.h
-#define SHADER_FLAG_MAX  8
 
-// defined in gfx_cc.h
-#define SHADER_0         0
-#define SHADER_INPUT_1   1
-#define SHADER_INPUT_2   2
-#define SHADER_INPUT_3   3
-#define SHADER_INPUT_4   4
-#define SHADER_INPUT_5   5
-#define SHADER_INPUT_6   6
-#define SHADER_INPUT_7   7
-#define SHADER_INPUT_8   8
-#define SHADER_TEXEL0    9
-#define SHADER_TEXEL0A   10
-#define SHADER_TEXEL1    11
-#define SHADER_TEXEL1A   12
-#define SHADER_1         13
-#define SHADER_COMBINED  14
-#define SHADER_COMBINEDA 15
-#define SHADER_NOISE     16
-
-// defined in gfx_cc.h
-#define CCF_FLAG_COLOR_ALPHA_SAME   0   // 2 bits
-#define CCF_FLAG_DO_SINGLE          2   // 4 bits
-#define CCF_FLAG_DO_MULTIPLY        6   // 4 bits
-#define CCF_FLAG_DO_MIX             10  // 4 bits
-#define CCF_FLAG_DO_NOISE           14  // 1 bit
-#define CCF_FLAG_USE_ALPHA          15  // 1 bit
-#define CCF_FLAG_USE_FOG            16  // 1 bit
-#define CCF_FLAG_TEX_EDGE           17  // 1 bit
-#define CCF_FLAG_USE_DITHER         18  // 1 bit
-#define CCF_FLAG_USE_2CYCLE         19  // 1 bit
-#define CCF_FLAG_LIGHT_MAP          20  // 1 bit
-#define CCF_FLAG_WORLD_GEOMETRY     21  // 1 bit
-#define CCF_FLAG_USED_TEXTURE       22  // MAX_TEXTURES bits
+#define SHADER_FLAG_MAX  8  // defined in gfx_pc.h
 
 #define CCF_HAS_FLAG(_flag_)        (((uCCF) & (1 << (CCF_FLAG_##_flag_        ))) != 0)
 #define CCF_HAS_FLAG_i(_flag_, _i_) (((uCCF) & (1 << (CCF_FLAG_##_flag_ + (_i_)))) != 0)
+
+#define FILTER_THREE_POINT 2
+
+
 
 
 out vec4 oFragColor;
@@ -65,13 +34,11 @@ uniform float uShaderFlagValues[SHADER_FLAG_MAX];
 uniform int uCCF;
 
 // Combine mode
-uniform int uShaderCommands[16];
+uniform int uShaderCommands[CC_CMD_LENGTH];
 
 // Textures
 uniform sampler2D uTex0; uniform vec2 uTex0Size; uniform int uTex0Filter;
 uniform sampler2D uTex1; uniform vec2 uTex1Size; uniform int uTex1Filter;
-
-#define FILTER_THREE_POINT 2
 
 
 
@@ -160,14 +127,14 @@ vec4 shader_item_to_vec4(in vec4 texel, in int item) {
     switch (item) {
         case SHADER_0:         return vec4(0.0);
         case SHADER_1:         return vec4(1.0);
-        case SHADER_INPUT_1:   return vInput1;
-        case SHADER_INPUT_2:   return vInput2;
-        case SHADER_INPUT_3:   return vInput3;
-        case SHADER_INPUT_4:   return vInput4;
-        case SHADER_INPUT_5:   return vInput5;
-        case SHADER_INPUT_6:   return vInput6;
-        case SHADER_INPUT_7:   return vInput7;
-        case SHADER_INPUT_8:   return vInput8;
+        case SHADER_INPUTS + 0:   return vInput1;
+        case SHADER_INPUTS + 1:   return vInput2;
+        case SHADER_INPUTS + 2:   return vInput3;
+        case SHADER_INPUTS + 3:   return vInput4;
+        case SHADER_INPUTS + 4:   return vInput5;
+        case SHADER_INPUTS + 5:   return vInput6;
+        case SHADER_INPUTS + 6:   return vInput7;
+        case SHADER_INPUTS + 7:   return vInput8;
         case SHADER_TEXEL0:    return texColor0;
         case SHADER_TEXEL0A:   return texColor0.aaaa;
         case SHADER_TEXEL1:    return texColor1;
@@ -193,7 +160,7 @@ vec4 combine_colors(vec4 texel, int cycle, bool do_single, bool do_multiply, boo
                shader_item_to_vec4(texel, uShaderCommands[offset + 2]);
     }
 
-    // (A - B) * C
+    // (A - B) * C + B = lerp(C, B, A)
     if (do_mix) {
         return mix(
             shader_item_to_vec4(texel, uShaderCommands[offset + 1]),

@@ -5,6 +5,10 @@
 #include <stdbool.h>
 #include "gfx.h"
 
+#include "gfx_cc.inl"
+
+#define CC_MAX_SHADERS 64 // Keeping this here for now as it's needed for DirectX declarations
+
 enum {
     CC_0,
     CC_TEXEL0,
@@ -25,53 +29,13 @@ enum {
     CC_ENUM_MAX,
 };
 
-enum {
-    SHADER_0,
-    // SHADER_INPUTS,
-    // SHADER_TEXEL0 = SHADER_INPUTS + SHADER_MAX_INPUTS,
-    SHADER_INPUT_1,
-    SHADER_INPUT_2,
-    SHADER_INPUT_3,
-    SHADER_INPUT_4,
-    SHADER_INPUT_5,
-    SHADER_INPUT_6,
-    SHADER_INPUT_7,
-    SHADER_INPUT_8,
-    SHADER_TEXEL0,
-    SHADER_TEXEL0A,
-    SHADER_TEXEL1,
-    SHADER_TEXEL1A,
-    SHADER_1,
-    SHADER_COMBINED,
-    SHADER_COMBINEDA,
-    SHADER_NOISE,
-};
-
-#define SHADER_MAX_INPUTS   8
-#define SHADER_CMD_LENGTH   16 // 4 (ABCD) * 2 (rgb/a) * 2 (cycles)
-#define CC_MAX_SHADERS      64 // Keeping this here for now as it's needed for DirectX declarations
-
-#define CCF_FLAG_COLOR_ALPHA_SAME   0   // 2 bits
-#define CCF_FLAG_DO_SINGLE          2   // 4 bits
-#define CCF_FLAG_DO_MULTIPLY        6   // 4 bits
-#define CCF_FLAG_DO_MIX             10  // 4 bits
-#define CCF_FLAG_DO_NOISE           14  // 1 bit
-#define CCF_FLAG_USE_ALPHA          15  // 1 bit
-#define CCF_FLAG_USE_FOG            16  // 1 bit
-#define CCF_FLAG_TEX_EDGE           17  // 1 bit
-#define CCF_FLAG_USE_DITHER         18  // 1 bit
-#define CCF_FLAG_USE_2CYCLE         19  // 1 bit
-#define CCF_FLAG_LIGHT_MAP          20  // 1 bit
-#define CCF_FLAG_WORLD_GEOMETRY     21  // 1 bit
-#define CCF_FLAG_USED_TEXTURE       22  // MAX_TEXTURES bits
-
 struct CCFeatures {
     int num_inputs;
     bool used_textures[MAX_TEXTURES];
-    bool color_alpha_same[2];
-    bool do_single[4];
-    bool do_multiply[4];
-    bool do_mix[4];
+    bool color_alpha_same[CC_CYCLES];
+    bool do_single[CC_MODES];       // TODO: optimize this shit, those booleans are mutually exclusive
+    bool do_multiply[CC_MODES];     // TODO: optimize this shit, those booleans are mutually exclusive
+    bool do_mix[CC_MODES];          // TODO: optimize this shit, those booleans are mutually exclusive
     bool do_noise;
 };
 
@@ -84,7 +48,7 @@ struct CombineMode {
             uint32_t rgb2;
             uint32_t alpha2;
         };
-        uint8_t all_values[SHADER_CMD_LENGTH];
+        uint8_t all_values[CC_CMD_LENGTH];
     };
     union {
         struct {
@@ -104,8 +68,8 @@ struct CombineMode {
 
 struct ColorCombiner {
     struct CombineMode cm;
-    uint8_t shader_input_mapping[16];
-    uint8_t shader_commands[SHADER_CMD_LENGTH];
+    uint8_t shader_input_mapping[SHADER_MAX_INPUTS];
+    uint8_t shader_commands[CC_CMD_LENGTH];
 };
 
 struct VertexAttribs {
@@ -120,8 +84,9 @@ struct VertexAttribs {
 extern "C" {
 #endif
 
-bool gfx_cm_uses_second_texture(struct CombineMode* cm);
-void gfx_cc_get_features(struct ColorCombiner* cc, struct CCFeatures *cc_features);
+bool gfx_cm_uses_second_texture(struct CombineMode *cm);
+void gfx_cc_generate_shader_commands(struct ColorCombiner *cc);
+void gfx_cc_get_features(struct ColorCombiner *cc, struct CCFeatures *ccf);
 void gfx_cc_print(struct ColorCombiner *cc);
 uint32_t color_comb_rgb(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle);
 uint32_t color_comb_alpha(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle);

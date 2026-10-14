@@ -23,22 +23,22 @@ static const char *shader_item_to_str(int32_t item, bool with_alpha, bool only_a
                 return with_alpha ? "float4(0.0, 0.0, 0.0, 0.0)" : "float3(0.0, 0.0, 0.0)";
             case SHADER_1:
                 return with_alpha ? "float4(1.0, 1.0, 1.0, 1.0)" : "float3(1.0, 1.0, 1.0)";
-            case SHADER_INPUT_1:
-                return with_alpha || !inputs_have_alpha ? "input.input1" : "input.input1.rgb";
-            case SHADER_INPUT_2:
-                return with_alpha || !inputs_have_alpha ? "input.input2" : "input.input2.rgb";
-            case SHADER_INPUT_3:
-                return with_alpha || !inputs_have_alpha ? "input.input3" : "input.input3.rgb";
-            case SHADER_INPUT_4:
-                return with_alpha || !inputs_have_alpha ? "input.input4" : "input.input4.rgb";
-            case SHADER_INPUT_5:
-                return with_alpha || !inputs_have_alpha ? "input.input5" : "input.input5.rgb";
-            case SHADER_INPUT_6:
-                return with_alpha || !inputs_have_alpha ? "input.input6" : "input.input6.rgb";
-            case SHADER_INPUT_7:
-                return with_alpha || !inputs_have_alpha ? "input.input7" : "input.input7.rgb";
-            case SHADER_INPUT_8:
-                return with_alpha || !inputs_have_alpha ? "input.input8" : "input.input8.rgb";
+            // case SHADER_INPUT_1:
+            //     return with_alpha || !inputs_have_alpha ? "input.input1" : "input.input1.rgb";
+            // case SHADER_INPUT_2:
+            //     return with_alpha || !inputs_have_alpha ? "input.input2" : "input.input2.rgb";
+            // case SHADER_INPUT_3:
+            //     return with_alpha || !inputs_have_alpha ? "input.input3" : "input.input3.rgb";
+            // case SHADER_INPUT_4:
+            //     return with_alpha || !inputs_have_alpha ? "input.input4" : "input.input4.rgb";
+            // case SHADER_INPUT_5:
+            //     return with_alpha || !inputs_have_alpha ? "input.input5" : "input.input5.rgb";
+            // case SHADER_INPUT_6:
+            //     return with_alpha || !inputs_have_alpha ? "input.input6" : "input.input6.rgb";
+            // case SHADER_INPUT_7:
+            //     return with_alpha || !inputs_have_alpha ? "input.input7" : "input.input7.rgb";
+            // case SHADER_INPUT_8:
+            //     return with_alpha || !inputs_have_alpha ? "input.input8" : "input.input8.rgb";
             case SHADER_TEXEL0:
                 return with_alpha ? "texVal0" : "texVal0.rgb";
             case SHADER_TEXEL0A:
@@ -61,22 +61,22 @@ static const char *shader_item_to_str(int32_t item, bool with_alpha, bool only_a
                 return "0.0";
             case SHADER_1:
                 return "1.0";
-            case SHADER_INPUT_1:
-                return "input.input1.a";
-            case SHADER_INPUT_2:
-                return "input.input2.a";
-            case SHADER_INPUT_3:
-                return "input.input3.a";
-            case SHADER_INPUT_4:
-                return "input.input4.a";
-            case SHADER_INPUT_5:
-                return "input.input5.a";
-            case SHADER_INPUT_6:
-                return "input.input6.a";
-            case SHADER_INPUT_7:
-                return "input.input7.a";
-            case SHADER_INPUT_8:
-                return "input.input8.a";
+            // case SHADER_INPUT_1:
+            //     return "input.input1.a";
+            // case SHADER_INPUT_2:
+            //     return "input.input2.a";
+            // case SHADER_INPUT_3:
+            //     return "input.input3.a";
+            // case SHADER_INPUT_4:
+            //     return "input.input4.a";
+            // case SHADER_INPUT_5:
+            //     return "input.input5.a";
+            // case SHADER_INPUT_6:
+            //     return "input.input6.a";
+            // case SHADER_INPUT_7:
+            //     return "input.input7.a";
+            // case SHADER_INPUT_8:
+            //     return "input.input8.a";
             case SHADER_TEXEL0:
                 return "texVal0.a";
             case SHADER_TEXEL0A:

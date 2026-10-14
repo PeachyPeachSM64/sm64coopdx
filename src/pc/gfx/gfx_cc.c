@@ -3,12 +3,11 @@
 #include "gfx_cc.h"
 #include "gfx_pc.h"
 
-static u8 sAllowCCPrint = 1;
+static bool sAllowCCPrint = true;
 
-bool gfx_cm_uses_second_texture(struct CombineMode* cm) {
-    for (int i = 0; i < 16; i++) {
-        u8 v = cm->all_values[i];
-        switch (v) {
+bool gfx_cm_uses_second_texture(struct CombineMode *cm) {
+    for (int i = 0; i < ARRAY_COUNT(cm->all_values); i++) {
+        switch (cm->all_values[i]) {
             case CC_TEXEL1:
             case CC_TEXEL1A:
                 return true;
@@ -17,37 +16,101 @@ bool gfx_cm_uses_second_texture(struct CombineMode* cm) {
     return false;
 }
 
-void gfx_cc_get_features(struct ColorCombiner* cc, struct CCFeatures* ccf) {
+void gfx_cc_generate_shader_commands(struct ColorCombiner *cc) {
+    uint8_t next_input_number = 0;
+    uint8_t input_number[CC_ENUM_MAX] = { 0 };
+
+    for (int i = 0; i < CC_CMD_LENGTH; i++) {
+        uint8_t cm_cmd = cc->cm.all_values[i];
+        uint8_t shader_cmd = 0;
+        switch (cm_cmd) {
+            case CC_0:
+                shader_cmd = SHADER_0;
+                break;
+            case CC_1:
+                shader_cmd = SHADER_1;
+                break;
+            case CC_TEXEL0:
+                shader_cmd = SHADER_TEXEL0;
+                break;
+            case CC_TEXEL1:
+                shader_cmd = SHADER_TEXEL1;
+                break;
+            case CC_TEXEL0A:
+                shader_cmd = SHADER_TEXEL0A;
+                break;
+            case CC_TEXEL1A:
+                shader_cmd = SHADER_TEXEL1A;
+                break;
+            case CC_COMBINED:
+                shader_cmd = cc->cm.use_2cycle ? SHADER_COMBINED : SHADER_0;
+                break;
+            case CC_COMBINEDA:
+                shader_cmd = cc->cm.use_2cycle ? SHADER_COMBINEDA : SHADER_0;
+                break;
+            case CC_NOISE:
+                shader_cmd = SHADER_NOISE;
+                break;
+            case CC_PRIM:
+            case CC_PRIMA:
+            case CC_SHADE:
+            case CC_SHADEA:
+            case CC_ENV:
+            case CC_ENVA:
+            case CC_LOD:
+                if (input_number[cm_cmd] == 0) {
+                    cc->shader_input_mapping[next_input_number] = cm_cmd;
+                    input_number[cm_cmd] = SHADER_INPUTS + next_input_number;
+                    next_input_number++;
+                }
+                shader_cmd = input_number[cm_cmd];
+                break;
+            default:
+                shader_cmd = SHADER_0;
+                break;
+        }
+        cc->shader_commands[i] = shader_cmd;
+    }
+
+    gfx_cc_print(cc);
+}
+
+void gfx_cc_get_features(struct ColorCombiner *cc, struct CCFeatures *ccf) {
     // reset ccf
     memset(ccf, 0, sizeof(struct CCFeatures));
 
-    int cmd_length = cc->cm.use_2cycle ? 16 : 8;
+    // determine features
+    int cmd_length = (CC_COMPONENTS * CC_CHANNELS) * (cc->cm.use_2cycle ? 2 : 1);
     for (int i = 0; i < cmd_length; i++) {
-        u8 c = cc->shader_commands[i];
-        if (c >= SHADER_INPUT_1 && c < SHADER_INPUT_1 + SHADER_MAX_INPUTS) {
-            if (c > ccf->num_inputs) { ccf->num_inputs = c; }
+        uint8_t cmd = cc->shader_commands[i];
+        if (cmd >= SHADER_INPUTS && cmd < SHADER_ENUM_MAX) {
+            ccf->num_inputs = MAX(ccf->num_inputs, (cmd - SHADER_INPUTS + 1));
         }
-        ccf->used_textures[0] = ccf->used_textures[0] || c == SHADER_TEXEL0 || c == SHADER_TEXEL0A;
-        ccf->used_textures[1] = ccf->used_textures[1] || c == SHADER_TEXEL1 || c == SHADER_TEXEL1A;
-        ccf->do_noise = ccf->do_noise || c == SHADER_NOISE;
+        if (cmd == SHADER_TEXEL0 || cmd == SHADER_TEXEL0A) {
+            ccf->used_textures[0] = true;
+        }
+        if (cmd == SHADER_TEXEL1 || cmd == SHADER_TEXEL1A) {
+            ccf->used_textures[1] = true;
+        }
+        if (cmd == SHADER_NOISE) {
+            ccf->do_noise = true;
+        }
     }
 
     // figure out optimizations
-    for (int i = 0; i < 16 / 4; i++) {
-        u8* c = &cc->shader_commands[i * 4];
-        ccf->do_single[i]   = (c[2] == 0);
-        ccf->do_multiply[i] = (c[1] == 0 && c[3] == 0);
-        ccf->do_mix[i]      = (c[1] == c[3]);
+    for (int i = 0; i < CC_MODES; i++) {
+        const uint8_t *abcd = &cc->shader_commands[i * CC_COMPONENTS];
+        ccf->do_single[i]   = (abcd[2] == SHADER_0);                         // D
+        ccf->do_multiply[i] = (abcd[1] == SHADER_0 && abcd[3] == SHADER_0);  // A * C
+        ccf->do_mix[i]      = (abcd[1] == abcd[3]);                          // (A - B) * C + B = lerp(C, B, A)
     }
 
-    ccf->color_alpha_same[0] = 1;
-    ccf->color_alpha_same[1] = 1;
-
-    for (int i = 0; i < 2; i++) {
-        u8* cmd = &cc->shader_commands[i * 8];
-        for (int j = 0; j < 4; j++) {
-            if (cmd[j] != cmd[j + 4]) {
-                ccf->color_alpha_same[i] = 0;
+    for (int i = 0; i < CC_CYCLES; i++) {
+        ccf->color_alpha_same[i] = true;
+        uint8_t *cmd = &cc->shader_commands[i * (CC_COMPONENTS * CC_CHANNELS)];
+        for (int j = 0; j < CC_COMPONENTS; j++) { // TODO: memcmp?
+            if (cmd[j] != cmd[j + CC_COMPONENTS]) {
+                ccf->color_alpha_same[i] = false;
                 break;
             }
         }
@@ -76,6 +139,9 @@ void gfx_cc_print(UNUSED struct ColorCombiner *cc) {
     printf("\n");
 #endif*/
 }
+
+
+// TODO: table this shit
 
 static uint8_t color_comb_component_a(uint32_t v, uint8_t cycle) {
     switch (v) {
@@ -162,7 +228,7 @@ static uint8_t color_comb_component_d(uint32_t v, uint8_t cycle) {
         case G_CCMUX_SHADE_ALPHA:       return CC_SHADEA;
         case G_CCMUX_ENV_ALPHA:         return CC_ENVA;
 
-        default:                  return CC_0;
+        default:                        return CC_0;
     }
 }
 

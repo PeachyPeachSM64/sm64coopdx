@@ -74,6 +74,10 @@ static const char UBER_VERT[] = {
 };
 
 static const char UBER_FRAG[] = {
+'#','v','e','r','s','i','o','n',' ','1','3','0','\n'
+,
+#embed "gfx_cc.inl"
+,
 #embed "uber.frag"
 ,0
 };
@@ -162,16 +166,16 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
     ccf_flags |= (1 << CCF_FLAG_LIGHT_MAP) * prg->cc->cm.light_map;
     ccf_flags |= (1 << CCF_FLAG_WORLD_GEOMETRY) * prg->cc->cm.world_geometry;
     for (int i = 0; i < MAX_TEXTURES; ++i) {
-        ccf_flags |= (1 << (CCF_FLAG_USED_TEXTURE + i)) * prg->ccf.used_textures[0];
+        ccf_flags |= (1 << (CCF_FLAG_USED_TEXTURE + i)) * prg->ccf.used_textures[i];
     }
     glUniform1i(prg->uniform_locations[UNIFORM_CCF], ccf_flags);
 
-    static int sShaderCommands[16];
-    for (int i = 0; i != 16; ++i) {
+    static int sShaderCommands[CC_CMD_LENGTH];
+    for (int i = 0; i != CC_CMD_LENGTH; ++i) {
         sShaderCommands[i] = prg->cc->shader_commands[i];
     }
 
-    glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_COMMANDS], 16, sShaderCommands);
+    glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_COMMANDS], CC_CMD_LENGTH, sShaderCommands);
 
     if ((prg->cc->cm.use_alpha && prg->cc->cm.use_dither) || prg->ccf.do_noise) {
         glUniform1f(prg->uniform_locations[UNIFORM_FRAME_COUNT], (float)frame_count);
@@ -232,8 +236,6 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
-    // size_t num_attribs = 0;
-
     struct ShaderProgram *prg = calloc(1, sizeof(struct ShaderProgram));
     prg->opengl_program_id = shader_program;
 
@@ -286,14 +288,16 @@ static bool gfx_opengl_update_cc(struct ColorCombiner *cc) {
 
 static void gfx_opengl_update_uniforms(void) {
     gfx_opengl_set_shader_uniforms(opengl_prg);
-    gfx_opengl_set_texture_uniforms(opengl_prg, 0);
-    gfx_opengl_set_texture_uniforms(opengl_prg, 1);
+    for (int t = 0; t < MAX_TEXTURES; t++) {
+        gfx_opengl_set_texture_uniforms(opengl_prg, t);
+    }
 }
 
 static void gfx_opengl_shader_get_info(uint8_t *num_inputs, bool used_textures[]) {
     *num_inputs = opengl_prg->ccf.num_inputs;
-    used_textures[0] = opengl_prg->ccf.used_textures[0];
-    used_textures[1] = opengl_prg->ccf.used_textures[1];
+    for (int t = 0; t < MAX_TEXTURES; t++) {
+        used_textures[t] = opengl_prg->ccf.used_textures[t];
+    }
 }
 
 static GLuint gfx_opengl_new_texture(void) {

@@ -212,65 +212,6 @@ static void combine_mode_update_hash(struct CombineMode *cm) {
     cm->hash = hash;
 }
 
-static void gfx_generate_cc(struct ColorCombiner *cc) {
-    u8 next_input_number = 0;
-    u8 input_number[CC_ENUM_MAX] = { 0 };
-
-    for  (int i = 0; i < SHADER_CMD_LENGTH; i++) {
-        u8 cm_cmd = cc->cm.all_values[i];
-        u8 shader_cmd = 0;
-        switch (cm_cmd) {
-            case CC_0:
-                shader_cmd = SHADER_0;
-                break;
-            case CC_1:
-                shader_cmd = SHADER_1;
-                break;
-            case CC_TEXEL0:
-                shader_cmd = SHADER_TEXEL0;
-                break;
-            case CC_TEXEL1:
-                shader_cmd = SHADER_TEXEL1;
-                break;
-            case CC_TEXEL0A:
-                shader_cmd = SHADER_TEXEL0A;
-                break;
-            case CC_TEXEL1A:
-                shader_cmd = SHADER_TEXEL1A;
-                break;
-            case CC_COMBINED:
-                shader_cmd = cc->cm.use_2cycle ? SHADER_COMBINED : SHADER_0;
-                break;
-            case CC_COMBINEDA:
-                shader_cmd = cc->cm.use_2cycle ? SHADER_COMBINEDA : SHADER_0;
-                break;
-            case CC_NOISE:
-                shader_cmd = SHADER_NOISE;
-                break;
-            case CC_PRIM:
-            case CC_PRIMA:
-            case CC_SHADE:
-            case CC_SHADEA:
-            case CC_ENV:
-            case CC_ENVA:
-            case CC_LOD:
-                if (input_number[cm_cmd] == 0) {
-                    cc->shader_input_mapping[next_input_number] = cm_cmd;
-                    input_number[cm_cmd] = SHADER_INPUT_1 + next_input_number;
-                    next_input_number++;
-                }
-                shader_cmd = input_number[cm_cmd];
-                break;
-            default:
-                shader_cmd = SHADER_0;
-                break;
-        }
-        cc->shader_commands[i] = shader_cmd;
-    }
-
-    gfx_cc_print(cc);
-}
-
 static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineMode *cm) {
     combine_mode_update_hash(cm);
 
@@ -280,7 +221,7 @@ static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineM
     cc = calloc(1, sizeof(struct ColorCombiner));
     if (cc) {
         cc->cm = *cm;
-        gfx_generate_cc(cc);
+        gfx_cc_generate_shader_commands(cc);
         hmap_put(color_combiners, cm->hash, cc);
     }
 
