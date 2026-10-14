@@ -75,6 +75,10 @@ uniform sampler2D uTex1; uniform vec2 uTex1Size; uniform int uTex1Filter;
 
 
 
+vec4 noise = vec4(0.0);
+vec4 texColor0 = vec4(0.0, 0.0, 0.0, 1.0);
+vec4 texColor1 = vec4(0.0, 0.0, 0.0, 1.0);
+
 
 
 
@@ -152,7 +156,7 @@ float random(in vec3 value) {
 
 
 
-vec4 shader_item_to_vec4(in vec4 texel, in float noise, in vec4 texVal0, in vec4 texVal1, in int item) {
+vec4 shader_item_to_vec4(in vec4 texel, in int item) {
     switch (item) {
         case SHADER_0:         return vec4(0.0);
         case SHADER_1:         return vec4(1.0);
@@ -164,132 +168,47 @@ vec4 shader_item_to_vec4(in vec4 texel, in float noise, in vec4 texVal0, in vec4
         case SHADER_INPUT_6:   return vInput6;
         case SHADER_INPUT_7:   return vInput7;
         case SHADER_INPUT_8:   return vInput8;
-        case SHADER_TEXEL0:    return texVal0;
-        case SHADER_TEXEL0A:   return texVal0.aaaa;
-        case SHADER_TEXEL1:    return texVal1;
-        case SHADER_TEXEL1A:   return texVal1.aaaa;
+        case SHADER_TEXEL0:    return texColor0;
+        case SHADER_TEXEL0A:   return texColor0.aaaa;
+        case SHADER_TEXEL1:    return texColor1;
+        case SHADER_TEXEL1A:   return texColor1.aaaa;
         case SHADER_COMBINED:  return texel;
         case SHADER_COMBINEDA: return texel.aaaa;
-        case SHADER_NOISE:     return vec4(noise);
+        case SHADER_NOISE:     return noise;
     }
     return vec4(0);
 }
 
-vec3 shader_item_to_vec3(in vec4 texel, in float noise, in vec4 texVal0, in vec4 texVal1, in int item) {
-    switch (item) {
-        case SHADER_0:         return vec3(0.0);
-        case SHADER_1:         return vec3(1.0);
-        case SHADER_INPUT_1:   return vInput1.rgb;
-        case SHADER_INPUT_2:   return vInput2.rgb;
-        case SHADER_INPUT_3:   return vInput3.rgb;
-        case SHADER_INPUT_4:   return vInput4.rgb;
-        case SHADER_INPUT_5:   return vInput5.rgb;
-        case SHADER_INPUT_6:   return vInput6.rgb;
-        case SHADER_INPUT_7:   return vInput7.rgb;
-        case SHADER_INPUT_8:   return vInput8.rgb;
-        case SHADER_TEXEL0:    return texVal0.rgb;
-        case SHADER_TEXEL0A:   return texVal0.aaa;
-        case SHADER_TEXEL1:    return texVal1.rgb;
-        case SHADER_TEXEL1A:   return texVal1.aaa;
-        case SHADER_COMBINED:  return texel.rgb;
-        case SHADER_COMBINEDA: return texel.aaa;
-        case SHADER_NOISE:     return vec3(noise);
-    }
-    return vec3(0);
-}
+vec4 combine_colors(vec4 texel, int cycle, bool do_single, bool do_multiply, bool do_mix, bool is_alpha) {
+    int offset = 8 * cycle + (is_alpha ? 4 : 0);
 
-float shader_item_to_alpha(in vec4 texel, in float noise, in vec4 texVal0, in vec4 texVal1, in int item) {
-    switch (item) {
-        case SHADER_0:         return 0.0;
-        case SHADER_1:         return 1.0;
-        case SHADER_INPUT_1:   return vInput1.a;
-        case SHADER_INPUT_2:   return vInput2.a;
-        case SHADER_INPUT_3:   return vInput3.a;
-        case SHADER_INPUT_4:   return vInput4.a;
-        case SHADER_INPUT_5:   return vInput5.a;
-        case SHADER_INPUT_6:   return vInput6.a;
-        case SHADER_INPUT_7:   return vInput7.a;
-        case SHADER_INPUT_8:   return vInput8.a;
-        case SHADER_TEXEL0:    return texVal0.a;
-        case SHADER_TEXEL0A:   return texVal0.a;
-        case SHADER_TEXEL1:    return texVal1.a;
-        case SHADER_TEXEL1A:   return texVal1.a;
-        case SHADER_COMBINED:  return texel.a;
-        case SHADER_COMBINEDA: return texel.a;
-        case SHADER_NOISE:     return noise;
-    }
-    return 0;
-}
-
-
-vec4 get_formula_vec4(vec4 texel, float noise, vec4 texVal0, vec4 texVal1, int cycle, bool do_single, bool do_multiply, bool do_mix) {
-    int offset = 8 * cycle;
+    // D
     if (do_single) {
-        return shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 3]);
-    } else if (do_multiply) {
-        return shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]) *
-               shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2]);
-    } else if (do_mix) {
+        return shader_item_to_vec4(texel, uShaderCommands[offset + 3]);
+    }
+
+    // A * C
+    if (do_multiply) {
+        return shader_item_to_vec4(texel, uShaderCommands[offset + 0]) *
+               shader_item_to_vec4(texel, uShaderCommands[offset + 2]);
+    }
+
+    // (A - B) * C
+    if (do_mix) {
         return mix(
-            shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 1]),
-            shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]),
-            shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2])
+            shader_item_to_vec4(texel, uShaderCommands[offset + 1]),
+            shader_item_to_vec4(texel, uShaderCommands[offset + 0]),
+            shader_item_to_vec4(texel, uShaderCommands[offset + 2])
         );
     }
+
     // (A - B) * C + D
     return (
-        shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]) -
-        shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 1])
-    ) * shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2])
-      + shader_item_to_vec4(texel, noise, texVal0, texVal1, uShaderCommands[offset + 3]);
+        shader_item_to_vec4(texel, uShaderCommands[offset + 0]) -
+        shader_item_to_vec4(texel, uShaderCommands[offset + 1])
+    ) * shader_item_to_vec4(texel, uShaderCommands[offset + 2])
+      + shader_item_to_vec4(texel, uShaderCommands[offset + 3]);
 }
-
-vec3 get_formula_vec3(vec4 texel, float noise, vec4 texVal0, vec4 texVal1, int cycle, bool do_single, bool do_multiply, bool do_mix) {
-    int offset = 8 * cycle;
-    if (do_single) {
-        return shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 3]);
-    } else if (do_multiply) {
-        return shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]) *
-               shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2]);
-    } else if (do_mix) {
-        return mix(
-            shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 1]),
-            shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]),
-            shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2])
-        );
-    }
-    // (A - B) * C + D
-    return (
-        shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]) -
-        shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 1])
-    ) * shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2])
-      + shader_item_to_vec3(texel, noise, texVal0, texVal1, uShaderCommands[offset + 3]);
-}
-
-float get_formula_alpha(vec4 texel, float noise, vec4 texVal0, vec4 texVal1, int cycle, bool do_single, bool do_multiply, bool do_mix) {
-    int offset = 8 * cycle + 4;
-    if (do_single) {
-        return shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 3]);
-    } else if (do_multiply) {
-        return shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]) *
-               shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2]);
-    } else if (do_mix) {
-        return mix(
-            shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 1]),
-            shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]),
-            shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2])
-        );
-    }
-    // (A - B) * C + D
-    return (
-        shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 0]) -
-        shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 1])
-    ) * shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 2])
-      + shader_item_to_alpha(texel, noise, texVal0, texVal1, uShaderCommands[offset + 3]);
-}
-
-
-
 
 
 
@@ -297,61 +216,56 @@ float get_formula_alpha(vec4 texel, float noise, vec4 texVal0, vec4 texVal1, int
 
 
 void main() {
+    vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
 
-    float noise = 0;
-    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(DO_NOISE)) {
-        noise = random(floor(vec3(gl_FragCoord.xy, uFrameCount)));
-    }
-
-    vec4 texVal0 = vec4(0.0, 0.0, 0.0, 1.0);
-    vec4 texVal1 = vec4(0.0, 0.0, 0.0, 1.0);
+    // Tex colors
     if (CCF_HAS_FLAG_i(USED_TEXTURE, 0)) {
-        texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter);
+        texColor0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter);
     }
     if (CCF_HAS_FLAG_i(USED_TEXTURE, 1)) {
         if (CCF_HAS_FLAG(LIGHT_MAP)) {
-            texVal1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter);
-            texVal0.rgb *= uLightMapColor.rgb;
-            texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;
+            texColor1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter);
+            texColor0.rgb *= uLightMapColor.rgb;
+            texColor1.rgb = clamp(texColor1.rgb * texColor1.rgb + texColor1.rgb, 0.0, 1.0);
         } else {
-            texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter);
+            texColor1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter);
         }
     }
 
-    vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
+    // Noise
+    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(DO_NOISE)) {
+        noise = vec4(random(floor(vec3(gl_FragCoord.xy, uFrameCount))));
+    }
 
+    // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
-    for (int i = 0; i < cycles; i++) {
-        if (!CCF_HAS_FLAG_i(COLOR_ALPHA_SAME, i) && CCF_HAS_FLAG(USE_ALPHA)) {
+    for (int cycle = 0, cycle_rgb = 0, cycle_a = 1; cycle < cycles; cycle++, cycle_rgb += 2, cycle_a += 2) {
+        if (!CCF_HAS_FLAG_i(COLOR_ALPHA_SAME, cycle) && CCF_HAS_FLAG(USE_ALPHA)) {
             texel = vec4(
-                get_formula_vec3(texel, noise, texVal0, texVal1, i, CCF_HAS_FLAG_i(DO_SINGLE, i*2+0), CCF_HAS_FLAG_i(DO_MULTIPLY, i*2+0), CCF_HAS_FLAG_i(DO_MIX, i*2+0)).rgb,
-                get_formula_alpha(texel, noise, texVal0, texVal1, i, CCF_HAS_FLAG_i(DO_SINGLE, i*2+1), CCF_HAS_FLAG_i(DO_MULTIPLY, i*2+1), CCF_HAS_FLAG_i(DO_MIX, i*2+1))
+                combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_rgb), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_rgb), CCF_HAS_FLAG_i(DO_MIX, cycle_rgb), false).rgb,
+                combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_a), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_a), CCF_HAS_FLAG_i(DO_MIX, cycle_a), true).a
             );
         } else {
-            texel = get_formula_vec4(texel, noise, texVal0, texVal1, i, CCF_HAS_FLAG_i(DO_SINGLE, i*2+0), CCF_HAS_FLAG_i(DO_MULTIPLY, i*2+0), CCF_HAS_FLAG_i(DO_MIX, i*2+0));
+            texel = combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_rgb), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_rgb), CCF_HAS_FLAG_i(DO_MIX, cycle_rgb), false);
         }
-        if (i == 0) {
-            texel = mod(texel + 0.5, 2.0) - 0.5;
-        }
+        texel = mod(texel + 0.5, 2.0) - 0.5;
     }
+    texel = clamp(texel, 0.0, 1.0);
 
-    texel = clamp(mod(texel + 0.5, 2.0) - 0.5, 0.0, 1.0);
-
-
+    // Tex edge alpha
     if (CCF_HAS_FLAG(TEX_EDGE) && CCF_HAS_FLAG(USE_ALPHA)) {
         if (texel.a > 0.3) texel.a = 1.0;
         else discard;
     }
 
-    // shader effects
+    // Global shader effects
     if (CCF_HAS_FLAG(WORLD_GEOMETRY)) {
 
         // hue
         if (uShaderFlags[0] == 1) {
             vec3 hsv = rgb2hsv(texel.rgb);
             hsv.x = fract(hsv.x + uShaderFlagValues[0]);
-            vec3 finalColor = hsv2rgb(hsv);
-            texel.rgb = finalColor;
+            texel.rgb = hsv2rgb(hsv);
         }
 
         // saturation
@@ -394,6 +308,7 @@ void main() {
         }
     }
 
+    // Fog
     if (CCF_HAS_FLAG(USE_FOG)) {
         if (CCF_HAS_FLAG(USE_ALPHA)) {
             texel = vec4(mix(texel.rgb, vFog.rgb, vFog.a), texel.a);
@@ -402,10 +317,12 @@ void main() {
         }
     }
 
+    // Dither
     if (CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) {
-        texel.a = noise < texel.a ? 1.0 : 0.0;
+        texel.a = noise.a < texel.a ? 1.0 : 0.0;
     }
 
+    // Final color
     if (CCF_HAS_FLAG(USE_ALPHA)) {
         oFragColor = texel;
     } else {
