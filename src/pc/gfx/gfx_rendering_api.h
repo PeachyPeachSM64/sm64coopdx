@@ -13,11 +13,11 @@ struct GfxRenderingAPI {
     bool (*z_is_from_0_to_1)(void);
     bool (*update_cc)(struct ColorCombiner *cc);
     void (*update_uniforms)();
-    void (*shader_get_info)(uint8_t *num_inputs, bool used_textures[2]);
+    void (*shader_get_info)(uint8_t *num_inputs, bool used_textures[]);
     uint32_t (*new_texture)(void);
     void (*select_texture)(int tile, uint32_t texture_id);
     void (*upload_texture)(const uint8_t *rgba32_buf, int width, int height);
-    void (*set_sampler_parameters)(int sampler, bool linear_filter, uint32_t cms, uint32_t cmt);
+    void (*set_sampler_parameters)(int sampler, uint8_t filter, uint32_t cms, uint32_t cmt);
     void (*set_depth_test)(bool depth_test);
     void (*set_depth_mask)(bool z_upd);
     void (*set_zmode_decal)(bool zmode_decal);

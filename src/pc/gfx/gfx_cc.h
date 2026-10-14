@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "gfx.h"
 
 enum {
     CC_0,
@@ -26,6 +27,8 @@ enum {
 
 enum {
     SHADER_0,
+    // SHADER_INPUTS,
+    // SHADER_TEXEL0 = SHADER_INPUTS + SHADER_MAX_INPUTS,
     SHADER_INPUT_1,
     SHADER_INPUT_2,
     SHADER_INPUT_3,
@@ -44,9 +47,8 @@ enum {
     SHADER_NOISE,
 };
 
-#define SHADER_MAX_TEXTURES 2
 #define SHADER_MAX_INPUTS   8
-#define SHADER_CMD_LENGTH   16
+#define SHADER_CMD_LENGTH   16 // 4 (ABCD) * 2 (rgb/a) * 2 (cycles)
 #define CC_MAX_SHADERS      64 // Keeping this here for now as it's needed for DirectX declarations
 
 #define CCF_FLAG_COLOR_ALPHA_SAME   0   // 2 bits
@@ -61,15 +63,15 @@ enum {
 #define CCF_FLAG_USE_2CYCLE         19  // 1 bit
 #define CCF_FLAG_LIGHT_MAP          20  // 1 bit
 #define CCF_FLAG_WORLD_GEOMETRY     21  // 1 bit
-#define CCF_FLAG_USED_TEXTURE       22  // SHADER_MAX_TEXTURES bits
+#define CCF_FLAG_USED_TEXTURE       22  // MAX_TEXTURES bits
 
 struct CCFeatures {
-    bool used_textures[2];
     int num_inputs;
+    bool used_textures[MAX_TEXTURES];
+    bool color_alpha_same[2];
     bool do_single[4];
     bool do_multiply[4];
     bool do_mix[4];
-    bool color_alpha_same[2];
     bool do_noise;
 };
 
@@ -108,7 +110,7 @@ struct ColorCombiner {
 
 struct VertexAttribs {
     float pos[4];
-    float tex_coords[2][2];
+    float tex_coords[MAX_TEXTURES][2];
     uint8_t fog[4];
     uint16_t light_map[2];
     uint8_t inputs[SHADER_MAX_INPUTS][4];

@@ -104,7 +104,7 @@ static struct RenderingState {
     bool decal_mode;
     bool alpha_blend;
     struct Box viewport, scissor;
-    struct TextureHashmapNode *textures[2];
+    struct TextureHashmapNode *textures[MAX_TEXTURES];
 } rendering_state;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
@@ -278,8 +278,11 @@ static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineM
     if (cc) { return cc; }
 
     cc = calloc(1, sizeof(struct ColorCombiner));
-    cc->cm = *cm;
-    gfx_generate_cc(cc);
+    if (cc) {
+        cc->cm = *cm;
+        gfx_generate_cc(cc);
+        hmap_put(color_combiners, cm->hash, cc);
+    }
 
     return cc;
 }
@@ -322,7 +325,7 @@ static bool gfx_texture_cache_lookup(int tile, struct TextureHashmapNode **n, co
     (*node)->siz = siz;
     (*node)->cms = 0;
     (*node)->cmt = 0;
-    (*node)->linear_filter = false;
+    (*node)->filter = 0;
     *n = *node;
     return false;
     #undef CMPADDR
@@ -1149,23 +1152,23 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         rendering_state.alpha_blend = cm->use_alpha;
     }
     uint8_t num_inputs;
-    bool used_textures[2];
+    bool used_textures[MAX_TEXTURES];
     gfx_rapi->shader_get_info(&num_inputs, used_textures);
 
-    for (int32_t i = 0; i < 2; i++) {
+    for (int32_t i = 0; i < MAX_TEXTURES; i++) {
         if (used_textures[i]) {
             if (rdp.textures_changed[i]) {
                 gfx_flush();
                 import_texture(i);
                 rdp.textures_changed[i] = false;
             }
-            bool linear_filter = configFiltering && ((rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT);
+            uint8_t filter = ((rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT) ? configFiltering : 0;
             struct TextureHashmapNode* tex = rendering_state.textures[i];
             if (tex) {
-                if (linear_filter != tex->linear_filter || rdp.texture_tile[i].cms != tex->cms || rdp.texture_tile[i].cmt != rendering_state.textures[i]->cmt) {
+                if (filter != tex->filter || rdp.texture_tile[i].cms != tex->cms || rdp.texture_tile[i].cmt != rendering_state.textures[i]->cmt) {
                     gfx_flush();
-                    gfx_rapi->set_sampler_parameters(i, linear_filter, rdp.texture_tile[i].cms, rdp.texture_tile[i].cmt);
-                    tex->linear_filter = linear_filter;
+                    gfx_rapi->set_sampler_parameters(i, filter, rdp.texture_tile[i].cms, rdp.texture_tile[i].cmt);
+                    tex->filter = filter;
                     tex->cms = rdp.texture_tile[i].cms;
                     tex->cmt = rdp.texture_tile[i].cmt;
                 }
@@ -1188,7 +1191,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         attribs->pos[2] = z;
         attribs->pos[3] = w;
 
-        for (int32_t j = 0; j < 2; j++) {
+        for (int32_t j = 0; j < MAX_TEXTURES; j++) {
             if (used_textures[j]) {
                 uint32_t tex_width = (rdp.texture_tile[j].lrs - rdp.texture_tile[j].uls + 4) / 4;
                 uint32_t tex_height = (rdp.texture_tile[j].lrt - rdp.texture_tile[j].ult + 4) / 4;
@@ -1233,36 +1236,18 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             attribs->fog[1] = rdp.fog_color.g * g;
             attribs->fog[2] = rdp.fog_color.b * b;
             attribs->fog[3] = v_arr[i]->fog_z;
-            // attribs->fog = (
-            //     _SHIFTL(rdp.fog_color.r * r, 24, 8) |
-            //     _SHIFTL(rdp.fog_color.g * g, 16, 8) |
-            //     _SHIFTL(rdp.fog_color.b * b,  8, 8) |
-            //     _SHIFTL(v_arr[i]->fog_z,      0, 8)
-            // );
-            // buf_vbo[buf_vbo_len++] = (rdp.fog_color.r / 255.0f) * r;
-            // buf_vbo[buf_vbo_len++] = (rdp.fog_color.g / 255.0f) * g;
-            // buf_vbo[buf_vbo_len++] = (rdp.fog_color.b / 255.0f) * b;
-            // buf_vbo[buf_vbo_len++] = v_arr[i]->fog_z / 255.0f; // fog factor (not alpha)
         }
 
         if (cm->light_map) {
             struct RGBA* col = &v_arr[i]->color;
             attribs->light_map[0] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) );
             attribs->light_map[1] = 0xFFFF - ( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) );
-            // attribs->light_map = (
-            //     _SHIFTL(col->g, 24, 8) |
-            //     _SHIFTL(col->r, 16, 8) |
-            //     _SHIFTL(col->a,  8, 8) |
-            //     _SHIFTL(col->b,  0, 8)
-            // );
-            // buf_vbo[buf_vbo_len++] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) ) / 65535.0f;
-            // buf_vbo[buf_vbo_len++] = 1.0f - (( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) ) / 65535.0f);
         }
 
         for (int j = 0; j < num_inputs; j++) {
             struct RGBA *color = NULL;
             struct RGBA tmp = { 0 };
-            for (int a = 0; a < (cm->use_alpha ? 2 : 1 ); a++) {
+            for (int a = 0; a < (cm->use_alpha ? 2 : 1); a++) {
                 u8 mapping = cc->shader_input_mapping[j];
 
                 switch (mapping) {
@@ -1305,30 +1290,16 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                     attribs->inputs[j][0] = color->r;
                     attribs->inputs[j][1] = color->g;
                     attribs->inputs[j][2] = color->b;
-                    // attribs->inputs[j] = (
-                    //     _SHIFTL(color->r, 24, 8) |
-                    //     _SHIFTL(color->g, 16, 8) |
-                    //     _SHIFTL(color->b,  8, 8)
-                    // );
-                    // buf_vbo[buf_vbo_len++] = color->r / 255.0f;
-                    // buf_vbo[buf_vbo_len++] = color->g / 255.0f;
-                    // buf_vbo[buf_vbo_len++] = color->b / 255.0f;
                 } else {
                     if (cm->use_fog && (color == &v_arr[i]->color || cm->light_map)) {
                         // Shade alpha is 100% for fog
-                        // buf_vbo[buf_vbo_len++] = 1.0f;
-                        // attribs->inputs[j] |= 0xFF;
                         attribs->inputs[j][3] = 0xFF;
                     } else {
-                        // buf_vbo[buf_vbo_len++] = color->a / 255.0f;
-                        // attribs->inputs[j] |= color->a;
                         attribs->inputs[j][3] = color->a;
                     }
                 }
             }
             if (!cm->use_alpha) {
-                // buf_vbo[buf_vbo_len++] = 1.0f;
-                // attribs->inputs[j] |= 0xFF;
                 attribs->inputs[j][3] = 0xFF;
             }
         }

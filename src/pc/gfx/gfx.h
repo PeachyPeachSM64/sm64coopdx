@@ -85,7 +85,7 @@ struct TextureHashmapNode {
     uint32_t texture_id;
     uint8_t fmt, siz;
     uint8_t cms, cmt;
-    bool linear_filter;
+    uint8_t filter;
 };
 
 struct TextureCache {

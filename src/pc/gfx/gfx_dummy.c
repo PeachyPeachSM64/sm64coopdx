@@ -79,7 +79,7 @@ static void gfx_dummy_renderer_select_texture(UNUSED int tile, UNUSED uint32_t t
 static void gfx_dummy_renderer_upload_texture(UNUSED const uint8_t *rgba32_buf, UNUSED int width, UNUSED int height) {
 }
 
-static void gfx_dummy_renderer_set_sampler_parameters(UNUSED int tile, UNUSED bool linear_filter, UNUSED uint32_t cms, UNUSED uint32_t cmt) {
+static void gfx_dummy_renderer_set_sampler_parameters(UNUSED int tile, UNUSED uint8_t filter, UNUSED uint32_t cms, UNUSED uint32_t cmt) {
 }
 
 static void gfx_dummy_renderer_set_depth_test(UNUSED bool depth_test) {

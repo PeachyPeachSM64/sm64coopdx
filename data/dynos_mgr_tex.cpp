@@ -302,7 +302,7 @@ static bool DynOS_Tex_Cache(THN **aOutput, DataNode<TexData> *aNode, s32 aTile, 
     (*_Node)->siz = G_IM_SIZ_32b;
     (*_Node)->cms = 0;
     (*_Node)->cmt = 0;
-    (*_Node)->linear_filter = false;
+    (*_Node)->filter = 0;
     (*aOutput) = (*_Node);
     return false;
 }

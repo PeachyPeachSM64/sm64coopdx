@@ -36,15 +36,16 @@
 
 #define TEX_CACHE_STEP 512
 
-#define NUM_TEX_UNIFORMS 2
-#define NUM_TEXTURES 2
+#define UNIFORMS_PER_TEXTURE 2
+
+#define tsizeof(TYPE, MEMBER) sizeof(((TYPE *)0)->MEMBER)
 
 
 
 enum {
     ATTRIBUTE_POS,
     ATTRIBUTE_TEX_COORDS,
-    ATTRIBUTE_FOG = ATTRIBUTE_TEX_COORDS + 2,
+    ATTRIBUTE_FOG = ATTRIBUTE_TEX_COORDS + MAX_TEXTURES,
     ATTRIBUTE_LIGHT_MAP,
     ATTRIBUTE_INPUTS,
 
@@ -53,7 +54,9 @@ enum {
 
 
 enum {
-    UNIFORM_CCF = NUM_TEX_UNIFORMS * NUM_TEXTURES,
+    UNIFORM_TEXTURE_SIZE,
+    UNIFORM_TEXTURE_FILTER,
+    UNIFORM_CCF = UNIFORMS_PER_TEXTURE * MAX_TEXTURES,
     UNIFORM_SHADER_COMMANDS,
     UNIFORM_FRAME_COUNT,
     UNIFORM_LIGHT_MAP,
@@ -90,7 +93,7 @@ struct ShaderProgram {
 struct GLTexture {
     GLuint gltex;
     GLfloat size[2];
-    bool filter;
+    uint8_t filter;
 };
 
 static GLuint opengl_vbo;
@@ -101,7 +104,7 @@ static int num_textures = 0;
 static struct GLTexture *tex_cache = NULL;
 
 static struct ShaderProgram *opengl_prg = NULL;
-static struct GLTexture *opengl_tex[2];
+static struct GLTexture *opengl_tex[MAX_TEXTURES];
 static int opengl_curtex = 0;
 
 static uint32_t frame_count;
@@ -109,33 +112,6 @@ static uint32_t frame_count;
 static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
 }
-
-// static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
-//     size_t num_floats = prg->num_floats;
-//     size_t pos = 0;
-
-//     printf("===== gfx_opengl_vertex_array_set_attribs =====\n");
-//     printf("num_floats: %d\n", num_floats);
-//     printf("stride: %d\n", num_floats * sizeof(float));
-//     printf("\n");
-
-//     for (int i = 0; i < prg->num_attribs; i++) {
-
-//         printf("attrib: %2d | loc: %2d | size: %1d | pos: %2X | offset: %2X\n",
-//             i,
-//             prg->attrib_locations[i],
-//             prg->attrib_sizes[i],
-//             pos,
-//             pos * sizeof(float)
-//         );
-
-//         glEnableVertexAttribArray(prg->attrib_locations[i]);
-//         glVertexAttribPointer(prg->attrib_locations[i], prg->attrib_sizes[i], GL_FLOAT, GL_FALSE, num_floats * sizeof(float), (void *) (pos * sizeof(float)));
-//         pos += prg->attrib_sizes[i];
-//     }
-// }
-
-#define tsizeof(TYPE, MEMBER) sizeof(((TYPE *)0)->MEMBER)
 
 static inline void gfx_opengl_vertex_array_set_attrib(struct ShaderProgram *prg, int attrib, size_t attrib_size, GLenum attrib_type, bool normalized, size_t stride, uintptr_t offset) {
     glEnableVertexAttribArray(prg->attrib_locations[attrib]);
@@ -147,7 +123,7 @@ static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
 
     gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_POS, 4, GL_FLOAT, false, stride, offsetof(struct VertexAttribs, pos));
 
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
         gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_TEX_COORDS + i, 2, GL_FLOAT, false, stride,
             offsetof(struct VertexAttribs, tex_coords) + i * tsizeof(struct VertexAttribs, tex_coords[0]));
     }
@@ -185,7 +161,7 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
     ccf_flags |= (1 << CCF_FLAG_USE_2CYCLE) * prg->cc->cm.use_2cycle;
     ccf_flags |= (1 << CCF_FLAG_LIGHT_MAP) * prg->cc->cm.light_map;
     ccf_flags |= (1 << CCF_FLAG_WORLD_GEOMETRY) * prg->cc->cm.world_geometry;
-    for (int i = 0; i < SHADER_MAX_TEXTURES; ++i) {
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
         ccf_flags |= (1 << (CCF_FLAG_USED_TEXTURE + i)) * prg->ccf.used_textures[0];
     }
     glUniform1i(prg->uniform_locations[UNIFORM_CCF], ccf_flags);
@@ -209,20 +185,18 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
         glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_FLAGS], SHADER_FLAG_MAX, gShaderFlags);
         glUniform1fv(prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES], SHADER_FLAG_MAX, gShaderFlagValues);
     }
-
-    glUniform1i(prg->uniform_locations[UNIFORM_FILTERING], configFiltering);
 }
 
 static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, const int tile) {
     if (prg->ccf.used_textures[tile] && opengl_tex[tile]) {
-        glUniform2f(prg->uniform_locations[tile*2 + 0], opengl_tex[tile]->size[0], opengl_tex[tile]->size[1]);
-        glUniform1i(prg->uniform_locations[tile*2 + 1], opengl_tex[tile]->filter);
+        glUniform2f(prg->uniform_locations[UNIFORM_TEXTURE_SIZE + tile * UNIFORMS_PER_TEXTURE], opengl_tex[tile]->size[0], opengl_tex[tile]->size[1]);
+        glUniform1i(prg->uniform_locations[UNIFORM_TEXTURE_FILTER + tile * UNIFORMS_PER_TEXTURE], opengl_tex[tile]->filter);
     }
 }
 
 static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
-    const GLchar *sources[2] = { UBER_VERT, UBER_FRAG };
-    const GLint lengths[2] = { sizeof(UBER_VERT) - 1, sizeof(UBER_FRAG) - 1 };
+    const GLchar *sources[] = { UBER_VERT, UBER_FRAG };
+    const GLint lengths[] = { sizeof(UBER_VERT) - 1, sizeof(UBER_FRAG) - 1 };
     GLint success;
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -264,7 +238,7 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     prg->opengl_program_id = shader_program;
 
     prg->attrib_locations[ATTRIBUTE_POS] = glGetAttribLocation(shader_program, "aVtxPos");
-    for (int t = 0; t < 2; t++) {
+    for (int t = 0; t < MAX_TEXTURES; t++) {
         char name[16];
         sprintf(name, "aTexCoord%d", t);
         prg->attrib_locations[ATTRIBUTE_TEX_COORDS + t] = glGetAttribLocation(shader_program, name);
@@ -277,47 +251,15 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
         prg->attrib_locations[ATTRIBUTE_INPUTS + i] = glGetAttribLocation(shader_program, name);
     }
 
-    // prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aVtxPos");
-    // prg->attrib_sizes[num_attribs] = 4;
-    // ++num_attribs;
-
-    // for (int t = 0; t < 2; t++) {
-    //     char name[16];
-    //     sprintf(name, "aTexCoord%d", t);
-    //     prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
-    //     prg->attrib_sizes[num_attribs] = 2;
-    //     ++num_attribs;
-    // }
-
-    // prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aFog");
-    // prg->attrib_sizes[num_attribs] = 4;
-    // ++num_attribs;
-
-    // prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, "aLightMap");
-    // prg->attrib_sizes[num_attribs] = 2;
-    // ++num_attribs;
-
-    // for (int i = 0; i < SHADER_MAX_INPUTS; i++) {
-    //     char name[16];
-    //     sprintf(name, "aInput%d", i + 1);
-    //     prg->attrib_locations[num_attribs] = glGetAttribLocation(shader_program, name);
-    //     prg->attrib_sizes[num_attribs] = 4;
-    //     ++num_attribs;
-    // }
-
-    // prg->num_inputs = 8;//ccf.num_inputs;
-    // prg->num_floats = 4 + 2 * NUM_TEXTURES + 4 + 2 + /*ccf.num_inputs*/SHADER_MAX_INPUTS * 4;
-    // prg->num_attribs = num_attribs;
-
     glUseProgram(shader_program);
-    for (int t = 0; t < 2; t++) {
+    for (int t = 0; t < MAX_TEXTURES; t++) {
         char name[16];
         sprintf(name, "uTex%d", t);
         GLint sampler_location = glGetUniformLocation(shader_program, name);
         sprintf(name, "uTex%dSize", t);
-        prg->uniform_locations[t * 2] = glGetUniformLocation(shader_program, name);
+        prg->uniform_locations[UNIFORM_TEXTURE_SIZE + t * UNIFORMS_PER_TEXTURE] = glGetUniformLocation(shader_program, name);
         sprintf(name, "uTex%dFilter", t);
-        prg->uniform_locations[t * 2 + 1] = glGetUniformLocation(shader_program, name);
+        prg->uniform_locations[UNIFORM_TEXTURE_FILTER + t * UNIFORMS_PER_TEXTURE] = glGetUniformLocation(shader_program, name);
         glUniform1i(sampler_location, t);
     }
 
@@ -327,7 +269,6 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     prg->uniform_locations[UNIFORM_LIGHT_MAP] = glGetUniformLocation(shader_program, "uLightMapColor");
     prg->uniform_locations[UNIFORM_SHADER_FLAGS] = glGetUniformLocation(shader_program, "uShaderFlags");
     prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES] = glGetUniformLocation(shader_program, "uShaderFlagValues");
-    prg->uniform_locations[UNIFORM_FILTERING] = glGetUniformLocation(shader_program, "uFilter");
 
     gfx_opengl_vertex_array_set_attribs(prg);
 
@@ -349,7 +290,7 @@ static void gfx_opengl_update_uniforms(void) {
     gfx_opengl_set_texture_uniforms(opengl_prg, 1);
 }
 
-static void gfx_opengl_shader_get_info(uint8_t *num_inputs, bool used_textures[2]) {
+static void gfx_opengl_shader_get_info(uint8_t *num_inputs, bool used_textures[]) {
     *num_inputs = opengl_prg->ccf.num_inputs;
     used_textures[0] = opengl_prg->ccf.used_textures[0];
     used_textures[1] = opengl_prg->ccf.used_textures[1];
@@ -384,22 +325,21 @@ static void gfx_opengl_upload_texture(const uint8_t *rgba32_buf, int width, int 
 }
 
 static uint32_t gfx_cm_to_opengl(uint32_t val) {
-    if (val & G_TX_CLAMP) {
-        return GL_CLAMP_TO_EDGE;
-    }
-    return (val & G_TX_MIRROR) ? GL_MIRRORED_REPEAT : GL_REPEAT;
+    if (val & G_TX_CLAMP) { return GL_CLAMP_TO_EDGE; }
+    if (val & G_TX_MIRROR) { return GL_MIRRORED_REPEAT; }
+    return GL_REPEAT;
 }
 
-static void gfx_opengl_set_sampler_parameters(int tile, bool linear_filter, uint32_t cms, uint32_t cmt) {
-    const GLenum filter = linear_filter ? GL_LINEAR : GL_NEAREST;
+static void gfx_opengl_set_sampler_parameters(int tile, uint8_t filter, uint32_t cms, uint32_t cmt) {
+    const GLenum gl_filter = filter != 0 ? GL_LINEAR : GL_NEAREST;
     glActiveTexture(GL_TEXTURE0 + tile);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gfx_cm_to_opengl(cms));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gfx_cm_to_opengl(cmt));
     opengl_curtex = tile;
     if (opengl_tex[tile]) {
-        opengl_tex[tile]->filter = linear_filter;
+        opengl_tex[tile]->filter = filter;
         gfx_opengl_set_texture_uniforms(opengl_prg, tile);
     }
 }
@@ -449,9 +389,7 @@ static void gfx_opengl_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_
 }
 
 static inline bool gl_version_is_supported(int major, int minor, bool is_es) {
-    if (is_es) {
-        return major >= 2;
-    }
+    if (is_es) { return major >= 2; }
     return (major > 2) || (major == 2 && minor >= 1);
 }
 

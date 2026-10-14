@@ -35,7 +35,7 @@
 #define CCF_FLAG_USE_2CYCLE         19  // 1 bit
 #define CCF_FLAG_LIGHT_MAP          20  // 1 bit
 #define CCF_FLAG_WORLD_GEOMETRY     21  // 1 bit
-#define CCF_FLAG_USED_TEXTURE       22  // SHADER_MAX_TEXTURES bits
+#define CCF_FLAG_USED_TEXTURE       22  // MAX_TEXTURES bits
 
 #define CCF_HAS_FLAG(_flag_)        (((uCCF) & (1 << (CCF_FLAG_##_flag_        ))) != 0)
 #define CCF_HAS_FLAG_i(_flag_, _i_) (((uCCF) & (1 << (CCF_FLAG_##_flag_ + (_i_)))) != 0)
@@ -60,7 +60,6 @@ uniform float uFrameCount;
 uniform vec3  uLightMapColor;
 uniform int   uShaderFlags[SHADER_FLAG_MAX];
 uniform float uShaderFlagValues[SHADER_FLAG_MAX];
-uniform int   uFilter;
 
 // CC features
 uniform int uCCF;
@@ -69,10 +68,10 @@ uniform int uCCF;
 uniform int uShaderCommands[16];
 
 // Textures
-uniform sampler2D uTex0; uniform vec2 uTex0Size; uniform bool uTex0Filter;
-uniform sampler2D uTex1; uniform vec2 uTex1Size; uniform bool uTex1Filter;
+uniform sampler2D uTex0; uniform vec2 uTex0Size; uniform int uTex0Filter;
+uniform sampler2D uTex1; uniform vec2 uTex1Size; uniform int uTex1Filter;
 
-
+#define FILTER_THREE_POINT 2
 
 
 
@@ -95,8 +94,8 @@ vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {
     return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);
 }
 
-vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec2 texSize, in bool dofilter, in int filter) {
-    if (dofilter && filter == 2) {
+vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec2 texSize, in int filter) {
+    if (filter == FILTER_THREE_POINT) {
         return filter3point(tex, uv, texSize);
     }
     return texture2D(tex, uv);
@@ -307,15 +306,15 @@ void main() {
     vec4 texVal0 = vec4(0.0, 0.0, 0.0, 1.0);
     vec4 texVal1 = vec4(0.0, 0.0, 0.0, 1.0);
     if (CCF_HAS_FLAG_i(USED_TEXTURE, 0)) {
-        texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter, uFilter);
+        texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter);
     }
     if (CCF_HAS_FLAG_i(USED_TEXTURE, 1)) {
         if (CCF_HAS_FLAG(LIGHT_MAP)) {
-            texVal1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter, uFilter);
+            texVal1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter);
             texVal0.rgb *= uLightMapColor.rgb;
             texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;
         } else {
-            texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter, uFilter);
+            texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter);
         }
     }
 
