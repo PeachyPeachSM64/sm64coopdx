@@ -36,39 +36,38 @@
 
 #define TEX_CACHE_STEP 512
 
-#define UNIFORMS_PER_TEXTURE 2
-
 #define tsizeof(TYPE, MEMBER) sizeof(((TYPE *)0)->MEMBER)
-
 
 
 enum {
     ATTRIBUTE_POS,
     ATTRIBUTE_TEX_COORDS,
-    ATTRIBUTE_FOG = ATTRIBUTE_TEX_COORDS + MAX_TEXTURES,
-    ATTRIBUTE_LIGHT_MAP,
     ATTRIBUTE_INPUTS,
+    ATTRIBUTE_FOG,
+    ATTRIBUTE_LIGHT_MAP,
 
-    ATTRIBUTE_COUNT = ATTRIBUTE_INPUTS + SHADER_MAX_INPUTS,
+    ATTRIBUTE_MAX
 };
 
 
 enum {
-    UNIFORM_TEXTURE_SIZE,
-    UNIFORM_TEXTURE_FILTER,
-    UNIFORM_CCF = UNIFORMS_PER_TEXTURE * MAX_TEXTURES,
+    UNIFORM_CCF,
     UNIFORM_SHADER_COMMANDS,
     UNIFORM_FRAME_COUNT,
     UNIFORM_LIGHT_MAP,
     UNIFORM_SHADER_FLAGS,
     UNIFORM_SHADER_FLAG_VALUES,
-    UNIFORM_FILTERING,
+    UNIFORM_TEX_PROPERTIES,
 
-    UNIFORM_COUNT,
+    UNIFORM_MAX,
 };
 
 
 static const char UBER_VERT[] = {
+'#','v','e','r','s','i','o','n',' ','1','3','0','\n'
+,
+#embed "gfx_cc.inl"
+,
 #embed "uber.vert"
 ,0
 };
@@ -84,12 +83,8 @@ static const char UBER_FRAG[] = {
 
 struct ShaderProgram {
     GLuint opengl_program_id;
-    // uint8_t num_inputs;
-    // uint8_t num_floats;
-    GLint attrib_locations[ATTRIBUTE_COUNT];
-    GLint uniform_locations[UNIFORM_COUNT];
-    // uint8_t attrib_sizes[16];
-    // uint8_t num_attribs;
+    GLint attrib_locations[ATTRIBUTE_MAX];
+    GLint uniform_locations[UNIFORM_MAX];
     struct ColorCombiner *cc;
     struct CCFeatures ccf;
 };
@@ -117,28 +112,29 @@ static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
 }
 
-static inline void gfx_opengl_vertex_array_set_attrib(struct ShaderProgram *prg, int attrib, size_t attrib_size, GLenum attrib_type, bool normalized, size_t stride, uintptr_t offset) {
-    glEnableVertexAttribArray(prg->attrib_locations[attrib]);
-    glVertexAttribPointer(prg->attrib_locations[attrib], attrib_size, attrib_type, normalized, stride, (const void *) offset);
+static inline void gfx_opengl_vertex_array_set_attrib(struct ShaderProgram *prg, int attrib, int attrib_offset, size_t attrib_size, GLenum attrib_type, bool normalized, size_t stride, uintptr_t offset) {
+    int index = prg->attrib_locations[attrib] + attrib_offset;
+    glEnableVertexAttribArray(index);
+    glVertexAttribPointer(index, attrib_size, attrib_type, normalized, stride, (const void *) offset);
 }
 
 static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
     const size_t stride = sizeof(struct VertexAttribs);
 
-    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_POS, 4, GL_FLOAT, false, stride, offsetof(struct VertexAttribs, pos));
+    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_POS, 0, 4, GL_FLOAT, false, stride, offsetof(struct VertexAttribs, pos));
 
     for (int i = 0; i < MAX_TEXTURES; ++i) {
-        gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_TEX_COORDS + i, 2, GL_FLOAT, false, stride,
+        gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_TEX_COORDS, i, 2, GL_FLOAT, false, stride,
             offsetof(struct VertexAttribs, tex_coords) + i * tsizeof(struct VertexAttribs, tex_coords[0]));
     }
 
-    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_FOG, 4, GL_UNSIGNED_BYTE, true, stride, offsetof(struct VertexAttribs, fog));
-    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_LIGHT_MAP, 2, GL_UNSIGNED_SHORT, true, stride, offsetof(struct VertexAttribs, light_map));
-
     for (int i = 0; i < SHADER_MAX_INPUTS; ++i) {
-        gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_INPUTS + i, 4, GL_UNSIGNED_BYTE, true, stride,
+        gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_INPUTS, i, 4, GL_UNSIGNED_BYTE, true, stride,
             offsetof(struct VertexAttribs, inputs) + i * tsizeof(struct VertexAttribs, inputs[0]));
     }
+
+    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_FOG, 0, 4, GL_UNSIGNED_BYTE, true, stride, offsetof(struct VertexAttribs, fog));
+    gfx_opengl_vertex_array_set_attrib(prg, ATTRIBUTE_LIGHT_MAP, 0, 2, GL_UNSIGNED_SHORT, true, stride, offsetof(struct VertexAttribs, light_map));
 }
 
 static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
@@ -193,8 +189,11 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
 
 static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, const int tile) {
     if (prg->ccf.used_textures[tile] && opengl_tex[tile]) {
-        glUniform2f(prg->uniform_locations[UNIFORM_TEXTURE_SIZE + tile * UNIFORMS_PER_TEXTURE], opengl_tex[tile]->size[0], opengl_tex[tile]->size[1]);
-        glUniform1i(prg->uniform_locations[UNIFORM_TEXTURE_FILTER + tile * UNIFORMS_PER_TEXTURE], opengl_tex[tile]->filter);
+        glUniform3f(prg->uniform_locations[UNIFORM_TEX_PROPERTIES],
+            opengl_tex[tile]->size[0],
+            opengl_tex[tile]->size[1],
+            opengl_tex[tile]->filter
+        );
     }
 }
 
@@ -240,30 +239,15 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     prg->opengl_program_id = shader_program;
 
     prg->attrib_locations[ATTRIBUTE_POS] = glGetAttribLocation(shader_program, "aVtxPos");
-    for (int t = 0; t < MAX_TEXTURES; t++) {
-        char name[16];
-        sprintf(name, "aTexCoord%d", t);
-        prg->attrib_locations[ATTRIBUTE_TEX_COORDS + t] = glGetAttribLocation(shader_program, name);
-    }
+    prg->attrib_locations[ATTRIBUTE_TEX_COORDS] = glGetAttribLocation(shader_program, "aTexCoords");
+    prg->attrib_locations[ATTRIBUTE_INPUTS] = glGetAttribLocation(shader_program, "aInputs");
     prg->attrib_locations[ATTRIBUTE_FOG] = glGetAttribLocation(shader_program, "aFog");
     prg->attrib_locations[ATTRIBUTE_LIGHT_MAP] = glGetAttribLocation(shader_program, "aLightMap");
-    for (int i = 0; i < SHADER_MAX_INPUTS; i++) {
-        char name[16];
-        sprintf(name, "aInput%d", i + 1);
-        prg->attrib_locations[ATTRIBUTE_INPUTS + i] = glGetAttribLocation(shader_program, name);
-    }
 
     glUseProgram(shader_program);
-    for (int t = 0; t < MAX_TEXTURES; t++) {
-        char name[16];
-        sprintf(name, "uTex%d", t);
-        GLint sampler_location = glGetUniformLocation(shader_program, name);
-        sprintf(name, "uTex%dSize", t);
-        prg->uniform_locations[UNIFORM_TEXTURE_SIZE + t * UNIFORMS_PER_TEXTURE] = glGetUniformLocation(shader_program, name);
-        sprintf(name, "uTex%dFilter", t);
-        prg->uniform_locations[UNIFORM_TEXTURE_FILTER + t * UNIFORMS_PER_TEXTURE] = glGetUniformLocation(shader_program, name);
-        glUniform1i(sampler_location, t);
-    }
+
+    GLint sampler_location = glGetUniformLocation(shader_program, "uTextures");
+    for (int i = 0; i < MAX_TEXTURES; ++i) { glUniform1i(sampler_location + i, i); }
 
     prg->uniform_locations[UNIFORM_CCF] = glGetUniformLocation(shader_program, "uCCF");
     prg->uniform_locations[UNIFORM_SHADER_COMMANDS] = glGetUniformLocation(shader_program, "uShaderCommands");
@@ -271,6 +255,7 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
     prg->uniform_locations[UNIFORM_LIGHT_MAP] = glGetUniformLocation(shader_program, "uLightMapColor");
     prg->uniform_locations[UNIFORM_SHADER_FLAGS] = glGetUniformLocation(shader_program, "uShaderFlags");
     prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES] = glGetUniformLocation(shader_program, "uShaderFlagValues");
+    prg->uniform_locations[UNIFORM_TEX_PROPERTIES] = glGetUniformLocation(shader_program, "uTexProperties");
 
     gfx_opengl_vertex_array_set_attribs(prg);
 

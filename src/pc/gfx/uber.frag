@@ -1,50 +1,39 @@
+// Other defines
+#define SHADER_FLAG_MAX     8 // defined in gfx_pc.h
+#define FILTER_THREE_POINT  2
 
-
-#define SHADER_FLAG_MAX  8  // defined in gfx_pc.h
-
-#define CCF_HAS_FLAG(_flag_)        (((uCCF) & (1 << (CCF_FLAG_##_flag_        ))) != 0)
-#define CCF_HAS_FLAG_i(_flag_, _i_) (((uCCF) & (1 << (CCF_FLAG_##_flag_ + (_i_)))) != 0)
-
-#define FILTER_THREE_POINT 2
-
-
-
-
+// Output fragment color
 out vec4 oFragColor;
 
-in vec2 vTexCoord0;
-in vec2 vTexCoord1;
+// Vertex attributes
+in vec2 vTexCoords[MAX_TEXTURES];
+in vec4 vInputs[SHADER_MAX_INPUTS];
 in vec4 vFog;
 in vec2 vLightMap;
-in vec4 vInput1;
-in vec4 vInput2;
-in vec4 vInput3;
-in vec4 vInput4;
-in vec4 vInput5;
-in vec4 vInput6;
-in vec4 vInput7;
-in vec4 vInput8;
-
-uniform float uFrameCount;
-uniform vec3  uLightMapColor;
-uniform int   uShaderFlags[SHADER_FLAG_MAX];
-uniform float uShaderFlagValues[SHADER_FLAG_MAX];
 
 // CC features
 uniform int uCCF;
+#define CCF_HAS_FLAG(_flag_)        (((uCCF) & (1 << (CCF_FLAG_##_flag_        ))) != 0)
+#define CCF_HAS_FLAG_i(_flag_, _i_) (((uCCF) & (1 << (CCF_FLAG_##_flag_ + (_i_)))) != 0)
 
-// Combine mode
+// CC shader commands
 uniform int uShaderCommands[CC_CMD_LENGTH];
 
 // Textures
-uniform sampler2D uTex0; uniform vec2 uTex0Size; uniform int uTex0Filter;
-uniform sampler2D uTex1; uniform vec2 uTex1Size; uniform int uTex1Filter;
+uniform sampler2D uTextures[MAX_TEXTURES];
+uniform vec3 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
+
+// Other uniforms
+uniform float uFrameCount;
+uniform vec3  uLightMapColor;
+uniform int   uShaderFlags[SHADER_FLAG_MAX];    // TODO: Bitfield
+uniform float uShaderFlagValues[SHADER_FLAG_MAX];
 
 
 
-vec4 noise = vec4(0.0);
-vec4 texColor0 = vec4(0.0, 0.0, 0.0, 1.0);
-vec4 texColor1 = vec4(0.0, 0.0, 0.0, 1.0);
+
+
+
 
 
 
@@ -65,9 +54,9 @@ vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {
     return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);
 }
 
-vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec2 texSize, in int filter) {
-    if (filter == FILTER_THREE_POINT) {
-        return filter3point(tex, uv, texSize);
+vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec3 texProperties) {
+    if (texProperties.z == FILTER_THREE_POINT) {
+        return filter3point(tex, uv, texProperties.xy);
     }
     return texture2D(tex, uv);
 }
@@ -123,25 +112,24 @@ float random(in vec3 value) {
 
 
 
+
+vec4 noise;
+vec4 texColors[MAX_TEXTURES];
+
 vec4 shader_item_to_vec4(in vec4 texel, in int item) {
     switch (item) {
         case SHADER_0:         return vec4(0.0);
         case SHADER_1:         return vec4(1.0);
-        case SHADER_INPUTS + 0:   return vInput1;
-        case SHADER_INPUTS + 1:   return vInput2;
-        case SHADER_INPUTS + 2:   return vInput3;
-        case SHADER_INPUTS + 3:   return vInput4;
-        case SHADER_INPUTS + 4:   return vInput5;
-        case SHADER_INPUTS + 5:   return vInput6;
-        case SHADER_INPUTS + 6:   return vInput7;
-        case SHADER_INPUTS + 7:   return vInput8;
-        case SHADER_TEXEL0:    return texColor0;
-        case SHADER_TEXEL0A:   return texColor0.aaaa;
-        case SHADER_TEXEL1:    return texColor1;
-        case SHADER_TEXEL1A:   return texColor1.aaaa;
+        case SHADER_TEXEL0:    return texColors[0];
+        case SHADER_TEXEL0A:   return texColors[0].aaaa;
+        case SHADER_TEXEL1:    return texColors[1];
+        case SHADER_TEXEL1A:   return texColors[1].aaaa;
         case SHADER_COMBINED:  return texel;
         case SHADER_COMBINEDA: return texel.aaaa;
         case SHADER_NOISE:     return noise;
+    }
+    if (item >= SHADER_INPUTS && item < SHADER_ENUM_MAX) {
+        return vInputs[item - SHADER_INPUTS];
     }
     return vec4(0);
 }
@@ -186,16 +174,15 @@ void main() {
     vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
 
     // Tex colors
-    if (CCF_HAS_FLAG_i(USED_TEXTURE, 0)) {
-        texColor0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter);
-    }
-    if (CCF_HAS_FLAG_i(USED_TEXTURE, 1)) {
-        if (CCF_HAS_FLAG(LIGHT_MAP)) {
-            texColor1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter);
-            texColor0.rgb *= uLightMapColor.rgb;
-            texColor1.rgb = clamp(texColor1.rgb * texColor1.rgb + texColor1.rgb, 0.0, 1.0);
-        } else {
-            texColor1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter);
+    for (int i = 0; i != MAX_TEXTURES; ++i) {
+        if (CCF_HAS_FLAG_i(USED_TEXTURE, i)) {
+            if (i == 1 && CCF_HAS_FLAG(LIGHT_MAP)) {
+                texColors[1] = sampleTex(uTextures[1], vLightMap, uTexProperties[1]);
+                texColors[0].rgb *= uLightMapColor.rgb;
+                texColors[1].rgb = clamp(texColors[1].rgb * texColors[1].rgb + texColors[1].rgb, 0.0, 1.0);
+            } else {
+                texColors[i] = sampleTex(uTextures[i], vTexCoords[i], uTexProperties[i]);
+            }
         }
     }
 
@@ -206,7 +193,7 @@ void main() {
 
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
-    for (int cycle = 0, cycle_rgb = 0, cycle_a = 1; cycle < cycles; cycle++, cycle_rgb += 2, cycle_a += 2) {
+    for (int cycle = 0, cycle_rgb = 0, cycle_a = 1; cycle < cycles; cycle++, cycle_rgb += CC_CHANNELS, cycle_a += CC_CHANNELS) {
         if (!CCF_HAS_FLAG_i(COLOR_ALPHA_SAME, cycle) && CCF_HAS_FLAG(USE_ALPHA)) {
             texel = vec4(
                 combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_rgb), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_rgb), CCF_HAS_FLAG_i(DO_MIX, cycle_rgb), false).rgb,

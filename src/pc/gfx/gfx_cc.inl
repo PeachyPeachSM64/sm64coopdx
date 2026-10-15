@@ -1,6 +1,6 @@
 //
 // Keep everything in this file as C macros!
-// All constants here are also included in the fragment ubershader,
+// All constants here are also included in the ubershader,
 // and GLSL doesn't have enum types.
 //
 
@@ -35,7 +35,7 @@
 #define SHADER_COMBINED     6
 #define SHADER_COMBINEDA    7
 #define SHADER_NOISE        8
-#define SHADER_INPUTS       9
+#define SHADER_INPUTS       9 // must be last
 #define SHADER_ENUM_MAX     (SHADER_INPUTS + SHADER_MAX_INPUTS)
 
 //
