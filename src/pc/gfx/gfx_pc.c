@@ -219,9 +219,7 @@ static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineM
     if (cc) { return cc; }
 
     cc = calloc(1, sizeof(struct ColorCombiner));
-    if (cc) {
-        cc->cm = *cm;
-        gfx_cc_generate_shader_commands(cc);
+    if (gfx_cc_generate(cc, cm)) {
         hmap_put(color_combiners, cm->hash, cc);
     }
 
@@ -1092,9 +1090,9 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         gfx_rapi->set_use_alpha(cm->use_alpha);
         rendering_state.alpha_blend = cm->use_alpha;
     }
-    uint8_t num_inputs;
+    shader_inputs_t shader_inputs;
     bool used_textures[MAX_TEXTURES];
-    gfx_rapi->shader_get_info(&num_inputs, used_textures);
+    gfx_rapi->shader_get_info(&shader_inputs, used_textures);
 
     for (int32_t i = 0; i < MAX_TEXTURES; i++) {
         if (used_textures[i]) {
@@ -1185,39 +1183,38 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             attribs->light_map[1] = 0xFFFF - ( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) );
         }
 
-        for (int j = 0; j < num_inputs; j++) {
+        for (int shader_input = 0; shader_input < MAX_SHADER_INPUTS; shader_input++) {
+            if (!(shader_inputs & (1 << shader_input))) {
+                continue;
+            }
+
             struct RGBA *color = NULL;
             struct RGBA tmp = { 0 };
             for (int a = 0; a < (cm->use_alpha ? 2 : 1); a++) {
-                u8 mapping = cc->shader_input_mapping[j];
-
-                switch (mapping) {
-                    case CC_PRIM:
+                switch (SHADER_INPUT_FIRST + shader_input) {
+                    case CCS_PRIM:
                         color = &rdp.prim_color;
                         break;
-                    case CC_SHADE:
+                    case CCS_SHADE:
                         color = &v_arr[i]->color;
                         break;
-                    case CC_ENV:
+                    case CCS_ENV:
                         color = &rdp.env_color;
                         break;
-                    case CC_PRIMA:
+                    case CCS_PRIMA:
                         memset(&tmp, rdp.prim_color.a, sizeof(tmp));
                         color = &tmp;
                         break;
-                    case CC_SHADEA:
+                    case CCS_SHADEA:
                         memset(&tmp, v_arr[i]->color.a, sizeof(tmp));
                         color = &tmp;
                         break;
-                    case CC_ENVA:
+                    case CCS_ENVA:
                         memset(&tmp, rdp.env_color.a, sizeof(tmp));
                         color = &tmp;
                         break;
-                    case CC_LOD:
-                    {
-                        float distance_frac = (v1->w - 3000.0f) / 3000.0f;
-                        if (distance_frac < 0.0f) distance_frac = 0.0f;
-                        if (distance_frac > 1.0f) distance_frac = 1.0f;
+                    case CCS_LOD: {
+                        float distance_frac = clamp((v1->w - 3000.0f) / 3000.0f, 0.0f, 1.0f);
                         tmp.r = tmp.g = tmp.b = tmp.a = distance_frac * 255.0f;
                         color = &tmp;
                         break;
@@ -1228,20 +1225,20 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                         break;
                 }
                 if (a == 0) {
-                    attribs->inputs[j][0] = color->r;
-                    attribs->inputs[j][1] = color->g;
-                    attribs->inputs[j][2] = color->b;
+                    attribs->inputs[shader_input][0] = color->r;
+                    attribs->inputs[shader_input][1] = color->g;
+                    attribs->inputs[shader_input][2] = color->b;
                 } else {
                     if (cm->use_fog && (color == &v_arr[i]->color || cm->light_map)) {
                         // Shade alpha is 100% for fog
-                        attribs->inputs[j][3] = 0xFF;
+                        attribs->inputs[shader_input][3] = 0xFF;
                     } else {
-                        attribs->inputs[j][3] = color->a;
+                        attribs->inputs[shader_input][3] = color->a;
                     }
                 }
             }
             if (!cm->use_alpha) {
-                attribs->inputs[j][3] = 0xFF;
+                attribs->inputs[shader_input][3] = 0xFF;
             }
         }
     }
@@ -1614,10 +1611,10 @@ static void gfx_dp_texture_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int3
 
         // Color combiner is turned off in copy mode
         gfx_dp_set_combine_mode(
-            color_comb_rgb  (G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_TEXEL0, 0),
-            color_comb_alpha(G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_TEXEL0, 0),
-            color_comb_rgb  (G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_TEXEL0, 1),
-            color_comb_alpha(G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_TEXEL0, 1));
+            color_comb(0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_TEXEL0, 0),
+            color_comb(1, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_TEXEL0, 0),
+            color_comb(0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_TEXEL0, 1),
+            color_comb(1, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_TEXEL0, 1));
 
         // Per documentation one extra pixel is added in this modes to each edge
         lrx += 1 << 2;
@@ -1684,10 +1681,10 @@ static void gfx_dp_fill_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t
 
     struct CombineMode saved_combine_mode = rdp.combine_mode;
     gfx_dp_set_combine_mode(
-        color_comb_rgb  (G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_SHADE, 0),
-        color_comb_alpha(G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_SHADE, 0),
-        color_comb_rgb  (G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_SHADE, 1),
-        color_comb_alpha(G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_SHADE, 1));
+        color_comb(0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_SHADE, 0),
+        color_comb(1, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_SHADE, 0),
+        color_comb(0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_CCMUX_SHADE, 1),
+        color_comb(1, G_CCMUX_0, G_CCMUX_0, G_CCMUX_0, G_ACMUX_SHADE, 1));
     gfx_draw_rectangle(ulx, uly, lrx, lry);
 
     u32 cflags = rdp.combine_mode.flags;
@@ -1864,10 +1861,10 @@ static void OPTIMIZE_O3 gfx_run_dl(Gfx* cmd) {
                 break;
             case G_SETCOMBINE:
                 gfx_dp_set_combine_mode(
-                    color_comb_rgb  (C0(20, 4), C1(28, 4), C0(15, 5), C1(15, 3), 0),
-                    color_comb_alpha(C0(12, 3), C1(12, 3), C0(9, 3),  C1(9, 3),  0),
-                    color_comb_rgb  (C0(5, 4),  C1(24, 4), C0(0, 5),  C1(6, 3),  1),
-                    color_comb_alpha(C1(21, 3), C1(3, 3),  C1(18, 3), C1(0, 3),  1));
+                    color_comb(0, C0(20, 4), C1(28, 4), C0(15, 5), C1(15, 3), 0),
+                    color_comb(1, C0(12, 3), C1(12, 3), C0(9, 3),  C1(9, 3),  0),
+                    color_comb(0, C0(5, 4),  C1(24, 4), C0(0, 5),  C1(6, 3),  1),
+                    color_comb(1, C1(21, 3), C1(3, 3),  C1(18, 3), C1(0, 3),  1));
                 break;
             // G_SETPRIMCOLOR, G_CCMUX_PRIMITIVE, G_ACMUX_PRIMITIVE, is used by Goddard
             // G_CCMUX_TEXEL1, LOD_FRACTION is used in Bowser room 1

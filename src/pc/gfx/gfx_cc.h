@@ -7,37 +7,12 @@
 
 #include "gfx_cc.inl"
 
-#define CC_MAX_SHADERS 64 // Keeping this here for now as it's needed for DirectX declarations
+// Make sure CC_COMPONENTS is 4, otherwise it breaks the aligment of struct CombineMode
+static_assert(CC_COMPONENTS == sizeof(uint32_t), "CC_COMPONENTS must be sizeof(uint32_t)");
 
-enum {
-    CC_0,
-    CC_TEXEL0,
-    CC_TEXEL1,
-    CC_PRIM,
-    CC_SHADE,
-    CC_ENV,
-    CC_TEXEL0A,
-    CC_LOD,
-    CC_1,
-    CC_TEXEL1A,
-    CC_COMBINED,
-    CC_COMBINEDA,
-    CC_PRIMA,
-    CC_SHADEA,
-    CC_ENVA,
-    CC_NOISE,
-    CC_ENUM_MAX,
-};
-
-struct CCFeatures {
-    int num_inputs;
-    bool used_textures[MAX_TEXTURES];
-    bool color_alpha_same[CC_CYCLES];
-    bool do_single[CC_MODES];       // TODO: optimize this shit, those booleans are mutually exclusive
-    bool do_multiply[CC_MODES];     // TODO: optimize this shit, those booleans are mutually exclusive
-    bool do_mix[CC_MODES];          // TODO: optimize this shit, those booleans are mutually exclusive
-    bool do_noise;
-};
+// Make sure the type for shader_inputs can hold all shader inputs
+typedef uint8_t shader_inputs_t;
+static_assert(sizeof(shader_inputs_t) * 8 >= MAX_SHADER_INPUTS, "Type for shader_inputs is not large enough to hold all MAX_SHADER_INPUTS shader inputs");
 
 #pragma pack(1)
 struct CombineMode {
@@ -48,7 +23,11 @@ struct CombineMode {
             uint32_t rgb2;
             uint32_t alpha2;
         };
-        uint8_t all_values[CC_CMD_LENGTH];
+        struct {
+            uint32_t rgb;
+            uint32_t alpha;
+        } cycles[CC_CYCLES];
+        uint8_t all_values[CC_COMPONENTS * CC_CHANNELS * CC_CYCLES];
     };
     union {
         struct {
@@ -68,8 +47,13 @@ struct CombineMode {
 
 struct ColorCombiner {
     struct CombineMode cm;
-    uint8_t shader_input_mapping[SHADER_MAX_INPUTS];
-    uint8_t shader_commands[CC_CMD_LENGTH];
+    shader_inputs_t shader_inputs;
+    bool used_textures[MAX_TEXTURES];
+    bool color_alpha_same[CC_CYCLES];
+    bool do_single[CC_CHANNELS * CC_CYCLES];       // TODO: optimize this shit, those booleans are mutually exclusive
+    bool do_multiply[CC_CHANNELS * CC_CYCLES];     // TODO: optimize this shit, those booleans are mutually exclusive
+    bool do_mix[CC_CHANNELS * CC_CYCLES];          // TODO: optimize this shit, those booleans are mutually exclusive
+    bool do_noise;
 };
 
 struct VertexAttribs {
@@ -77,7 +61,7 @@ struct VertexAttribs {
     float tex_coords[MAX_TEXTURES][2];
     uint8_t fog[4];
     uint16_t light_map[2];
-    uint8_t inputs[SHADER_MAX_INPUTS][4];
+    uint8_t inputs[MAX_SHADER_INPUTS][4];
 };
 
 #ifdef __cplusplus
@@ -85,11 +69,8 @@ extern "C" {
 #endif
 
 bool gfx_cm_uses_second_texture(struct CombineMode *cm);
-void gfx_cc_generate_shader_commands(struct ColorCombiner *cc);
-void gfx_cc_get_features(struct ColorCombiner *cc, struct CCFeatures *ccf);
-void gfx_cc_print(struct ColorCombiner *cc);
-uint32_t color_comb_rgb(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle);
-uint32_t color_comb_alpha(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle);
+bool gfx_cc_generate(struct ColorCombiner *cc, struct CombineMode *cm);
+uint32_t color_comb(bool alpha, uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t cycle);
 
 #ifdef __cplusplus
 }

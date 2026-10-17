@@ -7,17 +7,21 @@ out vec4 oFragColor;
 
 // Vertex attributes
 in vec2 vTexCoords[MAX_TEXTURES];
-in vec4 vInputs[SHADER_MAX_INPUTS];
+in vec4 vInputs[MAX_SHADER_INPUTS];
 in vec4 vFog;
 in vec2 vLightMap;
+
+// CC sources
+uniform int uCCS[CC_CHANNELS * CC_CYCLES];
+#define A ((ABCD >> 24) & 0xFF)
+#define B ((ABCD >> 16) & 0xFF)
+#define C ((ABCD >>  8) & 0xFF)
+#define D ((ABCD >>  0) & 0xFF)
 
 // CC features
 uniform int uCCF;
 #define CCF_HAS_FLAG(_flag_)        (((uCCF) & (1 << (CCF_FLAG_##_flag_        ))) != 0)
 #define CCF_HAS_FLAG_i(_flag_, _i_) (((uCCF) & (1 << (CCF_FLAG_##_flag_ + (_i_)))) != 0)
-
-// CC shader commands
-uniform int uShaderCommands[CC_CMD_LENGTH];
 
 // Textures
 uniform sampler2D uTextures[MAX_TEXTURES];
@@ -116,53 +120,53 @@ float random(in vec3 value) {
 vec4 noise;
 vec4 texColors[MAX_TEXTURES];
 
-vec4 shader_item_to_vec4(in vec4 texel, in int item) {
-    switch (item) {
-        case SHADER_0:         return vec4(0.0);
-        case SHADER_1:         return vec4(1.0);
-        case SHADER_TEXEL0:    return texColors[0];
-        case SHADER_TEXEL0A:   return texColors[0].aaaa;
-        case SHADER_TEXEL1:    return texColors[1];
-        case SHADER_TEXEL1A:   return texColors[1].aaaa;
-        case SHADER_COMBINED:  return texel;
-        case SHADER_COMBINEDA: return texel.aaaa;
-        case SHADER_NOISE:     return noise;
+vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
+    switch (ccs) {
+        case CCS_0:         return vec4(0.0);
+        case CCS_1:         return vec4(1.0);
+        case CCS_TEXEL0:    return texColors[0];
+        case CCS_TEXEL0A:   return texColors[0].aaaa;
+        case CCS_TEXEL1:    return texColors[1];
+        case CCS_TEXEL1A:   return texColors[1].aaaa;
+        case CCS_COMBINED:  return texel;
+        case CCS_COMBINEDA: return texel.aaaa;
+        case CCS_NOISE:     return noise;
     }
-    if (item >= SHADER_INPUTS && item < SHADER_ENUM_MAX) {
-        return vInputs[item - SHADER_INPUTS];
+    if (ccs >= SHADER_INPUT_FIRST && ccs <= SHADER_INPUT_LAST) {
+        return vInputs[ccs - SHADER_INPUT_FIRST];
     }
     return vec4(0);
 }
 
 vec4 combine_colors(vec4 texel, int cycle, bool do_single, bool do_multiply, bool do_mix, bool is_alpha) {
-    int offset = 8 * cycle + (is_alpha ? 4 : 0);
+    int ABCD = uCCS[2 * cycle + (is_alpha ? 1 : 0)];
 
     // D
     if (do_single) {
-        return shader_item_to_vec4(texel, uShaderCommands[offset + 3]);
+        return ccs_to_vec4(texel, D);
     }
 
     // A * C
     if (do_multiply) {
-        return shader_item_to_vec4(texel, uShaderCommands[offset + 0]) *
-               shader_item_to_vec4(texel, uShaderCommands[offset + 2]);
+        return ccs_to_vec4(texel, A) *
+               ccs_to_vec4(texel, C);
     }
 
     // (A - B) * C + B = lerp(C, B, A)
     if (do_mix) {
         return mix(
-            shader_item_to_vec4(texel, uShaderCommands[offset + 1]),
-            shader_item_to_vec4(texel, uShaderCommands[offset + 0]),
-            shader_item_to_vec4(texel, uShaderCommands[offset + 2])
+            ccs_to_vec4(texel, B),
+            ccs_to_vec4(texel, A),
+            ccs_to_vec4(texel, C)
         );
     }
 
     // (A - B) * C + D
     return (
-        shader_item_to_vec4(texel, uShaderCommands[offset + 0]) -
-        shader_item_to_vec4(texel, uShaderCommands[offset + 1])
-    ) * shader_item_to_vec4(texel, uShaderCommands[offset + 2])
-      + shader_item_to_vec4(texel, uShaderCommands[offset + 3]);
+        ccs_to_vec4(texel, A) -
+        ccs_to_vec4(texel, B)
+    ) * ccs_to_vec4(texel, C)
+      + ccs_to_vec4(texel, D);
 }
 
 

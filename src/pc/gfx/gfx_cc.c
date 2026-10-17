@@ -2,302 +2,226 @@
 #include "PR/gbi.h"
 #include "gfx_cc.h"
 #include "gfx_pc.h"
-
-static bool sAllowCCPrint = true;
+#include "platform_info.h"
 
 bool gfx_cm_uses_second_texture(struct CombineMode *cm) {
     for (int i = 0; i < ARRAY_COUNT(cm->all_values); i++) {
         switch (cm->all_values[i]) {
-            case CC_TEXEL1:
-            case CC_TEXEL1A:
+            case CCS_TEXEL1:
+            case CCS_TEXEL1A:
                 return true;
         }
     }
     return false;
 }
 
-void gfx_cc_generate_shader_commands(struct ColorCombiner *cc) {
-    uint8_t next_input_number = 0;
-    uint8_t input_number[CC_ENUM_MAX] = { 0 };
-
-    for (int i = 0; i < CC_CMD_LENGTH; i++) {
-        uint8_t cm_cmd = cc->cm.all_values[i];
-        uint8_t shader_cmd = 0;
-        switch (cm_cmd) {
-            case CC_0:
-                shader_cmd = SHADER_0;
-                break;
-            case CC_1:
-                shader_cmd = SHADER_1;
-                break;
-            case CC_TEXEL0:
-                shader_cmd = SHADER_TEXEL0;
-                break;
-            case CC_TEXEL1:
-                shader_cmd = SHADER_TEXEL1;
-                break;
-            case CC_TEXEL0A:
-                shader_cmd = SHADER_TEXEL0A;
-                break;
-            case CC_TEXEL1A:
-                shader_cmd = SHADER_TEXEL1A;
-                break;
-            case CC_COMBINED:
-                shader_cmd = cc->cm.use_2cycle ? SHADER_COMBINED : SHADER_0;
-                break;
-            case CC_COMBINEDA:
-                shader_cmd = cc->cm.use_2cycle ? SHADER_COMBINEDA : SHADER_0;
-                break;
-            case CC_NOISE:
-                shader_cmd = SHADER_NOISE;
-                break;
-            case CC_PRIM:
-            case CC_PRIMA:
-            case CC_SHADE:
-            case CC_SHADEA:
-            case CC_ENV:
-            case CC_ENVA:
-            case CC_LOD:
-                if (input_number[cm_cmd] == 0) {
-                    cc->shader_input_mapping[next_input_number] = cm_cmd;
-                    input_number[cm_cmd] = SHADER_INPUTS + next_input_number;
-                    next_input_number++;
-                }
-                shader_cmd = input_number[cm_cmd];
-                break;
-            default:
-                shader_cmd = SHADER_0;
-                break;
-        }
-        cc->shader_commands[i] = shader_cmd;
+bool gfx_cc_generate(struct ColorCombiner *cc, struct CombineMode *cm) {
+    if (!cc || !cm) {
+        return false;
     }
+    memset(cc, 0, sizeof(*cc));
 
-    gfx_cc_print(cc);
-}
+    // Set combine mode
+    cc->cm = *cm;
 
-void gfx_cc_get_features(struct ColorCombiner *cc, struct CCFeatures *ccf) {
-    // reset ccf
-    memset(ccf, 0, sizeof(struct CCFeatures));
-
-    // determine features
-    int cmd_length = (CC_COMPONENTS * CC_CHANNELS) * (cc->cm.use_2cycle ? 2 : 1);
-    for (int i = 0; i < cmd_length; i++) {
-        uint8_t cmd = cc->shader_commands[i];
-        if (cmd >= SHADER_INPUTS && cmd < SHADER_ENUM_MAX) {
-            ccf->num_inputs = MAX(ccf->num_inputs, (cmd - SHADER_INPUTS + 1));
-        }
-        if (cmd == SHADER_TEXEL0 || cmd == SHADER_TEXEL0A) {
-            ccf->used_textures[0] = true;
-        }
-        if (cmd == SHADER_TEXEL1 || cmd == SHADER_TEXEL1A) {
-            ccf->used_textures[1] = true;
-        }
-        if (cmd == SHADER_NOISE) {
-            ccf->do_noise = true;
+    // Determine shader inputs
+    int num_ccs = (ARRAY_COUNT(cc->cm.all_values) / CC_CYCLES) * (cc->cm.use_2cycle ? 2 : 1);
+    for (int i = 0; i < num_ccs; ++i) {
+        uint8_t ccs = cc->cm.all_values[i];
+        if (ccs >= SHADER_INPUT_FIRST && ccs <= SHADER_INPUT_LAST) {
+            cc->shader_inputs |= (1 << (ccs - SHADER_INPUT_FIRST));
         }
     }
 
-    // figure out optimizations
-    for (int i = 0; i < CC_MODES; i++) {
-        const uint8_t *abcd = &cc->shader_commands[i * CC_COMPONENTS];
-        ccf->do_single[i]   = (abcd[2] == SHADER_0);                         // D
-        ccf->do_multiply[i] = (abcd[1] == SHADER_0 && abcd[3] == SHADER_0);  // A * C
-        ccf->do_mix[i]      = (abcd[1] == abcd[3]);                          // (A - B) * C + B = lerp(C, B, A)
-    }
-
-    for (int i = 0; i < CC_CYCLES; i++) {
-        ccf->color_alpha_same[i] = true;
-        uint8_t *cmd = &cc->shader_commands[i * (CC_COMPONENTS * CC_CHANNELS)];
-        for (int j = 0; j < CC_COMPONENTS; j++) { // TODO: memcmp?
-            if (cmd[j] != cmd[j + CC_COMPONENTS]) {
-                ccf->color_alpha_same[i] = false;
+    // Determine features
+    for (int i = 0; i < num_ccs; ++i) {
+        uint8_t ccs = cc->cm.all_values[i];
+        switch (ccs) {
+            case CCS_TEXEL0:
+            case CCS_TEXEL0A:
+                cc->used_textures[0] = true;
                 break;
-            }
+            case CCS_TEXEL1:
+            case CCS_TEXEL1A:
+                cc->used_textures[1] = true;
+                break;
+            case CCS_NOISE:
+                cc->do_noise = true;
+                break;
         }
     }
-}
 
-void gfx_cc_print(UNUSED struct ColorCombiner *cc) {
-    if (!sAllowCCPrint) { return; }
-    // disabled for now
-    return;
-
-/*#ifdef DEVELOPMENT
-    if (!sAllowCCPrint) { return; }
-
-    printf("\n>> gfx_pc_precomp_shader(");
-
-    struct CombineMode* cm = &cc->cm;
-    printf("0x%08x, ", cm->rgb1);
-    printf("0x%08x, ", cm->alpha1);
-    printf("0x%08x, ", cm->rgb2);
-    printf("0x%08x, ", cm->alpha2);
-    printf("0x%08x",   cm->flags);
-
-    printf(");");
-    printf("    // %016" PRIx64, cm->hash);
-    printf("\n");
-#endif*/
-}
-
-
-// TODO: table this shit
-
-static uint8_t color_comb_component_a(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_CCMUX_COMBINED:        return cycle ? CC_COMBINED : CC_0;
-        case G_CCMUX_TEXEL0:          return cycle ? CC_TEXEL1 : CC_TEXEL0;
-        case G_CCMUX_TEXEL1:          return cycle ? CC_TEXEL0 : CC_TEXEL1;
-        case G_CCMUX_PRIMITIVE:       return CC_PRIM;
-        case G_CCMUX_SHADE:           return CC_SHADE;
-        case G_CCMUX_ENVIRONMENT:     return CC_ENV;
-        case G_CCMUX_1:               return CC_1;
-        case G_CCMUX_0:               return CC_0;
-
-        case G_CCMUX_COMBINED_ALPHA:  return cycle ? CC_COMBINEDA : CC_NOISE;
-        case G_CCMUX_TEXEL0_ALPHA:    return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_CCMUX_TEXEL1_ALPHA:    return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_CCMUX_PRIMITIVE_ALPHA: return CC_PRIMA;
-        case G_CCMUX_SHADE_ALPHA:     return CC_SHADEA;
-        case G_CCMUX_ENV_ALPHA:       return CC_ENVA;
-
-        default:                      return CC_0;
+    // Figure out source optimizations
+    int num_modes = CC_CHANNELS * (cc->cm.use_2cycle ? 2 : 1);
+    for (int i = 0; i < num_modes; ++i) {
+        const uint8_t *ABCD = &cc->cm.all_values[i * CC_COMPONENTS];
+        cc->do_single[i]   = (ABCD[2] == CCS_0);                      // D
+        cc->do_multiply[i] = (ABCD[1] == CCS_0 && ABCD[3] == CCS_0);  // A * C
+        cc->do_mix[i]      = (ABCD[1] == ABCD[3]);                    // (A - B) * C + B = lerp(C, B, A)
     }
-}
 
-static uint8_t color_comb_component_b(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_CCMUX_COMBINED:          return cycle ? CC_COMBINED : CC_0;
-        case G_CCMUX_TEXEL0:            return cycle ? CC_TEXEL1 : CC_TEXEL0;
-        case G_CCMUX_TEXEL1:            return cycle ? CC_TEXEL0 : CC_TEXEL1;
-        case G_CCMUX_PRIMITIVE:         return CC_PRIM;
-        case G_CCMUX_SHADE:             return CC_SHADE;
-        case G_CCMUX_ENVIRONMENT:       return CC_ENV;
-        //case G_CCMUX_CENTER:          return CC_CENTER; // is this correct for "Chrome Key Center"?
-        //case G_CCMUX_K4:              return CC_K4;
-        case G_CCMUX_0:                 return CC_0;
-
-        case G_CCMUX_COMBINED_ALPHA:    return cycle ? CC_COMBINEDA : CC_0;
-        case G_CCMUX_TEXEL0_ALPHA:      return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_CCMUX_TEXEL1_ALPHA:      return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_CCMUX_PRIMITIVE_ALPHA:   return CC_PRIMA;
-        case G_CCMUX_SHADE_ALPHA:       return CC_SHADEA;
-        case G_CCMUX_ENV_ALPHA:         return CC_ENVA;
-
-        default:                        return CC_0;
+    int num_cycles = cc->cm.use_2cycle ? 2 : 1;
+    for (int i = 0; i < num_cycles; i++) {
+        cc->color_alpha_same[i] = cc->cm.cycles[i].rgb == cc->cm.cycles[i].alpha;
     }
+
+    return true;
 }
 
-static uint8_t color_comb_component_c(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_CCMUX_COMBINED:          return cycle ? CC_COMBINED : CC_0;
-        case G_CCMUX_TEXEL0:            return cycle ? CC_TEXEL1 : CC_TEXEL0;
-        case G_CCMUX_TEXEL1:            return cycle ? CC_TEXEL0 : CC_TEXEL1;
-        case G_CCMUX_PRIMITIVE:         return CC_PRIM;
-        case G_CCMUX_SHADE:             return CC_SHADE;
-        case G_CCMUX_ENVIRONMENT:       return CC_ENV;
-        //case G_CCMUX_CENTER:          return CC_CENTER; // is this correct for "Chrome Key Center"?
-        case G_CCMUX_COMBINED_ALPHA:    return cycle ? CC_COMBINEDA : CC_0;
-        case G_CCMUX_TEXEL0_ALPHA:      return CC_TEXEL0A;
-        case G_CCMUX_TEXEL1_ALPHA:      return CC_TEXEL1A;
-        case G_CCMUX_PRIMITIVE_ALPHA:   return CC_PRIMA;
-        case G_CCMUX_SHADE_ALPHA:       return CC_SHADEA;
-        case G_CCMUX_ENV_ALPHA:         return CC_ENVA;
-        case G_CCMUX_LOD_FRACTION:      return CC_LOD;
-        //case G_CCMUX_PRIM_LOD_FRAC:   return CC_PRIM_LOD_FRACTION;
-        //case G_CCMUX_K5:              return CC_K5;
-        case G_CCMUX_0:                 return CC_0;
-        default:                        return CC_0;
-    }
+// From https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro12/index12.6.html
+// "Extended" entries are coopdx specific, allowing for more combiners with existing sources
+// Table indices are, in this order: RGB/A, ABCD, G_MUX, cycle
+static const uint8_t CC_COMPONENTS_TO_CCS[CC_CHANNELS][CC_COMPONENTS][32][CC_CYCLES] = {
+
+/////////
+// RGB //
+/////////
+{
+
+// A
+{
+[G_CCMUX_COMBINED]        = { CCS_0,       CCS_COMBINED  },
+[G_CCMUX_TEXEL0]          = { CCS_TEXEL0,  CCS_TEXEL1    },
+[G_CCMUX_TEXEL1]          = { CCS_TEXEL1,  CCS_TEXEL0    },
+[G_CCMUX_PRIMITIVE]       = { CCS_PRIM,    CCS_PRIM      },
+[G_CCMUX_SHADE]           = { CCS_SHADE,   CCS_SHADE     },
+[G_CCMUX_ENVIRONMENT]     = { CCS_ENV,     CCS_ENV       },
+[G_CCMUX_1]               = { CCS_1,       CCS_1         },
+[G_CCMUX_0]               = { CCS_0,       CCS_0         },
+[G_CCMUX_NOISE]           = { CCS_NOISE,   CCS_COMBINEDA },
+// Extended
+[G_CCMUX_COMBINED_ALPHA]  = { CCS_NOISE,   CCS_COMBINEDA },
+[G_CCMUX_TEXEL0_ALPHA]    = { CCS_TEXEL0A, CCS_TEXEL1A   },
+[G_CCMUX_TEXEL1_ALPHA]    = { CCS_TEXEL1A, CCS_TEXEL0A   },
+[G_CCMUX_PRIMITIVE_ALPHA] = { CCS_PRIMA,   CCS_PRIMA     },
+[G_CCMUX_SHADE_ALPHA]     = { CCS_SHADEA,  CCS_SHADEA    },
+[G_CCMUX_ENV_ALPHA]       = { CCS_ENVA,    CCS_ENVA      },
+},
+
+// B
+{
+[G_CCMUX_COMBINED]        = { CCS_0,       CCS_COMBINED  },
+[G_CCMUX_TEXEL0]          = { CCS_TEXEL0,  CCS_TEXEL1    },
+[G_CCMUX_TEXEL1]          = { CCS_TEXEL1,  CCS_TEXEL0    },
+[G_CCMUX_PRIMITIVE]       = { CCS_PRIM,    CCS_PRIM      },
+[G_CCMUX_SHADE]           = { CCS_SHADE,   CCS_SHADE     },
+[G_CCMUX_ENVIRONMENT]     = { CCS_ENV,     CCS_ENV       },
+// [G_CCMUX_CENTER]       = { CCS_CENTER,  CCS_CENTER    },
+// [G_CCMUX_K4]           = { CCS_K4,      CCS_K4        },
+[G_CCMUX_0]               = { CCS_0,       CCS_0         },
+// Extended
+[G_CCMUX_COMBINED_ALPHA]  = { CCS_0,       CCS_COMBINEDA },
+[G_CCMUX_TEXEL0_ALPHA]    = { CCS_TEXEL0A, CCS_TEXEL1A   },
+[G_CCMUX_TEXEL1_ALPHA]    = { CCS_TEXEL1A, CCS_TEXEL0A   },
+[G_CCMUX_PRIMITIVE_ALPHA] = { CCS_PRIMA,   CCS_PRIMA     },
+[G_CCMUX_SHADE_ALPHA]     = { CCS_SHADEA,  CCS_SHADEA    },
+[G_CCMUX_ENV_ALPHA]       = { CCS_ENVA,    CCS_ENVA      },
+},
+
+// C
+{
+[G_CCMUX_COMBINED]        = { CCS_0,                 CCS_COMBINED          },
+[G_CCMUX_TEXEL0]          = { CCS_TEXEL0,            CCS_TEXEL1            },
+[G_CCMUX_TEXEL1]          = { CCS_TEXEL1,            CCS_TEXEL0            },
+[G_CCMUX_PRIMITIVE]       = { CCS_PRIM,              CCS_PRIM              },
+[G_CCMUX_SHADE]           = { CCS_SHADE,             CCS_SHADE             },
+[G_CCMUX_ENVIRONMENT]     = { CCS_ENV,               CCS_ENV               },
+// [G_CCMUX_CENTER]       = { CCS_CENTER,            CCS_CENTER            },
+[G_CCMUX_COMBINED_ALPHA]  = { CCS_0,                 CCS_COMBINEDA         },
+[G_CCMUX_TEXEL0_ALPHA]    = { CCS_TEXEL0A,           CCS_TEXEL0A           },
+[G_CCMUX_TEXEL1_ALPHA]    = { CCS_TEXEL1A,           CCS_TEXEL1A           },
+[G_CCMUX_PRIMITIVE_ALPHA] = { CCS_PRIMA,             CCS_PRIMA             },
+[G_CCMUX_SHADE_ALPHA]     = { CCS_SHADEA,            CCS_SHADEA            },
+[G_CCMUX_ENV_ALPHA]       = { CCS_ENVA,              CCS_ENVA              },
+[G_CCMUX_LOD_FRACTION]    = { CCS_LOD,               CCS_LOD               },
+// [G_CCMUX_PRIM_LOD_FRAC]= { CCS_PRIM_LOD_FRACTION, CCS_PRIM_LOD_FRACTION },
+// [G_CCMUX_K5]           = { CCS_K5,                CCS_K5                },
+[G_CCMUX_0]               = { CCS_0,                 CCS_0                 },
+},
+
+// D
+{
+[G_CCMUX_COMBINED]        = { CCS_0,       CCS_COMBINED },
+[G_CCMUX_TEXEL0]          = { CCS_TEXEL0,  CCS_TEXEL1   },
+[G_CCMUX_TEXEL1]          = { CCS_TEXEL1,  CCS_TEXEL0   },
+[G_CCMUX_PRIMITIVE]       = { CCS_PRIM,    CCS_PRIM     },
+[G_CCMUX_SHADE]           = { CCS_SHADE,   CCS_SHADE    },
+[G_CCMUX_ENVIRONMENT]     = { CCS_ENV,     CCS_ENV      },
+[G_CCMUX_1]               = { CCS_1,       CCS_1        },
+[G_CCMUX_0]               = { CCS_0,       CCS_0        },
+[G_CCMUX_TEXEL0_ALPHA]    = { CCS_TEXEL0A, CCS_TEXEL1A  },
+[G_CCMUX_TEXEL1_ALPHA]    = { CCS_TEXEL1A, CCS_TEXEL0A  },
+[G_CCMUX_PRIMITIVE_ALPHA] = { CCS_PRIMA,   CCS_PRIMA    },
+[G_CCMUX_SHADE_ALPHA]     = { CCS_SHADEA,  CCS_SHADEA   },
+[G_CCMUX_ENV_ALPHA]       = { CCS_ENVA,    CCS_ENVA     },
+},
+
+},
+
+///////////
+// ALPHA //
+///////////
+{
+
+// A
+{
+[G_ACMUX_COMBINED]    = { CCS_0,       CCS_COMBINEDA },
+[G_ACMUX_TEXEL0]      = { CCS_TEXEL0A, CCS_TEXEL1A   },
+[G_ACMUX_TEXEL1]      = { CCS_TEXEL1A, CCS_TEXEL0A   },
+[G_ACMUX_PRIMITIVE]   = { CCS_PRIMA,   CCS_PRIMA     },
+[G_ACMUX_SHADE]       = { CCS_SHADEA,  CCS_SHADEA    },
+[G_ACMUX_ENVIRONMENT] = { CCS_ENVA,    CCS_ENVA      },
+[G_ACMUX_1]           = { CCS_1,       CCS_1         },
+[G_ACMUX_0]           = { CCS_0,       CCS_0         },
+},
+
+// B
+{
+[G_ACMUX_COMBINED]    = { CCS_0,       CCS_COMBINEDA },
+[G_ACMUX_TEXEL0]      = { CCS_TEXEL0A, CCS_TEXEL1A   },
+[G_ACMUX_TEXEL1]      = { CCS_TEXEL1A, CCS_TEXEL0A   },
+[G_ACMUX_PRIMITIVE]   = { CCS_PRIMA,   CCS_PRIMA     },
+[G_ACMUX_SHADE]       = { CCS_SHADEA,  CCS_SHADEA    },
+[G_ACMUX_ENVIRONMENT] = { CCS_ENVA,    CCS_ENVA      },
+[G_ACMUX_1]           = { CCS_1,       CCS_1         },
+[G_ACMUX_0]           = { CCS_0,       CCS_0         },
+},
+
+// C
+{
+[G_ACMUX_LOD_FRACTION]  = { CCS_LOD,               CCS_LOD               },
+[G_ACMUX_TEXEL0]        = { CCS_TEXEL0A,           CCS_TEXEL1A           },
+[G_ACMUX_TEXEL1]        = { CCS_TEXEL1A,           CCS_TEXEL0A           },
+[G_ACMUX_PRIMITIVE]     = { CCS_PRIMA,             CCS_PRIMA             },
+[G_ACMUX_SHADE]         = { CCS_SHADEA,            CCS_SHADEA            },
+[G_ACMUX_ENVIRONMENT]   = { CCS_ENVA,              CCS_ENVA              },
+// [G_CCMUX_PRIM_LOD_FRAC] = { CCS_PRIM_LOD_FRACTION, CCS_PRIM_LOD_FRACTION },
+[G_ACMUX_0]             = { CCS_0,                 CCS_0                 },
+},
+
+// D
+{
+[G_ACMUX_COMBINED]    = { CCS_0,       CCS_COMBINEDA },
+[G_ACMUX_TEXEL0]      = { CCS_TEXEL0A, CCS_TEXEL1A   },
+[G_ACMUX_TEXEL1]      = { CCS_TEXEL1A, CCS_TEXEL0A   },
+[G_ACMUX_PRIMITIVE]   = { CCS_PRIMA,   CCS_PRIMA     },
+[G_ACMUX_SHADE]       = { CCS_SHADEA,  CCS_SHADEA    },
+[G_ACMUX_ENVIRONMENT] = { CCS_ENVA,    CCS_ENVA      },
+[G_ACMUX_1]           = { CCS_1,       CCS_1         },
+[G_ACMUX_0]           = { CCS_0,       CCS_0         },
+},
+
 }
+};
 
-static uint8_t color_comb_component_d(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_CCMUX_COMBINED:          return cycle ? CC_COMBINED : CC_0;
-        case G_CCMUX_TEXEL0:            return cycle ? CC_TEXEL1 : CC_TEXEL0;
-        case G_CCMUX_TEXEL1:            return cycle ? CC_TEXEL0 : CC_TEXEL1;
-        case G_CCMUX_PRIMITIVE:         return CC_PRIM;
-        case G_CCMUX_SHADE:             return CC_SHADE;
-        case G_CCMUX_ENVIRONMENT:       return CC_ENV;
-        case G_CCMUX_1:                 return CC_1;
-        case G_CCMUX_0:                 return CC_0;
-
-        case G_CCMUX_TEXEL0_ALPHA:      return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_CCMUX_TEXEL1_ALPHA:      return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_CCMUX_PRIMITIVE_ALPHA:   return CC_PRIMA;
-        case G_CCMUX_SHADE_ALPHA:       return CC_SHADEA;
-        case G_CCMUX_ENV_ALPHA:         return CC_ENVA;
-
-        default:                        return CC_0;
-    }
-}
-
-uint32_t color_comb_rgb(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle) {
-    return color_comb_component_a(a, cycle)
-        | (color_comb_component_b(b, cycle) << 8)
-        | (color_comb_component_c(c, cycle) << 16)
-        | (color_comb_component_d(d, cycle) << 24);
-}
-
-static uint8_t color_comb_component_a_alpha(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_ACMUX_COMBINED:          return cycle ? CC_COMBINEDA : CC_0;
-        case G_ACMUX_TEXEL0:            return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_ACMUX_TEXEL1:            return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_ACMUX_PRIMITIVE:         return CC_PRIMA;
-        case G_ACMUX_SHADE:             return CC_SHADEA;
-        case G_ACMUX_ENVIRONMENT:       return CC_ENVA;
-        case G_ACMUX_1:                 return CC_1;
-        case G_ACMUX_0:                 return CC_0;
-        default:                        return CC_0;
-    }
-}
-
-static uint8_t color_comb_component_b_alpha(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_ACMUX_COMBINED:          return cycle ? CC_COMBINEDA : CC_0;
-        case G_ACMUX_TEXEL0:            return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_ACMUX_TEXEL1:            return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_ACMUX_PRIMITIVE:         return CC_PRIMA;
-        case G_ACMUX_SHADE:             return CC_SHADEA;
-        case G_ACMUX_ENVIRONMENT:       return CC_ENVA;
-        case G_ACMUX_1:                 return CC_1;
-        case G_ACMUX_0:                 return CC_0;
-        default:                        return CC_0;
-    }
-}
-
-static uint8_t color_comb_component_c_alpha(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_ACMUX_LOD_FRACTION:      return CC_LOD;
-        case G_ACMUX_TEXEL0:            return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_ACMUX_TEXEL1:            return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_ACMUX_PRIMITIVE:         return CC_PRIMA;
-        case G_ACMUX_SHADE:             return CC_SHADEA;
-        case G_ACMUX_ENVIRONMENT:       return CC_ENVA;
-        //case G_CCMUX_PRIM_LOD_FRAC:   return CC_PRIM_LOD_FRACTION;
-        case G_ACMUX_0:                 return CC_0;
-        default:                        return CC_0;
-    }
-}
-
-static uint8_t color_comb_component_d_alpha(uint32_t v, uint8_t cycle) {
-    switch (v) {
-        case G_ACMUX_COMBINED:          return cycle ? CC_COMBINEDA : CC_0;
-        case G_ACMUX_TEXEL0:            return cycle ? CC_TEXEL1A : CC_TEXEL0A;
-        case G_ACMUX_TEXEL1:            return cycle ? CC_TEXEL0A : CC_TEXEL1A;
-        case G_ACMUX_PRIMITIVE:         return CC_PRIMA;
-        case G_ACMUX_SHADE:             return CC_SHADEA;
-        case G_ACMUX_ENVIRONMENT:       return CC_ENVA;
-        case G_ACMUX_1:                 return CC_1;
-        case G_ACMUX_0:                 return CC_0;
-        default:                        return CC_0;
-    }
-}
-
-uint32_t color_comb_alpha(uint32_t a, uint32_t b, uint32_t c, uint32_t d, uint8_t cycle) {
-    return color_comb_component_a_alpha(a, cycle)
-        | (color_comb_component_b_alpha(b, cycle) << 8)
-        | (color_comb_component_c_alpha(c, cycle) << 16)
-        | (color_comb_component_d_alpha(d, cycle) << 24);
+uint32_t color_comb(bool alpha, uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t cycle) {
+    uint8_t A = (a < 32) ? CC_COMPONENTS_TO_CCS[alpha][0][a][cycle] : CCS_0;
+    uint8_t B = (b < 32) ? CC_COMPONENTS_TO_CCS[alpha][1][b][cycle] : CCS_0;
+    uint8_t C = (c < 32) ? CC_COMPONENTS_TO_CCS[alpha][2][c][cycle] : CCS_0;
+    uint8_t D = (d < 32) ? CC_COMPONENTS_TO_CCS[alpha][3][d][cycle] : CCS_0;
+#if IS_BIG_ENDIAN
+    return (A << 24) | (B << 16) | (C << 8) | (D << 0);
+#else
+    return (A << 0) | (B << 8) | (C << 16) | (D << 24);
+#endif
 }

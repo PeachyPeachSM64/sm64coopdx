@@ -36,6 +36,11 @@ extern "C" {
 
 #define DEBUG_D3D 0
 
+// TODO: remove this
+#define CC_MAX_SHADERS 64
+struct ShaderProgram { int x; };
+// -----------------
+
 using namespace Microsoft::WRL; // For ComPtr
 
 namespace {
@@ -348,13 +353,13 @@ static void gfx_d3d11_load_shader(struct ShaderProgram *new_prg) {
 }
 
 static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCombiner* cc) {
-    CCFeatures cc_features = { 0 };
-    gfx_cc_get_features(cc, &cc_features);
+    // CCFeatures cc_features = { 0 };
+    // gfx_cc_get_features(cc, &cc_features);
 
     char buf[4096];
     size_t len, num_floats;
 
-    gfx_direct3d_common_build_shader(buf, len, num_floats, *cc, cc_features, false);
+    // gfx_direct3d_common_build_shader(buf, len, num_floats, *cc, cc_features, false);
 
     ComPtr<ID3DBlob> vs, ps;
     ComPtr<ID3DBlob> error_blob;
@@ -392,9 +397,9 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     uint8_t ied_index = 0;
     ied[ied_index++] = { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
     for (unsigned int t = 0; t < 2; t++) {
-        if (cc_features.used_textures[t]) {
-            ied[ied_index++] = { "TEXCOORD", t, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-        }
+        // if (cc_features.used_textures[t]) {
+        //     ied[ied_index++] = { "TEXCOORD", t, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
+        // }
     }
     if (cc->cm.use_fog) {
         ied[ied_index++] = { "FOG", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
@@ -402,10 +407,10 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     if (cc->cm.light_map) {
         ied[ied_index++] = { "LIGHTMAP", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
     }
-    for (uint32_t i = 0; i < cc_features.num_inputs; i++) {
-        DXGI_FORMAT format = cc->cm.use_alpha ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R32G32B32_FLOAT;
-        ied[ied_index++] = { "INPUT", i, format, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-    }
+    // for (uint32_t i = 0; i < cc_features.num_inputs; i++) {
+    //     DXGI_FORMAT format = cc->cm.use_alpha ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R32G32B32_FLOAT;
+    //     ied[ied_index++] = { "INPUT", i, format, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
+    // }
 
     ThrowIfFailed(d3d.device->CreateInputLayout(ied, ied_index, vs->GetBufferPointer(), vs->GetBufferSize(), prg->input_layout.GetAddressOf()));
 
@@ -433,10 +438,10 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     // Save some values
 
     // prg->hash = cc->hash;
-    prg->num_inputs = cc_features.num_inputs;
+    // prg->num_inputs = cc_features.num_inputs;
     prg->num_floats = num_floats;
-    prg->used_textures[0] = cc_features.used_textures[0];
-    prg->used_textures[1] = cc_features.used_textures[1];
+    // prg->used_textures[0] = cc_features.used_textures[0];
+    // prg->used_textures[1] = cc_features.used_textures[1];
     prg->used_lightmap = cc->cm.light_map;
 
     return (struct ShaderProgram *)(d3d.shader_program = prg);
@@ -451,7 +456,7 @@ static struct ShaderProgram *gfx_d3d11_lookup_shader(struct ColorCombiner* cc) {
     return nullptr;
 }
 
-static void gfx_d3d11_shader_get_info(/*struct ShaderProgram *prg,*/ uint8_t *num_inputs, bool used_textures[2]) {
+static void gfx_d3d11_shader_get_info(/*struct ShaderProgram *prg,*/ shader_inputs_t *shader_inputs, bool used_textures[]) {
     // struct ShaderProgramD3D11 *p = (struct ShaderProgramD3D11 *)prg;
 
     // *num_inputs = p->num_inputs;

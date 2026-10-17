@@ -18,6 +18,11 @@
 #include "pc/utils/misc.h"
 #include "pc/debuglog.h"
 
+// TODO: remove this
+#define CC_MAX_SHADERS 64
+struct ShaderProgram { int x; };
+// -----------------
+
 static void gfx_dummy_wm_init(UNUSED const char *game_name) {
 }
 
@@ -63,7 +68,7 @@ static struct ShaderProgram *gfx_dummy_renderer_lookup_shader(UNUSED struct Colo
     return NULL;
 }
 
-static void gfx_dummy_renderer_shader_get_info(/*UNUSED struct ShaderProgram *prg,*/ uint8_t *num_inputs, bool used_textures[2]) {
+static void gfx_dummy_renderer_shader_get_info(/*UNUSED struct ShaderProgram *prg,*/ shader_inputs_t *shader_inputs, bool used_textures[]) {
     // *num_inputs = 0;
     // used_textures[0] = false;
     // used_textures[1] = false;
