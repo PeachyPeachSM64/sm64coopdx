@@ -7,9 +7,6 @@
 
 #include "gfx_cc.inl"
 
-// Make sure CC_COMPONENTS is 4 (sizeof(uint32_t))
-static_assert(CC_COMPONENTS == sizeof(uint32_t), "CC_COMPONENTS must be sizeof(uint32_t)");
-
 // Make sure the type for shader_inputs can hold all shader inputs
 typedef uint8_t shader_inputs_t;
 static_assert(sizeof(shader_inputs_t) * 8 >= MAX_SHADER_INPUTS, "Type for shader_inputs is not large enough to hold all MAX_SHADER_INPUTS shader inputs");
@@ -39,14 +36,6 @@ struct ColorCombiner {
     };
 };
 #pragma pack()
-
-struct VertexAttribs {
-    float pos[4];
-    float tex_coords[MAX_TEXTURES][2];
-    uint8_t fog[4];
-    uint16_t light_map[2];
-    uint8_t inputs[MAX_SHADER_INPUTS][4];
-};
 
 #ifdef __cplusplus
 extern "C" {

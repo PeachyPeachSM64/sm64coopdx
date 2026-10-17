@@ -1,7 +1,7 @@
 #ifndef GFX_RENDERING_API_H
 #define GFX_RENDERING_API_H
 
-#include "gfx_cc.h"
+#include "gfx_shaders.h"
 
 struct GfxRenderingAPI {
     bool (*z_is_from_0_to_1)(void);

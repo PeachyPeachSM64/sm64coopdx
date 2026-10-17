@@ -8,7 +8,7 @@
 // Color combiner structure
 //
 
-#define CC_COMPONENTS   4  // ABCD, must be sizeof(uint32_t)
+#define CC_COMPONENTS   4  // ABCD
 #define CC_CHANNELS     2  // RGB/A
 #define CC_CYCLES       2  // Cycles
 

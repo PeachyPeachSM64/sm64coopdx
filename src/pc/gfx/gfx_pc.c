@@ -109,7 +109,6 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 static bool dropped_frame = false;
 
 static struct VertexAttribs buf_vbo[MAX_BUFFERED * 3] = {0}; // 3 vertices in a triangle
-// static float buf_vbo[MAX_BUFFERED * (46 * 3)] = { 0.0f }; // 3 vertices in a triangle and 26 floats per vtx
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -174,10 +173,6 @@ static void gfx_update_loaded_texture(uint8_t tile_number, uint32_t size_bytes, 
 void ext_gfx_run_dl(Gfx* cmd);
 
 //////////////////////////////////
-
-/*static unsigned long get_time(void) {
-    return 0;
-}*/
 
 static void gfx_flush(void) {
     if (buf_vbo_len > 0) {
