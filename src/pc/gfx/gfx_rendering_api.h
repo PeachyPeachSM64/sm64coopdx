@@ -7,7 +7,6 @@ struct GfxRenderingAPI {
     bool (*z_is_from_0_to_1)(void);
     bool (*update_cc)(struct ColorCombiner *cc);
     void (*update_uniforms)();
-    void (*shader_get_info)(shader_inputs_t *shader_inputs, bool used_textures[]);
     uint32_t (*new_texture)(void);
     void (*select_texture)(int tile, uint32_t texture_id);
     void (*upload_texture)(const uint8_t *rgba32_buf, int width, int height);

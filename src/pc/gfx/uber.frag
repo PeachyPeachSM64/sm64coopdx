@@ -20,8 +20,8 @@ uniform int uCCS[CC_CHANNELS * CC_CYCLES];
 
 // CC features
 uniform int uCCF;
-#define CCF_HAS_FLAG(_flag_)        (((uCCF) & (1 << (CCF_FLAG_##_flag_        ))) != 0)
-#define CCF_HAS_FLAG_i(_flag_, _i_) (((uCCF) & (1 << (CCF_FLAG_##_flag_ + (_i_)))) != 0)
+#define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
+#define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
 
 // Textures
 uniform sampler2D uTextures[MAX_TEXTURES];
@@ -138,22 +138,21 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
     return vec4(0);
 }
 
-vec4 combine_colors(vec4 texel, int cycle, bool do_single, bool do_multiply, bool do_mix, bool is_alpha) {
-    int ABCD = uCCS[2 * cycle + (is_alpha ? 1 : 0)];
+vec4 combine_colors(vec4 texel, in int ABCD) {
 
     // D
-    if (do_single) {
+    if (C == CCS_0) {
         return ccs_to_vec4(texel, D);
     }
 
     // A * C
-    if (do_multiply) {
+    if (B == CCS_0 && D == CCS_0) {
         return ccs_to_vec4(texel, A) *
                ccs_to_vec4(texel, C);
     }
 
     // (A - B) * C + B = lerp(C, B, A)
-    if (do_mix) {
+    if (B == D) {
         return mix(
             ccs_to_vec4(texel, B),
             ccs_to_vec4(texel, A),
@@ -179,7 +178,7 @@ void main() {
 
     // Tex colors
     for (int i = 0; i != MAX_TEXTURES; ++i) {
-        if (CCF_HAS_FLAG_i(USED_TEXTURE, i)) {
+        if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
             if (i == 1 && CCF_HAS_FLAG(LIGHT_MAP)) {
                 texColors[1] = sampleTex(uTextures[1], vLightMap, uTexProperties[1]);
                 texColors[0].rgb *= uLightMapColor.rgb;
@@ -191,20 +190,22 @@ void main() {
     }
 
     // Noise
-    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(DO_NOISE)) {
+    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(NOISE)) {
         noise = vec4(random(floor(vec3(gl_FragCoord.xy, uFrameCount))));
     }
 
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
-    for (int cycle = 0, cycle_rgb = 0, cycle_a = 1; cycle < cycles; cycle++, cycle_rgb += CC_CHANNELS, cycle_a += CC_CHANNELS) {
-        if (!CCF_HAS_FLAG_i(COLOR_ALPHA_SAME, cycle) && CCF_HAS_FLAG(USE_ALPHA)) {
+    for (int cycle = 0; cycle < cycles; cycle++) {
+        int ABCD_rgb = uCCS[2 * cycle + 0];
+        int ABCD_a   = uCCS[2 * cycle + 1];
+        if (ABCD_rgb != ABCD_a && CCF_HAS_FLAG(USE_ALPHA)) {
             texel = vec4(
-                combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_rgb), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_rgb), CCF_HAS_FLAG_i(DO_MIX, cycle_rgb), false).rgb,
-                combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_a), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_a), CCF_HAS_FLAG_i(DO_MIX, cycle_a), true).a
+                combine_colors(texel, ABCD_rgb).rgb,
+                combine_colors(texel, ABCD_a).a
             );
         } else {
-            texel = combine_colors(texel, cycle, CCF_HAS_FLAG_i(DO_SINGLE, cycle_rgb), CCF_HAS_FLAG_i(DO_MULTIPLY, cycle_rgb), CCF_HAS_FLAG_i(DO_MIX, cycle_rgb), false);
+            texel = combine_colors(texel, ABCD_rgb);
         }
         texel = mod(texel + 0.5, 2.0) - 0.5;
     }

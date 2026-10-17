@@ -85,8 +85,7 @@ struct ShaderProgram {
     GLuint opengl_program_id;
     GLint attrib_locations[ATTRIBUTE_MAX];
     GLint uniform_locations[UNIFORM_MAX];
-    struct ColorCombiner *cc;
-    // struct CCFeatures ccf;
+    struct ColorCombiner cc;
 };
 
 struct GLTexture {
@@ -140,60 +139,44 @@ static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
 
 static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
     int ccf_flags = 0;
-    ccf_flags |= (1 << (CCF_FLAG_COLOR_ALPHA_SAME + 0)) * prg->cc->color_alpha_same[0];
-    ccf_flags |= (1 << (CCF_FLAG_COLOR_ALPHA_SAME + 1)) * prg->cc->color_alpha_same[1];
-    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 0)) * prg->cc->do_single[0];
-    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 1)) * prg->cc->do_single[1];
-    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 2)) * prg->cc->do_single[2];
-    ccf_flags |= (1 << (CCF_FLAG_DO_SINGLE + 3)) * prg->cc->do_single[3];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 0)) * prg->cc->do_multiply[0];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 1)) * prg->cc->do_multiply[1];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 2)) * prg->cc->do_multiply[2];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MULTIPLY + 3)) * prg->cc->do_multiply[3];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 0)) * prg->cc->do_mix[0];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 1)) * prg->cc->do_mix[1];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 2)) * prg->cc->do_mix[2];
-    ccf_flags |= (1 << (CCF_FLAG_DO_MIX + 3)) * prg->cc->do_mix[3];
-    ccf_flags |= (1 << CCF_FLAG_DO_NOISE) * prg->cc->do_noise;
-    ccf_flags |= (1 << CCF_FLAG_USE_ALPHA) * prg->cc->cm.use_alpha;
-    ccf_flags |= (1 << CCF_FLAG_USE_FOG) * prg->cc->cm.use_fog;
-    ccf_flags |= (1 << CCF_FLAG_TEX_EDGE) * prg->cc->cm.texture_edge;
-    ccf_flags |= (1 << CCF_FLAG_USE_DITHER) * prg->cc->cm.use_dither;
-    ccf_flags |= (1 << CCF_FLAG_USE_2CYCLE) * prg->cc->cm.use_2cycle;
-    ccf_flags |= (1 << CCF_FLAG_LIGHT_MAP) * prg->cc->cm.light_map;
-    ccf_flags |= (1 << CCF_FLAG_WORLD_GEOMETRY) * prg->cc->cm.world_geometry;
-    for (int i = 0; i < MAX_TEXTURES; ++i) {
-        ccf_flags |= (1 << (CCF_FLAG_USED_TEXTURE + i)) * prg->cc->used_textures[i];
-    }
+    ccf_flags |= (prg->cc.use_noise << CCF_NOISE);
+    ccf_flags |= (prg->cc.use_alpha << CCF_USE_ALPHA);
+    ccf_flags |= (prg->cc.use_fog << CCF_USE_FOG);
+    ccf_flags |= (prg->cc.texture_edge << CCF_TEX_EDGE);
+    ccf_flags |= (prg->cc.use_dither << CCF_USE_DITHER);
+    ccf_flags |= (prg->cc.use_2cycle << CCF_USE_2CYCLE);
+    ccf_flags |= (prg->cc.light_map << CCF_LIGHT_MAP);
+    ccf_flags |= (prg->cc.world_geometry << CCF_WORLD_GEOMETRY);
+    ccf_flags |= (prg->cc.used_textures << CCF_USED_TEXTURE);
     glUniform1i(prg->uniform_locations[UNIFORM_CCF], ccf_flags);
 
     static int sCCS[CC_CHANNELS * CC_CYCLES];
     for (int i = 0; i != ARRAY_COUNT(sCCS); ++i) {
         sCCS[i] = (
-            (prg->cc->cm.all_values[i * CC_COMPONENTS + 0] << 24) |
-            (prg->cc->cm.all_values[i * CC_COMPONENTS + 1] << 16) |
-            (prg->cc->cm.all_values[i * CC_COMPONENTS + 2] << 8) |
-            (prg->cc->cm.all_values[i * CC_COMPONENTS + 3] << 0)
+            (prg->cc.ccs[i * CC_COMPONENTS + 0] << 24) |
+            (prg->cc.ccs[i * CC_COMPONENTS + 1] << 16) |
+            (prg->cc.ccs[i * CC_COMPONENTS + 2] << 8) |
+            (prg->cc.ccs[i * CC_COMPONENTS + 3] << 0)
         );
     }
     glUniform1iv(prg->uniform_locations[UNIFORM_CCS], ARRAY_COUNT(sCCS), sCCS);
 
-    if ((prg->cc->cm.use_alpha && prg->cc->cm.use_dither) || prg->cc->do_noise) {
+    if ((prg->cc.use_alpha && prg->cc.use_dither) || prg->cc.use_noise) {
         glUniform1f(prg->uniform_locations[UNIFORM_FRAME_COUNT], (float)frame_count);
     }
 
-    if (prg->cc->cm.light_map) {
+    if (prg->cc.light_map) {
         glUniform3f(prg->uniform_locations[UNIFORM_LIGHT_MAP], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
     }
 
-    if (prg->cc->cm.world_geometry) {
+    if (prg->cc.world_geometry) {
         glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_FLAGS], SHADER_FLAG_MAX, gShaderFlags);
         glUniform1fv(prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES], SHADER_FLAG_MAX, gShaderFlagValues);
     }
 }
 
 static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, const int tile) {
-    if (prg->cc->used_textures[tile] && opengl_tex[tile]) {
+    if ((prg->cc.used_textures & USED_TEXTURE(tile)) && opengl_tex[tile]) {
         glUniform3f(prg->uniform_locations[UNIFORM_TEX_PROPERTIES],
             opengl_tex[tile]->size[0],
             opengl_tex[tile]->size[1],
@@ -270,8 +253,8 @@ static struct ShaderProgram *gfx_opengl_load_ubershader(void) {
 }
 
 static bool gfx_opengl_update_cc(struct ColorCombiner *cc) {
-    if (opengl_prg && opengl_prg->cc != cc) {
-        opengl_prg->cc = cc;
+    if (opengl_prg && memcmp(&opengl_prg->cc, cc, sizeof(*cc)) != 0) {
+        opengl_prg->cc = *cc;
         // gfx_cc_get_features(opengl_prg->cc, &opengl_prg->ccf);
         return true;
     }
@@ -282,13 +265,6 @@ static void gfx_opengl_update_uniforms(void) {
     gfx_opengl_set_shader_uniforms(opengl_prg);
     for (int t = 0; t < MAX_TEXTURES; t++) {
         gfx_opengl_set_texture_uniforms(opengl_prg, t);
-    }
-}
-
-static void gfx_opengl_shader_get_info(uint8_t *shader_inputs, bool used_textures[]) {
-    *shader_inputs = opengl_prg->cc->shader_inputs;
-    for (int t = 0; t < MAX_TEXTURES; t++) {
-        used_textures[t] = opengl_prg->cc->used_textures[t];
     }
 }
 
@@ -479,7 +455,6 @@ struct GfxRenderingAPI gfx_opengl_api = {
     .z_is_from_0_to_1 = gfx_opengl_z_is_from_0_to_1,
     .update_cc = gfx_opengl_update_cc,
     .update_uniforms = gfx_opengl_update_uniforms,
-    .shader_get_info = gfx_opengl_shader_get_info,
     .new_texture = gfx_opengl_new_texture,
     .select_texture = gfx_opengl_select_texture,
     .upload_texture = gfx_opengl_upload_texture,

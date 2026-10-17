@@ -8,9 +8,9 @@
 // Color combiner structure
 //
 
-#define CC_COMPONENTS   4 // ABCD, must be sizeof(uint32_t)
-#define CC_CHANNELS     2 // RGB/A
-#define CC_CYCLES       2 // Cycles
+#define CC_COMPONENTS   4  // ABCD, must be sizeof(uint32_t)
+#define CC_CHANNELS     2  // RGB/A
+#define CC_CYCLES       2  // Cycles
 
 //
 // Textures
@@ -19,7 +19,7 @@
 #define MAX_TEXTURES    2
 
 //
-// Shader inputs
+// CC sources and shader inputs
 //
 
 #define CCS_0           0
@@ -45,20 +45,17 @@
 #define MAX_SHADER_INPUTS   (SHADER_INPUT_LAST - SHADER_INPUT_FIRST + 1)
 
 //
-// CC features flags
+// CC features
 //
 
-#define CCF_FLAG_USE_ALPHA          0   // 1 bit
-#define CCF_FLAG_USE_FOG            1   // 1 bit
-#define CCF_FLAG_TEX_EDGE           2   // 1 bit
-#define CCF_FLAG_USE_DITHER         3   // 1 bit
-#define CCF_FLAG_USE_2CYCLE         4   // 1 bit
-#define CCF_FLAG_LIGHT_MAP          5   // 1 bit
-#define CCF_FLAG_WORLD_GEOMETRY     6   // 1 bit
+#define CCF_USE_ALPHA       0
+#define CCF_USE_FOG         1
+#define CCF_TEX_EDGE        2
+#define CCF_USE_DITHER      3
+#define CCF_USE_2CYCLE      4
+#define CCF_LIGHT_MAP       5
+#define CCF_WORLD_GEOMETRY  6
+#define CCF_NOISE           7
+#define CCF_USED_TEXTURE    8
 
-#define CCF_FLAG_COLOR_ALPHA_SAME   8                                         // 2 bits
-#define CCF_FLAG_DO_SINGLE          (CCF_FLAG_COLOR_ALPHA_SAME + CC_CYCLES)   // 4 bits
-#define CCF_FLAG_DO_MULTIPLY        (CCF_FLAG_DO_SINGLE        + (CC_CYCLES * CC_CHANNELS))    // 4 bits
-#define CCF_FLAG_DO_MIX             (CCF_FLAG_DO_MULTIPLY      + (CC_CYCLES * CC_CHANNELS))    // 4 bits
-#define CCF_FLAG_DO_NOISE           (CCF_FLAG_DO_MIX           + (CC_CYCLES * CC_CHANNELS))    // 1 bit
-#define CCF_FLAG_USED_TEXTURE       (CCF_FLAG_DO_NOISE         + 1)           // MAX_TEXTURES bits
+#define USED_TEXTURE(i)  (1 << (i))
