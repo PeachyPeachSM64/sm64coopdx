@@ -14,9 +14,7 @@
 
 #if FOR_WINDOWS || defined(OSX_BUILD)
 # define GLEW_STATIC
-#ifndef VSCODE
 # include <GL/glew.h>
-#endif
 #endif
 
 #define GL_GLEXT_PROTOTYPES 1
@@ -83,7 +81,7 @@ static const struct GLAttribute GL_ATTRIBUTES[] = {
     [ATTRIBUTE_TEX_COORDS] = { "aTexCoords", MAX_TEXTURES, 2, GL_FLOAT, false, offsetof(struct VertexAttribs, tex_coords), tsizeof(struct VertexAttribs, tex_coords[0]) },
     [ATTRIBUTE_INPUTS] = { "aInputs", MAX_SHADER_INPUTS, 4, GL_UNSIGNED_BYTE, true, offsetof(struct VertexAttribs, inputs), tsizeof(struct VertexAttribs, inputs[0]) },
     [ATTRIBUTE_FOG] = { "aFog", 1, 4, GL_UNSIGNED_BYTE, true, offsetof(struct VertexAttribs, fog), 0 },
-    [ATTRIBUTE_LIGHT_MAP] = { "aLightMap", 1, 2, GL_UNSIGNED_SHORT, true, offsetof(struct VertexAttribs, light_map) },
+    [ATTRIBUTE_LIGHT_MAP] = { "aLightMap", 1, 2, GL_UNSIGNED_SHORT, true, offsetof(struct VertexAttribs, light_map), 0 },
 };
 
 static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) {

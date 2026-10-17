@@ -160,7 +160,7 @@ vec3 shader_effect_posterization(in vec3 texel, in float value) {
     return floor(texel * levels) / levels;
 }
 
-vec3 shader_effect_scan_lines(in vec3 texel, in float value) {
+vec3 shader_effect_scanlines(in vec3 texel, in float value) {
     float scan = sin(gl_FragCoord.y * 1.5) * 0.04;
     return texel - scan * value;
 }
@@ -257,7 +257,7 @@ void main() {
                     case SHADER_FLAG_EXPOSURE:      texel.rgb = shader_effect_exposure(texel.rgb, value); break;
                     case SHADER_FLAG_DITHERING:     texel.rgb = shader_effect_dithering(texel.rgb, value); break;
                     case SHADER_FLAG_POSTERIZATION: texel.rgb = shader_effect_posterization(texel.rgb, value); break;
-                    case SHADER_FLAG_SCANLINES:     texel.rgb = shader_effect_scan_lines(texel.rgb, value); break;
+                    case SHADER_FLAG_SCANLINES:     texel.rgb = shader_effect_scanlines(texel.rgb, value); break;
                 }
             }
         }
