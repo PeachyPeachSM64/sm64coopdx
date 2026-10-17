@@ -126,8 +126,8 @@ f32 gFogIntensity = 1.0f;
 
 bool gFullbright = false;
 
-int gShaderFlags[SHADER_FLAG_MAX] = { 0 };
-f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX] = {
+bool gShaderFlags[SHADER_FLAG_MAX] = { 0 };
+const f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX] = {
     [SHADER_FLAG_HUE] = 0.0f,
     [SHADER_FLAG_SATURATION] = 1.0f,
     [SHADER_FLAG_BRIGHTNESS] = 1.0f,

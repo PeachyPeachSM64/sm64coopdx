@@ -11,7 +11,7 @@ bool get_shader_flag_enabled(enum ShaderFlag flag) {
 
 void set_shader_flag_enabled(enum ShaderFlag flag, bool enabled) {
     if (flag < 0 || flag >= SHADER_FLAG_MAX) { return; }
-    gShaderFlags[flag] = enabled ? 1 : 0;
+    gShaderFlags[flag] = enabled;
 }
 
 f32 get_shader_flag_value(enum ShaderFlag flag) {
@@ -34,8 +34,8 @@ void set_global_shader_flags_enabled(bool enabled) {
 
 AT_STARTUP void clear_all_shader_flags(void) {
     gShaderFlagsEnabled = true;
-    memset(gShaderFlags, 0, sizeof(s32) * SHADER_FLAG_MAX);
-    memcpy(gShaderFlagValues, gDefaultShaderFlagValues, sizeof(f32) * SHADER_FLAG_MAX);
+    memset(gShaderFlags, 0, sizeof(gShaderFlags));
+    memcpy(gShaderFlagValues, gDefaultShaderFlagValues, sizeof(gShaderFlagValues));
 }
 
 ///

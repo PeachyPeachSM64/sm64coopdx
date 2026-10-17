@@ -26,8 +26,8 @@ extern f32 gFogIntensity;
 
 extern bool gFullbright;
 
-extern int gShaderFlags[SHADER_FLAG_MAX];
-extern f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX];
+extern bool gShaderFlags[SHADER_FLAG_MAX];
+extern const f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX];
 extern f32 gShaderFlagValues[SHADER_FLAG_MAX];
 extern bool gShaderFlagsEnabled;
 

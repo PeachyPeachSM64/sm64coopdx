@@ -116,8 +116,8 @@ struct GLUniform {
 static const struct GLUniform GL_UNIFORMS[] = {
     [UNIFORM_CCS] = { "uCCS" },
     [UNIFORM_CCF] = { "uCCF" },
-    [UNIFORM_FRAME_COUNT] = { "uFrameCount" },
-    [UNIFORM_LIGHT_MAP] = { "uLightMapColor" },
+    [UNIFORM_NOISE_FRAME_COUNT] = { "uNoiseFrameCount" },
+    [UNIFORM_LIGHT_MAP_COLOR] = { "uLightMapColor" },
     [UNIFORM_SHADER_FLAGS] = { "uShaderFlags" },
     [UNIFORM_SHADER_FLAG_VALUES] = { "uShaderFlagValues" },
     [UNIFORM_TEX_PROPERTIES] = { "uTexProperties" },
@@ -163,17 +163,19 @@ static inline void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
 
     // Frame counter for noise effect
     if ((prg->cc.use_alpha && prg->cc.use_dither) || prg->cc.use_noise) {
-        glUniform1f(prg->uniform_locations[UNIFORM_FRAME_COUNT], (float) frame_count);
+        glUniform1f(prg->uniform_locations[UNIFORM_NOISE_FRAME_COUNT], (float) frame_count);
     }
 
     // Lightmap
     if (prg->cc.light_map) {
-        glUniform3f(prg->uniform_locations[UNIFORM_LIGHT_MAP], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
+        glUniform3f(prg->uniform_locations[UNIFORM_LIGHT_MAP_COLOR], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
     }
 
     // Global shader effects
     if (prg->cc.world_geometry) {
-        glUniform1iv(prg->uniform_locations[UNIFORM_SHADER_FLAGS], SHADER_FLAG_MAX, gShaderFlags);
+        int shader_flags = 0;
+        for (int i = 0; i < SHADER_FLAG_MAX; ++i) { shader_flags |= (gShaderFlags[i] << i); }
+        glUniform1i(prg->uniform_locations[UNIFORM_SHADER_FLAGS], shader_flags);
         glUniform1fv(prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES], SHADER_FLAG_MAX, gShaderFlagValues);
     }
 }
