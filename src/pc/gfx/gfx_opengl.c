@@ -26,11 +26,8 @@
 #include <SDL3/SDL_opengl.h>
 #endif
 
-#include "../platform.h"
-#include "../configfile.h"
 #include "gfx_pc.h"
 #include "gfx_rendering_api.h"
-#include "gfx_shaders.h"
 
 #define TEX_CACHE_STEP 512
 
@@ -192,27 +189,27 @@ static inline void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, 
  // Shaders //
 /////////////
 
-static const char UBERSHADER_VERT[] = {
-'#','v','e','r','s','i','o','n',' ','1','3','0','\n'
+static const char GL_UBERSHADER_VERT[] = {
+'#','v','e','r','s','i','o','n',' ','3','3','0','\n'
 ,
 #embed "gfx_cc.inl"
 ,
-#embed "shaders/ubershader.vert.glsl"
+#embed "shaders/opengl/ubershader.vert.glsl"
 ,0
 };
 
-static const char UBERSHADER_FRAG[] = {
-'#','v','e','r','s','i','o','n',' ','1','3','0','\n'
+static const char GL_UBERSHADER_FRAG[] = {
+'#','v','e','r','s','i','o','n',' ','3','3','0','\n'
 ,
 #embed "gfx_cc.inl"
 ,
-#embed "shaders/ubershader.frag.glsl"
+#embed "shaders/opengl/ubershader.frag.glsl"
 ,0
 };
 
 static void gfx_opengl_load_ubershader(void) {
-    const GLchar *sources[] = { UBERSHADER_VERT, UBERSHADER_FRAG };
-    const GLint lengths[] = { sizeof(UBERSHADER_VERT) - 1, sizeof(UBERSHADER_FRAG) - 1 };
+    const GLchar *sources[] = { GL_UBERSHADER_VERT, GL_UBERSHADER_FRAG };
+    const GLint lengths[] = { sizeof(GL_UBERSHADER_VERT) - 1, sizeof(GL_UBERSHADER_FRAG) - 1 };
     GLint success;
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);

@@ -129,21 +129,6 @@ static void append_formula(char *buf, size_t *len, const uint8_t* c, bool do_sin
 
 //     // Pixel shader input struct
 
-//     if (include_root_signature) {
-//         append_str(buf, &len, "#define RS \"RootFlags(ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT | DENY_VERTEX_SHADER_ROOT_ACCESS)");
-//         if ((cc.cm.use_alpha && cc.cm.use_dither) || ccf.do_noise) {
-//             append_str(buf, &len, ",CBV(b0, visibility = SHADER_VISIBILITY_PIXEL)");
-//         }
-//         if (ccf.used_textures[0]) {
-//             append_str(buf, &len, ",DescriptorTable(SRV(t0), visibility = SHADER_VISIBILITY_PIXEL)");
-//             append_str(buf, &len, ",DescriptorTable(Sampler(s0), visibility = SHADER_VISIBILITY_PIXEL)");
-//         }
-//         if (ccf.used_textures[1]) {
-//             append_str(buf, &len, ",DescriptorTable(SRV(t1), visibility = SHADER_VISIBILITY_PIXEL)");
-//             append_str(buf, &len, ",DescriptorTable(Sampler(s1), visibility = SHADER_VISIBILITY_PIXEL)");
-//         }
-//         append_line(buf, &len, "\"");
-//     }
 
 //     append_line(buf, &len, "struct PSInput {");
 //     append_line(buf, &len, "    float4 position : SV_POSITION;");
@@ -154,7 +139,7 @@ static void append_formula(char *buf, size_t *len, const uint8_t* c, bool do_sin
 //         }
 //     }
 //     if ((cc.cm.use_alpha && cc.cm.use_dither) || ccf.do_noise) {
-//         append_line(buf, &len, "    float4 screenPos : SCREENPOS;");
+//         append_line(buf, &len, "    float4 screenPos : SCREENPOS;"); // that's just ps.position (SV_POSITION) wtf
 //     }
 //     if (cc.cm.use_fog) {
 //         append_line(buf, &len, "    float4 fog : FOG;");
@@ -268,9 +253,7 @@ static void append_formula(char *buf, size_t *len, const uint8_t* c, bool do_sin
 //     append_line(buf, &len, "}");
 
 //     // Pixel shader
-//     if (include_root_signature) {
-//         append_line(buf, &len, "[RootSignature(RS)]");
-//     }
+
 //     append_line(buf, &len, "float4 PSMain(PSInput input) : SV_TARGET {");
 
 //     if ((cc.cm.use_alpha && cc.cm.use_dither) || ccf.do_noise) {

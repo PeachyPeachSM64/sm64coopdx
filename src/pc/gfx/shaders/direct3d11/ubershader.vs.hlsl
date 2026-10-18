@@ -1,0 +1,36 @@
+//
+// Inputs
+// The two following structures are the same, except for the position:
+// - POSITION for VS
+// - SV_POSITION for PS
+//
+
+struct VSInput {
+    float4 position : POSITION;
+    float2 texCoords[MAX_TEXTURES] : TEXCOORD0;
+    float4 inputs[MAX_SHADER_INPUTS] : INPUT0;
+    float4 fog : FOG;
+    float2 lightMap : LIGHTMAP;
+};
+
+struct PSInput {
+    float4 position : SV_POSITION;
+    float2 texCoords[MAX_TEXTURES] : TEXCOORD0;
+    float4 inputs[MAX_SHADER_INPUTS] : INPUT0;
+    float4 fog : FOG;
+    float2 lightMap : LIGHTMAP;
+};
+
+PSInput VSMain(VSInput vs) {
+    PSInput ps;
+    for (int t = 0; t < MAX_TEXTURES; ++t) {
+        ps.texCoords[t] = vs.texCoords[t];
+    }
+    for (int i = 0; i < MAX_SHADER_INPUTS; ++i) {
+        ps.inputs[i] = vs.inputs[i];
+    }
+    ps.fog = vs.fog;
+    ps.lightMap = vs.lightMap;
+    ps.position = vs.position;
+    return ps;
+}

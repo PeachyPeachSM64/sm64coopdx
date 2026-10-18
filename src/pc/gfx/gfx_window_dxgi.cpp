@@ -232,6 +232,7 @@ void ThrowIfFailed(HRESULT res, HWND h_wnd, const char *message) {
         char full_message[256];
         sprintf(full_message, "%s\n\nHRESULT: 0x%08X", message, res);
         dxgi.showing_error = true;
+        fprintf(stderr, "Error: 0x%08X\n%s", res, full_message);
         MessageBoxA(h_wnd, full_message, "Error", MB_OK | MB_ICONERROR);
         throw res;
     }

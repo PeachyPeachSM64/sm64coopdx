@@ -18,11 +18,6 @@
 #include "pc/utils/misc.h"
 #include "pc/debuglog.h"
 
-// TODO: remove this
-#define CC_MAX_SHADERS 64
-struct ShaderProgram { int x; };
-// -----------------
-
 static void gfx_dummy_wm_init(UNUSED const char *game_name) {
 }
 
@@ -54,24 +49,11 @@ static bool gfx_dummy_renderer_z_is_from_0_to_1(void) {
     return false;
 }
 
-static void gfx_dummy_renderer_unload_shader(UNUSED struct ShaderProgram *old_prg) {
+static bool gfx_dummy_renderer_update_cc(UNUSED struct ColorCombiner *cc) {
+    return false;
 }
 
-static void gfx_dummy_renderer_load_shader(UNUSED struct ShaderProgram *new_prg) {
-}
-
-static struct ShaderProgram *gfx_dummy_renderer_create_and_load_new_shader(UNUSED struct ColorCombiner* cc) {
-    return NULL;
-}
-
-static struct ShaderProgram *gfx_dummy_renderer_lookup_shader(UNUSED struct ColorCombiner* cc) {
-    return NULL;
-}
-
-static void gfx_dummy_renderer_shader_get_info(/*UNUSED struct ShaderProgram *prg,*/ shader_inputs_t *shader_inputs, bool used_textures[]) {
-    // *num_inputs = 0;
-    // used_textures[0] = false;
-    // used_textures[1] = false;
+static void gfx_dummy_renderer_update_uniforms(void) {
 }
 
 static uint32_t gfx_dummy_renderer_new_texture(void) {
@@ -143,11 +125,8 @@ struct GfxWindowBackendAPI gfx_window_dummy = {
 
 struct GfxRenderingAPI gfx_dummy_renderer_api = {
     .z_is_from_0_to_1 = gfx_dummy_renderer_z_is_from_0_to_1,
-    // .unload_shader = gfx_dummy_renderer_unload_shader,
-    // .load_shader = gfx_dummy_renderer_load_shader,
-    // .create_and_load_new_shader = gfx_dummy_renderer_create_and_load_new_shader,
-    // .lookup_shader = gfx_dummy_renderer_lookup_shader,
-    // .shader_get_info = gfx_dummy_renderer_shader_get_info,
+    .update_cc = gfx_dummy_renderer_update_cc,
+    .update_uniforms = gfx_dummy_renderer_update_uniforms,
     .new_texture = gfx_dummy_renderer_new_texture,
     .select_texture = gfx_dummy_renderer_select_texture,
     .upload_texture = gfx_dummy_renderer_upload_texture,
@@ -165,5 +144,5 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     .end_frame = gfx_dummy_renderer_end_frame,
     .finish_render = gfx_dummy_renderer_finish_render,
     .get_name = gfx_dummy_renderer_get_name,
-    .shutdown = gfx_dummy_renderer_shutdown
+    .shutdown = gfx_dummy_renderer_shutdown,
 };

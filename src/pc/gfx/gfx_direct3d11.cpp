@@ -12,22 +12,68 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
-#ifndef _LANGUAGE_C
-#define _LANGUAGE_C
-#endif
-#include <PR/gbi.h>
-
-#include "types.h"
-#include "pc/configfile.h"
-
-#include "gfx_cc.h"
-#include "gfx_window_manager.h"
-#include "gfx_rendering_api.h"
-#include "gfx_direct3d_common.h"
-
 extern "C" {
-    extern Color gVertexColor;
+#include "gfx_pc.h"
+#include "gfx_rendering_api.h"
 }
+
+
+
+static const char D3D11_UBERSHADER[] = {
+#embed "gfx_cc.inl"
+,
+#embed "shaders/direct3d11/ubershader.vs.hlsl"
+,
+#embed "shaders/direct3d11/ubershader.ps.hlsl"
+,0
+};
+
+
+/*
+struct PSInput {
+    float4 position : SV_POSITION;
+    float2 uv0 : TEXCOORD0;    float4 input1 : INPUT0;
+    float4 input2 : INPUT1;
+};
+Texture2D g_texture0 : register(t0);
+SamplerState g_sampler0 : register(s0);
+cbuffer PerDrawCB : register(b1) {
+    struct {
+        uint width;
+        uint height;
+        bool linear_filtering;
+        bool padding;
+    } textures[2];
+    uint filter;
+    uint padding[3];
+}
+#define TEX_OFFSET(tex, tSampler, texCoord, off, texSize) tex.Sample(tSampler, texCoord - off / texSize)
+float4 tex2D3PointFilter(in Texture2D tex, in SamplerState tSampler, in float2 texCoord, in float2 texSize) {
+    float2 offset = frac(texCoord * texSize - float2(0.5, 0.5));
+    offset -= step(1.0, offset.x + offset.y);
+    float4 c0 = TEX_OFFSET(tex, tSampler, texCoord, offset, texSize);
+    float4 c1 = TEX_OFFSET(tex, tSampler, texCoord, float2(offset.x - sign(offset.x), offset.y), texSize);
+    float4 c2 = TEX_OFFSET(tex, tSampler, texCoord, float2(offset.x, offset.y - sign(offset.y)), texSize);
+    return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);
+}
+PSInput VSMain(float4 position : POSITION, float2 uv0 : TEXCOORD0, float4 input1 : INPUT0, float4 input2 : INPUT1) {
+    PSInput result;
+    result.position = position;
+    result.uv0 = uv0;    result.input1 = input1;
+    result.input2 = input2;
+    return result;
+}
+float4 PSMain(PSInput input) : SV_TARGET {
+    float4 texVal0;
+    if (textures[0].linear_filtering && filter == 2)
+        texVal0 = tex2D3PointFilter(g_texture0, g_sampler0, input.uv0, float2(textures[0].width, textures[0].height));
+    else
+        texVal0 = g_texture0.Sample(g_sampler0, input.uv0);
+    float4 texel = float4(texVal0.rgb * input.input1.rgb, input.input2.a);
+    return texel;
+}
+
+*/
 
 #define DECLARE_GFX_DXGI_FUNCTIONS
 #include "gfx_window_dxgi.h"
@@ -209,6 +255,8 @@ static void create_render_target_views(bool is_resize) {
     d3d.current_height = desc1.Height;
 }
 
+static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCombiner* cc);
+
 static void gfx_d3d11_init(void) {
     // Load d3d11.dll
     d3d.d3d11_module = LoadLibraryW(L"d3d11.dll");
@@ -338,6 +386,9 @@ static void gfx_d3d11_init(void) {
                   gfx_window_dxgi_get_h_wnd(), "Failed to create lightmap constant buffer.");
 
     d3d.context->PSSetConstantBuffers(2, 1, d3d.lightmap_cb.GetAddressOf());
+
+
+    gfx_d3d11_create_and_load_new_shader(NULL);
 }
 
 
@@ -356,8 +407,12 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     // CCFeatures cc_features = { 0 };
     // gfx_cc_get_features(cc, &cc_features);
 
-    char buf[4096];
+    // char buf[4096];
     size_t len, num_floats;
+
+    const char *buf = D3D11_UBERSHADER;
+    len = sizeof(D3D11_UBERSHADER) - 1;
+
 
     // gfx_direct3d_common_build_shader(buf, len, num_floats, *cc, cc_features, false);
 
@@ -373,6 +428,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     HRESULT hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "VSMain", "vs_4_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
 
     if (FAILED(hr)) {
+        fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
         MessageBox(gfx_window_dxgi_get_h_wnd(), (char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
         throw hr;
     }
@@ -380,9 +436,12 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "PSMain", "ps_4_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
 
     if (FAILED(hr)) {
+        fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
         MessageBox(gfx_window_dxgi_get_h_wnd(), (char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
         throw hr;
     }
+
+    printf("Compilation done!\n");
 
     struct ShaderProgramD3D11 *prg = &d3d.shader_program_pool[d3d.shader_program_pool_index];
     d3d.shader_program_pool_index = (d3d.shader_program_pool_index + 1) % CC_MAX_SHADERS;
@@ -447,21 +506,11 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     return (struct ShaderProgram *)(d3d.shader_program = prg);
 }
 
-static struct ShaderProgram *gfx_d3d11_lookup_shader(struct ColorCombiner* cc) {
-    // for (size_t i = 0; i < d3d.shader_program_pool_size; i++) {
-    //     if (d3d.shader_program_pool[i].hash == cc->hash) {
-    //         return (struct ShaderProgram *)&d3d.shader_program_pool[i];
-    //     }
-    // }
-    return nullptr;
+static bool gfx_d3d11_update_cc(struct ColorCombiner *cc) {
+    return false;
 }
 
-static void gfx_d3d11_shader_get_info(/*struct ShaderProgram *prg,*/ shader_inputs_t *shader_inputs, bool used_textures[]) {
-    // struct ShaderProgramD3D11 *p = (struct ShaderProgramD3D11 *)prg;
-
-    // *num_inputs = p->num_inputs;
-    // used_textures[0] = p->used_textures[0];
-    // used_textures[1] = p->used_textures[1];
+static void gfx_d3d11_update_uniforms(void) {
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {
@@ -771,6 +820,8 @@ static void gfx_d3d11_finish_render(void) {
 
 struct GfxRenderingAPI gfx_direct3d11_api = {
     .z_is_from_0_to_1 = gfx_d3d11_z_is_from_0_to_1,
+    .update_cc = gfx_d3d11_update_cc,
+    .update_uniforms = gfx_d3d11_update_uniforms,
     // .unload_shader = gfx_d3d11_unload_shader,
     // .load_shader = gfx_d3d11_load_shader,
     // .create_and_load_new_shader = gfx_d3d11_create_and_load_new_shader,
