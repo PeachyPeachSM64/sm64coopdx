@@ -31,8 +31,6 @@
 
 #define TEX_CACHE_STEP 512
 
-#define tsizeof(TYPE, MEMBER) sizeof(((TYPE *)0)->MEMBER)
-
 struct GLShaderProgram {
     GLuint program;
     GLint attrib_locations[MAX_ATTRIBUTES];
@@ -65,20 +63,32 @@ static uint32_t frame_count;
 
 struct GLAttribute {
     const char *name;
-    size_t count;
-    size_t size;
     GLenum type;
     bool normalized;
-    size_t pointer;
     size_t offset;
+    size_t count;
+    size_t size;
+    size_t stride;
 };
 
+#define attrib_11(ATTRIB) \
+    offsetof(struct VertexAttribs, ATTRIB), 1, 1, tsizeof(struct VertexAttribs, ATTRIB[0])
+
+#define attrib_1A(ATTRIB) \
+    offsetof(struct VertexAttribs, ATTRIB), 1, countof(struct VertexAttribs, ATTRIB), tsizeof(struct VertexAttribs, ATTRIB[0])
+
+#define attrib_A1(ATTRIB) \
+    offsetof(struct VertexAttribs, ATTRIB), countof(struct VertexAttribs, ATTRIB), 1, tsizeof(struct VertexAttribs, ATTRIB[0])
+
+#define attrib_AA(ATTRIB) \
+    offsetof(struct VertexAttribs, ATTRIB), countof(struct VertexAttribs, ATTRIB), countof(struct VertexAttribs, ATTRIB[0]), tsizeof(struct VertexAttribs, ATTRIB[0])
+
 static const struct GLAttribute GL_ATTRIBUTES[] = {
-    [ATTRIBUTE_POS] = { "aVtxPos", 1, 4, GL_FLOAT, false, offsetof(struct VertexAttribs, pos), 0 },
-    [ATTRIBUTE_TEX_COORDS] = { "aTexCoords", MAX_TEXTURES, 2, GL_FLOAT, false, offsetof(struct VertexAttribs, tex_coords), tsizeof(struct VertexAttribs, tex_coords[0]) },
-    [ATTRIBUTE_INPUTS] = { "aInputs", MAX_SHADER_INPUTS, 4, GL_UNSIGNED_BYTE, true, offsetof(struct VertexAttribs, inputs), tsizeof(struct VertexAttribs, inputs[0]) },
-    [ATTRIBUTE_FOG] = { "aFog", 1, 4, GL_UNSIGNED_BYTE, true, offsetof(struct VertexAttribs, fog), 0 },
-    [ATTRIBUTE_LIGHT_MAP] = { "aLightMap", 1, 2, GL_UNSIGNED_SHORT, true, offsetof(struct VertexAttribs, light_map), 0 },
+    [ATTRIBUTE_POS]        = { "aVtxPos",    GL_FLOAT,          false, attrib_1A(pos)        },
+    [ATTRIBUTE_TEX_COORDS] = { "aTexCoords", GL_FLOAT,          false, attrib_AA(tex_coords) },
+    [ATTRIBUTE_INPUTS]     = { "aInputs",    GL_UNSIGNED_BYTE,  true,  attrib_AA(inputs)     },
+    [ATTRIBUTE_FOG]        = { "aFog",       GL_UNSIGNED_BYTE,  true,  attrib_1A(fog)        },
+    [ATTRIBUTE_LIGHT_MAP]  = { "aLightMap",  GL_UNSIGNED_SHORT, true,  attrib_1A(light_map)  },
 };
 
 static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) {
@@ -95,7 +105,7 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
         for (size_t j = 0; j < attrib->count; ++j) {
             int index = prg->attrib_locations[i] + j;
             glEnableVertexAttribArray(index);
-            glVertexAttribPointer(index, attrib->size, attrib->type, attrib->normalized, stride, (const void *) (attrib->pointer + j * attrib->offset));
+            glVertexAttribPointer(index, attrib->size, attrib->type, attrib->normalized, stride, (const void *) (attrib->offset + j * attrib->stride));
         }
     }
 }
@@ -109,13 +119,13 @@ struct GLUniform {
 };
 
 static const struct GLUniform GL_UNIFORMS[] = {
-    [UNIFORM_CCS] = { "uCCS" },
-    [UNIFORM_CCF] = { "uCCF" },
-    [UNIFORM_NOISE_FRAME_COUNT] = { "uNoiseFrameCount" },
-    [UNIFORM_LIGHT_MAP_COLOR] = { "uLightMapColor" },
-    [UNIFORM_SHADER_FLAGS] = { "uShaderFlags" },
+    [UNIFORM_CCS]                = { "uCCS"              },
+    [UNIFORM_CCF]                = { "uCCF"              },
+    [UNIFORM_NOISE_FRAME_COUNT]  = { "uNoiseFrameCount"  },
+    [UNIFORM_LIGHT_MAP_COLOR]    = { "uLightMapColor"    },
+    [UNIFORM_SHADER_FLAGS]       = { "uShaderFlags"      },
     [UNIFORM_SHADER_FLAG_VALUES] = { "uShaderFlagValues" },
-    [UNIFORM_TEX_PROPERTIES] = { "uTexProperties" },
+    [UNIFORM_TEX_PROPERTIES]     = { "uTexProperties"    },
 };
 
 static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {

@@ -3,6 +3,9 @@
 
 #include "gfx_cc.h"
 
+#define tsizeof(TYPE, MEMBER) sizeof(((TYPE *)0)->MEMBER)
+#define countof(TYPE, MEMBER) (tsizeof(TYPE, MEMBER) / tsizeof(TYPE, MEMBER[0]))
+
 enum {
     ATTRIBUTE_POS,
     ATTRIBUTE_TEX_COORDS,

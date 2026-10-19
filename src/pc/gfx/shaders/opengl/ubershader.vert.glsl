@@ -1,8 +1,3 @@
-#version 330
-
-#define MAX_TEXTURES 2
-#define MAX_SHADER_INPUTS 8
-
 // Vertex position
 in vec4 aVtxPos;
 
