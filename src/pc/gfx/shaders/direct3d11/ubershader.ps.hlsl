@@ -25,15 +25,12 @@
 #define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
 
 
-cbuffer ShaderConstants : register(b0) {
+cbuffer ShaderUniforms : register(b0) {
     int uCCS[CC_CHANNELS * CC_CYCLES];
     int uCCF;
-
     float3 uTexProperties[MAX_TEXTURES];
-
     float uNoiseFrameCount;
     float3 uLightMapColor;
-
     int uShaderFlags;
     float uShaderFlagValues[SHADER_FLAG_MAX];
 };

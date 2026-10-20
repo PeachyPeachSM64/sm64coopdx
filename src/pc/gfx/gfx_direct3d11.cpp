@@ -16,7 +16,6 @@
 #include <d3dcompiler.h>
 
 extern "C" {
-#include "gfx_pc.h"
 #include "gfx_rendering_api.h"
 }
 
@@ -81,8 +80,6 @@ float4 PSMain(PSInput input) : SV_TARGET {
 #define DECLARE_GFX_DXGI_FUNCTIONS
 #include "gfx_window_dxgi.h"
 
-#include "gfx_screen_config.h"
-
 #define DEBUG_D3D 0
 
 using namespace Microsoft::WRL; // For ComPtr
@@ -116,18 +113,7 @@ namespace {
 // This is very important to take into account when updating arrays of uniforms
 #define SHADER_ALIGN_BYTES  16
 
-struct D3D11Uniforms {
-    int ccs[CC_CHANNELS * CC_CYCLES];
-    int ccf;
 
-    float tex_properties[MAX_TEXTURES][3];
-
-    float noise_frame_count;
-    float light_map_color[3];
-
-    int shader_flags;
-    float shader_flag_values[SHADER_FLAG_MAX];
-};
 
 struct TextureData {
     ComPtr<ID3D11ShaderResourceView> resource_view;
@@ -180,7 +166,7 @@ static struct {
 
     DXGI_SAMPLE_DESC sample_description;
 
-    struct D3D11Uniforms cb_data;
+    struct ShaderUniforms cb_data;
     bool cb_dirty = true;
     uint32_t frame_count;
 
@@ -213,43 +199,94 @@ static struct {
     int8_t use_alpha = 0;
 } d3d;
 
+  ////////////////
+ // Attributes //
+////////////////
 
+// Type, components, normalized
+static const DXGI_FORMAT D3D11_ATTRIB_TYPES[][4][2] = {
+    [ATTRIBUTE_TYPE_INT8] = {
+        { DXGI_FORMAT_R8_SINT,       DXGI_FORMAT_R8_SNORM       },
+        { DXGI_FORMAT_R8G8_SINT,     DXGI_FORMAT_R8G8_SNORM     },
+        { DXGI_FORMAT_UNKNOWN,       DXGI_FORMAT_UNKNOWN        },
+        { DXGI_FORMAT_R8G8B8A8_SINT, DXGI_FORMAT_R8G8B8A8_SNORM },
+    },
+    [ATTRIBUTE_TYPE_UINT8] = {
+        { DXGI_FORMAT_R8_UINT,       DXGI_FORMAT_R8_UNORM       },
+        { DXGI_FORMAT_R8G8_UINT,     DXGI_FORMAT_R8G8_UNORM     },
+        { DXGI_FORMAT_UNKNOWN,       DXGI_FORMAT_UNKNOWN        },
+        { DXGI_FORMAT_R8G8B8A8_UINT, DXGI_FORMAT_R8G8B8A8_UNORM },
+    },
+    [ATTRIBUTE_TYPE_INT16] = {
+        { DXGI_FORMAT_R16_SINT,          DXGI_FORMAT_R16_SNORM          },
+        { DXGI_FORMAT_R16G16_SINT,       DXGI_FORMAT_R16G16_SNORM       },
+        { DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN            },
+        { DXGI_FORMAT_R16G16B16A16_SINT, DXGI_FORMAT_R16G16B16A16_SNORM },
+    },
+    [ATTRIBUTE_TYPE_UINT16] = {
+        { DXGI_FORMAT_R16_UINT,          DXGI_FORMAT_R16_UNORM          },
+        { DXGI_FORMAT_R16G16_UINT,       DXGI_FORMAT_R16G16_UNORM       },
+        { DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN            },
+        { DXGI_FORMAT_R16G16B16A16_UINT, DXGI_FORMAT_R16G16B16A16_UNORM },
+    },
+    [ATTRIBUTE_TYPE_INT32] = {
+        { DXGI_FORMAT_R32_SINT,          DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32_SINT,       DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32B32_SINT,    DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32B32A32_SINT, DXGI_FORMAT_UNKNOWN },
+    },
+    [ATTRIBUTE_TYPE_UINT32] = {
+        { DXGI_FORMAT_R32_UINT,          DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32_UINT,       DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32B32_UINT,    DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32B32A32_UINT, DXGI_FORMAT_UNKNOWN },
+    },
+    [ATTRIBUTE_TYPE_FLOAT] = {
+        { DXGI_FORMAT_R32_FLOAT,          DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32_FLOAT,       DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32B32_FLOAT,    DXGI_FORMAT_UNKNOWN },
+        { DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_UNKNOWN },
+    },
+};
+
+static size_t gfx_d3d11_get_input_element_desc_size() {
+    size_t size = 0;
+    for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
+        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
+        size += attrib->count;
+    }
+    return size;
+}
+
+static void gfx_d3d11_create_input_layout(struct D3D11ShaderProgram *prg, const void *vs_ptr, size_t vs_size) {
+    size_t ied_size = gfx_d3d11_get_input_element_desc_size();
+    D3D11_INPUT_ELEMENT_DESC *ied = new D3D11_INPUT_ELEMENT_DESC[ied_size];
+    ThrowIfFailed(ied != nullptr ? 0 : -1, gfx_window_dxgi_get_h_wnd(), "Failed to create input layout.");
+
+    for (int i = 0, k = 0; i < MAX_ATTRIBUTES; ++i) {
+        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
+        for (size_t j = 0; j < attrib->count; ++j) {
+            ied[k++] = {
+                .SemanticName = attrib->name,
+                .SemanticIndex = (UINT) j,
+                .Format = D3D11_ATTRIB_TYPES[attrib->type][attrib->components - 1][attrib->normalized],
+                .InputSlot = 0,
+                .AlignedByteOffset = (UINT) (attrib->offset + j * attrib->stride),
+                .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+                .InstanceDataStepRate = 0,
+            };
+        }
+    }
+
+    ThrowIfFailed(d3d.device->CreateInputLayout(ied, ied_size, vs_ptr, vs_size, prg->input_layout.GetAddressOf()));
+    delete[] ied;
+}
 
   //////////////
  // Uniforms //
 //////////////
 
-struct D3D11Uniform {
-    const char *name;
-    size_t offset;
-    size_t count;
-    size_t size;
-    size_t stride;
-};
-
-#define uniform_11(UNIFORM) \
-    offsetof(struct D3D11Uniforms, UNIFORM), 1, 1, tsizeof(struct D3D11Uniforms, UNIFORM)
-
-#define uniform_1A(UNIFORM) \
-    offsetof(struct D3D11Uniforms, UNIFORM), 1, countof(struct D3D11Uniforms, UNIFORM), tsizeof(struct D3D11Uniforms, UNIFORM)
-
-#define uniform_A1(UNIFORM) \
-    offsetof(struct D3D11Uniforms, UNIFORM), countof(struct D3D11Uniforms, UNIFORM), 1, tsizeof(struct D3D11Uniforms, UNIFORM[0])
-
-#define uniform_AA(UNIFORM) \
-    offsetof(struct D3D11Uniforms, UNIFORM), countof(struct D3D11Uniforms, UNIFORM), countof(struct D3D11Uniforms, UNIFORM[0]), tsizeof(struct D3D11Uniforms, UNIFORM[0])
-
-static const struct D3D11Uniform D3D11_UNIFORMS[] = {
-    [UNIFORM_CCS]                = { "uCCS",              uniform_A1(ccs)                },
-    [UNIFORM_CCF]                = { "uCCF",              uniform_11(ccf)                },
-    [UNIFORM_NOISE_FRAME_COUNT]  = { "uNoiseFrameCount",  uniform_11(noise_frame_count)  },
-    [UNIFORM_LIGHT_MAP_COLOR]    = { "uLightMapColor",    uniform_1A(light_map_color)    },
-    [UNIFORM_SHADER_FLAGS]       = { "uShaderFlags",      uniform_11(shader_flags)       },
-    [UNIFORM_SHADER_FLAG_VALUES] = { "uShaderFlagValues", uniform_A1(shader_flag_values) },
-    [UNIFORM_TEX_PROPERTIES]     = { "uTexProperties",    uniform_AA(tex_properties)     },
-};
-
-static void gfx_d3d11_locate_uniforms(struct D3D11ShaderProgram *prg, ID3DBlob *ps) {
+static size_t gfx_d3d11_locate_uniforms(struct D3D11ShaderProgram *prg, ID3DBlob *ps) {
     ComPtr<ID3D11ShaderReflection> reflection;
     ThrowIfFailed(D3DReflect(
         ps->GetBufferPointer(),
@@ -258,11 +295,21 @@ static void gfx_d3d11_locate_uniforms(struct D3D11ShaderProgram *prg, ID3DBlob *
         reinterpret_cast<void **>(reflection.GetAddressOf())
     ));
 
-    ID3D11ShaderReflectionConstantBuffer *buffer = reflection->GetConstantBufferByName("ShaderConstants");
+    // Get the constant buffer
+    ID3D11ShaderReflectionConstantBuffer *buffer = reflection->GetConstantBufferByName("ShaderUniforms");
+    if (!buffer) {
+        fprintf(stderr, "Constant buffer not found in pixel shader: %s\n", "ShaderUniforms");
+        ThrowIfFailed(-1);
+    }
+
+    // Get its description and save its size for later
     D3D11_SHADER_BUFFER_DESC buffer_desc;
-    buffer->GetDesc(&buffer_desc);
-    for (size_t i = 0; i < MAX_UNIFORMS; ++i) {
-        const struct D3D11Uniform *uniform = &D3D11_UNIFORMS[i];
+    ThrowIfFailed(buffer->GetDesc(&buffer_desc));
+    size_t cb_size = buffer_desc.Size;
+
+    // Get each uniform description and, more importantly, its offset in the constant buffer
+    for (int i = 0; i < MAX_UNIFORMS; ++i) {
+        const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
         ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(uniform->name);
         if (!variable) {
             fprintf(stderr, "Uniform not found in pixel shader: %s\n", uniform->name);
@@ -273,113 +320,90 @@ static void gfx_d3d11_locate_uniforms(struct D3D11ShaderProgram *prg, ID3DBlob *
         ThrowIfFailed(variable->GetDesc(&variable_desc));
 
         prg->uniform_locations[i] = variable_desc.StartOffset;
-
-        printf("%-24s offset=%u size=%u\n",
-               variable_desc.Name,
-               variable_desc.StartOffset,
-               variable_desc.Size);
     }
+
+    return cb_size;
 }
 
+static void gfx_d3d11_set_shader_uniforms(struct D3D11ShaderProgram *prg, ShaderUniforms *uniforms, void *dest) {
 
-static void gfx_d3d11_set_shader_uniforms(struct D3D11ShaderProgram *prg, D3D11Uniforms *uniforms, void *dest) {
+    //
+    // Hi fellow developer!
+    // Looking at this code, you might be thinking:
+    // "Why don't you simply memcpy the whole struct?"
+    //
+    // Because shader constant buffers have special memory alignment rules:
+    // - Array elements must always start at a 16-byte boundary, no matter the element size
+    // - Single elements that fit into the remaining space of a 16-byte block will fit
+    // - There is no easy way to determine the uniforms location, but luckily D3D11 has an API for it! (see: gfx_d3d11_locate_uniforms)
+    //
+    // For example, the following constant buffer:
+    //
+    // cbuffer ConstantBuffer : register(b0) {
+    //     int A[3];
+    //     int B;
+    //     float3 C[2];
+    //     float D;
+    // };
+    //
+    // ...will be structured like this in memory (all dots are padding/unusable bytes):
+    //
+    //      0    4    8    C
+    //  0x  AAAA .... .... ....    <---- A is an array of 4-byte elements, 12 bytes of padding are needed before the next element
+    //  1x  AAAA .... .... ....
+    //  2x  AAAA BBBB .... ....    <---- B is not an array and fits in the remaining gap after the last element of A
+    //  3x  CCCC CCCC CCCC ....    <---- C is float3, one element is 12-byte long
+    //  4x  CCCC CCCC CCCC DDDD    <---- D is not an array and fits in the remaining gap after the last element of C
+    //
 
-    static bool aaa = false;
-
-    for (size_t i = 0; i < MAX_UNIFORMS; ++i) {
-        const struct D3D11Uniform *uniform = &D3D11_UNIFORMS[i];
+    for (int i = 0; i < MAX_UNIFORMS; ++i) {
+        const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
         for (size_t j = 0; j < uniform->count; ++j) {
             memcpy(
                 (void *) (uintptr_t(dest)     + (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)),
                 (void *) (uintptr_t(uniforms) + (uniform->offset           + j * uniform->stride)),
                 uniform->stride
             );
-
-            if (!aaa) {
-            printf("%-30s [%u] %4u (%4X) --<%2u>-> %4u (%4X)\n",
-                uniform->name,
-                j,
-                (uniform->offset + j * uniform->stride),
-                (uniform->offset + j * uniform->stride),
-                uniform->stride,
-                (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES),
-                (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)
-            );
-
-
-            }
         }
     }
-
-    aaa=true;
 }
 
-
-
-
-static void create_render_target_views(bool is_resize) {
-    DXGI_SWAP_CHAIN_DESC1 desc1;
-
-    if (is_resize) {
-        // Release previous stuff (if any)
-
-        d3d.backbuffer_view.Reset();
-        d3d.depth_stencil_view.Reset();
-
-        // Resize swap chain buffers
-
-        ThrowIfFailed(d3d.swap_chain->GetDesc1(&desc1));
-        ThrowIfFailed(d3d.swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, desc1.Flags),
-                      gfx_window_dxgi_get_h_wnd(), "Failed to resize IDXGISwapChain buffers.");
-    }
-
-    // Get new size
-
-    ThrowIfFailed(d3d.swap_chain->GetDesc1(&desc1));
-
-    // Create back buffer
-
-    ComPtr<ID3D11Texture2D> backbuffer_texture;
-    ThrowIfFailed(d3d.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) backbuffer_texture.GetAddressOf()),
-                  gfx_window_dxgi_get_h_wnd(), "Failed to get backbuffer from IDXGISwapChain.");
-
-    ThrowIfFailed(d3d.device->CreateRenderTargetView(backbuffer_texture.Get(), nullptr, d3d.backbuffer_view.GetAddressOf()),
-                  gfx_window_dxgi_get_h_wnd(), "Failed to create render target view.");
-
-    // Create depth buffer
-
-    D3D11_TEXTURE2D_DESC depth_stencil_texture_desc;
-    ZeroMemory(&depth_stencil_texture_desc, sizeof(D3D11_TEXTURE2D_DESC));
-
-    depth_stencil_texture_desc.Width = desc1.Width;
-    depth_stencil_texture_desc.Height = desc1.Height;
-    depth_stencil_texture_desc.MipLevels = 1;
-    depth_stencil_texture_desc.ArraySize = 1;
-    depth_stencil_texture_desc.Format = d3d.feature_level >= D3D_FEATURE_LEVEL_10_0 ?
-                                        DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depth_stencil_texture_desc.SampleDesc = d3d.sample_description;
-    depth_stencil_texture_desc.Usage = D3D11_USAGE_DEFAULT;
-    depth_stencil_texture_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-    depth_stencil_texture_desc.CPUAccessFlags = 0;
-    depth_stencil_texture_desc.MiscFlags = 0;
-
-    ComPtr<ID3D11Texture2D> depth_stencil_texture;
-    ThrowIfFailed(d3d.device->CreateTexture2D(&depth_stencil_texture_desc, nullptr, depth_stencil_texture.GetAddressOf()));
-    ThrowIfFailed(d3d.device->CreateDepthStencilView(depth_stencil_texture.Get(), nullptr, d3d.depth_stencil_view.GetAddressOf()));
-
-    // Save resolution
-
-    d3d.current_width = desc1.Width;
-    d3d.current_height = desc1.Height;
-}
-
-
-
+  /////////////
+ // Shaders //
+/////////////
 
 static void gfx_d3d11_load_ubershader(void) {
+    const char *buf = D3D11_UBERSHADER;
+    const size_t len = sizeof(D3D11_UBERSHADER) - 1;
+    ComPtr<ID3DBlob> vs, ps;
+    ComPtr<ID3DBlob> error_blob;
+
+#if DEBUG_D3D
+    UINT compile_flags = D3DCOMPILE_DEBUG;
+#else
+    UINT compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
+#endif
+
+    HRESULT hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "VSMain", "vs_4_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
+    if (FAILED(hr)) {
+        fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
+        MessageBox(gfx_window_dxgi_get_h_wnd(), (const char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
+        throw hr;
+    }
+
+    hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "PSMain", "ps_4_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
+    if (FAILED(hr)) {
+        fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
+        MessageBox(gfx_window_dxgi_get_h_wnd(), (const char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
+        throw hr;
+    }
+
+    struct D3D11ShaderProgram *prg = &d3d.shader_program;
+
+    // Set up attributes
+    gfx_d3d11_create_input_layout(prg, vs->GetBufferPointer(), vs->GetBufferSize());
 
     // Create main vertex buffer
-
     D3D11_BUFFER_DESC vertex_buffer_desc;
     ZeroMemory(&vertex_buffer_desc, sizeof(D3D11_BUFFER_DESC));
 
@@ -392,10 +416,15 @@ static void gfx_d3d11_load_ubershader(void) {
     ThrowIfFailed(d3d.device->CreateBuffer(&vertex_buffer_desc, nullptr, d3d.vertex_buffer.GetAddressOf()),
                   gfx_window_dxgi_get_h_wnd(), "Failed to create vertex buffer.");
 
+    // Set up uniforms
+    size_t cb_size = gfx_d3d11_locate_uniforms(prg, ps.Get());
+
+    // Create shader uniforms constant buffer
     D3D11_BUFFER_DESC constant_buffer_desc;
     ZeroMemory(&constant_buffer_desc, sizeof(D3D11_BUFFER_DESC));
+
     constant_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-    constant_buffer_desc.ByteWidth = 240;//sizeof(D3D11Uniforms); TODO
+    constant_buffer_desc.ByteWidth = cb_size;
     constant_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     constant_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     constant_buffer_desc.MiscFlags = 0;
@@ -405,65 +434,11 @@ static void gfx_d3d11_load_ubershader(void) {
 
     d3d.context->PSSetConstantBuffers(0, 1, d3d.cb.GetAddressOf());
 
-    const char *buf = D3D11_UBERSHADER;
-    size_t len = sizeof(D3D11_UBERSHADER) - 1;
-
-    ComPtr<ID3DBlob> vs, ps;
-    ComPtr<ID3DBlob> error_blob;
-
-#if DEBUG_D3D
-    UINT compile_flags = D3DCOMPILE_DEBUG;
-#else
-    UINT compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
-#endif
-
-    HRESULT hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "VSMain", "vs_4_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
-
-    if (FAILED(hr)) {
-        fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
-        MessageBox(gfx_window_dxgi_get_h_wnd(), (char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
-        throw hr;
-    }
-
-    hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "PSMain", "ps_4_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
-
-    if (FAILED(hr)) {
-        fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
-        MessageBox(gfx_window_dxgi_get_h_wnd(), (char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
-        throw hr;
-    }
-
-    printf("Compilation done!\n");
-
-    struct D3D11ShaderProgram *prg = &d3d.shader_program;
-    // d3d.shader_program_pool[d3d.shader_program_pool_index];
-    // d3d.shader_program_pool_index = (d3d.shader_program_pool_index + 1) % CC_MAX_SHADERS;
-    // if (d3d.shader_program_pool_size < CC_MAX_SHADERS) { d3d.shader_program_pool_size++; }
-
+    // Create shaders
     ThrowIfFailed(d3d.device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, prg->vertex_shader.GetAddressOf()));
     ThrowIfFailed(d3d.device->CreatePixelShader(ps->GetBufferPointer(), ps->GetBufferSize(), nullptr, prg->pixel_shader.GetAddressOf()));
 
-    // Input Layout
-
-    D3D11_INPUT_ELEMENT_DESC ied[] = {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, offsetof(VertexAttribs, pos), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexAttribs, tex_coords[0]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 1, DXGI_FORMAT_R32G32_FLOAT, 0, offsetof(VertexAttribs, tex_coords[1]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[0]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 1, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[1]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 2, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[2]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 3, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[3]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 4, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[4]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 5, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[5]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "INPUT", 6, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, inputs[6]), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "FOG", 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0, offsetof(VertexAttribs, fog), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "LIGHTMAP", 0, DXGI_FORMAT_R16G16_UNORM, 0, offsetof(VertexAttribs, light_map), D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    };
-
-    ThrowIfFailed(d3d.device->CreateInputLayout(ied, ARRAYSIZE(ied), vs->GetBufferPointer(), vs->GetBufferSize(), prg->input_layout.GetAddressOf()));
-
-    // Blend state
-
+    // Create blend states
     D3D11_BLEND_DESC blend_desc;
     ZeroMemory(&blend_desc, sizeof(D3D11_BLEND_DESC));
 
@@ -479,12 +454,58 @@ static void gfx_d3d11_load_ubershader(void) {
     blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     ThrowIfFailed(d3d.device->CreateBlendState(&blend_desc, prg->alpha_blend_state.GetAddressOf()));
 
-    gfx_d3d11_locate_uniforms(prg, ps.Get());
 }
 
+static void create_render_target_views(bool is_resize) {
+    DXGI_SWAP_CHAIN_DESC1 desc1;
 
+    if (is_resize) {
+        // Release previous stuff (if any)
+        d3d.backbuffer_view.Reset();
+        d3d.depth_stencil_view.Reset();
+
+        // Resize swap chain buffers
+        ThrowIfFailed(d3d.swap_chain->GetDesc1(&desc1));
+        ThrowIfFailed(d3d.swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, desc1.Flags),
+                      gfx_window_dxgi_get_h_wnd(), "Failed to resize IDXGISwapChain buffers.");
+    }
+
+    // Get new size
+    ThrowIfFailed(d3d.swap_chain->GetDesc1(&desc1));
+
+    // Create back buffer
+    ComPtr<ID3D11Texture2D> backbuffer_texture;
+    ThrowIfFailed(d3d.swap_chain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID *) backbuffer_texture.GetAddressOf()),
+                  gfx_window_dxgi_get_h_wnd(), "Failed to get backbuffer from IDXGISwapChain.");
+    ThrowIfFailed(d3d.device->CreateRenderTargetView(backbuffer_texture.Get(), nullptr, d3d.backbuffer_view.GetAddressOf()),
+                  gfx_window_dxgi_get_h_wnd(), "Failed to create render target view.");
+
+    // Create depth buffer
+    D3D11_TEXTURE2D_DESC depth_stencil_texture_desc;
+
+    ZeroMemory(&depth_stencil_texture_desc, sizeof(D3D11_TEXTURE2D_DESC));
+    depth_stencil_texture_desc.Width = desc1.Width;
+    depth_stencil_texture_desc.Height = desc1.Height;
+    depth_stencil_texture_desc.MipLevels = 1;
+    depth_stencil_texture_desc.ArraySize = 1;
+    depth_stencil_texture_desc.Format = d3d.feature_level >= D3D_FEATURE_LEVEL_10_0 ? DXGI_FORMAT_D32_FLOAT : DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depth_stencil_texture_desc.SampleDesc = d3d.sample_description;
+    depth_stencil_texture_desc.Usage = D3D11_USAGE_DEFAULT;
+    depth_stencil_texture_desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    depth_stencil_texture_desc.CPUAccessFlags = 0;
+    depth_stencil_texture_desc.MiscFlags = 0;
+
+    ComPtr<ID3D11Texture2D> depth_stencil_texture;
+    ThrowIfFailed(d3d.device->CreateTexture2D(&depth_stencil_texture_desc, nullptr, depth_stencil_texture.GetAddressOf()));
+    ThrowIfFailed(d3d.device->CreateDepthStencilView(depth_stencil_texture.Get(), nullptr, d3d.depth_stencil_view.GetAddressOf()));
+
+    // Save resolution
+    d3d.current_width = desc1.Width;
+    d3d.current_height = desc1.Height;
+}
 
 static void gfx_d3d11_init(void) {
+
     // Load d3d11.dll
     d3d.d3d11_module = LoadLibraryW(L"d3d11.dll");
     if (d3d.d3d11_module == nullptr) {
@@ -503,7 +524,6 @@ static void gfx_d3d11_init(void) {
     d3d.D3DCompile = (pD3DCompile)GetProcAddress(d3d.d3dcompiler_module, "D3DCompile");
 
     // Create D3D11 device
-
     gfx_window_dxgi_create_factory_and_device(DEBUG_D3D, 11, [](IDXGIAdapter1 *adapter, bool test_only) {
 #if DEBUG_D3D
         UINT device_creation_flags = D3D11_CREATE_DEVICE_DEBUG;
@@ -540,27 +560,24 @@ static void gfx_d3d11_init(void) {
     });
 
     // Sample description to be used in back buffer and depth buffer
-
     d3d.sample_description.Count = 1;
     d3d.sample_description.Quality = 0;
 
     // Create the swap chain
     d3d.swap_chain = gfx_window_dxgi_create_swap_chain(d3d.device.Get());
 
-    // Create D3D Debug device if in debug mode
-
 #if DEBUG_D3D
+    // Create D3D Debug device if in debug mode
     ThrowIfFailed(d3d.device->QueryInterface(__uuidof(ID3D11Debug), (void **) d3d.debug.GetAddressOf()),
                   gfx_window_dxgi_get_h_wnd(), "Failed to get ID3D11Debug device.");
 #endif
 
     // Create views
-
     create_render_target_views(false);
 
+    // Load ubershader
     gfx_d3d11_load_ubershader();
 }
-
 
 static bool gfx_d3d11_z_is_from_0_to_1(void) {
     return true;
@@ -576,41 +593,50 @@ static bool gfx_d3d11_update_cc(struct ColorCombiner *cc) {
 
 static void gfx_d3d11_update_uniforms(void) {
     struct ColorCombiner *cc = &d3d.shader_program.cc;
-    for (int i = 0; i < CC_CHANNELS * CC_CYCLES; ++i) {
-        uint32_t packed_ccs =
-            ((uint32_t)cc->ccs[i * CC_COMPONENTS + 0] << 24) |
-            ((uint32_t)cc->ccs[i * CC_COMPONENTS + 1] << 16) |
-            ((uint32_t)cc->ccs[i * CC_COMPONENTS + 2] << 8) |
-            ((uint32_t)cc->ccs[i * CC_COMPONENTS + 3] << 0);
-        d3d.cb_data.ccs[i] = (int32_t)packed_ccs;
+
+    // CC sources
+    for (int i = 0; i < ARRAY_COUNT(d3d.cb_data.ccs); ++i) {
+        d3d.cb_data.ccs[i] = (
+            (cc->ccs[i * CC_COMPONENTS + 0] << 24) |
+            (cc->ccs[i * CC_COMPONENTS + 1] << 16) |
+            (cc->ccs[i * CC_COMPONENTS + 2] << 8) |
+            (cc->ccs[i * CC_COMPONENTS + 3] << 0)
+        );
     }
 
+    // CC features
     d3d.cb_data.ccf = 0;
-    d3d.cb_data.ccf |= cc->use_noise << CCF_NOISE;
-    d3d.cb_data.ccf |= cc->use_alpha << CCF_USE_ALPHA;
-    d3d.cb_data.ccf |= cc->use_fog << CCF_USE_FOG;
-    d3d.cb_data.ccf |= cc->texture_edge << CCF_TEX_EDGE;
-    d3d.cb_data.ccf |= cc->use_dither << CCF_USE_DITHER;
-    d3d.cb_data.ccf |= cc->use_2cycle << CCF_USE_2CYCLE;
-    d3d.cb_data.ccf |= cc->light_map << CCF_LIGHT_MAP;
-    d3d.cb_data.ccf |= cc->world_geometry << CCF_WORLD_GEOMETRY;
-    d3d.cb_data.ccf |= uint32_t(cc->used_textures) << CCF_USED_TEXTURE;
+    d3d.cb_data.ccf |= (cc->use_noise << CCF_NOISE);
+    d3d.cb_data.ccf |= (cc->use_alpha << CCF_USE_ALPHA);
+    d3d.cb_data.ccf |= (cc->use_fog << CCF_USE_FOG);
+    d3d.cb_data.ccf |= (cc->texture_edge << CCF_TEX_EDGE);
+    d3d.cb_data.ccf |= (cc->use_dither << CCF_USE_DITHER);
+    d3d.cb_data.ccf |= (cc->use_2cycle << CCF_USE_2CYCLE);
+    d3d.cb_data.ccf |= (cc->light_map << CCF_LIGHT_MAP);
+    d3d.cb_data.ccf |= (cc->world_geometry << CCF_WORLD_GEOMETRY);
+    d3d.cb_data.ccf |= (cc->used_textures << CCF_USED_TEXTURE);
 
+    // Frame counter for noise effect
     if ((cc->use_alpha && cc->use_dither) || cc->use_noise) {
-        d3d.cb_data.noise_frame_count = (float)d3d.frame_count;
+        d3d.cb_data.noise_frame_count = (float) d3d.frame_count;
     }
+
+    // Lightmap
     if (cc->light_map) {
         d3d.cb_data.light_map_color[0] = gVertexColor[0] / 255.0f;
         d3d.cb_data.light_map_color[1] = gVertexColor[1] / 255.0f;
         d3d.cb_data.light_map_color[2] = gVertexColor[2] / 255.0f;
     }
+
+    // Global shader effects
     if (cc->world_geometry) {
         d3d.cb_data.shader_flags = 0;
         for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
-            d3d.cb_data.shader_flags |= (int)gShaderFlags[i] << i;
+            d3d.cb_data.shader_flags |= (gShaderFlags[i] << i);
             d3d.cb_data.shader_flag_values[i] = gShaderFlagValues[i];
         }
     }
+
     d3d.cb_dirty = true;
 }
 
@@ -838,7 +864,7 @@ static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_v
     // if (d3d.cb_dirty) {
         ZeroMemory(&ms, sizeof(D3D11_MAPPED_SUBRESOURCE));
         ThrowIfFailed(d3d.context->Map(d3d.cb.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
-        memcpy(ms.pData, &d3d.cb_data, sizeof(D3D11Uniforms)); //TODO
+        memcpy(ms.pData, &d3d.cb_data, sizeof(ShaderUniforms)); //TODO
 
         gfx_d3d11_set_shader_uniforms(&d3d.shader_program, &d3d.cb_data, ms.pData);
 

@@ -1,11 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifndef _LANGUAGE_C
-# define _LANGUAGE_C
-#endif
-#include <PR/gbi.h>
-
 #ifdef __MINGW32__
 # define FOR_WINDOWS 1
 #else
@@ -26,7 +21,6 @@
 #include <SDL3/SDL_opengl.h>
 #endif
 
-#include "gfx_pc.h"
 #include "gfx_rendering_api.h"
 
 #define TEX_CACHE_STEP 512
@@ -61,51 +55,31 @@ static uint32_t frame_count;
  // Attributes //
 ////////////////
 
-struct GLAttribute {
-    const char *name;
-    GLenum type;
-    bool normalized;
-    size_t offset;
-    size_t count;
-    size_t size;
-    size_t stride;
-};
-
-#define attrib_11(ATTRIB) \
-    offsetof(struct VertexAttribs, ATTRIB), 1, 1, tsizeof(struct VertexAttribs, ATTRIB[0])
-
-#define attrib_1A(ATTRIB) \
-    offsetof(struct VertexAttribs, ATTRIB), 1, countof(struct VertexAttribs, ATTRIB), tsizeof(struct VertexAttribs, ATTRIB[0])
-
-#define attrib_A1(ATTRIB) \
-    offsetof(struct VertexAttribs, ATTRIB), countof(struct VertexAttribs, ATTRIB), 1, tsizeof(struct VertexAttribs, ATTRIB[0])
-
-#define attrib_AA(ATTRIB) \
-    offsetof(struct VertexAttribs, ATTRIB), countof(struct VertexAttribs, ATTRIB), countof(struct VertexAttribs, ATTRIB[0]), tsizeof(struct VertexAttribs, ATTRIB[0])
-
-static const struct GLAttribute GL_ATTRIBUTES[] = {
-    [ATTRIBUTE_POS]        = { "aVtxPos",    GL_FLOAT,          false, attrib_1A(pos)        },
-    [ATTRIBUTE_TEX_COORDS] = { "aTexCoords", GL_FLOAT,          false, attrib_AA(tex_coords) },
-    [ATTRIBUTE_INPUTS]     = { "aInputs",    GL_UNSIGNED_BYTE,  true,  attrib_AA(inputs)     },
-    [ATTRIBUTE_FOG]        = { "aFog",       GL_UNSIGNED_BYTE,  true,  attrib_1A(fog)        },
-    [ATTRIBUTE_LIGHT_MAP]  = { "aLightMap",  GL_UNSIGNED_SHORT, true,  attrib_1A(light_map)  },
+static const GLenum GL_ATTRIB_TYPES[] = {
+    [ATTRIBUTE_TYPE_INT8]   = GL_BYTE,
+    [ATTRIBUTE_TYPE_UINT8]  = GL_UNSIGNED_BYTE,
+    [ATTRIBUTE_TYPE_INT16]  = GL_SHORT,
+    [ATTRIBUTE_TYPE_UINT16] = GL_UNSIGNED_SHORT,
+    [ATTRIBUTE_TYPE_INT32]  = GL_INT,
+    [ATTRIBUTE_TYPE_UINT32] = GL_UNSIGNED_INT,
+    [ATTRIBUTE_TYPE_FLOAT]  = GL_FLOAT,
 };
 
 static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) {
-    for (size_t i = 0; i < MAX_ATTRIBUTES; ++i) {
-        const struct GLAttribute *attrib = &GL_ATTRIBUTES[i];
+    for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
+        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
         prg->attrib_locations[i] = glGetAttribLocation(prg->program, attrib->name);
     }
 }
 
 static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
     const size_t stride = sizeof(struct VertexAttribs);
-    for (size_t i = 0; i < MAX_ATTRIBUTES; ++i) {
-        const struct GLAttribute *attrib = &GL_ATTRIBUTES[i];
+    for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
+        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
         for (size_t j = 0; j < attrib->count; ++j) {
             int index = prg->attrib_locations[i] + j;
             glEnableVertexAttribArray(index);
-            glVertexAttribPointer(index, attrib->size, attrib->type, attrib->normalized, stride, (const void *) (attrib->offset + j * attrib->stride));
+            glVertexAttribPointer(index, attrib->components, GL_ATTRIB_TYPES[attrib->type], attrib->normalized, stride, (const void *) (attrib->offset + j * attrib->stride));
         }
     }
 }
@@ -114,23 +88,9 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
  // Uniforms //
 //////////////
 
-struct GLUniform {
-    const char *name;
-};
-
-static const struct GLUniform GL_UNIFORMS[] = {
-    [UNIFORM_CCS]                = { "uCCS"              },
-    [UNIFORM_CCF]                = { "uCCF"              },
-    [UNIFORM_NOISE_FRAME_COUNT]  = { "uNoiseFrameCount"  },
-    [UNIFORM_LIGHT_MAP_COLOR]    = { "uLightMapColor"    },
-    [UNIFORM_SHADER_FLAGS]       = { "uShaderFlags"      },
-    [UNIFORM_SHADER_FLAG_VALUES] = { "uShaderFlagValues" },
-    [UNIFORM_TEX_PROPERTIES]     = { "uTexProperties"    },
-};
-
 static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
-    for (size_t i = 0; i < MAX_UNIFORMS; ++i) {
-        const struct GLUniform *uniform = &GL_UNIFORMS[i];
+    for (int i = 0; i < MAX_UNIFORMS; ++i) {
+        const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(i);
         opengl_prg.uniform_locations[i] = glGetUniformLocation(prg->program, uniform->name);
     }
 
@@ -142,16 +102,16 @@ static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
 static inline void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
 
     // CC sources
-    static int sCCS[CC_CHANNELS * CC_CYCLES];
-    for (int i = 0; i < ARRAY_COUNT(sCCS); ++i) {
-        sCCS[i] = (
+    int ccs[CC_CHANNELS * CC_CYCLES];
+    for (int i = 0; i < ARRAY_COUNT(ccs); ++i) {
+        ccs[i] = (
             (prg->cc.ccs[i * CC_COMPONENTS + 0] << 24) |
             (prg->cc.ccs[i * CC_COMPONENTS + 1] << 16) |
             (prg->cc.ccs[i * CC_COMPONENTS + 2] << 8) |
             (prg->cc.ccs[i * CC_COMPONENTS + 3] << 0)
         );
     }
-    glUniform1iv(prg->uniform_locations[UNIFORM_CCS], ARRAY_COUNT(sCCS), sCCS);
+    glUniform1iv(prg->uniform_locations[UNIFORM_CCS], ARRAY_COUNT(ccs), ccs);
 
     // CC features
     int ccf = 0;

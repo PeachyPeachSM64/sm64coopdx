@@ -21,23 +21,13 @@
 #endif
 #include <PR/gbi.h>
 
-#define DECLARE_GFX_DXGI_FUNCTIONS
-#include "gfx_window_dxgi.h"
-
 extern "C" {
-    #include "pc/mods/mod_import.h"
-    #include "pc/rom_checker.h"
-    #include "pc/network/version.h"
-    #include "pc/configfile.h"
-}
-
-#include "pc/pc_main.h"
-
 #include "gfx_window_manager.h"
 #include "gfx_rendering_api.h"
-#include "gfx_direct3d_common.h"
-#include "gfx_screen_config.h"
-#include "gfx_pc.h"
+}
+
+#define DECLARE_GFX_DXGI_FUNCTIONS
+#include "gfx_window_dxgi.h"
 
 extern "C" f64 clock_elapsed_f64(void);
 
