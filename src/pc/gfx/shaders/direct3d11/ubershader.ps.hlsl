@@ -1,4 +1,3 @@
-// aaaa
 // defined in gfx_pc.h
 #define SHADER_FLAG_HUE             0
 #define SHADER_FLAG_SATURATION      1
@@ -12,8 +11,6 @@
 
 #define FILTER_THREE_POINT          2
 
-
-
 // CC sources
 #define A ((ABCD >> 24) & 0xFF)
 #define B ((ABCD >> 16) & 0xFF)
@@ -23,7 +20,6 @@
 // CC features
 #define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
 #define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
-
 
 cbuffer ShaderUniforms : register(b0) {
     int uCCS[CC_CHANNELS * CC_CYCLES];
@@ -35,10 +31,8 @@ cbuffer ShaderUniforms : register(b0) {
     float uShaderFlagValues[SHADER_FLAG_MAX];
 };
 
-Texture2D<float4> uTextures[MAX_TEXTURES] : register(t0);
+Texture2D uTextures[MAX_TEXTURES] : register(t0);
 SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
-
-
 
 //
 // Color combiner

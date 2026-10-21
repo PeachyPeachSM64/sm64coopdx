@@ -42,10 +42,10 @@
         float:    ATTRIBUTE_TYPE_FLOAT \
     )
 
-#define vertex_attrib_single_comp(_member_) vertex_attrib_type(_member_), single_comp(struct VertexAttribs, _member_)
-#define vertex_attrib_multi_comp(_member_) vertex_attrib_type(_member_[0]), multi_comp(struct VertexAttribs, _member_)
-#define vertex_attrib_array_single_comp(_member_) vertex_attrib_type(_member_[0]), array_single_comp(struct VertexAttribs, _member_)
-#define vertex_attrib_array_multi_comp(_member_) vertex_attrib_type(_member_[0][0]), array_multi_comp(struct VertexAttribs, _member_)
+#define vertex_attrib_single_comp(_member_)         vertex_attrib_type(_member_), single_comp(struct VertexAttribs, _member_)
+#define vertex_attrib_multi_comp(_member_)          vertex_attrib_type(_member_[0]), multi_comp(struct VertexAttribs, _member_)
+#define vertex_attrib_array_single_comp(_member_)   vertex_attrib_type(_member_[0]), array_single_comp(struct VertexAttribs, _member_)
+#define vertex_attrib_array_multi_comp(_member_)    vertex_attrib_type(_member_[0][0]), array_multi_comp(struct VertexAttribs, _member_)
 
 static const struct VertexAttribProperties VERTEX_ATTRIBS[] = {
     [ATTRIBUTE_POS]        = { "aVtxPos",    false, vertex_attrib_multi_comp(pos)              },
@@ -63,10 +63,10 @@ const struct VertexAttribProperties *gfx_shaders_get_attrib_properties(enum Vert
 // Uniforms
 //
 
-#define shader_uniform_single_comp(_member_) single_comp(struct ShaderUniforms, _member_)
-#define shader_uniform_multi_comp(_member_) multi_comp(struct ShaderUniforms, _member_)
-#define shader_uniform_array_single_comp(_member_) array_single_comp(struct ShaderUniforms, _member_)
-#define shader_uniform_array_multi_comp(_member_) array_multi_comp(struct ShaderUniforms, _member_)
+#define shader_uniform_single_comp(_member_)        single_comp(struct ShaderUniforms, _member_)
+#define shader_uniform_multi_comp(_member_)         multi_comp(struct ShaderUniforms, _member_)
+#define shader_uniform_array_single_comp(_member_)  array_single_comp(struct ShaderUniforms, _member_)
+#define shader_uniform_array_multi_comp(_member_)   array_multi_comp(struct ShaderUniforms, _member_)
 
 static const struct ShaderUniformProperties SHADER_UNIFORMS[] = {
     [UNIFORM_CCS]                = { "uCCS",              shader_uniform_array_single_comp(ccs)                },
