@@ -99,7 +99,7 @@ static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
     for (int i = 0; i < MAX_TEXTURES; ++i) { glUniform1i(sampler_location + i, i); }
 }
 
-static inline void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
+static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
 
     // CC sources
     int ccs[CC_CHANNELS * CC_CYCLES];
@@ -145,7 +145,7 @@ static inline void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
     }
 }
 
-static inline void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
+static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
     if ((prg->cc.used_textures & USED_TEXTURE(tile)) && opengl_tex[tile]) {
         glUniform3f(prg->uniform_locations[UNIFORM_TEX_PROPERTIES],
             opengl_tex[tile]->size[0],

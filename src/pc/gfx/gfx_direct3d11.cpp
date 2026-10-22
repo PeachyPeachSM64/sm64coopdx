@@ -43,8 +43,7 @@ struct D3D11ShaderProgram {
     ComPtr<ID3D11VertexShader> vertex_shader;
     ComPtr<ID3D11PixelShader> pixel_shader;
     ComPtr<ID3D11InputLayout> input_layout;
-    ComPtr<ID3D11BlendState> opaque_blend_state;
-    ComPtr<ID3D11BlendState> alpha_blend_state;
+    ComPtr<ID3D11BlendState> blend_states[2]; // TODO: move this out of shader program
     uint32_t uniform_locations[MAX_UNIFORMS];
     struct ColorCombiner cc;
 };
@@ -85,20 +84,10 @@ static struct {
 
     struct D3D11ShaderProgram shader_program;
     uint32_t current_width, current_height;
-    bool depth_test;
-    bool depth_mask;
-    bool zmode_decal;
-
-    // Previous states (to prevent setting states needlessly)
-    ComPtr<ID3D11BlendState> last_blend_state = nullptr;
-    ComPtr<ID3D11ShaderResourceView> last_resource_views[MAX_TEXTURES] = { nullptr, nullptr };
-    ComPtr<ID3D11SamplerState> last_sampler_states[MAX_TEXTURES] = { nullptr, nullptr };
-    bool last_depth_test = true;
-    bool last_depth_mask = true;
-    bool last_zmode_decal = true;
+    bool depth_test = false;
+    bool depth_mask = false;
+    bool zmode_decal = false;
     bool use_alpha = true;
-
-    struct ColorCombiner cc;
 } d3d;
 
   ////////////////
@@ -227,7 +216,69 @@ static size_t gfx_d3d11_locate_uniforms(struct D3D11ShaderProgram *prg, ID3DBlob
     return cb_size;
 }
 
-static void gfx_d3d11_set_shader_uniforms(struct D3D11ShaderProgram *prg, ShaderUniforms *uniforms, void *dest) {
+static void gfx_d3d11_set_shader_uniforms(struct D3D11ShaderProgram *prg) {
+    struct ColorCombiner *cc = &prg->cc;
+
+    // CC sources
+    for (int i = 0; i < ARRAY_COUNT(d3d.cb_data.ccs); ++i) {
+        d3d.cb_data.ccs[i] = (
+            (cc->ccs[i * CC_COMPONENTS + 0] << 24) |
+            (cc->ccs[i * CC_COMPONENTS + 1] << 16) |
+            (cc->ccs[i * CC_COMPONENTS + 2] << 8) |
+            (cc->ccs[i * CC_COMPONENTS + 3] << 0)
+        );
+    }
+
+    // CC features
+    d3d.cb_data.ccf = 0;
+    d3d.cb_data.ccf |= (cc->use_noise << CCF_NOISE);
+    d3d.cb_data.ccf |= (cc->use_alpha << CCF_USE_ALPHA);
+    d3d.cb_data.ccf |= (cc->use_fog << CCF_USE_FOG);
+    d3d.cb_data.ccf |= (cc->texture_edge << CCF_TEX_EDGE);
+    d3d.cb_data.ccf |= (cc->use_dither << CCF_USE_DITHER);
+    d3d.cb_data.ccf |= (cc->use_2cycle << CCF_USE_2CYCLE);
+    d3d.cb_data.ccf |= (cc->light_map << CCF_LIGHT_MAP);
+    d3d.cb_data.ccf |= (cc->world_geometry << CCF_WORLD_GEOMETRY);
+    d3d.cb_data.ccf |= (cc->used_textures << CCF_USED_TEXTURE);
+
+    // Frame counter for noise effect
+    if ((cc->use_alpha && cc->use_dither) || cc->use_noise) {
+        d3d.cb_data.noise_frame_count = (float) d3d.frame_count;
+    }
+
+    // Lightmap
+    if (cc->light_map) {
+        d3d.cb_data.light_map_color[0] = gVertexColor[0] / 255.0f;
+        d3d.cb_data.light_map_color[1] = gVertexColor[1] / 255.0f;
+        d3d.cb_data.light_map_color[2] = gVertexColor[2] / 255.0f;
+    }
+
+    // Global shader effects
+    if (cc->world_geometry) {
+        d3d.cb_data.shader_flags = 0;
+        for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
+            d3d.cb_data.shader_flags |= (gShaderFlags[i] << i);
+            d3d.cb_data.shader_flag_values[i] = gShaderFlagValues[i];
+        }
+    }
+
+    d3d.cb_dirty = true;
+}
+
+static void gfx_d3d11_set_texture_uniforms(struct D3D11ShaderProgram *prg, int tile) {
+    uint32_t texture_id = d3d.current_texture_ids[tile];
+    if ((prg->cc.used_textures & USED_TEXTURE(tile)) && texture_id < d3d.textures.size()) {
+        const D3D11Texture *texture_data = &d3d.textures[texture_id];
+        d3d.context->PSSetShaderResources(tile, 1, texture_data->resource_view.GetAddressOf());
+        d3d.context->PSSetSamplers(tile, 1, texture_data->sampler_state.GetAddressOf());
+        d3d.cb_data.tex_properties[tile][0] = (float) texture_data->width;
+        d3d.cb_data.tex_properties[tile][1] = (float) texture_data->height;
+        d3d.cb_data.tex_properties[tile][2] = (float) texture_data->filter;
+        d3d.cb_dirty = true;
+    }
+}
+
+static void gfx_d3d11_upload_shader_uniforms(struct D3D11ShaderProgram *prg, ShaderUniforms *uniforms, void *dest) {
 
     //
     // Hi fellow developer!
@@ -361,7 +412,7 @@ static void gfx_d3d11_load_ubershader(void) {
     ZeroMemory(&blend_desc, sizeof(D3D11_BLEND_DESC));
 
     blend_desc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    ThrowIfFailed(d3d.device->CreateBlendState(&blend_desc, prg->opaque_blend_state.GetAddressOf()));
+    ThrowIfFailed(d3d.device->CreateBlendState(&blend_desc, prg->blend_states[0].GetAddressOf()));
 
     blend_desc.RenderTarget[0].BlendEnable = true;
     blend_desc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
@@ -370,10 +421,10 @@ static void gfx_d3d11_load_ubershader(void) {
     blend_desc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
     blend_desc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
     blend_desc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    ThrowIfFailed(d3d.device->CreateBlendState(&blend_desc, prg->alpha_blend_state.GetAddressOf()));
+    ThrowIfFailed(d3d.device->CreateBlendState(&blend_desc, prg->blend_states[1].GetAddressOf()));
 }
 
-static void create_render_target_views(bool is_resize) {
+static void gfx_d3d11_create_render_target_views(bool is_resize) {
     DXGI_SWAP_CHAIN_DESC1 desc1;
 
     if (is_resize) {
@@ -420,6 +471,51 @@ static void create_render_target_views(bool is_resize) {
     d3d.current_width = desc1.Width;
     d3d.current_height = desc1.Height;
 }
+
+
+static void gfx_d3d11_update_depth_stencil_state(void) {
+    d3d.depth_stencil_state.Reset();
+
+    // TODO: create states on init and set only?
+    D3D11_DEPTH_STENCIL_DESC depth_stencil_desc;
+    ZeroMemory(&depth_stencil_desc, sizeof(D3D11_DEPTH_STENCIL_DESC));
+
+    depth_stencil_desc.DepthEnable = d3d.depth_test;
+    depth_stencil_desc.DepthWriteMask = d3d.depth_mask ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+    depth_stencil_desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
+    depth_stencil_desc.StencilEnable = false;
+
+    ThrowIfFailed(d3d.device->CreateDepthStencilState(&depth_stencil_desc, d3d.depth_stencil_state.GetAddressOf()));
+    d3d.context->OMSetDepthStencilState(d3d.depth_stencil_state.Get(), 0);
+}
+
+static void gfx_d3d11_update_rasterizer_state(void) {
+    d3d.rasterizer_state.Reset();
+
+    // TODO: create states on init and set only?
+    D3D11_RASTERIZER_DESC rasterizer_desc;
+    ZeroMemory(&rasterizer_desc, sizeof(D3D11_RASTERIZER_DESC));
+
+    rasterizer_desc.FillMode = D3D11_FILL_SOLID;
+    rasterizer_desc.CullMode = D3D11_CULL_NONE;
+    rasterizer_desc.FrontCounterClockwise = true;
+    rasterizer_desc.DepthBias = 0;
+    rasterizer_desc.SlopeScaledDepthBias = d3d.zmode_decal ? -2.0f : 0.0f;
+    rasterizer_desc.DepthBiasClamp = 0.0f;
+    rasterizer_desc.DepthClipEnable = true;
+    rasterizer_desc.ScissorEnable = true;
+    rasterizer_desc.MultisampleEnable = false;
+    rasterizer_desc.AntialiasedLineEnable = false;
+
+    ThrowIfFailed(d3d.device->CreateRasterizerState(&rasterizer_desc, d3d.rasterizer_state.GetAddressOf()));
+    d3d.context->RSSetState(d3d.rasterizer_state.Get());
+}
+
+static void gfx_d3d11_update_blend_state(void) {
+    d3d.context->OMSetBlendState(d3d.shader_program.blend_states[d3d.use_alpha].Get(), 0, 0xFFFFFFFF);
+}
+
+
 
 static void gfx_d3d11_init(void) {
 
@@ -490,10 +586,15 @@ static void gfx_d3d11_init(void) {
 #endif
 
     // Create views
-    create_render_target_views(false);
+    gfx_d3d11_create_render_target_views(false);
 
     // Load ubershader
     gfx_d3d11_load_ubershader();
+
+    // Init states
+    gfx_d3d11_update_depth_stencil_state();
+    gfx_d3d11_update_rasterizer_state();
+    gfx_d3d11_update_blend_state();
 }
 
 static bool gfx_d3d11_z_is_from_0_to_1(void) {
@@ -502,76 +603,28 @@ static bool gfx_d3d11_z_is_from_0_to_1(void) {
 
 static bool gfx_d3d11_update_cc(struct ColorCombiner *cc) {
     if (memcmp(&d3d.shader_program.cc, cc, sizeof(*cc)) != 0) {
-        d3d.cc = *cc;
+        d3d.shader_program.cc = *cc;
         return true;
     }
     return false;
 }
 
 static void gfx_d3d11_update_uniforms(void) {
-    d3d.shader_program.cc = d3d.cc;
-
-    struct ColorCombiner *cc = &d3d.shader_program.cc;
-
-    // CC sources
-    for (int i = 0; i < ARRAY_COUNT(d3d.cb_data.ccs); ++i) {
-        d3d.cb_data.ccs[i] = (
-            (cc->ccs[i * CC_COMPONENTS + 0] << 24) |
-            (cc->ccs[i * CC_COMPONENTS + 1] << 16) |
-            (cc->ccs[i * CC_COMPONENTS + 2] << 8) |
-            (cc->ccs[i * CC_COMPONENTS + 3] << 0)
-        );
+    gfx_d3d11_set_shader_uniforms(&d3d.shader_program);
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
+        gfx_d3d11_set_texture_uniforms(&d3d.shader_program, i);
     }
-
-    // CC features
-    d3d.cb_data.ccf = 0;
-    d3d.cb_data.ccf |= (cc->use_noise << CCF_NOISE);
-    d3d.cb_data.ccf |= (cc->use_alpha << CCF_USE_ALPHA);
-    d3d.cb_data.ccf |= (cc->use_fog << CCF_USE_FOG);
-    d3d.cb_data.ccf |= (cc->texture_edge << CCF_TEX_EDGE);
-    d3d.cb_data.ccf |= (cc->use_dither << CCF_USE_DITHER);
-    d3d.cb_data.ccf |= (cc->use_2cycle << CCF_USE_2CYCLE);
-    d3d.cb_data.ccf |= (cc->light_map << CCF_LIGHT_MAP);
-    d3d.cb_data.ccf |= (cc->world_geometry << CCF_WORLD_GEOMETRY);
-    d3d.cb_data.ccf |= (cc->used_textures << CCF_USED_TEXTURE);
-
-    // Frame counter for noise effect
-    if ((cc->use_alpha && cc->use_dither) || cc->use_noise) {
-        d3d.cb_data.noise_frame_count = (float) d3d.frame_count;
-    }
-
-    // Lightmap
-    if (cc->light_map) {
-        d3d.cb_data.light_map_color[0] = gVertexColor[0] / 255.0f;
-        d3d.cb_data.light_map_color[1] = gVertexColor[1] / 255.0f;
-        d3d.cb_data.light_map_color[2] = gVertexColor[2] / 255.0f;
-    }
-
-    // Global shader effects
-    if (cc->world_geometry) {
-        d3d.cb_data.shader_flags = 0;
-        for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
-            d3d.cb_data.shader_flags |= (gShaderFlags[i] << i);
-            d3d.cb_data.shader_flag_values[i] = gShaderFlagValues[i];
-        }
-    }
-
-    d3d.cb_dirty = true;
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {
     d3d.textures.resize(d3d.textures.size() + 1);
-    return (uint32_t)(d3d.textures.size() - 1);
+    return (uint32_t) (d3d.textures.size() - 1);
 }
 
 static void gfx_d3d11_select_texture(int tile, uint32_t texture_id) {
     d3d.current_tile = tile;
     d3d.current_texture_ids[tile] = texture_id;
-    D3D11Texture &texture_data = d3d.textures[texture_id];
-    d3d.cb_data.tex_properties[tile][0] = (float)texture_data.width;
-    d3d.cb_data.tex_properties[tile][1] = (float)texture_data.height;
-    d3d.cb_data.tex_properties[tile][2] = (float)texture_data.filter;
-    d3d.cb_dirty = true;
+    gfx_d3d11_set_texture_uniforms(&d3d.shader_program, tile);
 }
 
 static D3D11_TEXTURE_ADDRESS_MODE gfx_cm_to_d3d11(uint32_t val) {
@@ -640,7 +693,7 @@ static void gfx_d3d11_set_sampler_parameters(int tile, uint8_t filter, uint32_t 
 
     D3D11Texture *texture_data = &d3d.textures[d3d.current_texture_ids[tile]];
     texture_data->filter = filter;
-    d3d.cb_data.tex_properties[tile][2] = (float)filter;
+    d3d.cb_data.tex_properties[tile][2] = (float) filter;
     d3d.cb_dirty = true;
 
     // This function is called twice per texture, the first one only to set default values.
@@ -649,18 +702,29 @@ static void gfx_d3d11_set_sampler_parameters(int tile, uint8_t filter, uint32_t 
     texture_data->sampler_state.Reset();
 
     ThrowIfFailed(d3d.device->CreateSamplerState(&sampler_desc, texture_data->sampler_state.GetAddressOf()));
+
+    gfx_d3d11_set_texture_uniforms(&d3d.shader_program, tile);
 }
 
 static void gfx_d3d11_set_depth_test(bool depth_test) {
-    d3d.depth_test = depth_test;
+    if (d3d.depth_test != depth_test) {
+        d3d.depth_test = depth_test;
+        gfx_d3d11_update_depth_stencil_state();
+    }
 }
 
 static void gfx_d3d11_set_depth_mask(bool depth_mask) {
-    d3d.depth_mask = depth_mask;
+    if (d3d.depth_mask != depth_mask) {
+        d3d.depth_mask = depth_mask;
+        gfx_d3d11_update_depth_stencil_state();
+    }
 }
 
 static void gfx_d3d11_set_zmode_decal(bool zmode_decal) {
-    d3d.zmode_decal = zmode_decal;
+    if (d3d.zmode_decal != zmode_decal) {
+        d3d.zmode_decal = zmode_decal;
+        gfx_d3d11_update_rasterizer_state();
+    }
 }
 
 static void gfx_d3d11_set_viewport(int x, int y, int width, int height) {
@@ -686,77 +750,15 @@ static void gfx_d3d11_set_scissor(int x, int y, int width, int height) {
 }
 
 static void gfx_d3d11_set_use_alpha(bool use_alpha) {
-    d3d.use_alpha = use_alpha;
+    if (d3d.use_alpha != use_alpha) {
+        d3d.use_alpha = use_alpha;
+        gfx_d3d11_update_blend_state();
+    }
 }
 
 static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
 
-    if (d3d.last_depth_test != d3d.depth_test || d3d.last_depth_mask != d3d.depth_mask) {
-        d3d.last_depth_test = d3d.depth_test;
-        d3d.last_depth_mask = d3d.depth_mask;
-
-        d3d.depth_stencil_state.Reset();
-
-        D3D11_DEPTH_STENCIL_DESC depth_stencil_desc;
-        ZeroMemory(&depth_stencil_desc, sizeof(D3D11_DEPTH_STENCIL_DESC));
-
-        depth_stencil_desc.DepthEnable = d3d.depth_test;
-        depth_stencil_desc.DepthWriteMask = d3d.depth_mask ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
-        depth_stencil_desc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
-        depth_stencil_desc.StencilEnable = false;
-
-        ThrowIfFailed(d3d.device->CreateDepthStencilState(&depth_stencil_desc, d3d.depth_stencil_state.GetAddressOf()));
-        d3d.context->OMSetDepthStencilState(d3d.depth_stencil_state.Get(), 0);
-    }
-
-    if (d3d.last_zmode_decal != d3d.zmode_decal) {
-        d3d.last_zmode_decal = d3d.zmode_decal;
-
-        d3d.rasterizer_state.Reset();
-
-        D3D11_RASTERIZER_DESC rasterizer_desc;
-        ZeroMemory(&rasterizer_desc, sizeof(D3D11_RASTERIZER_DESC));
-
-        rasterizer_desc.FillMode = D3D11_FILL_SOLID;
-        rasterizer_desc.CullMode = D3D11_CULL_NONE;
-        rasterizer_desc.FrontCounterClockwise = true;
-        rasterizer_desc.DepthBias = 0;
-        rasterizer_desc.SlopeScaledDepthBias = d3d.zmode_decal ? -2.0f : 0.0f;
-        rasterizer_desc.DepthBiasClamp = 0.0f;
-        rasterizer_desc.DepthClipEnable = true;
-        rasterizer_desc.ScissorEnable = true;
-        rasterizer_desc.MultisampleEnable = false;
-        rasterizer_desc.AntialiasedLineEnable = false;
-
-        ThrowIfFailed(d3d.device->CreateRasterizerState(&rasterizer_desc, d3d.rasterizer_state.GetAddressOf()));
-        d3d.context->RSSetState(d3d.rasterizer_state.Get());
-    }
-
-    for (int32_t i = 0; i < MAX_TEXTURES; i++) {
-        if (d3d.shader_program.cc.used_textures & USED_TEXTURE(i)) {
-            D3D11Texture &texture_data = d3d.textures[d3d.current_texture_ids[i]];
-            bool resource_changed = d3d.last_resource_views[i].Get() != texture_data.resource_view.Get();
-            bool sampler_changed = d3d.last_sampler_states[i].Get() != texture_data.sampler_state.Get();
-
-            if (resource_changed) {
-                d3d.last_resource_views[i] = texture_data.resource_view.Get();
-                d3d.context->PSSetShaderResources(i, 1, texture_data.resource_view.GetAddressOf());
-            }
-
-            if (sampler_changed) {
-                d3d.last_sampler_states[i] = texture_data.sampler_state.Get();
-                d3d.context->PSSetSamplers(i, 1, texture_data.sampler_state.GetAddressOf());
-            }
-
-            d3d.cb_data.tex_properties[i][0] = (float)texture_data.width;
-            d3d.cb_data.tex_properties[i][1] = (float)texture_data.height;
-            d3d.cb_data.tex_properties[i][2] = (float)texture_data.filter;
-            d3d.cb_dirty |= resource_changed || sampler_changed;
-        }
-    }
-
     // Set vertex buffer data
-
     D3D11_MAPPED_SUBRESOURCE ms;
     ZeroMemory(&ms, sizeof(D3D11_MAPPED_SUBRESOURCE));
     if (d3d.vertex_buffer_offset + buf_vbo_len > D3D11_VERTEX_BUFFER_LENGTH) {
@@ -775,16 +777,11 @@ static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_v
     d3d.vertex_buffer_offset += buf_vbo_len;
 
 
-    ID3D11BlendState *blend_state = d3d.use_alpha ? d3d.shader_program.alpha_blend_state.Get() : d3d.shader_program.opaque_blend_state.Get();
-    if (d3d.last_blend_state.Get() != blend_state) {
-        d3d.last_blend_state = blend_state;
-        d3d.context->OMSetBlendState(blend_state, 0, 0xFFFFFFFF);
-    }
 
     if (d3d.cb_dirty) {
         ZeroMemory(&ms, sizeof(D3D11_MAPPED_SUBRESOURCE));
         ThrowIfFailed(d3d.context->Map(d3d.cb.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
-        gfx_d3d11_set_shader_uniforms(&d3d.shader_program, &d3d.cb_data, ms.pData);
+        gfx_d3d11_upload_shader_uniforms(&d3d.shader_program, &d3d.cb_data, ms.pData);
         d3d.context->Unmap(d3d.cb.Get(), 0);
         d3d.cb_dirty = false;
     }
@@ -794,7 +791,7 @@ static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_v
 }
 
 static void gfx_d3d11_on_resize(void) {
-    create_render_target_views(true);
+    gfx_d3d11_create_render_target_views(true);
 }
 
 static void gfx_d3d11_start_frame(void) {
@@ -804,8 +801,8 @@ static void gfx_d3d11_start_frame(void) {
     d3d.context->OMSetRenderTargets(1, d3d.backbuffer_view.GetAddressOf(), d3d.depth_stencil_view.Get());
 
     // Clear render targets
-    const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    d3d.context->ClearRenderTargetView(d3d.backbuffer_view.Get(), clearColor);
+    const float clear_color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    d3d.context->ClearRenderTargetView(d3d.backbuffer_view.Get(), clear_color);
     d3d.context->ClearDepthStencilView(d3d.depth_stencil_view.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
