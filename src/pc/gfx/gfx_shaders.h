@@ -11,7 +11,10 @@
 enum VertexAttrib {
     ATTRIBUTE_POS,
     ATTRIBUTE_TEX_COORDS,
-    ATTRIBUTE_INPUTS,
+    ATTRIBUTE_PRIMITIVE,
+    ATTRIBUTE_SHADE,
+    ATTRIBUTE_ENVIRONMENT,
+    ATTRIBUTE_LOD,
     ATTRIBUTE_FOG,
     ATTRIBUTE_LIGHT_MAP,
     MAX_ATTRIBUTES,
@@ -40,7 +43,12 @@ struct VertexAttribProperties {
 struct VertexAttribs {
     float pos[4];
     float tex_coords[MAX_TEXTURES][2];
-    uint8_t inputs[MAX_SHADER_INPUTS][4];
+    struct {
+        uint8_t primitive[4];
+        uint8_t shade[4];
+        uint8_t environment[4];
+        uint8_t lod[4];
+    } inputs;
     uint8_t fog[4];
     uint16_t light_map[2];
 };

@@ -188,10 +188,20 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
             case CCS_NOISE:
                 cc->use_noise = TRUE;
                 break;
-            default:
-                if (ccs >= SHADER_INPUT_FIRST && ccs <= SHADER_INPUT_LAST) {
-                    cc->shader_inputs |= (1 << (ccs - SHADER_INPUT_FIRST));
-                }
+            case CCS_PRIM:
+            case CCS_PRIMA:
+                cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
+                break;
+            case CCS_SHADE:
+            case CCS_SHADEA:
+                cc->shader_inputs |= SHADER_INPUT_SHADE;
+                break;
+            case CCS_ENV:
+            case CCS_ENVA:
+                cc->shader_inputs |= SHADER_INPUT_ENVIRONMENT;
+                break;
+            case CCS_LOD:
+                cc->shader_inputs |= SHADER_INPUT_LOD;
                 break;
         }
     }

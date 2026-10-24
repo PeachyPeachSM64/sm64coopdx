@@ -39,9 +39,12 @@ SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
 //
 
 struct CCInputs {
-    float4 inputs[MAX_SHADER_INPUTS];
     float4 texColors[MAX_TEXTURES];
     float4 noise;
+    float4 primitive;
+    float4 shade;
+    float4 environment;
+    float4 lod;
 };
 
 float4 ccs_to_vec4(in CCInputs cc, in float4 texel, in int ccs) {
@@ -55,9 +58,13 @@ float4 ccs_to_vec4(in CCInputs cc, in float4 texel, in int ccs) {
         case CCS_COMBINED:  return texel;
         case CCS_COMBINEDA: return texel.aaaa;
         case CCS_NOISE:     return cc.noise;
-    }
-    if (ccs >= SHADER_INPUT_FIRST && ccs <= SHADER_INPUT_LAST) {
-        return cc.inputs[ccs - SHADER_INPUT_FIRST];
+        case CCS_PRIM:      return cc.primitive;
+        case CCS_PRIMA:     return cc.primitive.aaaa;
+        case CCS_SHADE:     return cc.shade;
+        case CCS_SHADEA:    return cc.shade.aaaa;
+        case CCS_ENV:       return cc.environment;
+        case CCS_ENVA:      return cc.environment.aaaa;
+        case CCS_LOD:       return cc.lod;
     }
     return float4(0.0, 0.0, 0.0, 0.0);
 }
@@ -200,7 +207,10 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     float4 texel = float4(0.0, 0.0, 0.0, 0.0);
 
     CCInputs cc;
-    cc.inputs = ps.inputs;
+    cc.primitive = ps.primitive;
+    cc.shade = ps.shade;
+    cc.environment = ps.environment;
+    cc.lod = ps.lod;
 
     // Tex colors
     for (int i = 0; i < MAX_TEXTURES; ++i) {

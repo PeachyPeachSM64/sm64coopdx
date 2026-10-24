@@ -1074,6 +1074,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         struct VertexAttribs *attribs = &buf_vbo[buf_vbo_len++];
         memset(attribs, 0, sizeof(*attribs));
 
+        // Position
         float z = v_arr[i]->z, w = v_arr[i]->w;
         if (z_is_from_0_to_1) {
             z = (z + w) / 2.0f;
@@ -1083,6 +1084,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         attribs->pos[2] = z;
         attribs->pos[3] = w;
 
+        // Tex coords
         for (int32_t j = 0; j < MAX_TEXTURES; j++) {
             if (cc->used_textures & USED_TEXTURE(j)) {
                 uint32_t tex_width = (rdp.texture_tile[j].lrs - rdp.texture_tile[j].uls + 4) / 4;
@@ -1120,6 +1122,41 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             }
         }
 
+        // Primitive
+        if (cc->shader_inputs & SHADER_INPUT_PRIMITIVE) {
+            attribs->inputs.primitive[0] = rdp.prim_color.r;
+            attribs->inputs.primitive[1] = rdp.prim_color.g;
+            attribs->inputs.primitive[2] = rdp.prim_color.b;
+            attribs->inputs.primitive[3] = rdp.prim_color.a;
+        }
+
+        // Shade
+        if (cc->shader_inputs & SHADER_INPUT_SHADE) {
+            attribs->inputs.shade[0] = v_arr[i]->color.r;
+            attribs->inputs.shade[1] = v_arr[i]->color.g;
+            attribs->inputs.shade[2] = v_arr[i]->color.b;
+            attribs->inputs.shade[3] = v_arr[i]->color.a;
+        }
+
+        // Environment
+        if (cc->shader_inputs & SHADER_INPUT_ENVIRONMENT) {
+            attribs->inputs.environment[0] = rdp.env_color.r;
+            attribs->inputs.environment[1] = rdp.env_color.g;
+            attribs->inputs.environment[2] = rdp.env_color.b;
+            attribs->inputs.environment[3] = rdp.env_color.a;
+        }
+
+        // LOD
+        if (cc->shader_inputs & SHADER_INPUT_LOD) {
+            float distance_frac = clamp((v1->w - 3000.0f) / 3000.0f, 0.0f, 1.0f);
+            uint8_t lod_color = distance_frac * 255.0f;
+            attribs->inputs.lod[0] = lod_color;
+            attribs->inputs.lod[1] = lod_color;
+            attribs->inputs.lod[2] = lod_color;
+            attribs->inputs.lod[3] = lod_color;
+        }
+
+        // Fog
         if (cc->use_fog) {
             f32 r = gFogColor[0] / 255.0f;
             f32 g = gFogColor[1] / 255.0f;
@@ -1128,71 +1165,21 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             attribs->fog[1] = rdp.fog_color.g * g;
             attribs->fog[2] = rdp.fog_color.b * b;
             attribs->fog[3] = v_arr[i]->fog_z;
+
+            // Fog has 100% shade alpha, all inputs for light map
+            attribs->inputs.shade[3] = 0xFF;
+            if (cc->light_map) {
+                attribs->inputs.primitive[3] = 0xFF;
+                attribs->inputs.environment[3] = 0xFF;
+                attribs->inputs.lod[3] = 0xFF;
+            }
         }
 
+        // Lightmap
         if (cc->light_map) {
-            struct RGBA* col = &v_arr[i]->color;
-            attribs->light_map[0] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) );
-            attribs->light_map[1] = 0xFFFF - ( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) );
-        }
-
-        for (int shader_input = 0; shader_input < MAX_SHADER_INPUTS; shader_input++) {
-            if (!(cc->shader_inputs & (1 << shader_input))) {
-                continue;
-            }
-
-            struct RGBA *color = NULL;
-            struct RGBA tmp = { 0 };
-            for (int a = 0; a < (cc->use_alpha ? 2 : 1); a++) {
-                switch (SHADER_INPUT_FIRST + shader_input) {
-                    case CCS_PRIM:
-                        color = &rdp.prim_color;
-                        break;
-                    case CCS_SHADE:
-                        color = &v_arr[i]->color;
-                        break;
-                    case CCS_ENV:
-                        color = &rdp.env_color;
-                        break;
-                    case CCS_PRIMA:
-                        memset(&tmp, rdp.prim_color.a, sizeof(tmp));
-                        color = &tmp;
-                        break;
-                    case CCS_SHADEA:
-                        memset(&tmp, v_arr[i]->color.a, sizeof(tmp));
-                        color = &tmp;
-                        break;
-                    case CCS_ENVA:
-                        memset(&tmp, rdp.env_color.a, sizeof(tmp));
-                        color = &tmp;
-                        break;
-                    case CCS_LOD: {
-                        float distance_frac = clamp((v1->w - 3000.0f) / 3000.0f, 0.0f, 1.0f);
-                        tmp.r = tmp.g = tmp.b = tmp.a = distance_frac * 255.0f;
-                        color = &tmp;
-                        break;
-                    }
-                    default:
-                        memset(&tmp, 0, sizeof(tmp));
-                        color = &tmp;
-                        break;
-                }
-                if (a == 0) {
-                    attribs->inputs[shader_input][0] = color->r;
-                    attribs->inputs[shader_input][1] = color->g;
-                    attribs->inputs[shader_input][2] = color->b;
-                } else {
-                    if (cc->use_fog && (color == &v_arr[i]->color || cc->light_map)) {
-                        // Shade alpha is 100% for fog
-                        attribs->inputs[shader_input][3] = 0xFF;
-                    } else {
-                        attribs->inputs[shader_input][3] = color->a;
-                    }
-                }
-            }
-            if (!cc->use_alpha) {
-                attribs->inputs[shader_input][3] = 0xFF;
-            }
+            struct RGBA *col = &v_arr[i]->color;
+            attribs->light_map[0] = ((((uint16_t)col->g) << 8) | ((uint16_t)col->r));
+            attribs->light_map[1] = 0xFFFF - ((((uint16_t)col->a) << 8) | ((uint16_t)col->b));
         }
     }
     if (++buf_vbo_num_tris == MAX_BUFFERED) {

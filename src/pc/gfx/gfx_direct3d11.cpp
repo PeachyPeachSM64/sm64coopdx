@@ -684,11 +684,7 @@ static void gfx_d3d11_set_sampler_parameters(int tile, uint8_t filter, uint32_t 
     d3d.cb_data.tex_properties[tile][2] = (float) filter;
     d3d.cb_dirty = true;
 
-    // This function is called twice per texture, the first one only to set default values.
-    // Maybe that could be skipped? Anyway, make sure to release the first default sampler
-    // state before setting the actual one.
     texture_data->sampler_state.Reset();
-
     ThrowIfFailed(d3d.device->CreateSamplerState(&sampler_desc, texture_data->sampler_state.GetAddressOf()));
 
     gfx_d3d11_set_texture_uniforms(&d3d.shader_program, tile);

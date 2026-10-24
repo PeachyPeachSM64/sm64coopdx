@@ -7,9 +7,21 @@
 
 #include "gfx_cc.inl"
 
+#define SHADER_INPUT_PRIMITIVE      (1 << 0)
+#define SHADER_INPUT_SHADE          (1 << 1)
+#define SHADER_INPUT_ENVIRONMENT    (1 << 2)
+#define SHADER_INPUT_LOD            (1 << 3)
+
+#define SHADER_INPUT_BITS (0 \
+    | SHADER_INPUT_PRIMITIVE \
+    | SHADER_INPUT_SHADE \
+    | SHADER_INPUT_ENVIRONMENT \
+    | SHADER_INPUT_LOD \
+)
+
 // Make sure the type for shader_inputs can hold all shader inputs
 typedef uint8_t shader_inputs_t;
-static_assert(sizeof(shader_inputs_t) * 8 >= MAX_SHADER_INPUTS, "Type for shader_inputs is not large enough to hold all MAX_SHADER_INPUTS shader inputs");
+static_assert((1llu << (8 * sizeof(shader_inputs_t))) > SHADER_INPUT_BITS, "Type for shader_inputs is not large enough to hold all shader inputs (SHADER_INPUT_BITS)");
 
 #pragma pack(1)
 struct ColorCombiner {

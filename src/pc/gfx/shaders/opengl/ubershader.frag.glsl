@@ -16,7 +16,10 @@ out vec4 oFragColor;
 
 // Vertex attributes
 in vec2 vTexCoords[MAX_TEXTURES];
-in vec4 vInputs[MAX_SHADER_INPUTS];
+in vec4 vPrimitive;
+in vec4 vShade;
+in vec4 vEnvironment;
+in vec4 vLod;
 in vec4 vFog;
 in vec2 vLightMap;
 
@@ -60,9 +63,13 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
         case CCS_COMBINED:  return texel;
         case CCS_COMBINEDA: return texel.aaaa;
         case CCS_NOISE:     return noise;
-    }
-    if (ccs >= SHADER_INPUT_FIRST && ccs <= SHADER_INPUT_LAST) {
-        return vInputs[ccs - SHADER_INPUT_FIRST];
+        case CCS_PRIM:      return vPrimitive;
+        case CCS_PRIMA:     return vPrimitive.aaaa;
+        case CCS_SHADE:     return vShade;
+        case CCS_SHADEA:    return vShade.aaaa;
+        case CCS_ENV:       return vEnvironment;
+        case CCS_ENVA:      return vEnvironment.aaaa;
+        case CCS_LOD:       return vLod;
     }
     return vec4(0);
 }

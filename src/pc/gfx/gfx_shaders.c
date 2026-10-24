@@ -48,11 +48,14 @@
 #define vertex_attrib_array_multi_comp(_member_)    vertex_attrib_type(_member_[0][0]), array_multi_comp(struct VertexAttribs, _member_)
 
 static const struct VertexAttribProperties VERTEX_ATTRIBS[] = {
-    [ATTRIBUTE_POS]        = { "aVtxPos",    false, vertex_attrib_multi_comp(pos)              },
-    [ATTRIBUTE_TEX_COORDS] = { "aTexCoords", false, vertex_attrib_array_multi_comp(tex_coords) },
-    [ATTRIBUTE_INPUTS]     = { "aInputs",    true,  vertex_attrib_array_multi_comp(inputs)     },
-    [ATTRIBUTE_FOG]        = { "aFog",       true,  vertex_attrib_multi_comp(fog)              },
-    [ATTRIBUTE_LIGHT_MAP]  = { "aLightMap",  true,  vertex_attrib_multi_comp(light_map)        },
+    [ATTRIBUTE_POS]         = { "aVtxPos",      false, vertex_attrib_multi_comp(pos)                },
+    [ATTRIBUTE_TEX_COORDS]  = { "aTexCoords",   false, vertex_attrib_array_multi_comp(tex_coords)   },
+    [ATTRIBUTE_PRIMITIVE]   = { "aPrimitive",   true,  vertex_attrib_multi_comp(inputs.primitive)   },
+    [ATTRIBUTE_SHADE]       = { "aShade",       true,  vertex_attrib_multi_comp(inputs.shade)       },
+    [ATTRIBUTE_ENVIRONMENT] = { "aEnvironment", true,  vertex_attrib_multi_comp(inputs.environment) },
+    [ATTRIBUTE_LOD]         = { "aLod",         true,  vertex_attrib_multi_comp(inputs.lod)         },
+    [ATTRIBUTE_FOG]         = { "aFog",         true,  vertex_attrib_multi_comp(fog)                },
+    [ATTRIBUTE_LIGHT_MAP]   = { "aLightMap",    true,  vertex_attrib_multi_comp(light_map)          },
 };
 
 const struct VertexAttribProperties *gfx_shaders_get_attrib_properties(enum VertexAttrib attrib) {

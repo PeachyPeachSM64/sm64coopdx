@@ -19,7 +19,7 @@
 #define MAX_TEXTURES    2
 
 //
-// CC sources and shader inputs
+// CC sources
 //
 
 #define CCS_0           0
@@ -39,10 +39,6 @@
 #define CCS_ENV         13
 #define CCS_ENVA        14
 #define CCS_LOD         15
-
-#define SHADER_INPUT_FIRST  CCS_PRIM
-#define SHADER_INPUT_LAST   CCS_LOD
-#define MAX_SHADER_INPUTS   (SHADER_INPUT_LAST - SHADER_INPUT_FIRST + 1)
 
 //
 // CC features
