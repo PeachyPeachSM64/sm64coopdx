@@ -72,7 +72,7 @@ const struct VertexAttribProperties *gfx_shaders_get_attrib_properties(enum Vert
 #define shader_uniform_array_multi_comp(_member_)   array_multi_comp(struct ShaderUniforms, _member_)
 
 static const struct ShaderUniformProperties SHADER_UNIFORMS[] = {
-    [UNIFORM_CCS]                = { "uCCS",              shader_uniform_array_single_comp(ccs)                },
+    [UNIFORM_CCS]                = { "uCCS",              shader_uniform_array_multi_comp(ccs)                 },
     [UNIFORM_CCF]                = { "uCCF",              shader_uniform_single_comp(ccf)                      },
     [UNIFORM_TEX_PROPERTIES]     = { "uTexProperties",    shader_uniform_array_multi_comp(tex_properties)      },
     [UNIFORM_NOISE_FRAME_COUNT]  = { "uNoiseFrameCount",  shader_uniform_single_comp(noise_frame_count)        },

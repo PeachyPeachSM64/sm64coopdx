@@ -24,7 +24,7 @@ in vec4 vFog;
 in vec2 vLightMap;
 
 // CC sources
-uniform int uCCS[CC_CHANNELS * CC_CYCLES];
+uniform ivec2 uCCS[CC_CYCLES];
 #define A ((ABCD >> 24) & 0xFF)
 #define B ((ABCD >> 16) & 0xFF)
 #define C ((ABCD >>  8) & 0xFF)
@@ -231,8 +231,8 @@ void main() {
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = uCCS[2 * cycle + 0];
-        int ABCD_a   = uCCS[2 * cycle + 1];
+        int ABCD_rgb = uCCS[cycle].x;
+        int ABCD_a   = uCCS[cycle].y;
         if (ABCD_rgb != ABCD_a && CCF_HAS_FLAG(USE_ALPHA)) {
             texel = vec4(
                 combine_colors(texel, ABCD_rgb).rgb,

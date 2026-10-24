@@ -9,7 +9,6 @@
 //
 
 #define CC_COMPONENTS   4  // ABCD
-#define CC_CHANNELS     2  // RGB/A
 #define CC_CYCLES       2  // Cycles
 
 //

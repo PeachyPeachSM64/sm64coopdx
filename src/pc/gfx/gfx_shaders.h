@@ -79,7 +79,7 @@ struct ShaderUniformProperties {
 };
 
 struct ShaderUniforms {
-    int ccs[CC_CHANNELS * CC_CYCLES];
+    int ccs[CC_CYCLES][2];
     int ccf;
     float tex_properties[MAX_TEXTURES][3];
     float noise_frame_count;

@@ -25,7 +25,7 @@ static_assert((1llu << (8 * sizeof(shader_inputs_t))) > SHADER_INPUT_BITS, "Type
 
 #pragma pack(1)
 struct ColorCombiner {
-    uint8_t ccs[CC_CYCLES * CC_CHANNELS * CC_COMPONENTS];
+    uint8_t ccs[CC_CYCLES][2][CC_COMPONENTS];
     shader_inputs_t shader_inputs;
     union {
         struct {

@@ -22,7 +22,7 @@
 #define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
 
 cbuffer ShaderUniforms : register(b0) {
-    int uCCS[CC_CHANNELS * CC_CYCLES];
+    int2 uCCS[CC_CYCLES];
     int uCCF;
     float3 uTexProperties[MAX_TEXTURES];
     float uNoiseFrameCount;
@@ -234,8 +234,8 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = uCCS[2 * cycle + 0];
-        int ABCD_a   = uCCS[2 * cycle + 1];
+        int ABCD_rgb = uCCS[cycle].x;
+        int ABCD_a   = uCCS[cycle].y;
         if (ABCD_rgb != ABCD_a && CCF_HAS_FLAG(USE_ALPHA)) {
             texel = float4(
                 combine_colors(cc, texel, ABCD_rgb).rgb,

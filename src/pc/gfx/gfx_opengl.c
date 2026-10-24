@@ -102,16 +102,17 @@ static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
 static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
 
     // CC sources
-    int ccs[CC_CHANNELS * CC_CYCLES];
-    for (int i = 0; i < ARRAY_COUNT(ccs); ++i) {
-        ccs[i] = (
-            (prg->cc.ccs[i * CC_COMPONENTS + 0] << 24) |
-            (prg->cc.ccs[i * CC_COMPONENTS + 1] << 16) |
-            (prg->cc.ccs[i * CC_COMPONENTS + 2] << 8) |
-            (prg->cc.ccs[i * CC_COMPONENTS + 3] << 0)
+    int ccs[CC_CYCLES][2];
+    for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
+    for (int i = 0; i < 2; ++i) {
+        ccs[cycle][i] = (
+            (prg->cc.ccs[cycle][i][0] << 24) |
+            (prg->cc.ccs[cycle][i][1] << 16) |
+            (prg->cc.ccs[cycle][i][2] <<  8) |
+            (prg->cc.ccs[cycle][i][3] <<  0)
         );
     }
-    glUniform1iv(prg->uniform_locations[UNIFORM_CCS], ARRAY_COUNT(ccs), ccs);
+    glUniform2iv(prg->uniform_locations[UNIFORM_CCS], CC_CYCLES, (const int *) ccs);
 
     // CC features
     int ccf = 0;

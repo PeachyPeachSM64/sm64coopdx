@@ -220,12 +220,13 @@ static void gfx_d3d11_set_shader_uniforms(D3D11ShaderProgram *prg) {
     struct ColorCombiner *cc = &prg->cc;
 
     // CC sources
-    for (int i = 0; i < ARRAY_COUNT(d3d.cb_data.ccs); ++i) {
-        d3d.cb_data.ccs[i] = (
-            (cc->ccs[i * CC_COMPONENTS + 0] << 24) |
-            (cc->ccs[i * CC_COMPONENTS + 1] << 16) |
-            (cc->ccs[i * CC_COMPONENTS + 2] << 8) |
-            (cc->ccs[i * CC_COMPONENTS + 3] << 0)
+    for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
+    for (int i = 0; i < 2; ++i) {
+        d3d.cb_data.ccs[cycle][i] = (
+            (cc->ccs[cycle][i][0] << 24) |
+            (cc->ccs[cycle][i][1] << 16) |
+            (cc->ccs[cycle][i][2] <<  8) |
+            (cc->ccs[cycle][i][3] <<  0)
         );
     }
 

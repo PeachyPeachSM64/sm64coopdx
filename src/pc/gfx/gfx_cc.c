@@ -6,7 +6,7 @@
 // From https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro12/index12.6.html
 // "Extended" entries are coopdx specific, allowing for more combiners with existing sources
 // Table indices are, in this order: RGB/A, ABCD, G_MUX, cycle
-static const uint8_t CC_COMPONENTS_TO_CCS[CC_CHANNELS][CC_COMPONENTS][32][CC_CYCLES] = {
+static const uint8_t CC_COMPONENTS_TO_CCS[2][CC_COMPONENTS][32][CC_CYCLES] = {
 
 /////////
 // RGB //
@@ -162,10 +162,10 @@ void gfx_cc_generate(struct ColorCombiner *cc,
     uint8_t Aa1, uint8_t Ab1, uint8_t Ac1, uint8_t Ad1
 ) {
     memset(cc, 0, sizeof(*cc));
-    color_comb(&cc->ccs[CC_COMPONENTS * 0], 0, 0, a0, b0, c0, d0);
-    color_comb(&cc->ccs[CC_COMPONENTS * 1], 0, 1, Aa0, Ab0, Ac0, Ad0);
-    color_comb(&cc->ccs[CC_COMPONENTS * 2], 1, 0, a1, b1, c1, d1);
-    color_comb(&cc->ccs[CC_COMPONENTS * 3], 1, 1, Aa1, Ab1, Ac1, Ad1);
+    color_comb(cc->ccs[0][0], 0, 0, a0, b0, c0, d0);
+    color_comb(cc->ccs[0][1], 0, 1, Aa0, Ab0, Ac0, Ad0);
+    color_comb(cc->ccs[1][0], 1, 0, a1, b1, c1, d1);
+    color_comb(cc->ccs[1][1], 1, 1, Aa1, Ab1, Ac1, Ad1);
 }
 
 void gfx_cc_update_features(struct ColorCombiner *cc) {
@@ -173,9 +173,10 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
     cc->features = 0;
 
     // Determine shader inputs and features
-    int num_ccs = (ARRAY_COUNT(cc->ccs) / CC_CYCLES) * (cc->use_2cycle ? 2 : 1);
-    for (int i = 0; i < num_ccs; ++i) {
-        uint8_t ccs = cc->ccs[i];
+    for (int cycle = 0; cycle < (cc->use_2cycle ? 2 : 1); ++cycle)
+    for (int i = 0; i < 2; ++i)
+    for (int j = 0; j < CC_COMPONENTS; ++j) {
+        uint8_t ccs = cc->ccs[cycle][i][j];
         switch (ccs) {
             case CCS_TEXEL0:
             case CCS_TEXEL0A:
