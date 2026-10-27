@@ -218,145 +218,39 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
 // Extended color combiners
 //
 
-// static const char *CCS_NAMES[][2] = {
-//     [CCS_TEXEL0]  = { "TEXEL0",  "TEXEL0"          },
-//     [CCS_TEXEL0A] = { "TEXEL0A", "TEXEL0_ALPHA"    },
-//     [CCS_TEXEL1]  = { "TEXEL1",  "TEXEL1"          },
-//     [CCS_TEXEL1A] = { "TEXEL1A", "TEXEL1_ALPHA"    },
-//     [CCS_NOISE]   = { "NOISE",   "NOISE"           },
-//     [CCS_PRIM]    = { "PRIM",    "PRIMITIVE"       },
-//     [CCS_PRIMA]   = { "PRIMA",   "PRIMITIVE_ALPHA" },
-//     [CCS_SHADE]   = { "SHADE",   "SHADE"           },
-//     [CCS_SHADEA]  = { "SHADEA",  "SHADE_ALPHA"     },
-//     [CCS_ENV]     = { "ENV",     "ENVIRONMENT"     },
-//     [CCS_ENVA]    = { "ENVA",    "ENV_ALPHA"       },
-//     [CCS_LOD]     = { "LOD",     "LOD_FRACTION"    },
-// };
 
-// TEXEL0A      -> TEXEL0.aaaa
-
-// vec(r, g, b, a) = r.r, g.g, b.b, a.a
-// vec(TEXEL0, rot(TEXEL0, 3), rot(TEXEL0, 2), rot(TEXEL0, 1)) = TEXEL0.rrrr
-// vec(TEXEL0, 0, 0, 1)
-
-// operator .
-// TEXEL0.r -> [OP_DOT] [VAL_TEXEL0] [rrggbbaa]
-// right operand of . must be "x", "xxx" or "xxxx", where x must be one of: r, g, b, a, 0, 1
-// if 0 or 1, do channel = x * 0 + 1 (before optimization passes)
-// [rrggbbaa] = 4 x 2-bit values where:
-// 00 = source r
-// 01 = source g
-// 10 = source b
-// 11 = source a
-// for ex: [11000110] = X.argb
-
-// static const char *VALID_OPERATORS[] = {
-//     "+", "-", "!", "^", "*", "/", "%", "<", "<=", ">", ">=", "==", "!=", "&&", "||", "."
-// };
-
-// static const char *VALID_FUNCTIONS[] = {
-//     "vec", // vec(A, B, C, D) = A.r, B.g, C.b, D.a
-//     "rot", // rot(X, 1) = X.gbar, rot(X, 2) = X.barg, rot(X, 3) = X.argb
-//     "lerp",
-//     "min",
-//     "max",
-//     "clamp",
-//     "cos",
-//     "sin",
-//     "exp",
-//     "sqrt",
-//     "rsqrt",
-//     "round",
-//     "floor",
-//     "ceil",
-// };
 
 
 #define CC_EXT_FLAG_OP                      0x80
 #define CC_EXT_FLAG_OP_FUNCTION             0x40
 #define CC_EXT_FLAG_VAL_DOT_PARAM           0x40
 
+#define CC_EXT_VAL_DOT_PARAM(op, x)         ((op >> (3 * (x))) & 7)
+
 #define CC_EXT_OP_PRECEDENCE_BITS           0x38
 #define CC_EXT_OP_WITH_PRECEDENCE(x, p)     ((x) | CC_EXT_FLAG_OP | ((p) << 3))
 #define CC_EXT_OP_FUNCTION(x)               ((x) | CC_EXT_FLAG_OP | CC_EXT_FLAG_OP_FUNCTION)
 
-#define CC_EXT_VAL_DOT_PARAM(op, x)         ((op >> (3 * (x))) & 7)
+enum {
+#define CC_EXT_VAL(name, index)                         CC_EXT_VAL_##name = index,
+#define CC_EXT_OP(name, symb, index, precedence, args)  CC_EXT_OP_##name = CC_EXT_OP_WITH_PRECEDENCE(index, precedence),
+#define CC_EXT_FUNC(name, index, args)                  CC_EXT_FUNC_##name = CC_EXT_OP_FUNCTION(index),
+#include "gfx_cc_ext.inl"
+#undef CC_EXT_VAL
+#undef CC_EXT_OP
+#undef CC_EXT_FUNC
+    CC_EXT_SPECIAL_OPEN  = 0xFD,
+    CC_EXT_SPECIAL_CLOSE = 0xFE,
+    CC_EXT_SPECIAL_COMMA = 0xFF,
+};
 
 
-// VALUES
-// 0xyyyyyy
-// x = 0 -> yyyyyy from 0 to 63 -> regular constant
-// x = 1 -> 2 x 3 bits for dot param
 
-// Note: the order does not follow the CCS constants!
-// COMBINED sources are also missing, since there is no cycle 2 in extended combiners
 
-#define CC_EXT_VAL_0                    0
-#define CC_EXT_VAL_1                    1
-#define CC_EXT_VAL_TEXEL0               2
-#define CC_EXT_VAL_TEXEL0A              3
-#define CC_EXT_VAL_TEXEL1               4
-#define CC_EXT_VAL_TEXEL1A              5
-#define CC_EXT_VAL_PRIM                 6
-#define CC_EXT_VAL_PRIMA                7
-#define CC_EXT_VAL_SHADE                8
-#define CC_EXT_VAL_SHADEA               9
-#define CC_EXT_VAL_ENV                  10
-#define CC_EXT_VAL_ENVA                 11
-#define CC_EXT_VAL_LOD                  12
-#define CC_EXT_VAL_NOISE                13
 
-#define CC_EXT_VAL_CONST_FIRST          14
-#define CC_EXT_VAL_CONST_LAST           (CC_EXT_FLAG_VAL_DOT_PARAM - 1)
 
-// OPS
-// 10xxxyyy -> xxx = precedence from 0 to 7, yyy = op from 0 to 7
-// 11xxxxxx -> xxxxxx = function id from 0 to 60 (last 3 are reserved for parsing)
 
-#define CC_EXT_OP_DOT                   CC_EXT_OP_WITH_PRECEDENCE(0, 0)
 
-#define CC_EXT_OP_NEG                   CC_EXT_OP_WITH_PRECEDENCE(0, 1)
-#define CC_EXT_OP_NOT                   CC_EXT_OP_WITH_PRECEDENCE(1, 1)
-
-#define CC_EXT_OP_POWER                 CC_EXT_OP_WITH_PRECEDENCE(0, 2)
-
-#define CC_EXT_OP_MULT                  CC_EXT_OP_WITH_PRECEDENCE(0, 3)
-#define CC_EXT_OP_DIV                   CC_EXT_OP_WITH_PRECEDENCE(1, 3)
-#define CC_EXT_OP_MODULO                CC_EXT_OP_WITH_PRECEDENCE(2, 3)
-
-#define CC_EXT_OP_ADD                   CC_EXT_OP_WITH_PRECEDENCE(0, 4)
-#define CC_EXT_OP_SUB                   CC_EXT_OP_WITH_PRECEDENCE(1, 4)
-
-#define CC_EXT_OP_LOWER                 CC_EXT_OP_WITH_PRECEDENCE(0, 5)
-#define CC_EXT_OP_LOWER_OR_EQUAL        CC_EXT_OP_WITH_PRECEDENCE(1, 5)
-#define CC_EXT_OP_GREATER               CC_EXT_OP_WITH_PRECEDENCE(2, 5)
-#define CC_EXT_OP_GREATER_OR_EQUAL      CC_EXT_OP_WITH_PRECEDENCE(3, 5)
-#define CC_EXT_OP_EQUAL                 CC_EXT_OP_WITH_PRECEDENCE(4, 5)
-#define CC_EXT_OP_NOT_EQUAL             CC_EXT_OP_WITH_PRECEDENCE(5, 5)
-
-#define CC_EXT_OP_AND                   CC_EXT_OP_WITH_PRECEDENCE(0, 6)
-#define CC_EXT_OP_OR                    CC_EXT_OP_WITH_PRECEDENCE(1, 6)
-
-#define CC_EXT_OP_VEC                   CC_EXT_OP_FUNCTION(0x00)
-#define CC_EXT_OP_LERP                  CC_EXT_OP_FUNCTION(0x01)
-#define CC_EXT_OP_MIN                   CC_EXT_OP_FUNCTION(0x02)
-#define CC_EXT_OP_MAX                   CC_EXT_OP_FUNCTION(0x03)
-#define CC_EXT_OP_CLAMP                 CC_EXT_OP_FUNCTION(0x04)
-#define CC_EXT_OP_SATURATE              CC_EXT_OP_FUNCTION(0x05)
-#define CC_EXT_OP_COS                   CC_EXT_OP_FUNCTION(0x06)
-#define CC_EXT_OP_SIN                   CC_EXT_OP_FUNCTION(0x07)
-#define CC_EXT_OP_EXP                   CC_EXT_OP_FUNCTION(0x08)
-#define CC_EXT_OP_SQRT                  CC_EXT_OP_FUNCTION(0x09)
-#define CC_EXT_OP_RSQRT                 CC_EXT_OP_FUNCTION(0x0A)
-#define CC_EXT_OP_ROUND                 CC_EXT_OP_FUNCTION(0x0B)
-#define CC_EXT_OP_FLOOR                 CC_EXT_OP_FUNCTION(0x0C)
-#define CC_EXT_OP_CEIL                  CC_EXT_OP_FUNCTION(0x0D)
-
-// SPECIAL
-
-#define CC_EXT_SPECIAL_OPEN             0xFD
-#define CC_EXT_SPECIAL_CLOSE            0xFE
-#define CC_EXT_SPECIAL_COMMA            0xFF
 
 
 static inline bool op_is_special(uint8_t op) {
@@ -393,52 +287,14 @@ static inline bool op_can_be_operator(uint8_t op) {
 
 
 
-static const char *OP_TO_STR[256] = {
-    [CC_EXT_VAL_0] = "VAL_0",
-    [CC_EXT_VAL_1] = "VAL_1",
-    [CC_EXT_VAL_TEXEL0] = "VAL_TEXEL0",
-    [CC_EXT_VAL_TEXEL0A] = "VAL_TEXEL0A",
-    [CC_EXT_VAL_TEXEL1] = "VAL_TEXEL1",
-    [CC_EXT_VAL_TEXEL1A] = "VAL_TEXEL1A",
-    [CC_EXT_VAL_NOISE] = "VAL_NOISE",
-    [CC_EXT_VAL_PRIM] = "VAL_PRIM",
-    [CC_EXT_VAL_PRIMA] = "VAL_PRIMA",
-    [CC_EXT_VAL_SHADE] = "VAL_SHADE",
-    [CC_EXT_VAL_SHADEA] = "VAL_SHADEA",
-    [CC_EXT_VAL_ENV] = "VAL_ENV",
-    [CC_EXT_VAL_ENVA] = "VAL_ENVA",
-    [CC_EXT_VAL_LOD] = "VAL_LOD",
-    [CC_EXT_OP_DOT] = "OP_DOT",
-    [CC_EXT_OP_NEG] = "OP_NEG",
-    [CC_EXT_OP_NOT] = "OP_NOT",
-    [CC_EXT_OP_POWER] = "OP_POWER",
-    [CC_EXT_OP_MULT] = "OP_MULT",
-    [CC_EXT_OP_DIV] = "OP_DIV",
-    [CC_EXT_OP_MODULO] = "OP_MODULO",
-    [CC_EXT_OP_ADD] = "OP_ADD",
-    [CC_EXT_OP_SUB] = "OP_SUB",
-    [CC_EXT_OP_LOWER] = "OP_LOWER",
-    [CC_EXT_OP_LOWER_OR_EQUAL] = "OP_LOWER_OR_EQUAL",
-    [CC_EXT_OP_GREATER] = "OP_GREATER",
-    [CC_EXT_OP_GREATER_OR_EQUAL] = "OP_GREATER_OR_EQUAL",
-    [CC_EXT_OP_EQUAL] = "OP_EQUAL",
-    [CC_EXT_OP_NOT_EQUAL] = "OP_NOT_EQUAL",
-    [CC_EXT_OP_AND] = "OP_AND",
-    [CC_EXT_OP_OR] = "OP_OR",
-    [CC_EXT_OP_VEC] = "OP_VEC",
-    [CC_EXT_OP_LERP] = "OP_LERP",
-    [CC_EXT_OP_MIN] = "OP_MIN",
-    [CC_EXT_OP_MAX] = "OP_MAX",
-    [CC_EXT_OP_CLAMP] = "OP_CLAMP",
-    [CC_EXT_OP_SATURATE] = "OP_SATURATE",
-    [CC_EXT_OP_COS] = "OP_COS",
-    [CC_EXT_OP_SIN] = "OP_SIN",
-    [CC_EXT_OP_EXP] = "OP_EXP",
-    [CC_EXT_OP_SQRT] = "OP_SQRT",
-    [CC_EXT_OP_RSQRT] = "OP_RSQRT",
-    [CC_EXT_OP_ROUND] = "OP_ROUND",
-    [CC_EXT_OP_FLOOR] = "OP_FLOOR",
-    [CC_EXT_OP_CEIL] = "OP_CEIL",
+static const char *OP_TO_STR[0x100] = {
+#define CC_EXT_VAL(name, index)                         [CC_EXT_VAL_##name] = "VAL_" #name,
+#define CC_EXT_OP(name, symb, index, precedence, args)  [CC_EXT_OP_##name] = "OP_" #name,
+#define CC_EXT_FUNC(name, index, args)                  [CC_EXT_FUNC_##name] = "FUNC_" #name,
+#include "gfx_cc_ext.inl"
+#undef CC_EXT_VAL
+#undef CC_EXT_OP
+#undef CC_EXT_FUNC
 };
 
 
@@ -448,6 +304,7 @@ static const char *OP_TO_STR[256] = {
 
 #define EXTENDED_COMBINER_MAX_OPS           128
 #define EXTENDED_COMBINER_MAX_CONSTANTS     (CC_EXT_VAL_CONST_LAST - CC_EXT_VAL_CONST_FIRST + 1)
+#define EXTENDED_COMBINER_STACK_SIZE        32
 
 struct ExtendedCombiner {
     uint8_t ops[EXTENDED_COMBINER_MAX_OPS];
@@ -469,6 +326,10 @@ typedef struct Op {
     uint8_t op;
     const Token *token;
 } Op;
+
+typedef struct Constant {
+    float x, y, z, w;
+} Constant;
 
 
 
@@ -586,13 +447,45 @@ static int get_op_index(struct GrowingArray *ops, const Op *op) {
 
 
 static inline void push_constant(struct GrowingArray *constants, float constant) {
-    *((float *) growing_array_alloc(constants, sizeof(float))) = constant;
+    Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
+    new_constant->x = constant;
+    new_constant->y = constant;
+    new_constant->z = constant;
+    new_constant->w = constant;
 }
 
-static inline float get_constant(struct GrowingArray *constants, uint32_t index) {
-    return *((float *) constants->buffer[index]);
+static inline void push_constant_4(struct GrowingArray *constants, float x, float y, float z, float w) {
+    Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
+    new_constant->x = x;
+    new_constant->y = y;
+    new_constant->z = z;
+    new_constant->w = w;
 }
 
+
+static inline Constant *get_constant(struct GrowingArray *constants, uint32_t index) {
+    return (Constant *) constants->buffer[index];
+}
+
+static int get_constant_index(struct GrowingArray *constants, float value) {
+    for (uint32_t i = 0; i < constants->count; ++i) {
+        if (get_constant(constants, i)->x == value) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static int get_constant_4_index(struct GrowingArray *constants, float x, float y, float z, float w) {
+    for (uint32_t i = 0; i < constants->count; ++i) {
+        const Constant *constant = get_constant(constants, i);
+        if (constant->x == x && constant->y == y &&
+            constant->z == z && constant->w == w) {
+            return i;
+        }
+    }
+    return -1;
+}
 
 
 
@@ -615,18 +508,9 @@ static bool check_number(const Token *token) {
     return true;
 }
 
-static int get_constant_index(struct GrowingArray *constants, float value) {
-    for (uint32_t i = 0; i < constants->count; ++i) {
-        if (get_constant(constants, i) == value) {
-            return i;
-        }
-    }
-    return -1;
-}
-
 
 static inline bool is_right_associative(uint8_t op) {
-    return op == CC_EXT_OP_POWER;
+    return op == CC_EXT_OP_POW;
 }
 
 static inline void stack_push(struct GrowingArray *stack, Op *op) {
@@ -644,8 +528,32 @@ static inline Op *stack_pop(struct GrowingArray *stack) {
 }
 
 
-static struct GrowingArray *infix_to_prefix(struct GrowingArray *ops) {
-    struct GrowingArray *res = growing_array_init(NULL, 16, malloc, free);
+
+
+static void print_error_location(char *error_msg, size_t msg_len, const char *str, size_t pos, size_t len, size_t offset) {
+    size_t curr_len = strlen(error_msg);
+    error_msg += curr_len;
+    msg_len -= curr_len;
+
+    size_t written_chars = snprintf(error_msg, msg_len, "%s\n%*s", str, (int) pos, "");
+    error_msg += written_chars;
+    msg_len -= written_chars;
+
+    size_t index = 0;
+    while (msg_len > 1 && index < len) {
+        *(error_msg++) = (index == offset ? '^' : '~');
+        msg_len--;
+        index++;
+    }
+
+    *error_msg = 0;
+}
+
+
+
+
+static struct GrowingArray *infix_to_prefix(struct GrowingArray *ops, char *error_msg, size_t msg_len, const char *str) {
+    struct GrowingArray *res   = growing_array_init(NULL, 16, malloc, free);
     struct GrowingArray *stack = growing_array_init(NULL, 16, malloc, free);
     bool ok = false;
 
@@ -679,7 +587,12 @@ static struct GrowingArray *infix_to_prefix(struct GrowingArray *ops) {
 
             // should pop ')'
             if (stack->count == 0 || stack_top(stack)->op != CC_EXT_SPECIAL_CLOSE) {
-                printf("ERROR: Missing ')'\n");
+                if (op->token) {
+                    snprintf(error_msg, msg_len, "Missing right parenthesis `)` matching left parenthesis `(` at position %llu.\n", op->token->pos);
+                    print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
+                } else {
+                    snprintf(error_msg, msg_len, "Missing right parenthesis `)`.");
+                }
                 goto cleanup;
             } else {
                 stack_pop(stack);
@@ -701,6 +614,16 @@ static struct GrowingArray *infix_to_prefix(struct GrowingArray *ops) {
             }
             stack_push(stack, op);
             continue;
+        }
+
+        if (op->op != CC_EXT_SPECIAL_COMMA) {
+            if (op->token) {
+                snprintf(error_msg, msg_len, "Invalid op 0x%02X from token at position %llu: `%s`\n", op->op, op->token->pos, op->token->str);
+                print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
+            } else {
+                snprintf(error_msg, msg_len, "Invalid op 0x%02X.", op->op);
+            }
+            goto cleanup;
         }
     }
 
@@ -738,7 +661,7 @@ static void print_ops(struct GrowingArray *ops, struct GrowingArray *constants) 
 
         if (op_is_value(op->op)) {
             if (op->op >= CC_EXT_VAL_CONST_FIRST) {
-                printf("[%d]%f ", op->op - CC_EXT_VAL_CONST_FIRST, get_constant(constants, op->op - CC_EXT_VAL_CONST_FIRST));
+                printf("[%d] ", op->op - CC_EXT_VAL_CONST_FIRST);
             } else {
                 printf("%s ", OP_TO_STR[op->op]);
             }
@@ -752,29 +675,36 @@ static void print_ops(struct GrowingArray *ops, struct GrowingArray *constants) 
         }
     }
     printf("\n");
+    for (uint32_t i = 0; i < constants->count; ++i) {
+        const Constant *constant = get_constant(constants, i);
+        printf("[%d] %f %f %f %f\n", i, constant->x, constant->y, constant->z, constant->w);
+    }
 }
 
 
 
+static size_t check_symbols(const char *str, size_t len, size_t offset) {
+    static struct { const char *str; size_t len; } SYMBOLS[] = {
+#define CC_EXT_VAL(name, index)
+#define CC_EXT_OP(name, symb, index, precedence, args) { symb, sizeof(symb) - 1 },
+#define CC_EXT_FUNC(name, index, args)
+#include "gfx_cc_ext.inl"
+#undef CC_EXT_VAL
+#undef CC_EXT_OP
+#undef CC_EXT_FUNC
+        { "(", 1 },
+        { ")", 1 },
+        { ",", 1 },
+    };
 
-
-static void print_error_location(char *error_msg, size_t msg_len, const char *str, size_t pos, size_t len, size_t offset) {
-    size_t curr_len = strlen(error_msg);
-    error_msg += curr_len;
-    msg_len -= curr_len;
-
-    size_t written_chars = snprintf(error_msg, msg_len, "%s\n%*s", str, (int) pos, "");
-    error_msg += written_chars;
-    msg_len -= written_chars;
-
-    size_t index = 0;
-    while (msg_len > 1 && index < len) {
-        *(error_msg++) = (index == offset ? '^' : '~');
-        msg_len--;
-        index++;
+    size_t max_size = 0;
+    for (int i = 0; i < ARRAY_COUNT(SYMBOLS); ++i) {
+        size_t symb_len = SYMBOLS[i].len;
+        if (max_size < symb_len && offset + symb_len <= len && strnicmp(str + offset, SYMBOLS[i].str, SYMBOLS[i].len) == 0) {
+            max_size = symb_len;
+        }
     }
-
-    *error_msg = 0;
+    return max_size;
 }
 
 
@@ -811,26 +741,13 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             continue;
         }
 
-        // double chars symbols
-        if ((c == '<' && c2 == '=') ||
-            (c == '>' && c2 == '=') ||
-            (c == '=' && c2 == '=') ||
-            (c == '!' && c2 == '=') ||
-            (c == '&' && c2 == '&') ||
-            (c == '|' && c2 == '|')) {
+        // symbols
+        size_t symb_max_size = check_symbols(str, len, i);
+        if (symb_max_size > 0 && (symb_max_size > 1 || c != '.' || !is_number)) {
             push_curr_token();
-            push_token(tokens, str + i, i, 2);
-            i++;
-            continue;
-        }
-
-        // single char symbols
-        if (c == '+' || c == '-' || c == '!' || c == '^' || c == '*' ||
-            c == '/' || c == '%' || c == '<' || c == '>' || (c == '.' && !is_number) ||
-            c == '(' || c == ')' || c == ',') {
-            push_curr_token();
-            push_token(tokens, str + i, i, 1);
-            is_dot_arg = (c == '.');
+            push_token(tokens, str + i, i, symb_max_size);
+            i += (symb_max_size - 1);
+            is_dot_arg = (symb_max_size == 1 && c == '.');
             continue;
         }
 
@@ -887,21 +804,8 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
     growing_array_for_each_(tokens, Token, token) {
         uint8_t prev = (ops->count > 0 ? get_op(ops, ops->count - 1)->op : CC_EXT_SPECIAL_COMMA);
 
-        // symbols
-        token_to_op("!", CC_EXT_OP_NOT, true);
-        token_to_op("^", CC_EXT_OP_POWER, false);
-        token_to_op("*", CC_EXT_OP_MULT, false);
-        token_to_op("/", CC_EXT_OP_DIV, false);
-        token_to_op("%", CC_EXT_OP_MODULO, false);
-        token_to_op("<", CC_EXT_OP_LOWER, false);
-        token_to_op("<=", CC_EXT_OP_LOWER_OR_EQUAL, false);
-        token_to_op(">", CC_EXT_OP_GREATER, false);
-        token_to_op(">=", CC_EXT_OP_GREATER_OR_EQUAL, false);
-        token_to_op("==", CC_EXT_OP_EQUAL, false);
-        token_to_op("!=", CC_EXT_OP_NOT_EQUAL, false);
-        token_to_op("&&", CC_EXT_OP_AND, false);
-        token_to_op("||", CC_EXT_OP_OR, false);
-        token_to_op(".", CC_EXT_OP_DOT, false);
+        // manually checked symbols
+        // includes unary plus and minus, parentheses and comma ops
 
         if (token_is("+")) {
             if (op_can_be_value(prev)) {
@@ -911,6 +815,7 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             }
             continue;
         }
+
         if (token_is("-")) {
             if (op_can_be_value(prev)) {
                 push_op(ops, CC_EXT_OP_SUB, token);
@@ -919,6 +824,7 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             }
             continue;
         }
+
         if (token_is("(")) {
             token->prev = scope;
             scope = token;
@@ -931,6 +837,7 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             }
             continue;
         }
+
         if (token_is(")")) {
             if (!op_can_be_value(prev)) {
                 snprintf(sErrorMsg, sizeof(sErrorMsg), "Right parenthesis `)` at position %llu must follow a value.\n", token->pos);
@@ -946,6 +853,7 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             scope = scope->prev;
             continue;
         }
+
         if (token_is(",")) {
             if (!op_can_be_value(prev)) {
                 snprintf(sErrorMsg, sizeof(sErrorMsg), "Function parameter separator `,` at position %llu must follow a value.\n", token->pos);
@@ -967,46 +875,25 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             continue;
         }
 
-        // functions
-        token_to_function("vec", CC_EXT_OP_VEC);
-        token_to_function("lerp", CC_EXT_OP_LERP);
-        token_to_function("min", CC_EXT_OP_MIN);
-        token_to_function("max", CC_EXT_OP_MAX);
-        token_to_function("clamp", CC_EXT_OP_CLAMP);
-        token_to_function("saturate", CC_EXT_OP_SATURATE);
-        token_to_function("cos", CC_EXT_OP_COS);
-        token_to_function("sin", CC_EXT_OP_SIN);
-        token_to_function("exp", CC_EXT_OP_EXP);
-        token_to_function("sqrt", CC_EXT_OP_SQRT);
-        token_to_function("rsqrt", CC_EXT_OP_RSQRT);
-        token_to_function("round", CC_EXT_OP_ROUND);
-        token_to_function("floor", CC_EXT_OP_FLOOR);
-        token_to_function("ceil", CC_EXT_OP_CEIL);
+        // values, symbols and functions
+#define CC_EXT_VAL(name, index)                         token_to_value(#name, CC_EXT_VAL_##name);
+#define CC_EXT_OP(name, symb, index, precedence, args)  token_to_op(symb, CC_EXT_OP_##name, args == 1);
+#define CC_EXT_FUNC(name, index, args)                  token_to_function(#name, CC_EXT_FUNC_##name);
+#include "gfx_cc_ext.inl"
+#undef CC_EXT_VAL
+#undef CC_EXT_OP
+#undef CC_EXT_FUNC
 
-        // values
-        token_to_value("0", CC_EXT_VAL_0);
+        // other values
         token_to_value("0.0", CC_EXT_VAL_0);
-        token_to_value("1", CC_EXT_VAL_1);
         token_to_value("1.0", CC_EXT_VAL_1);
-        token_to_value("TEXEL0", CC_EXT_VAL_TEXEL0);
-        token_to_value("TEXEL0A", CC_EXT_VAL_TEXEL0A);
         token_to_value("TEXEL0_ALPHA", CC_EXT_VAL_TEXEL0A);
-        token_to_value("TEXEL1", CC_EXT_VAL_TEXEL1);
-        token_to_value("TEXEL1A", CC_EXT_VAL_TEXEL1A);
         token_to_value("TEXEL1_ALPHA", CC_EXT_VAL_TEXEL1A);
-        token_to_value("NOISE", CC_EXT_VAL_NOISE);
-        token_to_value("PRIM", CC_EXT_VAL_PRIM);
         token_to_value("PRIMITIVE", CC_EXT_VAL_PRIM);
-        token_to_value("PRIMA", CC_EXT_VAL_PRIMA);
         token_to_value("PRIMITIVE_ALPHA", CC_EXT_VAL_PRIMA);
-        token_to_value("SHADE", CC_EXT_VAL_SHADE);
-        token_to_value("SHADEA", CC_EXT_VAL_SHADEA);
         token_to_value("SHADE_ALPHA", CC_EXT_VAL_SHADEA);
-        token_to_value("ENV", CC_EXT_VAL_ENV);
         token_to_value("ENVIRONMENT", CC_EXT_VAL_ENV);
-        token_to_value("ENVA", CC_EXT_VAL_ENVA);
         token_to_value("ENV_ALPHA", CC_EXT_VAL_ENVA);
-        token_to_value("LOD", CC_EXT_VAL_LOD);
         token_to_value("LOD_FRACTION", CC_EXT_VAL_LOD);
 
         // dot
@@ -1098,18 +985,18 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
     print_ops(ops, constants);
     printf("\n");
 
-    // prefix = infix_to_prefix(ops);
-    // if (!prefix) {
-    //     goto cleanup;
-    // }
+    prefix = infix_to_prefix(ops, sErrorMsg, sizeof(sErrorMsg), str);
+    if (!prefix) {
+        goto cleanup;
+    }
 
-    // print_ops(prefix, constants);
-    // printf("\n");
+    print_ops(prefix, constants);
+    printf("\n");
 
-    // // validate
+    // validate
 
 
-    // // optimize
+    // optimize
 
 
     // // check sizes
@@ -1172,7 +1059,7 @@ static const char *error_checks[] = {
 __attribute__((constructor)) static void test_custom_combine() {
 
     const char *comb_str = 
-    "ENV * (-TEXEL0 + TEXEL1.a).gb1 + -0.5 + 0.2 + vec(9, 10, 11, 12) - min(0.5, max(lerp(PRIM + ENVA * 0.75, SHADE, PRIMA).00ra.gbra, 0)) + 2 * 1 - 1.5 ^ (3 + 1)";
+    "ENV * (-TEXEL0 + TEXEL1.a).gb1 + (-0.5 >= 0.2) * 99 + vec(9, 10, 11, 12) - min(0.5, max(lerp(PRIM + ENVA * 0.75, SHADE, PRIMA).00ra.gbra, 0)) + 2 * 1 - 1.5 ^ (3 + 1)";
 
 
     // for (int i = 0; i < ARRAY_COUNT(error_checks); ++i) {
