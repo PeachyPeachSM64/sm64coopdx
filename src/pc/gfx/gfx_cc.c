@@ -219,34 +219,127 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
 //
 
 
-
-
 #define CC_EXT_FLAG_OP                      0x80
-#define CC_EXT_FLAG_OP_FUNCTION             0x40
 #define CC_EXT_FLAG_VAL_DOT_PARAM           0x40
 
-#define CC_EXT_VAL_DOT_PARAM(op, x)         ((op >> (3 * (x))) & 7)
+#define CC_EXT_VAL_DOT_PARAM(op, x)         (((op) >> (3 * (x))) & 0x7)
 
-#define CC_EXT_OP_PRECEDENCE_BITS           0x38
-#define CC_EXT_OP_WITH_PRECEDENCE(x, p)     ((x) | CC_EXT_FLAG_OP | ((p) << 3))
-#define CC_EXT_OP_FUNCTION(x)               ((x) | CC_EXT_FLAG_OP | CC_EXT_FLAG_OP_FUNCTION)
+#define CC_EXT_OP_ARGS_SHIFT                5
+#define CC_EXT_OP_ARGS_WIDTH                2
+
+
+
+// Values
+
 
 enum {
-#define CC_EXT_VAL(name, index)                         CC_EXT_VAL_##name = index,
-#define CC_EXT_OP(name, symb, index, precedence, args)  CC_EXT_OP_##name = CC_EXT_OP_WITH_PRECEDENCE(index, precedence),
-#define CC_EXT_FUNC(name, index, args)                  CC_EXT_FUNC_##name = CC_EXT_OP_FUNCTION(index),
-#include "gfx_cc_ext.inl"
+#define CC_EXT_VAL(name) CC_EXT_VAL_ID_##name,
+#include "gfx_cc_ext_val.inl"
 #undef CC_EXT_VAL
+};
+
+
+// Operators and functions
+
+enum {
+#define CC_EXT_OP_1(name) CC_EXT_OP_ID_##name,
+#define CC_EXT_OP_2(name)
+#define CC_EXT_OP_3(name) CC_EXT_OP_ID_##name,
+#define CC_EXT_OP(name, args, ...) CC_EXT_OP_##args(name)
+#include "gfx_cc_ext_op.inl"
+#undef CC_EXT_OP_1
+#undef CC_EXT_OP_2
+#undef CC_EXT_OP_3
+#undef CC_EXT_OP
+#define CC_EXT_FUNC_1(name) CC_EXT_FUNC_ID_##name,
+#define CC_EXT_FUNC_2(name)
+#define CC_EXT_FUNC_3(name) CC_EXT_FUNC_ID_##name,
+#define CC_EXT_FUNC_4(name)
+#define CC_EXT_FUNC(name, args, ...) CC_EXT_FUNC_##args(name)
+#include "gfx_cc_ext_func.inl"
+#undef CC_EXT_FUNC_1
+#undef CC_EXT_FUNC_2
+#undef CC_EXT_FUNC_3
+#undef CC_EXT_FUNC_4
+#undef CC_EXT_FUNC
+};
+
+enum {
+#define CC_EXT_OP_1(name)
+#define CC_EXT_OP_2(name) CC_EXT_OP_ID_##name,
+#define CC_EXT_OP_3(name)
+#define CC_EXT_OP(name, args, ...) CC_EXT_OP_##args(name)
+#include "gfx_cc_ext_op.inl"
+#undef CC_EXT_OP_1
+#undef CC_EXT_OP_2
+#undef CC_EXT_OP_3
+#undef CC_EXT_OP
+#define CC_EXT_FUNC_1(name)
+#define CC_EXT_FUNC_2(name) CC_EXT_FUNC_ID_##name,
+#define CC_EXT_FUNC_3(name)
+#define CC_EXT_FUNC_4(name) CC_EXT_FUNC_ID_##name,
+#define CC_EXT_FUNC(name, args) CC_EXT_FUNC_##args(name)
+#include "gfx_cc_ext_func.inl"
+#undef CC_EXT_FUNC_1
+#undef CC_EXT_FUNC_2
+#undef CC_EXT_FUNC_3
+#undef CC_EXT_FUNC_4
+#undef CC_EXT_FUNC
+};
+
+
+
+
+
+enum {
+
+// Values
+#define CC_EXT_VAL(name) CC_EXT_VAL_##name = CC_EXT_VAL_ID_##name,
+#include "gfx_cc_ext_val.inl"
+#undef CC_EXT_VAL
+    CC_EXT_VAL_CONST_FIRST,
+    CC_EXT_VAL_CONST_LAST = (CC_EXT_FLAG_VAL_DOT_PARAM - 1),
+
+// Operators and functions
+#define CC_EXT_OP(name, args, ...)  CC_EXT_OP_##name   = (CC_EXT_OP_ID_##name   | ((args - 1) << CC_EXT_OP_ARGS_SHIFT) | CC_EXT_FLAG_OP),
+#define CC_EXT_FUNC(name, args)     CC_EXT_FUNC_##name = (CC_EXT_FUNC_ID_##name | ((args - 1) << CC_EXT_OP_ARGS_SHIFT) | CC_EXT_FLAG_OP),
+#include "gfx_cc_ext_op.inl"
+#include "gfx_cc_ext_func.inl"
 #undef CC_EXT_OP
 #undef CC_EXT_FUNC
+
+// Special ops for parsing
     CC_EXT_SPECIAL_OPEN  = 0xFD,
     CC_EXT_SPECIAL_CLOSE = 0xFE,
     CC_EXT_SPECIAL_COMMA = 0xFF,
 };
 
 
+// // OPS, num args is given by precedence
+// // 8 x 2-bits, from precedence 7 to 0: 2 2 2 2 2 2 1 3 = 0b1010101010100111 = 0xAAA7
+// #define CC_EXT_OP_NUM_ARGS_BITS  0xAAA7
+// #define CC_EXT_OP_NUM_ARGS(op) \
+//     ((CC_EXT_OP_NUM_ARGS_BITS >> (2 * CC_EXT_OP_PRECEDENCE(op))) & 0x3)
+
+// // FUNCTIONS, num args is given by function index
+// // 4 x 8 x 2-bits, from index 15/31/47/63 to 0/16/32/48
+
+// #define CC_EXT_FUNC_NUM_ARGS_BITS(index, args) \
+//     (((args) - 1) << (2 * ((index) % 0x10)))
+
+// static const int CC_EXT_FUNC_00_15_NUM_ARGS = (0
+// #define CC_EXT_VAL(...)
+// #define CC_EXT_OP(...)
+// #define CC_EXT_FUNC(name, index, args) | CC_EXT_FUNC_NUM_ARGS_BITS(index, args)
+// #include "gfx_cc_ext.inl"
+// #undef CC_EXT_VAL
+// #undef CC_EXT_OP
+// #undef CC_EXT_FUNC
+// );
 
 
+// #define CC_EXT_FUNC_NUM_ARGS(op) \
+//     (((CC_EXT_FUNC_00_15_NUM_ARGS >> (2 * ((op) & 0x3F))) & 0x3) + 1)
 
 
 
@@ -264,7 +357,12 @@ static inline bool op_is_operator(uint8_t op) {
 }
 
 static inline bool op_is_function(uint8_t op) {
-    return op_is_operator(op) && (op & CC_EXT_FLAG_OP_FUNCTION) != 0;
+    static const bool IS_FUNCTION[0x100] = {
+#define CC_EXT_FUNC(name, ...) [CC_EXT_FUNC_##name] = true,
+#include "gfx_cc_ext_func.inl"
+#undef CC_EXT_FUNC
+    };
+    return IS_FUNCTION[op];
 }
 
 static inline bool op_is_value(uint8_t op) {
@@ -283,15 +381,29 @@ static inline bool op_can_be_operator(uint8_t op) {
     return op_is_operator(op) || op == CC_EXT_SPECIAL_OPEN || op == CC_EXT_SPECIAL_COMMA;
 }
 
+static inline uint8_t op_get_precedence(uint8_t op) {
+    static const uint8_t OP_PRECEDENCE[0x100] = {
+#define CC_EXT_OP(name, args, precedence, ...) [CC_EXT_OP_##name] = precedence,
+#include "gfx_cc_ext_op.inl"
+#undef CC_EXT_OP
+    };
+    return OP_PRECEDENCE[op];
+}
+
+
+
+
 
 
 
 
 static const char *OP_TO_STR[0x100] = {
-#define CC_EXT_VAL(name, index)                         [CC_EXT_VAL_##name] = "VAL_" #name,
-#define CC_EXT_OP(name, symb, index, precedence, args)  [CC_EXT_OP_##name] = "OP_" #name,
-#define CC_EXT_FUNC(name, index, args)                  [CC_EXT_FUNC_##name] = "FUNC_" #name,
-#include "gfx_cc_ext.inl"
+#define CC_EXT_VAL(name)        [CC_EXT_VAL_##name] = "VAL_" #name,
+#define CC_EXT_OP(name, ...)    [CC_EXT_OP_##name] = "OP_" #name,
+#define CC_EXT_FUNC(name, ...)  [CC_EXT_FUNC_##name] = "FUNC_" #name,
+#include "gfx_cc_ext_val.inl"
+#include "gfx_cc_ext_op.inl"
+#include "gfx_cc_ext_func.inl"
 #undef CC_EXT_VAL
 #undef CC_EXT_OP
 #undef CC_EXT_FUNC
@@ -606,8 +718,8 @@ static struct GrowingArray *infix_to_prefix(struct GrowingArray *ops, char *erro
                 stack->count > 0 &&
                 (top = stack_top(stack)) &&
                 op_is_operator(top->op) && (
-                (top->op & CC_EXT_OP_PRECEDENCE_BITS) < (op->op & CC_EXT_OP_PRECEDENCE_BITS) || (
-                (top->op & CC_EXT_OP_PRECEDENCE_BITS) == (op->op & CC_EXT_OP_PRECEDENCE_BITS) && is_right_associative(op->op)
+                op_get_precedence(top->op) < op_get_precedence(op->op) || (
+                op_get_precedence(top->op) == op_get_precedence(op->op) && is_right_associative(op->op)
             ))) {
                 top = stack_pop(stack);
                 push_op(res, top->op, top->token);
@@ -685,13 +797,9 @@ static void print_ops(struct GrowingArray *ops, struct GrowingArray *constants) 
 
 static size_t check_symbols(const char *str, size_t len, size_t offset) {
     static struct { const char *str; size_t len; } SYMBOLS[] = {
-#define CC_EXT_VAL(name, index)
-#define CC_EXT_OP(name, symb, index, precedence, args) { symb, sizeof(symb) - 1 },
-#define CC_EXT_FUNC(name, index, args)
-#include "gfx_cc_ext.inl"
-#undef CC_EXT_VAL
+#define CC_EXT_OP(name, args, precedence, symbol) { symbol, sizeof(symbol) - 1 },
+#include "gfx_cc_ext_op.inl"
 #undef CC_EXT_OP
-#undef CC_EXT_FUNC
         { "(", 1 },
         { ")", 1 },
         { ",", 1 },
@@ -726,14 +834,8 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
     size_t curr_start = 0;
     size_t curr_len = 0;
     size_t len = strlen(str);
-    for (size_t i = 0; i <= len; ++i) {
-        if (i == len) {
-            push_curr_token();
-            break;
-        }
-
+    for (size_t i = 0; i < len; ++i) {
         char c = str[i];
-        char c2 = str[i + 1];
 
         // ignore whitespaces and others
         if (iscntrl(c) || isspace(c)) {
@@ -790,6 +892,8 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
         goto cleanup;
     }
 
+    // push remaining token
+    push_curr_token();
 
     // printf("===============================\n");
     // printf("tokens: %u\n", tokens->count);
@@ -875,14 +979,20 @@ static const char *parse_combiner(const char *str, struct ExtendedCombiner *comb
             continue;
         }
 
-        // values, symbols and functions
-#define CC_EXT_VAL(name, index)                         token_to_value(#name, CC_EXT_VAL_##name);
-#define CC_EXT_OP(name, symb, index, precedence, args)  token_to_op(symb, CC_EXT_OP_##name, args == 1);
-#define CC_EXT_FUNC(name, index, args)                  token_to_function(#name, CC_EXT_FUNC_##name);
-#include "gfx_cc_ext.inl"
-#undef CC_EXT_VAL
+        // symbols
+#define CC_EXT_OP(name, args, precedence, symbol) token_to_op(symbol, CC_EXT_OP_##name, precedence == 1);
+#include "gfx_cc_ext_op.inl"
 #undef CC_EXT_OP
+
+        // functions
+#define CC_EXT_FUNC(name, args) token_to_function(#name, CC_EXT_FUNC_##name);
+#include "gfx_cc_ext_func.inl"
 #undef CC_EXT_FUNC
+
+        // values
+#define CC_EXT_VAL(name) token_to_value(#name, CC_EXT_VAL_##name);
+#include "gfx_cc_ext_val.inl"
+#undef CC_EXT_VAL
 
         // other values
         token_to_value("0.0", CC_EXT_VAL_0);
