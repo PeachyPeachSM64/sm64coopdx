@@ -165,7 +165,7 @@ enum {
 
 #define CC_EXT_MAX_OPS           128
 #define CC_EXT_MAX_CONSTANTS     (CC_EXT_CONST_LAST - CC_EXT_CONST_FIRST + 1)
-#define CC_EXT_STACK_SIZE        32
+#define CC_EXT_STACK_SIZE        64
 
 struct ExtendedCombiner {
     uint8_t ops[CC_EXT_MAX_OPS];
@@ -314,7 +314,7 @@ static inline void constant_push(struct GrowingArray *constants, float constant)
     new_constant->w = constant;
 }
 
-static inline void constant_push_4(struct GrowingArray *constants, float xyzw[4]) {
+static inline void constant_push_4(struct GrowingArray *constants, const float xyzw[4]) {
     Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
     new_constant->x = xyzw[0];
     new_constant->y = xyzw[1];
@@ -335,11 +335,24 @@ static int constant_get_index(struct GrowingArray *constants, float value) {
     return -1;
 }
 
-static int constant_get_index_4(struct GrowingArray *constants, float xyzw[4]) {
+static int constant_get_index_4(struct GrowingArray *constants, const float xyzw[4]) {
     for (uint32_t i = 0; i < constants->count; ++i) {
         const Constant *constant = constant_get(constants, i);
         if (memcmp(constant->xyzw, xyzw, sizeof(constant->xyzw)) == 0) {
             return i;
+        }
+    }
+    return -1;
+}
+
+static int constant_get_builtin_value(const float xyzw[4]) {
+    static const struct { float xyzw[4]; uint8_t op; } BUILTIN_CONSTANTS[] = {
+        { { 0, 0, 0, 0 }, CC_EXT_0 },
+        { { 1, 1, 1, 1 }, CC_EXT_1 },
+    };
+    for (int i = 0; i < ARRAY_COUNT(BUILTIN_CONSTANTS); ++i) {
+        if (memcmp(xyzw, BUILTIN_CONSTANTS[i].xyzw, sizeof(float[4])) == 0) {
+            return BUILTIN_CONSTANTS[i].op;
         }
     }
     return -1;
@@ -414,18 +427,13 @@ static inline void op_push(struct GrowingArray *ops, uint8_t op, bool is_dot_par
 }
 
 static bool op_push_constant(struct GrowingArray *ops, struct GrowingArray *constants, bool is_dot_param, float constant[4], const Token *token) {
-    static const float CONSTANT_0[4] = { 0, 0, 0, 0 };
-    static const float CONSTANT_1[4] = { 1, 1, 1, 1 };
 
     // handle 0 and 1
-    if (memcmp(constant, CONSTANT_0, sizeof(CONSTANT_0)) == 0) {
-        op_push(ops, CC_EXT_0, is_dot_param, token);
-        return true;
-    }
-    if (memcmp(constant, CONSTANT_1, sizeof(CONSTANT_1)) == 0) {
-        op_push(ops, CC_EXT_1, is_dot_param, token);
-        return true;
-    }
+    // int value_op = constant_get_builtin_value(constant);
+    // if (value_op >= 0) {
+    //     op_push(ops, value_op, is_dot_param, token);
+    //     return true;
+    // }
 
     // don't duplicate constants
     int index = constant_get_index_4(constants, constant);
@@ -838,13 +846,13 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                         if (op->token) {
                             snprintf(error_msg, msg_len,
                                 "VALIDATION FAILED: Argument %u of dot operator `.` at position %llu is not a dot param: `%s`\n",
-                                k, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
+                                k + 1, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
                             );
                             gfx_cc_ext_print_error_location(error_msg, msg_len, str, arg->token ? arg->token->pos : op->token->pos, arg->token ? arg->token->len : op->token->len, 0);
                         } else {
                             snprintf(error_msg, msg_len,
                                 "VALIDATION FAILED: Argument %u of dot operator `.` is not a dot param: `%s`\n",
-                                k, arg->token ? arg->token->str : op_to_string(arg, constants)
+                                k + 1, arg->token ? arg->token->str : op_to_string(arg, constants)
                             );
                         }
                         return false;
@@ -856,13 +864,13 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                     if (op->token) {
                         snprintf(error_msg, msg_len,
                             "VALIDATION FAILED: Argument %u of %s `%s` at position %llu must not be a dot param: `%s`\n",
-                            k, op_is_function(op->op) ? "function" : "operator", op->token->str, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
+                            k + 1, op_is_function(op->op) ? "function" : "operator", op->token->str, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
                         gfx_cc_ext_print_error_location(error_msg, msg_len, str, arg->token ? arg->token->pos : op->token->pos, arg->token ? arg->token->len : op->token->len, 0);
                     } else {
                         snprintf(error_msg, msg_len,
                             "VALIDATION FAILED: Argument %u of %s `%s` must not be a dot param: `%s`\n",
-                            k, op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), arg->token ? arg->token->str : op_to_string(arg, constants)
+                            k + 1, op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
                     }
                     return false;
@@ -914,9 +922,6 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
 // Optimizations
 //
 
-// ### Constant optimizations
-// - `C{0, 0, 0, 0} == 0`
-// - `C{1, 1, 1, 1} == 1`
 //
 // ### Operator optimizations
 // - `X.rgba == X`, `X.0|1 == C`, `C.abcd == C{x=a, y=b, z=c, w=d}`
@@ -946,26 +951,119 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
 // - `max(X, X) == X`
 // - `clamp(X, 0, 1) == saturate(X)`, `clamp(X, Y, Y) == Y`
 //
-static bool gfx_cc_ext_optimize(struct GrowingArray *ops, struct GrowingArray *constants, char *error_msg, size_t msg_len, const char *str) {
+
+
+static void gfx_cc_ext_reindex_constants(struct GrowingArray *ops, struct GrowingArray *constants) {
+
+    // detect unused constants
+    bool used_constants[CC_EXT_MAX_CONSTANTS] = {0};
+    growing_array_for_each_(ops, const Op, op) {
+        if (op_is_constant(op->op)) {
+            used_constants[op->op - CC_EXT_CONST_FIRST] = true;
+        }
+    }
+
+    // pop unused constants
+    uint8_t reindexed_constants[CC_EXT_MAX_CONSTANTS] = {0};
+    uint8_t constants_count = constants->count;
+    for (uint8_t i = 0, k = 0; i < constants_count; ++i) {
+        if (used_constants[i]) {
+            reindexed_constants[i] = k++;
+        } else {
+            reindexed_constants[i] = 0xFF;
+            growing_array_pop_index(constants, k);
+        }
+    }
+
+    // reindex ops
+    growing_array_for_each_(ops, Op, op) {
+        if (op_is_constant(op->op)) {
+            uint8_t constant_index = op->op - CC_EXT_CONST_FIRST;
+            op->op = CC_EXT_CONST_FIRST + reindexed_constants[constant_index];
+        }
+    }
+
+
+
+    gfx_cc_ext_print_ops(ops, constants);
+    printf("\n");
+}
+
+// ### Constant optimizations
+// - `C{0, 0, 0, 0} == 0`
+// - `C{1, 1, 1, 1} == 1`
+static bool gfx_cc_ext_optimize_constant(struct GrowingArray *ops, struct GrowingArray *constants, const Op *op) {
+    if (op_is_constant(op->op)) {
+        const Constant *constant = constant_get(constants, op->op - CC_EXT_CONST_FIRST);
+        int value_op = constant_get_builtin_value(constant->xyzw);
+        if (value_op >= 0) {
+
+            printf("OPTIMIZATION: Replaced %s by %s.\n",
+                op_to_string(op, constants),
+                op_to_string((Op *)(Op []){{ value_op, op->is_dot_param, op->token }}, constants)
+            );
+
+            // replace all ops that use this constant by the builtin value
+            uint8_t constant_op = op->op;
+            growing_array_for_each_(ops, Op, _op) {
+                if (_op->op == constant_op) {
+                    _op->op = value_op;
+                }
+            }
+
+            // remove unused constant and reindex
+            gfx_cc_ext_reindex_constants(ops, constants);
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+static bool gfx_cc_ext_perform_optimization_pass(struct GrowingArray *ops, struct GrowingArray *constants) {
     struct GrowingArray *results = growing_array_init(NULL, 16, malloc, free);
     Result *stack[CC_EXT_STACK_SIZE] = {0};
     size_t stack_size = 0;
-    bool ok = false;
+    bool done = false;
 
-    bool optimize = true;
-    while (optimize) {
-        optimize = false;
+    for (uint32_t i = 0; i < ops->count; ++i) {
+        const Op *op = op_get(ops, i);
+
+        // value
+        if (op_is_value(op->op)) {
+
+            // constants
+            if (gfx_cc_ext_optimize_constant(ops, constants, op)) {
+                goto cleanup;
+            }
+
+            // note: no need to check the stack size
+            // validation runs before and optimization doesn't use more stack
+            // stack[stack_size++] = result_new();
+            continue;
+        }
+
+        // operator
+        else {
 
 
 
-
+        }
     }
 
-    ok = true;
+    done = true;
 
 cleanup:
     growing_array_free(&results);
-    return ok;
+    return done;
+}
+
+static void gfx_cc_ext_optimize(struct GrowingArray *ops, struct GrowingArray *constants) {
+    bool done = false;
+    while (!done) {
+        done = gfx_cc_ext_perform_optimization_pass(ops, constants);
+    }
 }
 
 //
@@ -1178,34 +1276,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
             continue;
         }
 
-        // operators
-#define CC_EXT_OPERATOR(name, args, precedence, symbol) token_to_operator(symbol, CC_EXT_##name, precedence == 1);
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
-
-        // functions
-#define CC_EXT_FUNCTION(name, args) token_to_function(#name, CC_EXT_##name);
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_FUNCTION
-
-        // values
-#define CC_EXT_VALUE(name) token_to_value(#name, CC_EXT_##name);
-#include "gfx_cc_ext_values.inl"
-#undef CC_EXT_VALUE
-
-        // other values
-        token_to_value("0.0", CC_EXT_0);
-        token_to_value("1.0", CC_EXT_1);
-        token_to_value("TEXEL0_ALPHA", CC_EXT_TEXEL0A);
-        token_to_value("TEXEL1_ALPHA", CC_EXT_TEXEL1A);
-        token_to_value("PRIMITIVE", CC_EXT_PRIM);
-        token_to_value("PRIMITIVE_ALPHA", CC_EXT_PRIMA);
-        token_to_value("SHADE_ALPHA", CC_EXT_SHADEA);
-        token_to_value("ENVIRONMENT", CC_EXT_ENV);
-        token_to_value("ENV_ALPHA", CC_EXT_ENVA);
-        token_to_value("LOD_FRACTION", CC_EXT_LOD);
-
-        // dot
+        // dot operator param
         if (ops->count > 0 && prev == CC_EXT_DOT) {
             size_t len = strlen(token->str);
             if (len != 1 && len != 3 && len != 4) {
@@ -1253,6 +1324,33 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
             }
             continue;
         }
+
+        // operators
+#define CC_EXT_OPERATOR(name, args, precedence, symbol) token_to_operator(symbol, CC_EXT_##name, precedence == 1);
+#include "gfx_cc_ext_operators.inl"
+#undef CC_EXT_OPERATOR
+
+        // functions
+#define CC_EXT_FUNCTION(name, args) token_to_function(#name, CC_EXT_##name);
+#include "gfx_cc_ext_functions.inl"
+#undef CC_EXT_FUNCTION
+
+        // values
+#define CC_EXT_VALUE(name) token_to_value(#name, CC_EXT_##name);
+#include "gfx_cc_ext_values.inl"
+#undef CC_EXT_VALUE
+
+        // other values
+        token_to_value("0.0", CC_EXT_0);
+        token_to_value("1.0", CC_EXT_1);
+        token_to_value("TEXEL0_ALPHA", CC_EXT_TEXEL0A);
+        token_to_value("TEXEL1_ALPHA", CC_EXT_TEXEL1A);
+        token_to_value("PRIMITIVE", CC_EXT_PRIM);
+        token_to_value("PRIMITIVE_ALPHA", CC_EXT_PRIMA);
+        token_to_value("SHADE_ALPHA", CC_EXT_SHADEA);
+        token_to_value("ENVIRONMENT", CC_EXT_ENV);
+        token_to_value("ENV_ALPHA", CC_EXT_ENVA);
+        token_to_value("LOD_FRACTION", CC_EXT_LOD);
 
         // numbers and math constants
         float constant;
@@ -1309,6 +1407,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
 
     gfx_cc_ext_print_ops(prefix, constants);
     printf("\n");
+    printf("\n");
 
     // validate
     if (!gfx_cc_ext_validate(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
@@ -1316,14 +1415,16 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     }
 
     // optimize
-    if (!gfx_cc_ext_optimize(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
-        goto cleanup;
-    }
+    gfx_cc_ext_optimize(prefix, constants);
 
     // validate again
     if (!gfx_cc_ext_validate(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
         goto cleanup;
     }
+
+    printf("\n");
+    gfx_cc_ext_print_ops(prefix, constants);
+    printf("\n");
 
 
 
@@ -1386,9 +1487,11 @@ static const char *error_checks[] = {
 
 __attribute__((constructor)) static void test_custom_combine() {
 
-    const char *comb_str = 
-    "ENV * (-TEXEL0 + TEXEL1.a).gb1 + (-0.5 >= 0.2) * 99 + vec(9, 10, 11, 12) - min(0.5, max(lerp(PRIM + ENVA * 0.75, SHADE, PRIMA).00ra.gbra, 0)) + 2 * 1 - 1.5 ^ (3 + 1)";
+    // const char *comb_str = 
+    // "ENV * (-TEXEL0 + TEXEL1.a).gb1 + (-0.5 >= 0.2) * 99 + vec(9, 10, 11, 12) - min(0.5, max(lerp(PRIM + ENVA * 0.75, SHADE, PRIMA).00ra.gbra, 0)) + 2 * 1 - 1.5 ^ (3 + 1)";
 
+    const char *comb_str = 
+    "3.33 * 1.00 - 0.00 + 1.00 + TEXEL0.1";
 
     // for (int i = 0; i < ARRAY_COUNT(error_checks); ++i) {
 
