@@ -5,7 +5,7 @@
 // Macro params are: (name, args, precedence, symbol)
 //
 
-CC_EXT_OPERATOR(DOT, 3, 0, ".")
+CC_EXT_OPERATOR(DOT, 2, 0, ".")
 CC_EXT_OPERATOR(NEG, 1, 1, "-")
 CC_EXT_OPERATOR(NOT, 1, 1, "!")
 CC_EXT_OPERATOR(POW, 2, 2, "^")

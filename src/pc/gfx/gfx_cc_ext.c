@@ -6,10 +6,6 @@
 
 
 #define CC_EXT_FLAG_OPERATOR            0x80
-#define CC_EXT_FLAG_DOT_PARAM           0x40
-
-#define CC_EXT_DOT_PARAM(op, x)         (((op) >> (3 * (x))) & 0x7)
-
 #define CC_EXT_OPERATOR_ARGS_SHIFT      5
 #define CC_EXT_OPERATOR_ARGS_WIDTH      2
 #define CC_EXT_OPERATOR_ARGS_BITS       ((1 << CC_EXT_OPERATOR_ARGS_WIDTH) - 1)
@@ -130,7 +126,7 @@ enum {
 #include "gfx_cc_ext_values.inl"
 #undef CC_EXT_VALUE
     CC_EXT_CONST_FIRST,
-    CC_EXT_CONST_LAST = (CC_EXT_FLAG_DOT_PARAM - 1),
+    CC_EXT_CONST_LAST = (CC_EXT_FLAG_OPERATOR - 1),
 
 // Operators
 #define CC_EXT_OPERATOR(name, args, ...) CC_EXT_##name = (CC_EXT_ID_##name | ((args - 1) << CC_EXT_OPERATOR_ARGS_SHIFT) | CC_EXT_FLAG_OPERATOR),
@@ -226,7 +222,7 @@ static void token_push(struct GrowingArray *tokens, const char *src, size_t pos,
     if (token_is(_s_)) { \
         if (( (_is_unary_) && op_can_be_operator(prev)) || \
             (!(_is_unary_) && op_can_be_value(prev))) { \
-            op_push(ops, (_op_), token); \
+            op_push(ops, (_op_), false, token); \
         } else { \
             snprintf(sErrorMsg, sizeof(sErrorMsg), \
                 "Operator `%s` at position %llu must follow %s.\n", \
@@ -251,7 +247,7 @@ static void token_push(struct GrowingArray *tokens, const char *src, size_t pos,
             goto cleanup; \
         } \
         if (op_can_be_operator(prev)) { \
-            op_push(ops, (_op_), token); \
+            op_push(ops, (_op_), false, token); \
         } else { \
             snprintf(sErrorMsg, sizeof(sErrorMsg), \
                 "Function `%s` at position %llu must follow an operator.\n", \
@@ -267,7 +263,7 @@ static void token_push(struct GrowingArray *tokens, const char *src, size_t pos,
 #define token_to_value(_s_, _op_) { \
     if (token_is(_s_)) { \
         if (op_can_be_operator(prev)) { \
-            op_push(ops, (_op_), token); \
+            op_push(ops, (_op_), false, token); \
         } else { \
             snprintf(sErrorMsg, sizeof(sErrorMsg), \
                 "Value `%s` at position %llu must follow an operator.\n", \
@@ -300,11 +296,62 @@ static bool token_check_number(const Token *token) {
 }
 
 //
+// Constant as float4
+//
+
+typedef struct Constant {
+    union {
+        struct { float x, y, z, w; };
+        float xyzw[4];
+    };
+} Constant;
+
+static inline void constant_push(struct GrowingArray *constants, float constant) {
+    Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
+    new_constant->x = constant;
+    new_constant->y = constant;
+    new_constant->z = constant;
+    new_constant->w = constant;
+}
+
+static inline void constant_push_4(struct GrowingArray *constants, float xyzw[4]) {
+    Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
+    new_constant->x = xyzw[0];
+    new_constant->y = xyzw[1];
+    new_constant->z = xyzw[2];
+    new_constant->w = xyzw[3];
+}
+
+static inline Constant *constant_get(struct GrowingArray *constants, uint32_t index) {
+    return (Constant *) constants->buffer[index];
+}
+
+static int constant_get_index(struct GrowingArray *constants, float value) {
+    for (uint32_t i = 0; i < constants->count; ++i) {
+        if (constant_get(constants, i)->x == value) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static int constant_get_index_4(struct GrowingArray *constants, float xyzw[4]) {
+    for (uint32_t i = 0; i < constants->count; ++i) {
+        const Constant *constant = constant_get(constants, i);
+        if (memcmp(constant->xyzw, xyzw, sizeof(constant->xyzw)) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+//
 // Op with token
 //
 
 typedef struct Op {
     uint8_t op;
+    bool is_dot_param;
     const Token *token;
 } Op;
 
@@ -335,10 +382,6 @@ static inline bool op_is_constant(uint8_t op) {
     return op >= CC_EXT_CONST_FIRST && op <= CC_EXT_CONST_LAST;
 }
 
-static inline bool op_is_dot_param(uint8_t op) {
-    return op_is_value(op) && (op & CC_EXT_FLAG_DOT_PARAM) != 0;
-}
-
 // A^B^C == A^(B^C)
 static inline bool op_is_right_associative(uint8_t op) {
     return op == CC_EXT_POW;
@@ -363,10 +406,38 @@ static inline uint8_t op_get_precedence(uint8_t op) {
     return OP_PRECEDENCE[op];
 }
 
-static inline void op_push(struct GrowingArray *ops, uint8_t op, const Token *token) {
+static inline void op_push(struct GrowingArray *ops, uint8_t op, bool is_dot_param, const Token *token) {
     Op *new_op = growing_array_alloc(ops, sizeof(Op));
     new_op->op = op;
+    new_op->is_dot_param = is_dot_param;
     new_op->token = token;
+}
+
+static bool op_push_constant(struct GrowingArray *ops, struct GrowingArray *constants, bool is_dot_param, float constant[4], const Token *token) {
+    static const float CONSTANT_0[4] = { 0, 0, 0, 0 };
+    static const float CONSTANT_1[4] = { 1, 1, 1, 1 };
+
+    // handle 0 and 1
+    if (memcmp(constant, CONSTANT_0, sizeof(CONSTANT_0)) == 0) {
+        op_push(ops, CC_EXT_0, is_dot_param, token);
+        return true;
+    }
+    if (memcmp(constant, CONSTANT_1, sizeof(CONSTANT_1)) == 0) {
+        op_push(ops, CC_EXT_1, is_dot_param, token);
+        return true;
+    }
+
+    // don't duplicate constants
+    int index = constant_get_index_4(constants, constant);
+    if (index >= 0) {
+        op_push(ops, CC_EXT_CONST_FIRST + index, is_dot_param, token);
+    } else if (constants->count < CC_EXT_MAX_CONSTANTS) {
+        op_push(ops, CC_EXT_CONST_FIRST + constants->count, is_dot_param, token);
+        constant_push_4(constants, constant);
+    } else {
+        return false;
+    }
+    return true;
 }
 
 static inline Op *op_get(struct GrowingArray *ops, uint32_t index) {
@@ -393,7 +464,7 @@ static int op_get_index(struct GrowingArray *ops, const Op *op) {
     return -1;
 }
 
-static const char *op_to_string(uint8_t op) {
+static const char *op_to_string(const Op *op, struct GrowingArray *constants) {
 static char OP_TO_STR[0x100][32] = {
 #define CC_EXT_VALUE(name)         [CC_EXT_##name] = "v_" #name,
 #define CC_EXT_OPERATOR(name, ...) [CC_EXT_##name] = "o_" #name,
@@ -408,67 +479,30 @@ static char OP_TO_STR[0x100][32] = {
     [CC_EXT_CLOSE] = ")",
     [CC_EXT_COMMA] = ",",
 };
-    char *str = OP_TO_STR[op];
+    if (op_is_constant(op->op) && op->is_dot_param) {
+        static char sDotParamStr[8];
+        uint8_t constant_index = op->op - CC_EXT_CONST_FIRST;
+        if (constant_index < constants->count) {
+            const Constant *constant = constant_get(constants, constant_index);
+            for (int i = 0; i < 4; ++i) {
+                int k = (int) constant->xyzw[i];
+                sDotParamStr[i] = (k >= 0 && k < 6 ? "01rgba"[k] : '?');
+            }
+            sDotParamStr[4] = 0;
+        } else {
+            snprintf(sDotParamStr, sizeof(sDotParamStr), "????");
+        }
+        return sDotParamStr;
+    }
+    char *str = OP_TO_STR[op->op];
     if (*str) {
         return str;
     }
-    if (op_is_constant(op)) {
-        snprintf(str, sizeof(*OP_TO_STR), "v_CONST_%02d", op - CC_EXT_CONST_FIRST);
-        return str;
-    }
-    if (op_is_dot_param(op)) {
-        snprintf(str, sizeof(*OP_TO_STR), "%c%c", "rgba0111"[CC_EXT_DOT_PARAM(op, 0)], "rgba0111"[CC_EXT_DOT_PARAM(op, 1)]);
+    if (op_is_constant(op->op)) {
+        snprintf(str, sizeof(*OP_TO_STR), "v_CONST_%02X", op->op - CC_EXT_CONST_FIRST);
         return str;
     }
     return str;
-}
-
-//
-// Constant as float4
-//
-
-typedef struct Constant {
-    float x, y, z, w;
-} Constant;
-
-static inline void constant_push(struct GrowingArray *constants, float constant) {
-    Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
-    new_constant->x = constant;
-    new_constant->y = constant;
-    new_constant->z = constant;
-    new_constant->w = constant;
-}
-
-static inline void constant_push_4(struct GrowingArray *constants, float x, float y, float z, float w) {
-    Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
-    new_constant->x = x;
-    new_constant->y = y;
-    new_constant->z = z;
-    new_constant->w = w;
-}
-
-static inline Constant *constant_get(struct GrowingArray *constants, uint32_t index) {
-    return (Constant *) constants->buffer[index];
-}
-
-static int constant_get_index(struct GrowingArray *constants, float value) {
-    for (uint32_t i = 0; i < constants->count; ++i) {
-        if (constant_get(constants, i)->x == value) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-static int constant_get_index_4(struct GrowingArray *constants, float x, float y, float z, float w) {
-    for (uint32_t i = 0; i < constants->count; ++i) {
-        const Constant *constant = constant_get(constants, i);
-        if (constant->x == x && constant->y == y &&
-            constant->z == z && constant->w == w) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 //
@@ -487,8 +521,6 @@ typedef struct Result {
 //
 // Debug and logging
 //
-
-
 
 static void gfx_cc_ext_print_error_location(char *error_msg, size_t msg_len, const char *str, size_t pos, size_t len, size_t offset) {
     size_t curr_len = strlen(error_msg);
@@ -511,7 +543,7 @@ static void gfx_cc_ext_print_error_location(char *error_msg, size_t msg_len, con
 
 static void gfx_cc_ext_print_ops(struct GrowingArray *ops, struct GrowingArray *constants) {
     growing_array_for_each_(ops, const Op, op) {
-        printf("%s ", op_to_string(op->op));
+        printf("%s ", op_to_string(op, constants));
     }
     printf("\n");
     for (uint32_t i = 0; i < constants->count; ++i) {
@@ -533,11 +565,6 @@ static void gfx_cc_ext_check_duplicates() {
         counts[i]++;
     }
 
-// Dot params
-    for (int i = CC_EXT_FLAG_DOT_PARAM; i < CC_EXT_FLAG_OPERATOR; ++i) {
-        counts[i]++;
-    }
-
 // Operators
 #define CC_EXT_OPERATOR(name, args, ...) counts[CC_EXT_##name]++;
 #include "gfx_cc_ext_operators.inl"
@@ -556,7 +583,6 @@ static void gfx_cc_ext_check_duplicates() {
     printf("\n");
     printf("\e[0;32mGreen\e[0m number indicates that the slot is taken.\n");
     printf("\e[0;36mC\e[0m are available constants.\n");
-    printf("\e[0;33mD\e[0m are dot operator parameter combinations.\n");
     printf("\e[0;35mS\e[0m are special ops, reserved for parsing.\n");
     printf("\e[0;31mRed\e[0m number indicates a duplicate.\n");
     printf("\e[0;31mMAKE SURE NO RED NUMBER APPEARS IS THE FOLLOWING TABLE.\e[0m\n");
@@ -569,9 +595,7 @@ static void gfx_cc_ext_check_duplicates() {
         };
         switch (counts[i]) {
             case 0: printf(" ."); break;
-            case 1: if (op_is_dot_param(i)) {
-                        printf(" \e[0;33mD\e[0m");
-                    } else if (op_is_value(i) && i >= CC_EXT_CONST_FIRST) {
+            case 1: if (op_is_value(i) && i >= CC_EXT_CONST_FIRST) {
                         printf(" \e[0;36mC\e[0m");
                     } else if (op_is_special(i)) {
                         printf(" \e[0;35mS\e[0m");
@@ -595,7 +619,7 @@ static void gfx_cc_ext_check_duplicates() {
 //
 
 static inline void stack_push(struct GrowingArray *stack, Op *op) {
-    op_push(stack, op->op, op->token);
+    op_push(stack, op->op, op->is_dot_param, op->token);
 }
 
 static inline Op *stack_top(struct GrowingArray *stack) {
@@ -618,7 +642,7 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
         Op *op = op_get(ops, i);
 
         if (op_is_value(op->op)) {
-            op_push(res, op->op, op->token);
+            op_push(res, op->op, op->is_dot_param, op->token);
             continue;
         }
 
@@ -630,14 +654,14 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
         if (op->op == CC_EXT_OPEN) {
             while (stack->count > 0 && stack_top(stack)->op != CC_EXT_CLOSE) {
                 Op *top = stack_pop(stack);
-                op_push(res, top->op, top->token);
+                op_push(res, top->op, top->is_dot_param, top->token);
             }
 
             // push function
             if (i > 0) {
                 Op *prev = op_get(ops, i - 1);
                 if (op_is_function(prev->op)) {
-                    op_push(res, prev->op, prev->token);
+                    op_push(res, prev->op, prev->is_dot_param, prev->token);
                     i--;
                 }
             }
@@ -672,7 +696,7 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
                 op_get_precedence(top->op) == op_get_precedence(op->op) && op_is_right_associative(op->op)
             ))) {
                 top = stack_pop(stack);
-                op_push(res, top->op, top->token);
+                op_push(res, top->op, top->is_dot_param, top->token);
             }
             stack_push(stack, op);
             continue;
@@ -698,7 +722,7 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
     // pop remaining ops
     while (stack->count > 0) {
         Op *op = stack_pop(stack);
-        op_push(res, op->op, op->token);
+        op_push(res, op->op, op->is_dot_param, op->token);
     }
     ok = true;
 
@@ -732,13 +756,13 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                 if (constant_index >= constants->count) {
                     if (op->token) {
                         snprintf(error_msg, msg_len,
-                            "Validation failed: Constant %u at position %llu is not defined, there is only %u constants loaded.\n",
+                            "VALIDATION FAILED: Constant %u at position %llu is not defined, there is only %u constants loaded.\n",
                             constant_index, op->token->pos, constants->count
                         );
                         gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
                     } else {
                         snprintf(error_msg, msg_len,
-                            "Validation failed: Constant %u is not defined, there is only %u constants loaded.\n",
+                            "VALIDATION FAILED: Constant %u is not defined, there is only %u constants loaded.\n",
                             constant_index, constants->count
                         );
                     }
@@ -750,13 +774,13 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
             if (stack_size == CC_EXT_STACK_SIZE) {
                 if (op->token) {
                     snprintf(error_msg, msg_len,
-                        "Validation failed: Stack is full, cannot push value at position %llu: `%s`\n",
+                        "VALIDATION FAILED: Stack is full, cannot push value at position %llu: `%s`\n",
                         op->token->pos, op->token->str
                     );
                     gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
                 } else {
                     snprintf(error_msg, msg_len,
-                        "Validation failed: Stack is full, cannot push more values."
+                        "VALIDATION FAILED: Stack is full, cannot push more values."
                     );
                 }
                 return false;
@@ -774,14 +798,14 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
             if (stack_size < args) {
                 if (op->token) {
                     snprintf(error_msg, msg_len,
-                        "Validation failed: Not enough values in stack for %s at position %llu: `%s` (%llu values, should be at least %u)\n",
+                        "VALIDATION FAILED: Not enough values in stack for %s at position %llu: `%s` (%llu values, should be at least %u)\n",
                         op_is_function(op->op) ? "function" : "operator", op->token->pos, op->token->str, stack_size, args
                     );
                     gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
                 } else {
                     snprintf(error_msg, msg_len,
-                        "Validation failed: Not enough values in stack for %s: `%s` (%llu values, should be at least %u)\n",
-                        op_is_function(op->op) ? "function" : "operator", op_to_string(op->op), stack_size, args
+                        "VALIDATION FAILED: Not enough values in stack for %s: `%s` (%llu values, should be at least %u)\n",
+                        op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), stack_size, args
                     );
                 }
                 return false;
@@ -795,32 +819,32 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                 if (!op_is_value(arg->op) && arg != &sResultOp) {
                     if (op->token) {
                         snprintf(error_msg, msg_len,
-                            "Validation failed: Argument %u of %s `%s` at position %llu is not a value: `%s`\n",
-                            k, op_is_function(op->op) ? "function" : "operator", op->token->str, op->token->pos, arg->token ? arg->token->str : op_to_string(arg->op)
+                            "VALIDATION FAILED: Argument %u of %s `%s` at position %llu is not a value: `%s`\n",
+                            k, op_is_function(op->op) ? "function" : "operator", op->token->str, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
                         gfx_cc_ext_print_error_location(error_msg, msg_len, str, arg->token ? arg->token->pos : op->token->pos, arg->token ? arg->token->len : op->token->len, 0);
                     } else {
                         snprintf(error_msg, msg_len,
-                            "Validation failed: Argument %u of %s `%s` is not a value: `%s`\n",
-                            k, op_is_function(op->op) ? "function" : "operator", op_to_string(op->op), arg->token ? arg->token->str : op_to_string(arg->op)
+                            "VALIDATION FAILED: Argument %u of %s `%s` is not a value: `%s`\n",
+                            k, op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
                     }
                     return false;
                 }
 
-                // args 2 and 3 of dot operator must be dot params
-                if (op->op == CC_EXT_DOT && (k == 1 || k == 2)) {
-                    if (!op_is_dot_param(arg->op)) {
+                // arg 2 of dot operator must be a dot param
+                if (op->op == CC_EXT_DOT && k == 1) {
+                    if (!arg->is_dot_param) {
                         if (op->token) {
                             snprintf(error_msg, msg_len,
-                                "Validation failed: Argument %u of dot operator `.` at position %llu is not a dot param: `%s`\n",
-                                k, op->token->pos, arg->token ? arg->token->str : op_to_string(arg->op)
+                                "VALIDATION FAILED: Argument %u of dot operator `.` at position %llu is not a dot param: `%s`\n",
+                                k, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
                             );
                             gfx_cc_ext_print_error_location(error_msg, msg_len, str, arg->token ? arg->token->pos : op->token->pos, arg->token ? arg->token->len : op->token->len, 0);
                         } else {
                             snprintf(error_msg, msg_len,
-                                "Validation failed: Argument %u of dot operator `.` is not a dot param: `%s`\n",
-                                k, arg->token ? arg->token->str : op_to_string(arg->op)
+                                "VALIDATION FAILED: Argument %u of dot operator `.` is not a dot param: `%s`\n",
+                                k, arg->token ? arg->token->str : op_to_string(arg, constants)
                             );
                         }
                         return false;
@@ -828,17 +852,17 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                 }
 
                 // otherwise, arg must not be a dot param
-                else if (op_is_dot_param(arg->op)) {
+                else if (arg->is_dot_param) {
                     if (op->token) {
                         snprintf(error_msg, msg_len,
-                            "Validation failed: Argument %u of %s `%s` at position %llu must not be a dot param: `%s`\n",
-                            k, op_is_function(op->op) ? "function" : "operator", op->token->str, op->token->pos, arg->token ? arg->token->str : op_to_string(arg->op)
+                            "VALIDATION FAILED: Argument %u of %s `%s` at position %llu must not be a dot param: `%s`\n",
+                            k, op_is_function(op->op) ? "function" : "operator", op->token->str, op->token->pos, arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
                         gfx_cc_ext_print_error_location(error_msg, msg_len, str, arg->token ? arg->token->pos : op->token->pos, arg->token ? arg->token->len : op->token->len, 0);
                     } else {
                         snprintf(error_msg, msg_len,
-                            "Validation failed: Argument %u of %s `%s` must not be a dot param: `%s`\n",
-                            k, op_is_function(op->op) ? "function" : "operator", op_to_string(op->op), arg->token ? arg->token->str : op_to_string(arg->op)
+                            "VALIDATION FAILED: Argument %u of %s `%s` must not be a dot param: `%s`\n",
+                            k, op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
                     }
                     return false;
@@ -853,13 +877,13 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
         // invalid op
         if (op->token) {
             snprintf(error_msg, msg_len,
-                "Validation failed: Invalid op 0x%02X from token at position %llu: `%s`\n",
+                "VALIDATION FAILED: Invalid op 0x%02X from token at position %llu: `%s`\n",
                 op->op, op->token->pos, op->token->str
             );
             gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
         } else {
             snprintf(error_msg, msg_len,
-                "Validation failed: Invalid op 0x%02X.",
+                "VALIDATION FAILED: Invalid op 0x%02X.",
                 op->op
             );
         }
@@ -869,7 +893,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
     // empty combiner
     if (stack_size == 0) {
         snprintf(error_msg, msg_len,
-            "Validation failed: Combiner is empty, no result in stack."
+            "VALIDATION FAILED: Combiner is empty, no result in stack."
         );
         return false;
     }
@@ -877,7 +901,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
     // too much values in stack
     if (stack_size > 1) {
         snprintf(error_msg, msg_len,
-            "Validation failed: Combiner is ill-formed, too much values (%llu) remain in stack after processing.",
+            "VALIDATION FAILED: Combiner is ill-formed, too much values (%llu) remain in stack after processing.",
             stack_size
         );
         return false;
@@ -890,14 +914,59 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
 // Optimizations
 //
 
+// ### Constant optimizations
+// - `C{0, 0, 0, 0} == 0`
+// - `C{1, 1, 1, 1} == 1`
+//
+// ### Operator optimizations
+// - `X.rgba == X`, `X.0|1 == C`, `C.abcd == C{x=a, y=b, z=c, w=d}`
+// - `-0 == 0`, `--X == X`, `-C1 = C2`
+// - `!!!X == !X`, `!C1 == C2`
+// - `X ^ 0 == 1`, `X ^ 1 == X`, `C1 ^ C2 == C3`
+// - `X * 0 == 0 * X == 0`, `X * 1 == 1 * X == X`, `C1 * C2 == C3`
+// - `X / 1 == X`, `0 / X == 0`, `X / X == 1`, `C1 / C2 == C3`
+// - `0 % X == 0`, `X % X == 0`, `C1 % C2 == C3`
+// - `X + 0 == 0 + X == X`, `C1 + C2 == C3`
+// - `X - 0 == X`, `0 - X == -X`, `C1 - C2 == C3`
+// - `X < X == 0`, `C1 < C2 == C3`
+// - `X <= X == 1`, `C1 < C2 == C3`
+// - `X > X == 0`, `C1 > C2 == C3`
+// - `X >= X == 1`, `C1 > C2 == C3`
+// - `X == X == 1`, `C1 == C2 == C3`
+// - `X != X == 0`, `C1 != C2 == C3`
+// - `C1 && C2 == C3`
+// - `C1 || C2 == C3`
+//
+// ### Function optimizations
+// - `vec(C1, C2, C3, C4) == C{x=C1.x, y=C2.y, z=C3.z, w=C4.w}`
+// - `f(C1, ..., Cn) == C{x=f(C1, ..., Cn).x, ...}`
+// - `lerp(X, Y, 0) == X`, `lerp(X, Y, 1) == Y`, `lerp(X, X, Y) == X`
+// - `invlerp(X, Y, X) == 0`, `invlerp(X, Y, Y) == 1`, `invlerp(X, X, Y) == 0`
+// - `min(X, X) == X`
+// - `max(X, X) == X`
+// - `clamp(X, 0, 1) == saturate(X)`, `clamp(X, Y, Y) == Y`
+//
+static bool gfx_cc_ext_optimize(struct GrowingArray *ops, struct GrowingArray *constants, char *error_msg, size_t msg_len, const char *str) {
+    struct GrowingArray *results = growing_array_init(NULL, 16, malloc, free);
+    Result *stack[CC_EXT_STACK_SIZE] = {0};
+    size_t stack_size = 0;
+    bool ok = false;
+
+    bool optimize = true;
+    while (optimize) {
+        optimize = false;
 
 
 
 
+    }
 
+    ok = true;
 
-
-
+cleanup:
+    growing_array_free(&results);
+    return ok;
+}
 
 //
 // Parsing
@@ -1028,7 +1097,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
 
         if (token_is("+")) {
             if (op_can_be_value(prev)) {
-                op_push(ops, CC_EXT_ADD, token);
+                op_push(ops, CC_EXT_ADD, false, token);
             } else {
                 // ignore unary plus
             }
@@ -1037,9 +1106,9 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
 
         if (token_is("-")) {
             if (op_can_be_value(prev)) {
-                op_push(ops, CC_EXT_SUB, token);
+                op_push(ops, CC_EXT_SUB, false, token);
             } else {
-                op_push(ops, CC_EXT_NEG, token);
+                op_push(ops, CC_EXT_NEG, false, token);
             }
             continue;
         }
@@ -1048,7 +1117,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
             token->prev = scope;
             scope = token;
             if (op_can_be_operator(prev)) {
-                op_push(ops, CC_EXT_OPEN, token);
+                op_push(ops, CC_EXT_OPEN, false, token);
             } else {
                 snprintf(sErrorMsg, sizeof(sErrorMsg),
                     "Left parenthesis `(` at position %llu must follow an operator.\n",
@@ -1077,7 +1146,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
                 goto cleanup;
             }
-            op_push(ops, CC_EXT_CLOSE, token);
+            op_push(ops, CC_EXT_CLOSE, false, token);
             scope = scope->prev;
             continue;
         }
@@ -1105,7 +1174,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 goto cleanup;
             }
 
-            op_push(ops, CC_EXT_COMMA, token);
+            op_push(ops, CC_EXT_COMMA, false, token);
             continue;
         }
 
@@ -1148,7 +1217,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 goto cleanup;
             }
 
-            uint8_t dot_params[2] = { CC_EXT_FLAG_DOT_PARAM, CC_EXT_FLAG_DOT_PARAM };
+            float dot_param[4] = {0};
             for (size_t i = 0; i < 4; ++i) {
                 char c = (
                     i < len ? token->str[i] : (
@@ -1157,12 +1226,12 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 )));
                 uint8_t k = 0;
                 switch (c) {
-                    case 'r': case 'R': k = 0; break;
-                    case 'g': case 'G': k = 1; break;
-                    case 'b': case 'B': k = 2; break;
-                    case 'a': case 'A': k = 3; break;
-                    case '0':           k = 4; break;
-                    case '1':           k = 5; break;
+                    case '0':           k = 0; break;
+                    case '1':           k = 1; break;
+                    case 'r': case 'R': k = 2; break;
+                    case 'g': case 'G': k = 3; break;
+                    case 'b': case 'B': k = 4; break;
+                    case 'a': case 'A': k = 5; break;
                     default:
                         snprintf(sErrorMsg, sizeof(sErrorMsg),
                             "Operator `.` parameter `%s` at position %llu has invalid character:  %c  (%d, 0x%02X) (must be one of \"rgba01\").\n",
@@ -1171,11 +1240,17 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                         gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, i);
                         goto cleanup;
                 }
-                dot_params[i / 2] |= (k << (3 * (i % 2)));
+                dot_param[i] = k;
             }
 
-            op_push(ops, dot_params[0], token);
-            op_push(ops, dot_params[1], token);
+            if (!op_push_constant(ops, constants, true, dot_param, token)) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Max number of constants reached: %u\n",
+                    CC_EXT_MAX_CONSTANTS
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
             continue;
         }
 
@@ -1193,24 +1268,8 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 goto cleanup;
             }
 
-            // handle 0 and 1
-            if (constant == 0) {
-                op_push(ops, CC_EXT_0, token);
-                continue;
-            }
-            if (constant == 1) {
-                op_push(ops, CC_EXT_1, token);
-                continue;
-            }
-
-            // don't duplicate constants
-            int index = constant_get_index(constants, constant);
-            if (index >= 0) {
-                op_push(ops, CC_EXT_CONST_FIRST + index, token);
-            } else if (constants->count < CC_EXT_MAX_CONSTANTS) {
-                op_push(ops, CC_EXT_CONST_FIRST + constants->count, token);
-                constant_push(constants, constant);
-            } else {
+            float constant4[4] = { constant, constant, constant, constant };
+            if (!op_push_constant(ops, constants, false, constant4, token)) {
                 snprintf(sErrorMsg, sizeof(sErrorMsg),
                     "Max number of constants reached: %u\n",
                     CC_EXT_MAX_CONSTANTS
@@ -1257,6 +1316,15 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     }
 
     // optimize
+    if (!gfx_cc_ext_optimize(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
+        goto cleanup;
+    }
+
+    // validate again
+    if (!gfx_cc_ext_validate(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
+        goto cleanup;
+    }
+
 
 
     // // check sizes
