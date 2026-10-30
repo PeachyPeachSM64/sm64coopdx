@@ -293,11 +293,14 @@ void growing_array_move(struct GrowingArray *array, u32 from, u32 to, u32 count)
 
 /**
  * Pop the entry at position `index` out of the array.
+ * Shift the next slots by 1 and move the popped slot at the end of the array, then decrement the count.
  * Returns true if the index was valid.
  */
 bool growing_array_pop_index(struct GrowingArray *array, u32 index) {
     if (!array || index >= array->count) { return false; }
-    memmove(array->buffer + index, array->buffer + index + 1, sizeof(void *) * (array->count - index - 1));
+    void *item = array->buffer[index];
+    memmove(array->buffer + index, array->buffer + (index + 1), sizeof(void *) * (array->count - index - 1));
+    array->buffer[array->count - 1] = item;
     array->count--;
     return true;
 }
