@@ -143,7 +143,7 @@ static void gfx_cc_ext_check_duplicates() {
 }
 
 //
-// Infix to prefix
+// Infix to postfix
 //
 
 static inline void stack_push(struct GrowingArray *stack, Op *op) {
@@ -160,7 +160,7 @@ static inline Op *stack_pop(struct GrowingArray *stack) {
     return op;
 }
 
-static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *ops, char *error_msg, size_t msg_len, const char *str) {
+static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray *ops, char *error_msg, size_t msg_len, const char *str) {
     struct GrowingArray *res   = growing_array_init(NULL, 16, malloc, free);
     struct GrowingArray *stack = growing_array_init(NULL, 16, malloc, free);
     bool ok = false;
@@ -169,29 +169,28 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
     for (int i = ops->count - 1; i >= 0; --i) {
         Op *op = op_get(ops, i);
 
+        // value
         if (op_is_value(op->op)) {
             op_push(res, op->op, op->is_dot_param, op->token);
             continue;
         }
 
+        // right parenthesis, beginning of scope
         if (op->op == CC_EXT_CLOSE) {
             stack_push(stack, op);
             continue;
         }
 
-        if (op->op == CC_EXT_OPEN) {
+        // left parenthesis or comma, end of scope or function argument
+        if (op->op == CC_EXT_OPEN || op->op == CC_EXT_COMMA) {
             while (stack->count > 0 && stack_top(stack)->op != CC_EXT_CLOSE) {
                 Op *top = stack_pop(stack);
                 op_push(res, top->op, top->is_dot_param, top->token);
             }
 
-            // push function
-            if (i > 0) {
-                Op *prev = op_get(ops, i - 1);
-                if (op_is_function(prev->op)) {
-                    op_push(res, prev->op, prev->is_dot_param, prev->token);
-                    i--;
-                }
+            // go to next function argument
+            if (op->op == CC_EXT_COMMA) {
+                continue;
             }
 
             // should pop ')'
@@ -214,6 +213,7 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
             continue;
         }
 
+        // operator/function
         if (op_is_operator(op->op)) {
             Op *top;
             while (
@@ -230,21 +230,20 @@ static struct GrowingArray *gfx_cc_ext_generate_prefix_ops(struct GrowingArray *
             continue;
         }
 
-        if (op->op != CC_EXT_COMMA) {
-            if (op->token) {
-                snprintf(error_msg, msg_len,
-                    "Invalid op 0x%02X from token at position %llu: `%s`\n",
-                    op->op, op->token->pos, op->token->str
-                );
-                gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
-            } else {
-                snprintf(error_msg, msg_len,
-                    "Invalid op 0x%02X.",
-                    op->op
-                );
-            }
-            goto cleanup;
+        // invalid
+        if (op->token) {
+            snprintf(error_msg, msg_len,
+                "Invalid op 0x%02X from token at position %llu: `%s`\n",
+                op->op, op->token->pos, op->token->str
+            );
+            gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
+        } else {
+            snprintf(error_msg, msg_len,
+                "Invalid op 0x%02X.",
+                op->op
+            );
         }
+        goto cleanup;
     }
 
     // pop remaining ops
@@ -468,7 +467,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     struct GrowingArray *tokens    = growing_array_init(NULL, 16, malloc, token_free);
     struct GrowingArray *ops       = growing_array_init(NULL, 16, malloc, free);
     struct GrowingArray *constants = growing_array_init(NULL, 16, malloc, free);
-    struct GrowingArray *prefix    = NULL;
+    struct GrowingArray *postfix   = NULL;
     bool ok = false;
 
     // tokenize input
@@ -660,7 +659,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 goto cleanup;
             }
 
-            float dot_param[4] = {0};
+            float4 dot_param = {0};
             for (size_t i = 0; i < 4; ++i) {
                 char c = (
                     i < len ? token->str[i] : (
@@ -738,7 +737,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
                 goto cleanup;
             }
 
-            float constant4[4] = { constant, constant, constant, constant };
+            float4 constant4 = { constant, constant, constant, constant };
             if (!op_push_constant(ops, constants, false, constant4, token)) {
                 snprintf(sErrorMsg, sizeof(sErrorMsg),
                     "Max number of constants reached: %u\n",
@@ -772,37 +771,37 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     gfx_cc_ext_print_ops(ops, constants);
     printf("\n");
 
-    prefix = gfx_cc_ext_generate_prefix_ops(ops, sErrorMsg, sizeof(sErrorMsg), str);
-    if (!prefix) {
+    postfix = gfx_cc_ext_generate_postfix_ops(ops, sErrorMsg, sizeof(sErrorMsg), str);
+    if (!postfix) {
         goto cleanup;
     }
 
-    gfx_cc_ext_print_ops(prefix, constants);
+    gfx_cc_ext_print_ops(postfix, constants);
     printf("\n");
     printf("\n");
 
     // validate
-    if (!gfx_cc_ext_validate(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
+    if (!gfx_cc_ext_validate(postfix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
         goto cleanup;
     }
 
     // optimize
-    gfx_cc_ext_optimize(prefix, constants);
+    gfx_cc_ext_optimize(postfix, constants);
 
     // validate again
-    if (!gfx_cc_ext_validate(prefix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
+    if (!gfx_cc_ext_validate(postfix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
         goto cleanup;
     }
 
     printf("\n");
-    gfx_cc_ext_print_ops(prefix, constants);
+    gfx_cc_ext_print_ops(postfix, constants);
     printf("\n");
 
 
 
     // // check sizes
-    // if (prefix->count > CC_EXT_MAX_OPS) {
-    //     printf("Max number of ops exceeded: %d > %d\n", prefix->count, CC_EXT_MAX_OPS);
+    // if (postfix->count > CC_EXT_MAX_OPS) {
+    //     printf("Max number of ops exceeded: %d > %d\n", postfix->count, CC_EXT_MAX_OPS);
     //     goto cleanup;
     // }
     // if (constants->count > CC_EXT_MAX_CONSTANTS) {
@@ -812,9 +811,9 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
 
     // // fill struct
     // memset(comb, 0, sizeof(*comb));
-    // comb->num_ops = prefix->count;
-    // for (uint32_t i = 0; i < prefix->count; ++i) {
-    //     comb->ops[i] = op_get(prefix, i);
+    // comb->num_ops = postfix->count;
+    // for (uint32_t i = 0; i < postfix->count; ++i) {
+    //     comb->ops[i] = op_get(postfix, i);
     // }
     // comb->num_constants = constants->count;
     // for (uint32_t i = 0; i < constants->count; ++i) {
@@ -826,7 +825,7 @@ cleanup:
     growing_array_free(&tokens);
     growing_array_free(&ops);
     growing_array_free(&constants);
-    growing_array_free(&prefix);
+    growing_array_free(&postfix);
     return ok ? NULL : sErrorMsg;
 }
 
@@ -862,22 +861,26 @@ __attribute__((constructor)) static void test_custom_combine() {
     // const char *comb_str = 
     // "ENV * (-TEXEL0 + TEXEL1.a).gb1 + (-0.5 >= 0.2) * 99 + vec(9, 10, 11, 12) - min(0.5, max(lerp(PRIM + ENVA * 0.75, SHADE, PRIMA).00ra.gbra, 0)) + 2 * 1 - 1.5 ^ (3 + 1)";
 
-    const char *comb_str = 
-    "(TEXEL0 + ENV) ^ 0 + (PRIM * PRIMA) ^ 1 - 2 ^ (3).1rg0";
+    const char *comb_str[] = {
+        "1.5 + TEXEL0 + 3.2"
+    };
 
-    // for (int i = 0; i < ARRAY_COUNT(error_checks); ++i) {
+
+
+
+    for (int i = 0; i < ARRAY_COUNT(comb_str); ++i) {
 
     // const char *comb_str = error_checks[i];
 
     struct ExtendedCombiner comb;
-    const char *err = gfx_cc_ext_parse_combiner(comb_str, &comb);
+    const char *err = gfx_cc_ext_parse_combiner(comb_str[i], &comb);
 
     // printf("\n");
     if (err) {
         printf("%s\n\n", err);
     }
 
-    // }
+    }
 
     // gfx_cc_ext_check_duplicates();
 

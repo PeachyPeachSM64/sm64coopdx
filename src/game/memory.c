@@ -265,13 +265,13 @@ void *growing_array_alloc(struct GrowingArray *array, u32 size) {
     return NULL;
 }
 
-void growing_array_move(struct GrowingArray *array, u32 from, u32 to, u32 count) {
+bool growing_array_move(struct GrowingArray *array, u32 from, u32 to, u32 count) {
     if (array && array->buffer && count > 0 &&
         (to < from || to > from + count) &&
         (from + count) <= array->count && to <= array->count) {
 
         void **temp = malloc(sizeof(void *) * count);
-        if (!temp) { return; }
+        if (!temp) { return false; }
 
         // Copy elements to move to temporary buffer
         memcpy(temp, array->buffer + from, sizeof(void *) * count);
@@ -288,7 +288,9 @@ void growing_array_move(struct GrowingArray *array, u32 from, u32 to, u32 count)
         memcpy(array->buffer + to, temp, sizeof(void *) * count);
 
         free(temp);
+        return true;
     }
+    return false;
 }
 
 /**
@@ -302,6 +304,22 @@ bool growing_array_pop_index(struct GrowingArray *array, u32 index) {
     memmove(array->buffer + index, array->buffer + (index + 1), sizeof(void *) * (array->count - index - 1));
     array->buffer[array->count - 1] = item;
     array->count--;
+    return true;
+}
+
+/**
+ * Pop the `count` entries starting from position `index` out of the array.
+ * Shift the next slots by `count` and move the popped slots at the end of the array, then decrement the count.
+ * Returns true if the index and count were valid.
+ */
+bool growing_array_pop_range(struct GrowingArray *array, u32 index, u32 count) {
+    if (count == 1) {
+        return growing_array_pop_index(array, index);
+    }
+    if (!growing_array_move(array, index, array->count, count)) {
+        return false;
+    }
+    array->count -= count;
     return true;
 }
 

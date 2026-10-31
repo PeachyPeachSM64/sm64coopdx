@@ -121,15 +121,17 @@ static bool token_check_number(const Token *token) {
 // Constant as float4
 //
 
+typedef float float4[4];
+
 typedef struct Constant {
     union {
         struct { float x, y, z, w; };
-        float xyzw[4];
+        float4 xyzw;
     };
 } Constant;
 
 #define float4_eq(a, b) \
-    (memcmp(a, b, sizeof(float[4])) == 0)
+    (memcmp(a, b, sizeof(float4)) == 0)
 
 static inline void constant_push(struct GrowingArray *constants, float constant) {
     Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
@@ -139,7 +141,7 @@ static inline void constant_push(struct GrowingArray *constants, float constant)
     new_constant->w = constant;
 }
 
-static inline void constant_push_4(struct GrowingArray *constants, const float xyzw[4]) {
+static inline void constant_push_4(struct GrowingArray *constants, const float4 xyzw) {
     Constant *new_constant = growing_array_alloc(constants, sizeof(Constant));
     new_constant->x = xyzw[0];
     new_constant->y = xyzw[1];
@@ -160,7 +162,7 @@ static int constant_get_index(struct GrowingArray *constants, float value) {
     return -1;
 }
 
-static int constant_get_index_4(struct GrowingArray *constants, const float xyzw[4]) {
+static int constant_get_index_4(struct GrowingArray *constants, const float4 xyzw) {
     for (uint32_t i = 0; i < constants->count; ++i) {
         const Constant *constant = constant_get(constants, i);
         if (float4_eq(constant->xyzw, xyzw)) {
@@ -170,8 +172,8 @@ static int constant_get_index_4(struct GrowingArray *constants, const float xyzw
     return -1;
 }
 
-static int constant_get_builtin_value(const float xyzw[4]) {
-    static const struct { float xyzw[4]; uint8_t op; } BUILTIN_CONSTANTS[] = {
+static int constant_get_builtin_value(const float4 xyzw) {
+    static const struct { float4 xyzw; uint8_t op; } BUILTIN_CONSTANTS[] = {
         { { 0, 0, 0, 0 }, CC_EXT_0 },
         { { 1, 1, 1, 1 }, CC_EXT_1 },
     };
@@ -251,7 +253,7 @@ static inline void op_push(struct GrowingArray *ops, uint8_t op, bool is_dot_par
     new_op->token = token;
 }
 
-static bool op_push_constant(struct GrowingArray *ops, struct GrowingArray *constants, bool is_dot_param, float constant[4], const Token *token) {
+static bool op_push_constant(struct GrowingArray *ops, struct GrowingArray *constants, bool is_dot_param, float4 constant, const Token *token) {
 
     // handle 0 and 1
     int value_op = constant_get_builtin_value(constant);
@@ -297,7 +299,7 @@ static int op_get_index(struct GrowingArray *ops, const Op *op) {
     return -1;
 }
 
-static bool op_to_float4(uint8_t op, struct GrowingArray *constants, float output[4]) {
+static bool op_to_float4(uint8_t op, struct GrowingArray *constants, float4 output) {
     if (op_is_constant(op)) {
         const Constant *constant = constant_get(constants, op - CC_EXT_CONST_FIRST);
         memcpy(output, constant->xyzw, sizeof(constant->xyzw));
