@@ -45,6 +45,16 @@ uniform vec3  uLightMapColor;
 uniform int   uShaderFlags;
 uniform float uShaderFlagValues[SHADER_FLAG_MAX];
 
+// Extended combiners
+struct ExtendedCombiner {
+    ivec4 ops[CC_EXT_MAX_OPS / 16];
+    int num_ops;
+    vec4 constants[CC_EXT_MAX_CONSTANTS];
+};
+layout(std140) uniform ExtendedCombinerBlock {
+    ExtendedCombiner uExtCC[2];
+};
+
 //
 // Color combiner
 //
@@ -102,6 +112,93 @@ vec4 combine_colors(in vec4 texel, in int ABCD) {
         ccs_to_vec4(texel, B)
     ) * ccs_to_vec4(texel, C)
       + ccs_to_vec4(texel, D);
+}
+
+//
+// Extended combiner
+//
+
+// Values
+#define v_0             vec4(0)
+#define v_1             vec4(1)
+#define v_TEXEL0        texColors[0]
+#define v_TEXEL0A       texColors[0].aaaa
+#define v_TEXEL1        texColors[1]
+#define v_TEXEL1A       texColors[1].aaaa
+#define v_PRIM          vPrimitive
+#define v_PRIMA         vPrimitive.aaaa
+#define v_SHADE         vShade
+#define v_SHADEA        vShade.aaaa
+#define v_ENV           vEnvironment
+#define v_ENVA          vEnvironment.aaaa
+#define v_LOD           vLod
+#define v_NOISE         noise
+
+// Operators
+#define o_DOT           cc_ext_dot(ARG1, ARG2)
+#define o_NEG           (-ARG1)
+#define o_NOT           vec4(equal(ARG1, vec4(0.0)))
+#define o_POW           pow(ARG1, ARG2)
+#define o_MUL           (ARG1 * ARG2)
+#define o_DIV           (ARG1 / ARG2)
+#define o_MOD           mod(ARG1, ARG2)
+#define o_ADD           (ARG1 + ARG2)
+#define o_SUB           (ARG1 - ARG2)
+#define o_LT            vec4(lessThan(ARG1, ARG2))
+#define o_LEQ           vec4(lessThanEqual(ARG1, ARG2))
+#define o_GT            vec4(greaterThan(ARG1, ARG2))
+#define o_GEQ           vec4(greaterThanEqual(ARG1, ARG2))
+#define o_EQ            vec4(equal(ARG1, ARG2))
+#define o_NEQ           vec4(notEqual(ARG1, ARG2))
+#define o_AND           vec4(notEqual(ARG1, vec4(0)) && notEqual(ARG2, vec4(0)))
+#define o_OR            vec4(notEqual(ARG1, vec4(0)) || notEqual(ARG2, vec4(0)))
+
+// Functions
+#define f_VEC           vec4(ARG1.r, ARG2.g, ARG3.b, ARG4.a)
+#define f_LERP          mix(ARG1, ARG2, ARG3)
+#define f_INVLERP       ((ARG3 - ARG1) / (ARG2 - ARG1))
+#define f_ABS           abs(ARG1)
+#define f_MIN           min(ARG1, ARG2)
+#define f_MAX           max(ARG1, ARG2)
+#define f_CLAMP         clamp(ARG1, ARG2, ARG3)
+#define f_SATURATE      clamp(ARG1, 0.0, 1.0)
+#define f_COS           cos(ARG1)
+#define f_SIN           sin(ARG1)
+#define f_SQRT          sqrt(ARG1)
+#define f_RSQRT         (1.0 / sqrt(ARG1))
+#define f_ROUND         floor(ARG1 + 0.5)
+#define f_FLOOR         floor(ARG1)
+#define f_CEIL          ceil(ARG1)
+
+float cc_ext_dot_channel(in vec4 arg1, in int channel) {
+    switch (channel) {
+        case CC_EXT_DOT_PARAM_0: return 0.0;
+        case CC_EXT_DOT_PARAM_1: return 1.0;
+        case CC_EXT_DOT_PARAM_R: return arg1.r;
+        case CC_EXT_DOT_PARAM_G: return arg1.g;
+        case CC_EXT_DOT_PARAM_B: return arg1.b;
+        case CC_EXT_DOT_PARAM_A: return arg1.a;
+    }
+    return 0.0;
+}
+
+vec4 cc_ext_dot(in vec4 arg1, in vec4 arg2) {
+    return vec4(
+        cc_ext_dot_channel(arg1, int(arg2.r)),
+        cc_ext_dot_channel(arg1, int(arg2.g)),
+        cc_ext_dot_channel(arg1, int(arg2.b)),
+        cc_ext_dot_channel(arg1, int(arg2.a))
+    );
+}
+
+vec4 combine_colors_ext(in int alpha) {
+    vec4 stack[CC_EXT_STACK_SIZE];
+    int top = 0;
+    for (int i = 0, n = uExtCC[alpha].num_ops; i < n; ++i) {
+        int op = ((uExtCC[alpha].ops[i / 16][i / 4]) >> (8 * (i % 4))) & 0xFF;
+        cc_ext_process_op(op);
+    }
+    return clamp(stack[0], 0.0, 1.0);
 }
 
 //
@@ -228,20 +325,35 @@ void main() {
         noise = vec4(random(floor(vec3(gl_FragCoord.xy, uNoiseFrameCount))));
     }
 
+    // Extended combiners
+    if (CCF_HAS_FLAG(USE_EXT_COLOR)) {
+        texel = combine_colors_ext(0);
+    }
+    if (CCF_HAS_FLAG(USE_EXT_ALPHA) && !CCF_HAS_FLAG(EXT_COLOR_ALPHA_SAME)) {
+        texel.a = combine_colors_ext(1).a;
+    }
+
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
         int ABCD_rgb = uCCS[cycle].x;
         int ABCD_a   = uCCS[cycle].y;
-        if (ABCD_rgb != ABCD_a && CCF_HAS_FLAG(USE_ALPHA)) {
-            texel = vec4(
-                combine_colors(texel, ABCD_rgb).rgb,
-                combine_colors(texel, ABCD_a).a
-            );
-        } else {
+
+        // Same combiner, compute once for both RGB and alpha
+        if (!CCF_HAS_FLAG(USE_EXT_COLOR) && !CCF_HAS_FLAG(USE_EXT_ALPHA) && (ABCD_rgb == ABCD_a || !CCF_HAS_FLAG(USE_ALPHA))) {
             texel = combine_colors(texel, ABCD_rgb);
         }
-        texel = mod(texel + 0.5, 2.0) - 0.5;
+
+        // Compute RGB and alpha separately
+        else {
+            if (!CCF_HAS_FLAG(USE_EXT_COLOR)) {
+                texel.rgb = combine_colors(texel, ABCD_rgb).rgb;
+            }
+            if (!CCF_HAS_FLAG(USE_EXT_ALPHA)) {
+                texel.a = combine_colors(texel, ABCD_a).a;
+            }
+        }
+        // texel = mod(texel + 0.5, 2.0) - 0.5;
     }
     texel = clamp(texel, 0.0, 1.0);
 

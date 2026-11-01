@@ -43,14 +43,17 @@
 // CC features
 //
 
-#define CCF_USE_ALPHA       0
-#define CCF_USE_FOG         1
-#define CCF_TEX_EDGE        2
-#define CCF_USE_DITHER      3
-#define CCF_USE_2CYCLE      4
-#define CCF_LIGHT_MAP       5
-#define CCF_WORLD_GEOMETRY  6
-#define CCF_NOISE           7
-#define CCF_USED_TEXTURE    8
+#define CCF_USE_ALPHA              0
+#define CCF_USE_FOG                1
+#define CCF_TEX_EDGE               2
+#define CCF_USE_DITHER             3
+#define CCF_USE_2CYCLE             4
+#define CCF_LIGHT_MAP              5
+#define CCF_WORLD_GEOMETRY         6
+#define CCF_NOISE                  7
+#define CCF_USE_EXT_COLOR          8
+#define CCF_USE_EXT_ALPHA          9
+#define CCF_EXT_COLOR_ALPHA_SAME   10
+#define CCF_USED_TEXTURE           11
 
 #define USED_TEXTURE(i)  (1 << (i))

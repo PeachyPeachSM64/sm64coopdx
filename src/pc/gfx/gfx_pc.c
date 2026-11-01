@@ -1428,12 +1428,10 @@ static void gfx_dp_set_combine_mode(
     uint8_t  a1, uint8_t  b1, uint8_t  c1, uint8_t  d1,
     uint8_t Aa1, uint8_t Ab1, uint8_t Ac1, uint8_t Ad1
 ) {
-    gfx_cc_generate(&rdp.color_combiner,
-        a0, b0, c0, d0,
-        Aa0, Ab0, Ac0, Ad0,
-        a1, b1, c1, d1,
-        Aa1, Ab1, Ac1, Ad1
-    );
+    gfx_cc_generate(&rdp.color_combiner, 0, 0,  a0,  b0,  c0,  d0);
+    gfx_cc_generate(&rdp.color_combiner, 0, 1, Aa0, Ab0, Ac0, Ad0);
+    gfx_cc_generate(&rdp.color_combiner, 1, 0,  a1,  b1,  c1,  d1);
+    gfx_cc_generate(&rdp.color_combiner, 1, 1, Aa1, Ab1, Ac1, Ad1);
 }
 
 static void gfx_dp_set_env_color(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
@@ -2309,6 +2307,34 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
     }
 }
 
+static void gfx_dp_set_combine_ext(uint8_t type, uint8_t cycle, uintptr_t params) {
+    switch (type) {
+        case G_SETCOMBINE_COLOR: {
+            uint8_t a = (params >> 15) & 0x1F;
+            uint8_t b = (params >> 10) & 0x1F;
+            uint8_t c = (params >>  5) & 0x1F;
+            uint8_t d = (params >>  0) & 0x1F;
+            gfx_cc_generate(&rdp.color_combiner, cycle, false, a, b, c, d);
+        } break;
+
+        case G_SETCOMBINE_ALPHA: {
+            uint8_t a = (params >> 15) & 0x1F;
+            uint8_t b = (params >> 10) & 0x1F;
+            uint8_t c = (params >>  5) & 0x1F;
+            uint8_t d = (params >>  0) & 0x1F;
+            gfx_cc_generate(&rdp.color_combiner, cycle, true, a, b, c, d);
+        } break;
+
+        case G_SETCOMBINE_COLOR_EXT: {
+            gfx_cc_load_extended_combiner(&rdp.color_combiner, false, (const char *) params);
+        } break;
+
+        case G_SETCOMBINE_ALPHA_EXT: {
+            gfx_cc_load_extended_combiner(&rdp.color_combiner, true, (const char *) params);
+        } break;
+    }
+}
+
 void OPTIMIZE_O3 ext_gfx_run_dl(Gfx* cmd) {
     uint32_t opcode = cmd->words.w0 >> 24;
     switch (opcode) {
@@ -2342,6 +2368,9 @@ void OPTIMIZE_O3 ext_gfx_run_dl(Gfx* cmd) {
             break;
         case G_STATE_EXT:
             gfx_sp_load_or_save_state(C0(16, 8), cmd->words.w1);
+            break;
+        case G_SETCOMBINE_EXT:
+            gfx_dp_set_combine_ext(C0(20, 4), C0(16, 4), cmd->words.w1);
             break;
     }
 }

@@ -2,22 +2,17 @@
 #include <ctype.h>
 #include <math.h>
 
-#include "engine/math_util.h"
-#include "game/memory.h"
-
-#define DEFINE_CC_EXT_TYPES
 #include "gfx_cc_ext.h"
+#include "gfx_cc_ext_types.h"
 
-#define PRINT_OPTIMIZATION 1
-#define PRINT_OPS 1
-
-#if PRINT_OPS
+#if GFX_CC_EXT_PRINT_OPS_AFTER_OPTIMIZATION
 extern void gfx_cc_ext_print_ops(struct GrowingArray *ops, struct GrowingArray *constants);
 #else
 #define gfx_cc_ext_print_ops(...)
 #endif
 
-#if PRINT_OPTIMIZATION
+#if GFX_CC_EXT_PRINT_OPTIMIZATION
+#define Op_(op, is_dot_param, token) ((Op *)(Op []){{ op, is_dot_param, token }})
 #define print_optimization(...) { \
     printf("OPTIMIZATION: " __VA_ARGS__); \
     gfx_cc_ext_print_ops(ops, constants); \
@@ -25,57 +20,6 @@ extern void gfx_cc_ext_print_ops(struct GrowingArray *ops, struct GrowingArray *
 #else
 #define print_optimization(...)
 #endif
-
-#define Op_(op, is_dot_param, token) \
-    ((Op *)(Op []){{ op, is_dot_param, token }})
-
-//
-// Operation result
-//
-
-typedef struct Result {
-    Op *op;
-    struct Result *args[4];
-} Result;
-
-static Result *result_new(struct GrowingArray *results, Op *op, Result *arg1, Result *arg2, Result *arg3, Result *arg4) {
-    Result *new_result = growing_array_alloc(results, sizeof(Result));
-    new_result->op = op;
-    new_result->args[0] = arg1;
-    new_result->args[1] = arg2;
-    new_result->args[2] = arg3;
-    new_result->args[3] = arg4;
-    return new_result;
-}
-
-static inline Result *result_get(struct GrowingArray *results, uint32_t index) {
-    return (Result *) results->buffer[index];
-}
-
-static bool result_get_range_internal(struct GrowingArray *ops, const Result *result, uint32_t *from, uint32_t *to) {
-    if (result) {
-        int op_index = op_get_index(ops, result->op);
-        if (op_index >= 0) {
-            *from = min(*from, (uint32_t) op_index);
-            *to = max(*to, (uint32_t) op_index);
-            for (uint8_t i = 0; i < 4; ++i) {
-                if (!result_get_range_internal(ops, result->args[i], from, to)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-    return true;
-}
-
-static bool result_get_range(struct GrowingArray *ops, const Result *result, uint32_t *from, uint32_t *to) {
-    if (!result) { return false; }
-    *from = ops->count;
-    *to = 0;
-    return result_get_range_internal(ops, result, from, to);
-}
 
 //
 // Constants
@@ -175,18 +119,6 @@ static bool gfx_cc_ext_optimize_constant(struct GrowingArray *ops, struct Growin
     } \
 }
 
-#define check_constant_operation_1(format, ...) \
-    check_constant_operation(1, format, __VA_ARGS__)
-
-#define check_constant_operation_2(format, ...) \
-    check_constant_operation(2, format, __VA_ARGS__)
-
-#define check_constant_operation_3(format, ...) \
-    check_constant_operation(3, format, __VA_ARGS__)
-
-#define check_constant_operation_4(format, ...) \
-    check_constant_operation(4, format, __VA_ARGS__)
-
 static inline void gfx_cc_ext_replace_op(struct GrowingArray *ops, const Op *op) {
     int index = op_get_index(ops, op);
     growing_array_swap_and_pop_index(ops, index);
@@ -211,7 +143,7 @@ static inline void gfx_cc_ext_remove_result(struct GrowingArray *ops, const Resu
     }
 }
 
-static bool gfx_cc_ext_optimize_DOT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_DOT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -256,7 +188,7 @@ static bool gfx_cc_ext_optimize_DOT(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C.abcd == C{x=a, y=b, z=c, w=d}
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f}.{%f, %f, %f, %f}",
         switch ((int) arg2f[i]) {
             case CC_EXT_DOT_PARAM_0: xyzw[i] = 0; break;
@@ -271,7 +203,7 @@ static bool gfx_cc_ext_optimize_DOT(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_NEG(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_NEG(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // --X == X
@@ -297,7 +229,7 @@ static bool gfx_cc_ext_optimize_NEG(struct GrowingArray *ops, struct GrowingArra
     }
 
     // -C1 == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "-{%f, %f, %f, %f}",
         xyzw[i] = -arg1f[i];
     );
@@ -305,7 +237,7 @@ static bool gfx_cc_ext_optimize_NEG(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_NOT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_NOT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // !!!X == !X
@@ -389,7 +321,7 @@ static bool gfx_cc_ext_optimize_NOT(struct GrowingArray *ops, struct GrowingArra
     }
 
     // !C1 == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "!{%f, %f, %f, %f}",
         xyzw[i] = (float) (arg1f[i] == 0 ? 1 : 0);
     );
@@ -397,7 +329,7 @@ static bool gfx_cc_ext_optimize_NOT(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_POW(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_POW(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -427,7 +359,7 @@ static bool gfx_cc_ext_optimize_POW(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 ^ C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} ^ {%f, %f, %f, %f}",
         xyzw[i] = powf(arg1f[i], arg2f[i]);
     );
@@ -435,7 +367,7 @@ static bool gfx_cc_ext_optimize_POW(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_MUL(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_MUL(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -524,7 +456,7 @@ static bool gfx_cc_ext_optimize_MUL(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 * C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} * {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] * arg2f[i];
     );
@@ -532,7 +464,7 @@ static bool gfx_cc_ext_optimize_MUL(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_DIV(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_DIV(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -631,7 +563,7 @@ static bool gfx_cc_ext_optimize_DIV(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 / C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} / {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] / arg2f[i];
     );
@@ -639,7 +571,7 @@ static bool gfx_cc_ext_optimize_DIV(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_MOD(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_MOD(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -657,7 +589,7 @@ static bool gfx_cc_ext_optimize_MOD(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 % C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} %% {%f, %f, %f, %f}",
         xyzw[i] = fmodf(arg1f[i], arg2f[i]);
     );
@@ -665,7 +597,7 @@ static bool gfx_cc_ext_optimize_MOD(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_ADD(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_ADD(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -710,7 +642,7 @@ static bool gfx_cc_ext_optimize_ADD(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 + C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} + {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] + arg2f[i];
     );
@@ -718,7 +650,7 @@ static bool gfx_cc_ext_optimize_ADD(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_SUB(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_SUB(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -758,7 +690,7 @@ static bool gfx_cc_ext_optimize_SUB(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 - C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} - {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] - arg2f[i];
     );
@@ -766,7 +698,7 @@ static bool gfx_cc_ext_optimize_SUB(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_LT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_LT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -784,7 +716,7 @@ static bool gfx_cc_ext_optimize_LT(struct GrowingArray *ops, struct GrowingArray
     }
 
     // C1 < C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} < {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] < arg2f[i];
     );
@@ -792,7 +724,7 @@ static bool gfx_cc_ext_optimize_LT(struct GrowingArray *ops, struct GrowingArray
     return false;
 }
 
-static bool gfx_cc_ext_optimize_LEQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_LEQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -810,7 +742,7 @@ static bool gfx_cc_ext_optimize_LEQ(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 <= C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} <= {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] <= arg2f[i];
     );
@@ -818,7 +750,7 @@ static bool gfx_cc_ext_optimize_LEQ(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_GT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_GT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -836,7 +768,7 @@ static bool gfx_cc_ext_optimize_GT(struct GrowingArray *ops, struct GrowingArray
     }
 
     // C1 > C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} > {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] > arg2f[i];
     );
@@ -844,7 +776,7 @@ static bool gfx_cc_ext_optimize_GT(struct GrowingArray *ops, struct GrowingArray
     return false;
 }
 
-static bool gfx_cc_ext_optimize_GEQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_GEQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
@@ -862,7 +794,7 @@ static bool gfx_cc_ext_optimize_GEQ(struct GrowingArray *ops, struct GrowingArra
     }
 
     // C1 >= C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} >= {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] >= arg2f[i];
     );
@@ -870,12 +802,12 @@ static bool gfx_cc_ext_optimize_GEQ(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_EQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_EQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
     // C1 == C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} == {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] == arg2f[i];
     );
@@ -883,12 +815,12 @@ static bool gfx_cc_ext_optimize_EQ(struct GrowingArray *ops, struct GrowingArray
     return false;
 }
 
-static bool gfx_cc_ext_optimize_NEQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_NEQ(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
     // C1 != C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} != {%f, %f, %f, %f}",
         xyzw[i] = arg1f[i] != arg2f[i];
     );
@@ -896,12 +828,12 @@ static bool gfx_cc_ext_optimize_NEQ(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_AND(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_AND(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
     // C1 && C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} && {%f, %f, %f, %f}",
         xyzw[i] = ((arg1f[i] != 0) && (arg2f[i] != 0) ? 1 : 0);
     );
@@ -909,12 +841,12 @@ static bool gfx_cc_ext_optimize_AND(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_OR(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_OR(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
     // C1 || C2 == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "{%f, %f, %f, %f} || {%f, %f, %f, %f}",
         xyzw[i] = ((arg1f[i] != 0) || (arg2f[i] != 0) ? 1 : 0);
     );
@@ -922,14 +854,14 @@ static bool gfx_cc_ext_optimize_OR(struct GrowingArray *ops, struct GrowingArray
     return false;
 }
 
-static bool gfx_cc_ext_optimize_VEC(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_VEC(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
     Result *arg3 = stack[stack_size - 3];
     Result *arg4 = stack[stack_size - 4];
 
     // vec(C1, C2, C3, C4) == C{x=C1.x, y=C2.y, z=C3.z, w=C4.w}
-    check_constant_operation_4(
+    check_constant_operation(4,
         "vec({%f, %f, %f, %f}, {%f, %f, %f, %f}, {%f, %f, %f, %f}, {%f, %f, %f, %f})",
         xyzw[0] = arg1f[0];
         xyzw[1] = arg2f[1];
@@ -941,7 +873,7 @@ static bool gfx_cc_ext_optimize_VEC(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_LERP(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_LERP(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
     Result *arg3 = stack[stack_size - 3];
@@ -973,7 +905,7 @@ static bool gfx_cc_ext_optimize_LERP(struct GrowingArray *ops, struct GrowingArr
     }
 
     // lerp(C1, C2, C3) == C
-    check_constant_operation_3(
+    check_constant_operation(3,
         "lerp({%f, %f, %f, %f}, {%f, %f, %f, %f}, {%f, %f, %f, %f})",
         xyzw[i] = arg1f[i] * (1.f - arg3f[i]) + arg2f[i] * arg3f[i];
     );
@@ -981,13 +913,13 @@ static bool gfx_cc_ext_optimize_LERP(struct GrowingArray *ops, struct GrowingArr
     return false;
 }
 
-static bool gfx_cc_ext_optimize_INVLERP(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_INVLERP(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
     Result *arg3 = stack[stack_size - 3];
 
     // invlerp(C1, C2, C3) == C
-    check_constant_operation_3(
+    check_constant_operation(3,
         "invlerp({%f, %f, %f, %f}, {%f, %f, %f, %f}, {%f, %f, %f, %f})",
         xyzw[i] = (arg3f[i] - arg1f[i]) / (arg2f[i] - arg1f[i]);
     );
@@ -995,11 +927,11 @@ static bool gfx_cc_ext_optimize_INVLERP(struct GrowingArray *ops, struct Growing
     return false;
 }
 
-static bool gfx_cc_ext_optimize_ABS(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_ABS(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // abs(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "abs({%f, %f, %f, %f})",
         xyzw[i] = fabsf(arg1f[i]);
     );
@@ -1007,12 +939,12 @@ static bool gfx_cc_ext_optimize_ABS(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_MIN(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_MIN(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
     // min(C1, C2) == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "min({%f, %f, %f, %f}, {%f, %f, %f, %f})",
         xyzw[i] = min(arg1f[i], arg2f[i]);
     );
@@ -1020,12 +952,12 @@ static bool gfx_cc_ext_optimize_MIN(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_MAX(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_MAX(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
 
     // max(C1, C2) == C
-    check_constant_operation_2(
+    check_constant_operation(2,
         "max({%f, %f, %f, %f}, {%f, %f, %f, %f})",
         xyzw[i] = max(arg1f[i], arg2f[i]);
     );
@@ -1033,7 +965,7 @@ static bool gfx_cc_ext_optimize_MAX(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_CLAMP(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_CLAMP(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
     Result *arg2 = stack[stack_size - 2];
     Result *arg3 = stack[stack_size - 3];
@@ -1052,7 +984,7 @@ static bool gfx_cc_ext_optimize_CLAMP(struct GrowingArray *ops, struct GrowingAr
     }
 
     // clamp(C1, C2, C3) == C
-    check_constant_operation_3(
+    check_constant_operation(3,
         "clamp({%f, %f, %f, %f}, {%f, %f, %f, %f}, {%f, %f, %f, %f})",
         xyzw[i] = clamp(arg1f[i], arg2f[i], arg3f[i]);
     );
@@ -1060,11 +992,11 @@ static bool gfx_cc_ext_optimize_CLAMP(struct GrowingArray *ops, struct GrowingAr
     return false;
 }
 
-static bool gfx_cc_ext_optimize_SATURATE(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_SATURATE(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // saturate(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "saturate({%f, %f, %f, %f})",
         xyzw[i] = clamp(arg1f[i], 0, 1);
     );
@@ -1072,11 +1004,11 @@ static bool gfx_cc_ext_optimize_SATURATE(struct GrowingArray *ops, struct Growin
     return false;
 }
 
-static bool gfx_cc_ext_optimize_COS(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_COS(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // cos(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "cos({%f, %f, %f, %f})",
         xyzw[i] = cosf(arg1f[i]);
     );
@@ -1084,11 +1016,11 @@ static bool gfx_cc_ext_optimize_COS(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_SIN(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_SIN(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // sin(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "sin({%f, %f, %f, %f})",
         xyzw[i] = sinf(arg1f[i]);
     );
@@ -1096,11 +1028,11 @@ static bool gfx_cc_ext_optimize_SIN(struct GrowingArray *ops, struct GrowingArra
     return false;
 }
 
-static bool gfx_cc_ext_optimize_SQRT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_SQRT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // sqrt(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "sqrt({%f, %f, %f, %f})",
         xyzw[i] = sqrtf(arg1f[i]);
     );
@@ -1108,11 +1040,11 @@ static bool gfx_cc_ext_optimize_SQRT(struct GrowingArray *ops, struct GrowingArr
     return false;
 }
 
-static bool gfx_cc_ext_optimize_RSQRT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_RSQRT(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // rsqrt(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "rsqrt({%f, %f, %f, %f})",
         xyzw[i] = 1.f / sqrtf(arg1f[i]);
     );
@@ -1120,11 +1052,11 @@ static bool gfx_cc_ext_optimize_RSQRT(struct GrowingArray *ops, struct GrowingAr
     return false;
 }
 
-static bool gfx_cc_ext_optimize_ROUND(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_ROUND(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // round(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "round({%f, %f, %f, %f})",
         xyzw[i] = roundf(arg1f[i]);
     );
@@ -1132,11 +1064,11 @@ static bool gfx_cc_ext_optimize_ROUND(struct GrowingArray *ops, struct GrowingAr
     return false;
 }
 
-static bool gfx_cc_ext_optimize_FLOOR(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_FLOOR(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // floor(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "floor({%f, %f, %f, %f})",
         xyzw[i] = floorf(arg1f[i]);
     );
@@ -1144,11 +1076,11 @@ static bool gfx_cc_ext_optimize_FLOOR(struct GrowingArray *ops, struct GrowingAr
     return false;
 }
 
-static bool gfx_cc_ext_optimize_CEIL(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, struct GrowingArray *results, Result **stack, size_t stack_size) {
+static bool gfx_cc_ext_optimize_CEIL(struct GrowingArray *ops, struct GrowingArray *constants, Op *op, Result **stack, size_t stack_size) {
     Result *arg1 = stack[stack_size - 1];
 
     // ceil(C1) == C
-    check_constant_operation_1(
+    check_constant_operation(1,
         "ceil({%f, %f, %f, %f})",
         xyzw[i] = ceilf(arg1f[i]);
     );
@@ -1156,7 +1088,7 @@ static bool gfx_cc_ext_optimize_CEIL(struct GrowingArray *ops, struct GrowingArr
     return false;
 }
 
-static bool (*OPERATIONS[0x100])(struct GrowingArray *, struct GrowingArray *, Op *, struct GrowingArray *, Result **, size_t) = {
+static bool (*OPERATIONS[0x100])(struct GrowingArray *, struct GrowingArray *, Op *, Result **, size_t) = {
 #define CC_EXT_OPERATOR(name, ...) [CC_EXT_##name] = gfx_cc_ext_optimize_##name,
 #define CC_EXT_FUNCTION(name, ...) [CC_EXT_##name] = gfx_cc_ext_optimize_##name,
 #include "gfx_cc_ext_operators.inl"
@@ -1188,27 +1120,29 @@ static bool gfx_cc_ext_perform_optimization_pass(struct GrowingArray *ops, struc
 
             // note: no need to check the stack size
             // validation runs before and optimization doesn't use more stack
-            stack[stack_size++] = result_new(results, op, NULL, NULL, NULL, NULL);
+            stack[stack_size++] = result_new(results, op, NULL);
             continue;
         }
 
         // operator/function
-        if (OPERATIONS[op->op] && OPERATIONS[op->op](ops, constants, op, results, stack, stack_size)) {
+        if (OPERATIONS[op->op] && OPERATIONS[op->op](ops, constants, op, stack, stack_size)) {
             goto cleanup;
         }
 
         // pop args
-        Result *args[4] = {0};
-        uint8_t num_args = CC_EXT_OPERATOR_ARGS(op->op);
+        Result *args[CC_EXT_MAX_ARGS] = {0};
+        uint8_t num_args = op_get_num_args(op->op);
         for (uint8_t i = 0; i < num_args; ++i) {
             args[i] = stack[stack_size - 1 - i];
         }
         stack_size -= num_args;
 
         // push result
-        stack[stack_size++] = result_new(results, op, args[0], args[1], args[2], args[3]);
+        stack[stack_size++] = result_new(results, op, args);
     }
 
+    // cleanup constants
+    gfx_cc_ext_reindex_constants(ops, constants);
     done = true;
 
 cleanup:

@@ -158,55 +158,97 @@ static inline void color_comb(uint8_t *ccs, uint8_t cycle, bool alpha, uint8_t a
     ccs[3] = (d < 32) ? CC_COMPONENTS_TO_CCS[alpha][3][d][cycle] : CCS_0;
 }
 
-void gfx_cc_generate(struct ColorCombiner *cc,
-    uint8_t  a0, uint8_t  b0, uint8_t  c0, uint8_t  d0,
-    uint8_t Aa0, uint8_t Ab0, uint8_t Ac0, uint8_t Ad0,
-    uint8_t  a1, uint8_t  b1, uint8_t  c1, uint8_t  d1,
-    uint8_t Aa1, uint8_t Ab1, uint8_t Ac1, uint8_t Ad1
-) {
-    memset(cc, 0, sizeof(*cc));
-    color_comb(cc->ccs[0][0], 0, 0, a0, b0, c0, d0);
-    color_comb(cc->ccs[0][1], 0, 1, Aa0, Ab0, Ac0, Ad0);
-    color_comb(cc->ccs[1][0], 1, 0, a1, b1, c1, d1);
-    color_comb(cc->ccs[1][1], 1, 1, Aa1, Ab1, Ac1, Ad1);
+void gfx_cc_generate(struct ColorCombiner *cc, uint8_t cycle, bool alpha, uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
+    if (cycle >= CC_CYCLES) { return; }
+    memset(cc->ccs[cycle][alpha], 0, sizeof(cc->ccs[cycle][alpha]));
+    color_comb(cc->ccs[cycle][alpha], cycle, alpha, a, b, c, d);
+    cc->ec[alpha] = NULL;
+}
+
+void gfx_cc_load_extended_combiner(struct ColorCombiner *cc, bool alpha, const char *str) {
+    cc->ec[alpha] = gfx_cc_ext_get_combiner(str, NULL);
 }
 
 void gfx_cc_update_features(struct ColorCombiner *cc) {
     cc->shader_inputs = 0;
     cc->features = 0;
 
+    // Enable extended combiners
+    cc->use_ext_color = cc->ec[0] != NULL;
+    cc->use_ext_alpha = cc->ec[1] != NULL;
+    cc->ext_color_alpha_same = (cc->use_ext_color && cc->use_ext_alpha && memcmp(cc->ec[0], cc->ec[1], sizeof(struct ExtendedCombiner)) == 0);
+    for (int i = 0; i < (cc->ext_color_alpha_same ? 1 : 2); ++i) {
+        const struct ExtendedCombiner *ec = cc->ec[i];
+        if (ec != NULL) {
+            for (uint32_t j = 0; j < ec->num_ops; ++j) {
+                uint8_t op = ec->ops[j];
+                switch (op) {
+                    case CC_EXT_TEXEL0:
+                    case CC_EXT_TEXEL0A:
+                        cc->used_textures |= USED_TEXTURE(0);
+                        break;
+                    case CC_EXT_TEXEL1:
+                    case CC_EXT_TEXEL1A:
+                        cc->used_textures |= USED_TEXTURE(1);
+                        break;
+                    case CC_EXT_NOISE:
+                        cc->use_noise = TRUE;
+                        break;
+                    case CC_EXT_PRIM:
+                    case CC_EXT_PRIMA:
+                        cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
+                        break;
+                    case CC_EXT_SHADE:
+                    case CC_EXT_SHADEA:
+                        cc->shader_inputs |= SHADER_INPUT_SHADE;
+                        break;
+                    case CC_EXT_ENV:
+                    case CC_EXT_ENVA:
+                        cc->shader_inputs |= SHADER_INPUT_ENVIRONMENT;
+                        break;
+                    case CC_EXT_LOD:
+                        cc->shader_inputs |= SHADER_INPUT_LOD;
+                        break;
+                }
+            }
+        }
+    }
+
     // Determine shader inputs and features
     for (int cycle = 0; cycle < (cc->use_2cycle ? 2 : 1); ++cycle)
-    for (int i = 0; i < 2; ++i)
-    for (int j = 0; j < CC_COMPONENTS; ++j) {
-        uint8_t ccs = cc->ccs[cycle][i][j];
-        switch (ccs) {
-            case CCS_TEXEL0:
-            case CCS_TEXEL0A:
-                cc->used_textures |= USED_TEXTURE(0);
-                break;
-            case CCS_TEXEL1:
-            case CCS_TEXEL1A:
-                cc->used_textures |= USED_TEXTURE(1);
-                break;
-            case CCS_NOISE:
-                cc->use_noise = TRUE;
-                break;
-            case CCS_PRIM:
-            case CCS_PRIMA:
-                cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
-                break;
-            case CCS_SHADE:
-            case CCS_SHADEA:
-                cc->shader_inputs |= SHADER_INPUT_SHADE;
-                break;
-            case CCS_ENV:
-            case CCS_ENVA:
-                cc->shader_inputs |= SHADER_INPUT_ENVIRONMENT;
-                break;
-            case CCS_LOD:
-                cc->shader_inputs |= SHADER_INPUT_LOD;
-                break;
+    for (int i = 0; i < 2; ++i) {
+        if (cc->ec[i] == NULL) {
+            for (int j = 0; j < CC_COMPONENTS; ++j) {
+                uint8_t ccs = cc->ccs[cycle][i][j];
+                switch (ccs) {
+                    case CCS_TEXEL0:
+                    case CCS_TEXEL0A:
+                        cc->used_textures |= USED_TEXTURE(0);
+                        break;
+                    case CCS_TEXEL1:
+                    case CCS_TEXEL1A:
+                        cc->used_textures |= USED_TEXTURE(1);
+                        break;
+                    case CCS_NOISE:
+                        cc->use_noise = TRUE;
+                        break;
+                    case CCS_PRIM:
+                    case CCS_PRIMA:
+                        cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
+                        break;
+                    case CCS_SHADE:
+                    case CCS_SHADEA:
+                        cc->shader_inputs |= SHADER_INPUT_SHADE;
+                        break;
+                    case CCS_ENV:
+                    case CCS_ENVA:
+                        cc->shader_inputs |= SHADER_INPUT_ENVIRONMENT;
+                        break;
+                    case CCS_LOD:
+                        cc->shader_inputs |= SHADER_INPUT_LOD;
+                        break;
+                }
+            }
         }
     }
 }

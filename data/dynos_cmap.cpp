@@ -163,4 +163,16 @@ size_t hmap_data_len(void* map) {
     if (!map) { return 0; }
     return static_cast<IHMap<std::string>*>(map)->size();
 }
+
+void* hmap_data_begin(void* map) {
+    if (!map) { return NULL; }
+    IHMap<std::string>* hmap = static_cast<IHMap<std::string>*>(map);
+    return hmap->begin();
+}
+
+void* hmap_data_next(void* map) {
+    if (!map) { return NULL; }
+    IHMap<std::string>* hmap = static_cast<IHMap<std::string>*>(map);
+    return hmap->next();
+}
 }

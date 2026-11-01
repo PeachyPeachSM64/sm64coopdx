@@ -6,6 +6,7 @@
 #include "gfx.h"
 
 #include "gfx_cc.inl"
+#include "gfx_cc_ext.h"
 
 #define SHADER_INPUT_PRIMITIVE      (1 << 0)
 #define SHADER_INPUT_SHADE          (1 << 1)
@@ -41,11 +42,15 @@ struct ColorCombiner {
     };
     union {
         struct {
-            uint8_t use_noise     : 1;
-            uint8_t used_textures : MAX_TEXTURES;
+            uint8_t use_noise            : 1;
+            uint8_t use_ext_color        : 1;
+            uint8_t use_ext_alpha        : 1;
+            uint8_t ext_color_alpha_same : 1;
+            uint8_t used_textures        : MAX_TEXTURES;
         };
         uint8_t features;
     };
+    const struct ExtendedCombiner *ec[2];
 };
 #pragma pack()
 
@@ -53,12 +58,8 @@ struct ColorCombiner {
 extern "C" {
 #endif
 
-void gfx_cc_generate(struct ColorCombiner *cc,
-    uint8_t  a0, uint8_t  b0, uint8_t  c0, uint8_t  d0,
-    uint8_t Aa0, uint8_t Ab0, uint8_t Ac0, uint8_t Ad0,
-    uint8_t  a1, uint8_t  b1, uint8_t  c1, uint8_t  d1,
-    uint8_t Aa1, uint8_t Ab1, uint8_t Ac1, uint8_t Ad1
-);
+void gfx_cc_generate(struct ColorCombiner *cc, uint8_t cycle, bool alpha, uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+void gfx_cc_load_extended_combiner(struct ColorCombiner *cc, bool alpha, const char *str);
 void gfx_cc_update_features(struct ColorCombiner *cc);
 
 #ifdef __cplusplus

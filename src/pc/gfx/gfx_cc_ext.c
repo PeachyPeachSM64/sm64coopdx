@@ -1,11 +1,23 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
+#include <assert.h>
 
-#include "game/memory.h"
-
-#define DEFINE_CC_EXT_TYPES
 #include "gfx_cc_ext.h"
+#include "gfx_cc_ext_types.h"
+
+#include "data/dynos_cmap.cpp.h"
+
+static void *sExtCombinerCache = NULL;
+
+static_assert(CC_EXT_CONST_LAST < CC_EXT_SPECIAL);
+
+#define CC_EXT_OPERATOR(name, args, ...) static_assert(args <= CC_EXT_MAX_ARGS);
+#define CC_EXT_FUNCTION(name, args)      static_assert(args <= CC_EXT_MAX_ARGS);
+#include "gfx_cc_ext_operators.inl"
+#include "gfx_cc_ext_functions.inl"
+#undef CC_EXT_OPERATOR
+#undef CC_EXT_FUNCTION
 
 #define COLORED_PRINT 1
 
@@ -74,74 +86,6 @@ void gfx_cc_ext_print_ops(struct GrowingArray *ops, struct GrowingArray *constan
     printf("\n");
 }
 
-static void gfx_cc_ext_check_duplicates() {
-    uint8_t counts[0x100] = {0};
-
-// Values
-#define CC_EXT_VALUE(name) counts[CC_EXT_##name]++;
-#include "gfx_cc_ext_values.inl"
-#undef CC_EXT_VALUE
-
-// Constants
-    for (int i = CC_EXT_CONST_FIRST; i <= CC_EXT_CONST_LAST; ++i) {
-        counts[i]++;
-    }
-
-// Operators
-#define CC_EXT_OPERATOR(name, args, ...) counts[CC_EXT_##name]++;
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
-
-// Functions
-#define CC_EXT_FUNCTION(name, args) counts[CC_EXT_##name]++;
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_FUNCTION
-
-// Special ops for parsing
-    counts[CC_EXT_OPEN]++;
-    counts[CC_EXT_CLOSE]++;
-    counts[CC_EXT_COMMA]++;
-
-    printf("\n");
-    printf(COLOR_BLUE "V" COLOR_RESET " are builtin values.\n");
-    printf(COLOR_CYAN "C" COLOR_RESET " are available constants.\n");
-    printf(COLOR_GREEN "O" COLOR_RESET " are operators/functions.\n");
-    printf(COLOR_MAGENTA "S" COLOR_RESET " are special ops, reserved for parsing.\n");
-#if COLORED_PRINT
-    printf(COLOR_RED "Red" COLOR_RESET " number indicates a duplicate.\n");
-    printf(COLOR_RED "MAKE SURE NO RED NUMBER APPEARS IS THE FOLLOWING TABLE." COLOR_RESET "\n");
-#else
-    printf("A number indicates a duplicate.\n");
-    printf("MAKE SURE NO NUMBER APPEARS IS THE FOLLOWING TABLE.\n");
-#endif
-    printf("\n");
-    printf("     0 1 2 3 4 5 6 7 8 9 A B C D E F\n");
-    printf("   +--------------------------------");
-    for (int i = 0; i < 0x100; ++i) {
-        if (i % 16 == 0) {
-            printf("\n%Xx |", i / 16);
-        };
-        switch (counts[i]) {
-            case 0: printf(" ."); break;
-            case 1: if (op_is_constant(i)) {
-                        printf(" " COLOR_CYAN "C" COLOR_RESET);
-                    } else if (op_is_value(i)) {
-                        printf(" " COLOR_BLUE "V" COLOR_RESET);
-                    } else if (op_is_special(i)) {
-                        printf(" " COLOR_MAGENTA "S" COLOR_RESET);
-                    } else if (op_is_operator(i)) {
-                        printf(" " COLOR_GREEN "O" COLOR_RESET);
-                    } else {
-                        printf(" ?");
-                    }
-                    break;
-            default: printf(" " COLOR_RED "%d" COLOR_RESET, counts[i]); break;
-        }
-    }
-    printf("\n");
-    printf("\n");
-}
-
 //
 // Infix to postfix
 //
@@ -205,6 +149,7 @@ static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray 
                     snprintf(error_msg, msg_len,
                         "Missing right parenthesis `)`."
                     );
+                    gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                 }
                 goto cleanup;
             } else {
@@ -242,6 +187,7 @@ static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray 
                 "Invalid op 0x%02X.",
                 op->op
             );
+            gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
         }
         goto cleanup;
     }
@@ -292,6 +238,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                             "VALIDATION FAILED: Constant %u is not defined, there is only %u constants loaded.\n",
                             constant_index, constants->count
                         );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                     }
                     return false;
                 }
@@ -309,6 +256,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                     snprintf(error_msg, msg_len,
                         "VALIDATION FAILED: Stack is full, cannot push more values."
                     );
+                    gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                 }
                 return false;
             }
@@ -319,7 +267,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
 
         // operators
         if (op_is_operator(op->op)) {
-            uint8_t args = CC_EXT_OPERATOR_ARGS(op->op);
+            uint8_t args = op_get_num_args(op->op);
 
             // check if there is enough values in stack
             if (stack_size < args) {
@@ -334,6 +282,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                         "VALIDATION FAILED: Not enough values in stack for %s: `%s` (%llu values, should be at least %u)\n",
                         op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), stack_size, args
                     );
+                    gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                 }
                 return false;
             }
@@ -355,6 +304,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                             "VALIDATION FAILED: Argument %u of %s `%s` is not a value: `%s`\n",
                             k, op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                     }
                     return false;
                 }
@@ -373,6 +323,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                                 "VALIDATION FAILED: Argument %u of dot operator `.` is not a dot param: `%s`\n",
                                 k + 1, arg->token ? arg->token->str : op_to_string(arg, constants)
                             );
+                            gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                         }
                         return false;
                     }
@@ -391,6 +342,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                             "VALIDATION FAILED: Argument %u of %s `%s` must not be a dot param: `%s`\n",
                             k + 1, op_is_function(op->op) ? "function" : "operator", op_to_string(op, constants), arg->token ? arg->token->str : op_to_string(arg, constants)
                         );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                     }
                     return false;
                 }
@@ -413,6 +365,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                 "VALIDATION FAILED: Invalid op 0x%02X.",
                 op->op
             );
+            gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
         }
         return false;
     }
@@ -422,6 +375,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
         snprintf(error_msg, msg_len,
             "VALIDATION FAILED: Combiner is empty, no result in stack."
         );
+        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
         return false;
     }
 
@@ -431,6 +385,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
             "VALIDATION FAILED: Combiner is ill-formed, too much values (%llu) remain in stack after processing.",
             stack_size
         );
+        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
         return false;
     }
 
@@ -461,7 +416,7 @@ static size_t check_symbols(const char *str, size_t len, size_t offset) {
     return max_size;
 }
 
-static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCombiner *comb) {
+static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCombiner *ec) {
     static char sErrorMsg[1024];
 
     struct GrowingArray *tokens    = growing_array_init(NULL, 16, malloc, token_free);
@@ -547,14 +502,6 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
 
     // push remaining token
     token_push_curr();
-
-    // printf("===============================\n");
-    // printf("tokens: %u\n", tokens->count);
-    // growing_array_for_each_(tokens, const Token, token) {
-    //     printf("%s\n", token->str);
-    // }
-    // printf("===============================\n");
-
 
     // turn tokens into ops
     Token *scope = NULL;
@@ -768,23 +715,18 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
         goto cleanup;
     }
 
-    gfx_cc_ext_print_ops(ops, constants);
-    printf("\n");
-
+    // convert to postfix
     postfix = gfx_cc_ext_generate_postfix_ops(ops, sErrorMsg, sizeof(sErrorMsg), str);
     if (!postfix) {
         goto cleanup;
     }
-
-    gfx_cc_ext_print_ops(postfix, constants);
-    printf("\n");
-    printf("\n");
 
     // validate
     if (!gfx_cc_ext_validate(postfix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
         goto cleanup;
     }
 
+#if !GFX_CC_EXT_DISABLE_OPTIMIZATION
     // optimize
     gfx_cc_ext_optimize(postfix, constants);
 
@@ -792,33 +734,41 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     if (!gfx_cc_ext_validate(postfix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
         goto cleanup;
     }
+#endif
 
-    printf("\n");
+#if GFX_CC_EXT_PRINT_OPS_AFTER_PARSING
+    printf("%s\n", str);
     gfx_cc_ext_print_ops(postfix, constants);
-    printf("\n");
+#endif
 
+    // check sizes
+    if (postfix->count > CC_EXT_MAX_OPS) {
+        snprintf(sErrorMsg, sizeof(sErrorMsg),
+            "Max number of ops exceeded: %u > %u\n",
+            postfix->count, CC_EXT_MAX_OPS
+        );
+        gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, 0, len, 0);
+        goto cleanup;
+    }
+    if (constants->count > CC_EXT_MAX_CONSTANTS) {
+        snprintf(sErrorMsg, sizeof(sErrorMsg),
+            "Max number of constants exceeded: %u > %u\n",
+            constants->count, CC_EXT_MAX_CONSTANTS
+        );
+        gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, 0, len, 0);
+        goto cleanup;
+    }
 
-
-    // // check sizes
-    // if (postfix->count > CC_EXT_MAX_OPS) {
-    //     printf("Max number of ops exceeded: %d > %d\n", postfix->count, CC_EXT_MAX_OPS);
-    //     goto cleanup;
-    // }
-    // if (constants->count > CC_EXT_MAX_CONSTANTS) {
-    //     printf("Max number of constants exceeded: %d > %d\n", constants->count, CC_EXT_MAX_CONSTANTS);
-    //     goto cleanup;
-    // }
-
-    // // fill struct
-    // memset(comb, 0, sizeof(*comb));
-    // comb->num_ops = postfix->count;
-    // for (uint32_t i = 0; i < postfix->count; ++i) {
-    //     comb->ops[i] = op_get(postfix, i);
-    // }
-    // comb->num_constants = constants->count;
-    // for (uint32_t i = 0; i < constants->count; ++i) {
-    //     comb->constants[i][0] = constant_get(constants, i);
-    // }
+    // fill struct
+    memset(ec, 0, sizeof(*ec));
+    ec->num_ops = postfix->count;
+    for (uint32_t i = 0; i < postfix->count; ++i) {
+        ec->ops[i] = op_get(postfix, i)->op;
+    }
+    ec->num_constants = constants->count;
+    for (uint32_t i = 0; i < constants->count; ++i) {
+        memcpy(ec->constants[i], constant_get(constants, i)->xyzw, sizeof(float4));
+    }
     ok = true;
 
 cleanup:
@@ -829,61 +779,51 @@ cleanup:
     return ok ? NULL : sErrorMsg;
 }
 
+const struct ExtendedCombiner *gfx_cc_ext_get_combiner(const char *str, const char **error_msg) {
+    static struct ExtendedCombiner sNullExtCombiner;
+    if (!str) { return NULL; }
 
-static const char *error_checks[] = {
-"TEXEL0 ! TEXEL1",
-"TEXEL0 + * TEXEL1",
-"lerp -TEXEL0, TEXEL1, ENV",
-"(TEXEL0) TEXEL1",
-"TEXEL00000000000000000000000000000000000",
-"12.5.2",
-"[]",
-"TEXEL0 (TEXEL1)",
-"(TEXEL0 + )",
-"(TEXEL0))",
-"lerp(, TEXEL0)",
-"(TEXEL0, TEXEL1)",
-"lerp(TEXEL0, (TEXEL1, ENV))",
-"TEXEL0.rg",
-"TEXEL0.abcd",
-"TEXEL0 1.25",
-"TEXEL2",
-"lerp(TEXEL0",
+    // Check cache
+    size_t len = strlen(str);
+    struct ExtendedCombiner *ec = hmap_data_get(sExtCombinerCache, str, len);
+    if (ec) {
+        return ec == &sNullExtCombiner ? NULL : ec;
+    }
 
+    // Allocate cache
+    if (!sExtCombinerCache) {
+        sExtCombinerCache = hmap_data_create();
+        if (!sExtCombinerCache) {
+            sys_fatal("Cannot allocate memory to create the extended combiner cache!");
+        }
+    }
 
-};
+    // Allocate combiner
+    ec = malloc(sizeof(struct ExtendedCombiner));
+    if (!ec) {
+        if (error_msg) { *error_msg = "Cannot allocate memory to create an extended combiner!"; }
+        return NULL;
+    }
 
-
-
-
-__attribute__((constructor)) static void test_custom_combine() {
-
-    // const char *comb_str = 
-    // "ENV * (-TEXEL0 + TEXEL1.a).gb1 + (-0.5 >= 0.2) * 99 + vec(9, 10, 11, 12) - min(0.5, max(lerp(PRIM + ENVA * 0.75, SHADE, PRIMA).00ra.gbra, 0)) + 2 * 1 - 1.5 ^ (3 + 1)";
-
-    const char *comb_str[] = {
-        "1.5 + TEXEL0 + 3.2"
-    };
-
-
-
-
-    for (int i = 0; i < ARRAY_COUNT(comb_str); ++i) {
-
-    // const char *comb_str = error_checks[i];
-
-    struct ExtendedCombiner comb;
-    const char *err = gfx_cc_ext_parse_combiner(comb_str[i], &comb);
-
-    // printf("\n");
+    // Parse combiner
+    const char *err = gfx_cc_ext_parse_combiner(str, ec);
     if (err) {
-        printf("%s\n\n", err);
+        if (error_msg) { *error_msg = err; }
+        hmap_data_put(sExtCombinerCache, str, len, &sNullExtCombiner);
+        free(ec);
+        return NULL;
     }
 
-    }
-
-    // gfx_cc_ext_check_duplicates();
-
-    exit(0);
+    hmap_data_put(sExtCombinerCache, str, len, ec);
+    return ec;
 }
 
+void gfx_cc_ext_clear_combiner_cache() {
+    void *ec = hmap_data_begin(sExtCombinerCache);
+    while (ec) {
+        free(ec);
+        ec = hmap_data_next(sExtCombinerCache);
+    }
+    hmap_data_destroy(sExtCombinerCache);
+    sExtCombinerCache = NULL;
+}

@@ -11,7 +11,6 @@ void hmap_del(void* map, int64_t k);
 void hmap_clear(void* map);
 void hmap_destroy(void* map);
 size_t hmap_len(void* map);
-
 void* hmap_begin(void* map);
 void* hmap_next(void* map);
 
@@ -22,5 +21,7 @@ void hmap_data_del(void* map, const char* key, size_t len);
 void hmap_data_clear(void* map);
 void hmap_data_destroy(void* map);
 size_t hmap_data_len(void* map);
+void* hmap_data_begin(void* map);
+void* hmap_data_next(void* map);
 
 #endif

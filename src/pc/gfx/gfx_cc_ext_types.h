@@ -1,6 +1,18 @@
 #ifndef GFX_CC_EXT_TYPES_H
 #define GFX_CC_EXT_TYPES_H
 
+#include "engine/math_util.h"
+#include "game/memory.h"
+
+// Global flags for debugging
+#ifdef DEVELOPMENT
+#define GFX_CC_EXT_CHECK_DUPLICATES_AT_STARTUP      1
+#define GFX_CC_EXT_PRINT_OPS_AFTER_PARSING          1
+#define GFX_CC_EXT_DISABLE_OPTIMIZATION             0
+#define GFX_CC_EXT_PRINT_OPTIMIZATION               1
+#define GFX_CC_EXT_PRINT_OPS_AFTER_OPTIMIZATION     1
+#endif
+
 //
 // Parsed token
 //
@@ -195,27 +207,44 @@ typedef struct Op {
     const Token *token;
 } Op;
 
+static struct {
+    bool is_operator;
+    bool is_function;
+    uint8_t precedence;
+    uint8_t num_args;
+} OP_PROPERTIES[0x100] = {
+
+// Values
+#define CC_EXT_VALUE(name) [CC_EXT_##name] = { false, false, 0, 0 },
+#include "gfx_cc_ext_values.inl"
+#undef CC_EXT_VALUE
+
+// Operators
+#define CC_EXT_OPERATOR(name, args, precedence, ...) [CC_EXT_##name] = { true, false, precedence, args },
+#include "gfx_cc_ext_operators.inl"
+#undef CC_EXT_OPERATOR
+
+// Functions
+#define CC_EXT_FUNCTION(name, args) [CC_EXT_##name] = { true, true, 0, args },
+#include "gfx_cc_ext_functions.inl"
+#undef CC_EXT_FUNCTION
+
+};
+
 static inline bool op_is_special(uint8_t op) {
-    return op == CC_EXT_OPEN  ||
-           op == CC_EXT_CLOSE ||
-           op == CC_EXT_COMMA;
+    return op >= CC_EXT_SPECIAL;
 }
 
 static inline bool op_is_operator(uint8_t op) {
-    return !op_is_special(op) && (op & CC_EXT_FLAG_OPERATOR) != 0;
+    return !op_is_special(op) && OP_PROPERTIES[op].is_operator;
 }
 
 static inline bool op_is_function(uint8_t op) {
-    static const bool IS_FUNCTION[0x100] = {
-#define CC_EXT_FUNCTION(name, ...) [CC_EXT_##name] = true,
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_FUNCTION
-    };
-    return IS_FUNCTION[op];
+    return !op_is_special(op) && OP_PROPERTIES[op].is_function;
 }
 
 static inline bool op_is_value(uint8_t op) {
-    return (op & CC_EXT_FLAG_OPERATOR) == 0;
+    return !op_is_special(op) && !OP_PROPERTIES[op].is_operator;
 }
 
 static inline bool op_is_constant(uint8_t op) {
@@ -238,12 +267,11 @@ static inline bool op_can_be_operator(uint8_t op) {
 // Follow simple precedence rules as in https://en.cppreference.com/c/language/operator_precedence.
 // Functions and dot operator have precedence 0.
 static inline uint8_t op_get_precedence(uint8_t op) {
-    static const uint8_t OP_PRECEDENCE[0x100] = {
-#define CC_EXT_OPERATOR(name, args, precedence, ...) [CC_EXT_##name] = precedence,
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
-    };
-    return OP_PRECEDENCE[op];
+    return OP_PROPERTIES[op].precedence;
+}
+
+static inline uint8_t op_get_num_args(uint8_t op) {
+    return OP_PROPERTIES[op].num_args;
 }
 
 static inline void op_push(struct GrowingArray *ops, uint8_t op, bool is_dot_param, const Token *token) {
@@ -357,5 +385,58 @@ static const char *op_to_string(const Op *op, struct GrowingArray *constants) {
     }
     return str;
 }
+
+//
+// Operation result
+//
+
+#define CC_EXT_MAX_ARGS 4
+
+typedef struct Result {
+    Op *op;
+    struct Result *args[CC_EXT_MAX_ARGS];
+} Result;
+
+static Result *result_new(struct GrowingArray *results, Op *op, Result **args) {
+    Result *new_result = growing_array_alloc(results, sizeof(Result));
+    new_result->op = op;
+    if (args) {
+        for (int i = 0; i < CC_EXT_MAX_ARGS; ++i) {
+            new_result->args[i] = args[i];
+        }
+    }
+    return new_result;
+}
+
+static inline Result *result_get(struct GrowingArray *results, uint32_t index) {
+    return (Result *) results->buffer[index];
+}
+
+static bool result_get_range_internal(struct GrowingArray *ops, const Result *result, uint32_t *from, uint32_t *to) {
+    if (result) {
+        int op_index = op_get_index(ops, result->op);
+        if (op_index >= 0) {
+            *from = min(*from, (uint32_t) op_index);
+            *to = max(*to, (uint32_t) op_index);
+            for (uint8_t i = 0; i < CC_EXT_MAX_ARGS; ++i) {
+                if (!result_get_range_internal(ops, result->args[i], from, to)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+static bool result_get_range(struct GrowingArray *ops, const Result *result, uint32_t *from, uint32_t *to) {
+    if (!result) { return false; }
+    *from = ops->count;
+    *to = 0;
+    return result_get_range_internal(ops, result, from, to);
+}
+
+void gfx_cc_ext_optimize(struct GrowingArray *ops, struct GrowingArray *constants);
 
 #endif

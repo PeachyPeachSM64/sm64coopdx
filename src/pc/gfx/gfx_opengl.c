@@ -30,6 +30,7 @@ struct GLShaderProgram {
     GLint attrib_locations[MAX_ATTRIBUTES];
     GLint uniform_locations[MAX_UNIFORMS];
     struct ColorCombiner cc;
+    const struct ExtendedCombiner *ec[2];
 };
 
 struct GLTexture {
@@ -38,8 +39,22 @@ struct GLTexture {
     uint8_t filter;
 };
 
+struct GLExtendedCombiner {
+    int ops[CC_EXT_MAX_OPS / sizeof(int)];
+    int num_ops[4];
+    float constants[CC_EXT_MAX_CONSTANTS][4];
+};
+
+// Make sure data is aligned to 16 bytes boundaries
+static_assert(offsetof(struct GLExtendedCombiner, num_ops) % 16 == 0);
+static_assert(offsetof(struct GLExtendedCombiner, constants) % 16 == 0);
+static_assert(sizeof(struct GLExtendedCombiner) % 16 == 0);
+
 static GLuint opengl_vbo;
 static GLuint opengl_vao;
+static GLuint opengl_ubo;
+
+static GLuint opengl_ubo_index;
 
 static int tex_cache_size = 0;
 static int num_textures = 0;
@@ -91,12 +106,41 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
 static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
     for (int i = 0; i < MAX_UNIFORMS; ++i) {
         const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(i);
-        opengl_prg.uniform_locations[i] = glGetUniformLocation(prg->program, uniform->name);
+        prg->uniform_locations[i] = glGetUniformLocation(prg->program, uniform->name);
     }
 
     // Samplers
     GLint sampler_location = glGetUniformLocation(prg->program, "uTextures");
     for (int i = 0; i < MAX_TEXTURES; ++i) { glUniform1i(sampler_location + i, i); }
+}
+
+static void gfx_opengl_update_extended_combiner_uniform(struct GLShaderProgram *prg, int index) {
+    const struct ExtendedCombiner *ec = prg->cc.ec[index];
+
+    // Update ubo only when necessary
+    if (prg->ec[index] == ec) {
+        return;
+    }
+
+    // Convert extended combiner to a GPU friendly struct
+    struct GLExtendedCombiner glec = {0};
+    glec.num_ops[0] = ec->num_ops;
+    // glec.num_constants[0] = ec->num_constants;
+    for (uint32_t i = 0; i < ec->num_ops; ++i) {
+        glec.ops[i / 4] |= (ec->ops[i] << (8 * i));
+    }
+    memcpy(glec.constants, ec->constants, sizeof(*ec->constants) * ec->num_constants);
+
+    // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
+    // GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY); 
+    // memcpy(p, &glec, sizeof(glec));
+    // glUnmapBuffer(GL_UNIFORM_BUFFER);
+
+
+    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
+    glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
+
+    prg->ec[index] = ec;
 }
 
 static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
@@ -124,6 +168,9 @@ static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
     ccf |= (prg->cc.use_2cycle << CCF_USE_2CYCLE);
     ccf |= (prg->cc.light_map << CCF_LIGHT_MAP);
     ccf |= (prg->cc.world_geometry << CCF_WORLD_GEOMETRY);
+    ccf |= (prg->cc.use_ext_color << CCF_USE_EXT_COLOR);
+    ccf |= (prg->cc.use_ext_alpha << CCF_USE_EXT_ALPHA);
+    ccf |= (prg->cc.ext_color_alpha_same << CCF_EXT_COLOR_ALPHA_SAME);
     ccf |= (prg->cc.used_textures << CCF_USED_TEXTURE);
     glUniform1i(prg->uniform_locations[UNIFORM_CCF], ccf);
 
@@ -144,6 +191,14 @@ static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
         glUniform1i(prg->uniform_locations[UNIFORM_SHADER_FLAGS], shader_flags);
         glUniform1fv(prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES], SHADER_FLAG_MAX, gShaderFlagValues);
     }
+
+    // Extended combiners
+    if (prg->cc.use_ext_color) {
+        gfx_opengl_update_extended_combiner_uniform(prg, 0);
+    }
+    if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
+        gfx_opengl_update_extended_combiner_uniform(prg, 1);
+    }
 }
 
 static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
@@ -160,9 +215,9 @@ static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const i
  // Shaders //
 /////////////
 
+static const char GL_UBERSHADER_VERSION[] = "#version 330\n";
+
 static const char GL_UBERSHADER_VERT[] = {
-'#','v','e','r','s','i','o','n',' ','3','3','0','\n'
-,
 #embed "gfx_cc.inl"
 ,
 #embed "shaders/opengl/ubershader.vert.glsl"
@@ -170,21 +225,28 @@ static const char GL_UBERSHADER_VERT[] = {
 };
 
 static const char GL_UBERSHADER_FRAG[] = {
-'#','v','e','r','s','i','o','n',' ','3','3','0','\n'
-,
 #embed "gfx_cc.inl"
+,
+#embed "gfx_cc_ext.inl"
 ,
 #embed "shaders/opengl/ubershader.frag.glsl"
 ,0
 };
 
 static void gfx_opengl_load_ubershader(void) {
-    const GLchar *sources[] = { GL_UBERSHADER_VERT, GL_UBERSHADER_FRAG };
-    const GLint lengths[] = { sizeof(GL_UBERSHADER_VERT) - 1, sizeof(GL_UBERSHADER_FRAG) - 1 };
     GLint success;
 
+    const GLchar *vertex_sources[] = {
+        GL_UBERSHADER_VERSION,
+        GL_UBERSHADER_VERT,
+    };
+    const GLint vertex_lengths[] = {
+        sizeof(GL_UBERSHADER_VERSION) - 1,
+        sizeof(GL_UBERSHADER_VERT) - 1,
+    };
+
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &sources[0], &lengths[0]);
+    glShaderSource(vertex_shader, ARRAY_COUNT(vertex_sources), vertex_sources, vertex_lengths);
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -197,8 +259,25 @@ static void gfx_opengl_load_ubershader(void) {
         sys_fatal("vertex shader compilation failed (see terminal)");
     }
 
+    const char *cc_ext_shader_source = gfx_cc_ext_get_shader_source();
+    const GLchar *fragment_sources[] = {
+        GL_UBERSHADER_VERSION,
+        cc_ext_shader_source,
+        GL_UBERSHADER_FRAG,
+    };
+    const GLint fragment_lengths[] = {
+        sizeof(GL_UBERSHADER_VERSION) - 1,
+        strlen(cc_ext_shader_source),
+        sizeof(GL_UBERSHADER_FRAG) - 1,
+    };
+
+
+    // printf("%s\n", cc_ext_shader_source);
+
+
+
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &sources[1], &lengths[1]);
+    glShaderSource(fragment_shader, ARRAY_COUNT(fragment_sources), fragment_sources, fragment_lengths);
     glCompileShader(fragment_shader);
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
@@ -377,7 +456,6 @@ static void gfx_opengl_init(void) {
     }
 
     glGenBuffers(1, &opengl_vbo);
-
     glBindBuffer(GL_ARRAY_BUFFER, opengl_vbo);
 
     if (vmajor >= 3 && !is_es) {
@@ -385,10 +463,33 @@ static void gfx_opengl_init(void) {
         glBindVertexArray(opengl_vao);
     }
 
+    // glGenBuffers(1, &opengl_ubo);
+    // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
+    // glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(opengl_prg.ec), NULL, GL_DYNAMIC_DRAW);
+
+    // opengl_ubo_index = glGetUniformBlockIndex(opengl_prg.program, "ExtendedCombinerBlock");
+    // glUniformBlockBinding(opengl_prg.program, opengl_ubo_index, opengl_ubo);
+
+    // Bind to binding point 0
+    // glBindBufferBase(GL_UNIFORM_BUFFER, 0, opengl_ubo);
+
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     gfx_opengl_load_ubershader();
+
+
+
+    glGenBuffers(1, &opengl_ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(opengl_prg.ec), NULL, GL_DYNAMIC_DRAW); 
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    opengl_ubo_index = glGetUniformBlockIndex(opengl_prg.program, "ExtendedCombinerBlock");
+    GLuint binding_point_index = 0;
+    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, opengl_ubo);
+    glUniformBlockBinding(opengl_prg.program, opengl_ubo_index, binding_point_index);
+
 }
 
 bool gfx_opengl_check_compatibility(void) {
@@ -407,6 +508,9 @@ static void gfx_opengl_on_resize(void) {
 
 static void gfx_opengl_start_frame(void) {
     frame_count++;
+
+    // Reset color combiner to force a uniforms update on next update_cc
+    memset(&opengl_prg.cc, 0, sizeof(opengl_prg.cc));
 
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
