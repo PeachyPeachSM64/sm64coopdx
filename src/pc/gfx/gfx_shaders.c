@@ -53,7 +53,7 @@ static const struct VertexAttribProperties VERTEX_ATTRIBS[] = {
     [ATTRIBUTE_PRIMITIVE]   = { "aPrimitive",   true,  vertex_attrib_multi_comp(inputs.primitive)   },
     [ATTRIBUTE_SHADE]       = { "aShade",       true,  vertex_attrib_multi_comp(inputs.shade)       },
     [ATTRIBUTE_ENVIRONMENT] = { "aEnvironment", true,  vertex_attrib_multi_comp(inputs.environment) },
-    [ATTRIBUTE_LOD]         = { "aLod",         true,  vertex_attrib_multi_comp(inputs.lod)         },
+    [ATTRIBUTE_LOD]         = { "aLod",         true,  vertex_attrib_multi_comp(inputs.ambient_lod) },
     [ATTRIBUTE_FOG]         = { "aFog",         true,  vertex_attrib_multi_comp(fog)                },
     [ATTRIBUTE_LIGHT_MAP]   = { "aLightMap",    true,  vertex_attrib_multi_comp(light_map)          },
 };

@@ -1,12 +1,13 @@
 #ifndef GFX_CC_EXT_TYPES_H
 #define GFX_CC_EXT_TYPES_H
 
+#include <ctype.h>
+
 #include "engine/math_util.h"
 #include "game/memory.h"
 
 // Global flags for debugging
 #ifdef DEVELOPMENT
-#define GFX_CC_EXT_CHECK_DUPLICATES_AT_STARTUP      1
 #define GFX_CC_EXT_PRINT_OPS_AFTER_PARSING          1
 #define GFX_CC_EXT_DISABLE_OPTIMIZATION             0
 #define GFX_CC_EXT_PRINT_OPTIMIZATION               1
@@ -251,6 +252,10 @@ static inline bool op_is_constant(uint8_t op) {
     return op >= CC_EXT_CONST_FIRST && op <= CC_EXT_CONST_LAST;
 }
 
+static inline bool op_is_register(uint8_t op) {
+    return op >= CC_EXT_REGISTER_FIRST && op <= CC_EXT_REGISTER_LAST;
+}
+
 // A^B^C == A^(B^C)
 static inline bool op_is_right_associative(uint8_t op) {
     return op == CC_EXT_POW;
@@ -360,13 +365,12 @@ static const char *op_to_string(const Op *op, struct GrowingArray *constants) {
         [CC_EXT_COMMA] = ",",
     };
 
-    if (op_is_constant(op->op) && op->is_dot_param) {
+    if (op->is_dot_param) {
         static char sDotParamStr[8];
-        uint8_t constant_index = op->op - CC_EXT_CONST_FIRST;
-        if (constant_index < constants->count) {
-            const Constant *constant = constant_get(constants, constant_index);
+        float4 xyzw;
+        if (op_to_float4(op->op, constants, xyzw)) {
             for (int i = 0; i < 4; ++i) {
-                int k = (int) constant->xyzw[i];
+                int k = (int) xyzw[i];
                 sDotParamStr[i] = (k >= 0 && k < 6 ? "01rgba"[k] : '?');
             }
             sDotParamStr[4] = 0;
@@ -377,6 +381,10 @@ static const char *op_to_string(const Op *op, struct GrowingArray *constants) {
     }
     char *str = OP_TO_STR[op->op];
     if (*str) {
+        return str;
+    }
+    if (op_is_register(op->op)) {
+        snprintf(str, sizeof(*OP_TO_STR), "v_REG_%02X", op->op - CC_EXT_REGISTER_FIRST);
         return str;
     }
     if (op_is_constant(op->op)) {
@@ -390,7 +398,7 @@ static const char *op_to_string(const Op *op, struct GrowingArray *constants) {
 // Operation result
 //
 
-#define CC_EXT_MAX_ARGS 4
+#define CC_EXT_MAX_ARGS 5
 
 typedef struct Result {
     Op *op;

@@ -12,12 +12,16 @@
 #define SHADER_INPUT_SHADE          (1 << 1)
 #define SHADER_INPUT_ENVIRONMENT    (1 << 2)
 #define SHADER_INPUT_LOD            (1 << 3)
+#define SHADER_INPUT_AMBIENT        (1 << 4)
+#define SHADER_INPUT_LIGHTS         (1 << 5)
 
 #define SHADER_INPUT_BITS (0 \
     | SHADER_INPUT_PRIMITIVE \
     | SHADER_INPUT_SHADE \
     | SHADER_INPUT_ENVIRONMENT \
     | SHADER_INPUT_LOD \
+    | SHADER_INPUT_AMBIENT \
+    | SHADER_INPUT_LIGHTS \
 )
 
 // Make sure the type for shader_inputs can hold all shader inputs

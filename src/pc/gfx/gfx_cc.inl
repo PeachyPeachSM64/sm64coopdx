@@ -15,7 +15,13 @@
 // Textures
 //
 
-#define MAX_TEXTURES    2
+#define MAX_TEXTURES    2  // must be a multiple of 2
+
+//
+// Lights
+//
+
+#define MAX_LIGHTS      18  // must be a multiple of 4
 
 //
 // CC sources

@@ -47,7 +47,13 @@ struct VertexAttribs {
         uint8_t primitive[4];
         uint8_t shade[4];
         uint8_t environment[4];
-        uint8_t lod[4];
+        union {
+            struct {
+                uint8_t ambient[3];
+                uint8_t lod;
+            };
+            uint8_t ambient_lod[4];
+        };
     } inputs;
     uint8_t fog[4];
     uint16_t light_map[2];

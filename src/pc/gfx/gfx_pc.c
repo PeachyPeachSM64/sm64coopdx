@@ -108,7 +108,7 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 
 static bool dropped_frame = false;
 
-static struct VertexAttribs buf_vbo[MAX_BUFFERED * 3] = {0}; // 3 vertices in a triangle
+static struct VertexAttribs buf_vbo[MAX_BUFFERED_TRIS * 3] = {0}; // 3 vertices in a triangle
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -630,7 +630,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
 
     Vec3f globalLightCached[2] = { { 1.f, 1.f, 1.f }, { 1.f, 1.f, 1.f } };
     Vec3f vertexColorCached;
-    if ((rsp.geometry_mode & G_LIGHTING) && !(rsp.geometry_mode & G_LIGHT_MAP_EXT)) {
+    if (!gFullbright && (rsp.geometry_mode & G_LIGHTING) && !(rsp.geometry_mode & G_LIGHT_MAP_EXT)) {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 3; j++) {
                 globalLightCached[i][j] = gLightingColor[i][j] / 255.0f;
@@ -684,9 +684,12 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         bool affectAllVertexColored = (le_get_mode() == LE_MODE_AFFECT_ALL_SHADED_AND_COLORED && luaVertexColor);
 
         if (rsp.geometry_mode & G_LIGHTING) {
+            uint8_t ambient_index = rsp.current_num_lights - 1;
+
+            // compute lights coeffs again
             if (rsp.lights_changed) {
                 bool applyLightingDir = !(rsp.geometry_mode & G_TEXTURE_GEN);
-                for (int32_t i = 0; i < rsp.current_num_lights - 1; i++) {
+                for (uint8_t i = 0; i < rsp.current_num_lights - 1; i++) {
                     calculate_normal_dir(&rsp.current_lights[i], rsp.current_lights_coeffs[i], applyLightingDir);
                 }
                 static const Light_t lookat_x = {{0, 0, 0}, 0, {0, 0, 0}, 0, {0, 127, 0}, 0};
@@ -696,24 +699,30 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 rsp.lights_changed = false;
             }
 
-            bool useShade = rsp.current_num_lights > 1 &&
-                rsp.current_lights[rsp.current_num_lights - 2].col[0] == 0 &&
-                rsp.current_lights[rsp.current_num_lights - 2].col[1] == 0 &&
-                rsp.current_lights[rsp.current_num_lights - 2].col[2] == 0;
+            // init vertex color from ambient
             float r = 0;
             float g = 0;
             float b = 0;
             if (gFullbright) {
-                int32_t shadeIndex = rsp.current_num_lights > 1 ? rsp.current_num_lights - (useShade ? 1 : 2) : 0;
-                r = rsp.current_lights[shadeIndex].col[0];
-                g = rsp.current_lights[shadeIndex].col[1];
-                b = rsp.current_lights[shadeIndex].col[2];
+                // account for materials that set their light color to fully black
+                // pick the ambient color instead
+                bool pick_ambient = ambient_index == 0 || (
+                    rsp.current_lights[ambient_index - 1].col[0] == 0 &&
+                    rsp.current_lights[ambient_index - 1].col[1] == 0 &&
+                    rsp.current_lights[ambient_index - 1].col[2] == 0
+                );
+                uint8_t shade_index = ambient_index - (pick_ambient ? 0 : 1);
+                r = rsp.current_lights[shade_index].col[0];
+                g = rsp.current_lights[shade_index].col[1];
+                b = rsp.current_lights[shade_index].col[2];
             } else {
-                int32_t lightIndex = rsp.current_num_lights > 0 ? rsp.current_num_lights - 1 : 0;
-                r = rsp.current_lights[lightIndex].col[0] * globalLightCached[1][0];
-                g = rsp.current_lights[lightIndex].col[1] * globalLightCached[1][1];
-                b = rsp.current_lights[lightIndex].col[2] * globalLightCached[1][2];
+                r = rsp.current_lights[ambient_index].col[0] * globalLightCached[1][0];
+                g = rsp.current_lights[ambient_index].col[1] * globalLightCached[1][1];
+                b = rsp.current_lights[ambient_index].col[2] * globalLightCached[1][2];
             }
+            d->ambient.r = (uint8_t) r;
+            d->ambient.g = (uint8_t) g;
+            d->ambient.b = (uint8_t) b;
 
             signed char nx = vn->n[0];
             signed char ny = vn->n[1];
@@ -739,10 +748,15 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 SUPPORT_CHECK(absi(nx) + absi(ny) + absi(nz) == 127);
             }
 
+            // apply diffuse light based on vertex normal direction
             if (!gFullbright) {
-                for (int32_t i = 0; i < rsp.current_num_lights - 1; i++) {
-                    float intensity = 0;
+                d->num_lights = rsp.current_num_lights;
+                for (uint8_t i = 0; i < rsp.current_num_lights - 1; i++) {
+                    // uint8_t light_r = rsp.current_lights[i].col[0] * globalLightCached[0][0];
+                    // uint8_t light_g = rsp.current_lights[i].col[1] * globalLightCached[0][1];
+                    // uint8_t light_b = rsp.current_lights[i].col[2] * globalLightCached[0][2];
 
+                    float intensity = 0;
                     intensity += nx * rsp.current_lights_coeffs[i][0];
                     intensity += ny * rsp.current_lights_coeffs[i][1];
                     intensity += nz * rsp.current_lights_coeffs[i][2];
@@ -753,7 +767,14 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                         g += intensity * rsp.current_lights[i].col[1] * globalLightCached[0][1];
                         b += intensity * rsp.current_lights[i].col[2] * globalLightCached[0][2];
                     }
+
+                    // d->lights[i].r = light_r;
+                    // d->lights[i].g = light_g;
+                    // d->lights[i].b = light_b;
+                    // d->lights[i].a = (uint8_t) (255.f * clamp(intensity, 0.f, 1.f));
                 }
+            } else {
+                d->num_lights = 0;
             }
 
             d->color.r = r > 255.0f ? 255 : (uint8_t)r;
@@ -1071,16 +1092,17 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     bool z_is_from_0_to_1 = gfx_rapi->z_is_from_0_to_1();
 
     for (int32_t i = 0; i < 3; i++) {
+        const struct GfxVertex *vtx = v_arr[i];
         struct VertexAttribs *attribs = &buf_vbo[buf_vbo_len++];
         memset(attribs, 0, sizeof(*attribs));
 
         // Position
-        float z = v_arr[i]->z, w = v_arr[i]->w;
+        float z = vtx->z, w = vtx->w;
         if (z_is_from_0_to_1) {
             z = (z + w) / 2.0f;
         }
-        attribs->pos[0] = v_arr[i]->x;
-        attribs->pos[1] = v_arr[i]->y;
+        attribs->pos[0] = vtx->x;
+        attribs->pos[1] = vtx->y;
         attribs->pos[2] = z;
         attribs->pos[3] = w;
 
@@ -1089,8 +1111,8 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             if (cc->used_textures & USED_TEXTURE(j)) {
                 uint32_t tex_width = (rdp.texture_tile[j].lrs - rdp.texture_tile[j].uls + 4) / 4;
                 uint32_t tex_height = (rdp.texture_tile[j].lrt - rdp.texture_tile[j].ult + 4) / 4;
-                float u = (v_arr[i]->u - rdp.texture_tile[j].uls * 8) / 32.0f;
-                float v = (v_arr[i]->v - rdp.texture_tile[j].ult * 8) / 32.0f;
+                float u = (vtx->u - rdp.texture_tile[j].uls * 8) / 32.0f;
+                float v = (vtx->v - rdp.texture_tile[j].ult * 8) / 32.0f;
 
                 int shifts = rdp.texture_tile[j].shifts;
                 int shiftt = rdp.texture_tile[j].shiftt;
@@ -1132,10 +1154,10 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
 
         // Shade
         if (cc->shader_inputs & SHADER_INPUT_SHADE) {
-            attribs->inputs.shade[0] = v_arr[i]->color.r;
-            attribs->inputs.shade[1] = v_arr[i]->color.g;
-            attribs->inputs.shade[2] = v_arr[i]->color.b;
-            attribs->inputs.shade[3] = v_arr[i]->color.a;
+            attribs->inputs.shade[0] = vtx->color.r;
+            attribs->inputs.shade[1] = vtx->color.g;
+            attribs->inputs.shade[2] = vtx->color.b;
+            attribs->inputs.shade[3] = vtx->color.a;
         }
 
         // Environment
@@ -1150,11 +1172,25 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         if (cc->shader_inputs & SHADER_INPUT_LOD) {
             float distance_frac = clamp((v1->w - 3000.0f) / 3000.0f, 0.0f, 1.0f);
             uint8_t lod_color = distance_frac * 255.0f;
-            attribs->inputs.lod[0] = lod_color;
-            attribs->inputs.lod[1] = lod_color;
-            attribs->inputs.lod[2] = lod_color;
-            attribs->inputs.lod[3] = lod_color;
+            attribs->inputs.lod = lod_color;
         }
+
+        // Ambient
+        if (cc->shader_inputs & SHADER_INPUT_AMBIENT) {
+            attribs->inputs.ambient[0] = vtx->ambient.r;
+            attribs->inputs.ambient[1] = vtx->ambient.g;
+            attribs->inputs.ambient[2] = vtx->ambient.b;
+        }
+
+        // Lights
+        // if (cc->shader_inputs & SHADER_INPUT_LIGHTS) {
+        //     for (uint8_t i = 0; i < vtx->num_lights; ++i) {
+        //         attribs->lights[i][0] = vtx->lights[i].r;
+        //         attribs->lights[i][1] = vtx->lights[i].g;
+        //         attribs->lights[i][2] = vtx->lights[i].b;
+        //         attribs->lights[i][3] = vtx->lights[i].a;
+        //     }
+        // }
 
         // Fog
         if (cc->use_fog) {
@@ -1164,25 +1200,24 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             attribs->fog[0] = rdp.fog_color.r * r;
             attribs->fog[1] = rdp.fog_color.g * g;
             attribs->fog[2] = rdp.fog_color.b * b;
-            attribs->fog[3] = v_arr[i]->fog_z;
+            attribs->fog[3] = vtx->fog_z;
 
             // Fog has 100% shade alpha, all inputs for light map
             attribs->inputs.shade[3] = 0xFF;
             if (cc->light_map) {
                 attribs->inputs.primitive[3] = 0xFF;
                 attribs->inputs.environment[3] = 0xFF;
-                attribs->inputs.lod[3] = 0xFF;
             }
         }
 
         // Lightmap
         if (cc->light_map) {
-            struct RGBA *col = &v_arr[i]->color;
+            const struct RGBA *col = &vtx->color;
             attribs->light_map[0] = ((((uint16_t)col->g) << 8) | ((uint16_t)col->r));
             attribs->light_map[1] = 0xFFFF - ((((uint16_t)col->a) << 8) | ((uint16_t)col->b));
         }
     }
-    if (++buf_vbo_num_tris == MAX_BUFFERED) {
+    if (++buf_vbo_num_tris == MAX_BUFFERED_TRIS) {
         gfx_flush();
     }
 }
@@ -1227,8 +1262,8 @@ static void gfx_sp_movemem(uint8_t index, uint16_t offset, const void* data) {
 #endif
 #ifdef F3DEX_GBI_2
         case G_MV_LIGHT: {
-            int lightidx = offset / 24 - 2;
-            if (lightidx >= 0 && lightidx <= MAX_LIGHTS) { // skip lookat
+            const uint16_t lightidx = offset / 24 - 2;
+            if (lightidx <= MAX_LIGHTS) {
                 // NOTE: reads out of bounds if it is an ambient light
                 memcpy(rsp.current_lights + lightidx, data, sizeof(Light_t));
             }
@@ -1252,8 +1287,8 @@ static void gfx_sp_movemem(uint8_t index, uint16_t offset, const void* data) {
 #ifdef F3DEX_GBI_2E
 static void gfx_sp_copymem(uint8_t idx, uint16_t dstofs, uint16_t srcofs, UNUSED uint8_t words) {
     if (idx == G_MV_LIGHT) {
-        const int srcidx = srcofs / 24 - 2;
-        const int dstidx = dstofs / 24 - 2;
+        const uint16_t srcidx = srcofs / 24 - 2;
+        const uint16_t dstidx = dstofs / 24 - 2;
         if (srcidx <= MAX_LIGHTS && dstidx <= MAX_LIGHTS) {
             memcpy(rsp.current_lights + dstidx, rsp.current_lights + srcidx, sizeof(Light_t));
         }
@@ -1264,13 +1299,7 @@ static void gfx_sp_copymem(uint8_t idx, uint16_t dstofs, uint16_t srcofs, UNUSED
 static void gfx_sp_moveword(uint8_t index, uint16_t offset, uint32_t data) {
     switch (index) {
         case G_MW_NUMLIGHT:
-#ifdef F3DEX_GBI_2
             rsp.current_num_lights = data / 24 + 1; // add ambient light
-#else
-            // Ambient light is included
-            // The 31th bit is a flag that lights should be recalculated
-            rsp.current_num_lights = (data - 0x80000000U) / 32;
-#endif
             rsp.lights_changed = 1;
             break;
         case G_MW_FOG:
@@ -1290,9 +1319,9 @@ static void gfx_sp_moveword(uint8_t index, uint16_t offset, uint32_t data) {
             }
             break;
         case G_MW_LIGHTCOL: {
-            int light_num = offset / 24;
+            const uint16_t light_num = offset / 24;
             // data = packed color
-            if (light_num >= 0 && light_num <= MAX_LIGHTS) {
+            if (light_num <= MAX_LIGHTS) {
                 rsp.current_lights[light_num].col[0] = (uint8_t)(data >> 24);
                 rsp.current_lights[light_num].col[1] = (uint8_t)(data >> 16);
                 rsp.current_lights[light_num].col[2] = (uint8_t)(data >> 8);
@@ -2128,7 +2157,7 @@ static void gfx_sp_copy_playerpart_to_color(uint8_t color, uint32_t idx) {
     SUPPORT_CHECK(color == G_COL_PRIM || color == G_COL_ENV);
 
     if (idx >= 1 && idx <= MAX_LIGHTS) {
-        Light_t *l = (rsp.current_lights + (idx - 1));
+        const Light_t *l = (rsp.current_lights + (idx - 1));
         struct RGBA *target_color = NULL;
         switch (color) {
             case G_COL_PRIM: target_color = &rdp.prim_color; break;

@@ -84,6 +84,9 @@ static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) 
     for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
         const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
         prg->attrib_locations[i] = glGetAttribLocation(prg->program, attrib->name);
+        if (prg->attrib_locations[i] == -1) {
+            sys_fatal("Error occurred when trying to locate vertex attributes:\nCannot locate attribute \"%s\" in vertex shader", attrib->name);
+        }
     }
 }
 
@@ -127,7 +130,7 @@ static void gfx_opengl_update_extended_combiner_uniform(struct GLShaderProgram *
     glec.num_ops[0] = ec->num_ops;
     // glec.num_constants[0] = ec->num_constants;
     for (uint32_t i = 0; i < ec->num_ops; ++i) {
-        glec.ops[i / 4] |= (ec->ops[i] << (8 * i));
+        glec.ops[i / 4] |= (ec->ops[i] << (8 * (i % 4)));
     }
     memcpy(glec.constants, ec->constants, sizeof(*ec->constants) * ec->num_constants);
 
@@ -193,12 +196,12 @@ static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
     }
 
     // Extended combiners
-    if (prg->cc.use_ext_color) {
-        gfx_opengl_update_extended_combiner_uniform(prg, 0);
-    }
-    if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
-        gfx_opengl_update_extended_combiner_uniform(prg, 1);
-    }
+    // if (prg->cc.use_ext_color) {
+    //     gfx_opengl_update_extended_combiner_uniform(prg, 0);
+    // }
+    // if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
+    //     gfx_opengl_update_extended_combiner_uniform(prg, 1);
+    // }
 }
 
 static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
@@ -259,20 +262,21 @@ static void gfx_opengl_load_ubershader(void) {
         sys_fatal("vertex shader compilation failed (see terminal)");
     }
 
-    const char *cc_ext_shader_source = gfx_cc_ext_get_shader_source();
+    // const char *cc_ext_shader_source = gfx_cc_ext_get_shader_source();
     const GLchar *fragment_sources[] = {
         GL_UBERSHADER_VERSION,
-        cc_ext_shader_source,
+        // cc_ext_shader_source,
         GL_UBERSHADER_FRAG,
     };
     const GLint fragment_lengths[] = {
         sizeof(GL_UBERSHADER_VERSION) - 1,
-        strlen(cc_ext_shader_source),
+        // strlen(cc_ext_shader_source),
         sizeof(GL_UBERSHADER_FRAG) - 1,
     };
 
 
     // printf("%s\n", cc_ext_shader_source);
+    // exit(0);
 
 
 
@@ -295,6 +299,23 @@ static void gfx_opengl_load_ubershader(void) {
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
     glUseProgram(shader_program);
+
+    GLint mvoc;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &mvoc);
+    printf("%d\n", mvoc);
+    glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &mvoc);
+    printf("%d\n", mvoc);
+
+    glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+    if (!success) {
+        GLint max_length = 0;
+        glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &max_length);
+        char error_log[1024];
+        fprintf(stderr, "Program link failed\n");
+        glGetProgramInfoLog(shader_program, max_length, &max_length, &error_log[0]);
+        fprintf(stderr, "%s\n", &error_log[0]);
+        sys_fatal("program link failed (see terminal)");
+    }
 
     opengl_prg.program = shader_program;
 

@@ -21,4 +21,5 @@
 
 #define CC_EXT_MAX_OPS          128
 #define CC_EXT_MAX_CONSTANTS    64
+#define CC_EXT_MAX_REGISTERS    16
 #define CC_EXT_STACK_SIZE       64

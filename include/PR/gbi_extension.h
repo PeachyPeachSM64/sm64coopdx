@@ -289,26 +289,26 @@
 { \
     Gfx *_g = (Gfx *)(pkt); \
     _g->words.w0 = _SHIFTL(G_SETCOMBINE_EXT, 24, 8) | _SHIFTL(G_SETCOMBINE_COLOR, 20, 4) | _SHIFTL(cycle, 16, 4); \
-    _g->words.w1 = _SHIFTL(a, 15, 5) | _SHIFTL(b, 10, 5) | _SHIFTL(c, 5, 5) | _SHIFTL(d, 0, 5); \
+    _g->words.w1 = _SHIFTL(G_CCMUX_##a, 15, 5) | _SHIFTL(G_CCMUX_##b, 10, 5) | _SHIFTL(G_CCMUX_##c, 5, 5) | _SHIFTL(G_CCMUX_##d, 0, 5); \
 }
 
 #define gsDPSetCombineColor(cycle, a, b, c, d) \
 {{ \
     _SHIFTL(G_SETCOMBINE_EXT, 24, 8) | _SHIFTL(G_SETCOMBINE_COLOR, 20, 4) | _SHIFTL(cycle, 16, 4), \
-    _SHIFTL(a, 15, 5) | _SHIFTL(b, 10, 5) | _SHIFTL(c, 5, 5) | _SHIFTL(d, 0, 5) \
+    _SHIFTL(G_CCMUX_##a, 15, 5) | _SHIFTL(G_CCMUX_##b, 10, 5) | _SHIFTL(G_CCMUX_##c, 5, 5) | _SHIFTL(G_CCMUX_##d, 0, 5) \
 }}
 
 #define gDPSetCombineAlpha(pkt, cycle, a, b, c, d) \
 { \
     Gfx *_g = (Gfx *)(pkt); \
     _g->words.w0 = _SHIFTL(G_SETCOMBINE_EXT, 24, 8) | _SHIFTL(G_SETCOMBINE_ALPHA, 20, 4) | _SHIFTL(cycle, 16, 4); \
-    _g->words.w1 = _SHIFTL(a, 15, 5) | _SHIFTL(b, 10, 5) | _SHIFTL(c, 5, 5) | _SHIFTL(d, 0, 5); \
+    _g->words.w1 = _SHIFTL(G_ACMUX_##a, 15, 5) | _SHIFTL(G_ACMUX_##b, 10, 5) | _SHIFTL(G_ACMUX_##c, 5, 5) | _SHIFTL(G_ACMUX_##d, 0, 5); \
 }
 
 #define gsDPSetCombineAlpha(cycle, a, b, c, d) \
 {{ \
     _SHIFTL(G_SETCOMBINE_EXT, 24, 8) | _SHIFTL(G_SETCOMBINE_ALPHA, 20, 4) | _SHIFTL(cycle, 16, 4), \
-    _SHIFTL(a, 15, 5) | _SHIFTL(b, 10, 5) | _SHIFTL(c, 5, 5) | _SHIFTL(d, 0, 5) \
+    _SHIFTL(G_ACMUX_##a, 15, 5) | _SHIFTL(G_ACMUX_##b, 10, 5) | _SHIFTL(G_ACMUX_##c, 5, 5) | _SHIFTL(G_ACMUX_##d, 0, 5) \
 }}
 
 #define gDPSetCombineColorExt(pkt, s) \

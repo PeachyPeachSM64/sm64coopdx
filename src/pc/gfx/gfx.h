@@ -4,6 +4,8 @@
 #include <math.h>
 #include <assert.h>
 
+#include "gfx_cc.inl"
+
 #define SUPPORT_CHECK(x) assert(x)
 
 // SCALE_M_N: upscale/downscale M-bit integer to N-bit
@@ -19,9 +21,9 @@
 #define HALF_SCREEN_WIDTH (SCREEN_WIDTH / 2)
 #define HALF_SCREEN_HEIGHT (SCREEN_HEIGHT / 2)
 
-#define MAX_BUFFERED 256
+#define MAX_BUFFERED_TRIS 256
 #define MAX_MATRIX_STACK_SIZE 11
-#define MAX_LIGHTS 18
+#define MAX_LIGHT_SLOTS (2 * (1 + PLAYER_PART_MAX)) // (diffuse, ambient) for base and each player part
 #define MAX_VERTICES 64
 #define MAX_TILES 8
 #define MAX_CACHED_TEXTURES 4096 // for preloading purposes
@@ -43,6 +45,9 @@ struct GfxVertex {
     float x, y, z, w;
     float u, v;
     struct RGBA color;
+    struct RGBA ambient;
+    struct RGBA lights[MAX_LIGHTS];
+    uint8_t num_lights;
     uint8_t fog_z;
     uint8_t clip_rej;
     uint8_t world_geometry;

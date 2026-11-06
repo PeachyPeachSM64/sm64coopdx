@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
+#include "gfx_cc.inl"
 #include "gfx_cc_ext.inl"
+#include "macros.h"
 
 enum {
 
@@ -11,6 +13,8 @@ enum {
 #define CC_EXT_VALUE(name) CC_EXT_##name,
 #include "gfx_cc_ext_values.inl"
 #undef CC_EXT_VALUE
+    CC_EXT_VALUE_COUNT,
+    CC_EXT_VALUE_LAST = CC_EXT_VALUE_COUNT - 1,
 
 // Operators
 #define CC_EXT_OPERATOR(name, ...) CC_EXT_##name,
@@ -21,6 +25,10 @@ enum {
 #define CC_EXT_FUNCTION(name, ...) CC_EXT_##name,
 #include "gfx_cc_ext_functions.inl"
 #undef CC_EXT_FUNCTION
+
+// Registers
+    CC_EXT_REGISTER_FIRST,
+    CC_EXT_REGISTER_LAST = (CC_EXT_REGISTER_FIRST + CC_EXT_MAX_REGISTERS - 1),
 
 // Constants
     CC_EXT_CONST_FIRST,

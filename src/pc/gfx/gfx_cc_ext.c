@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <ctype.h>
 #include <math.h>
 #include <assert.h>
 
@@ -66,12 +65,12 @@ void gfx_cc_ext_print_ops(struct GrowingArray *ops, struct GrowingArray *constan
     growing_array_for_each_(ops, const Op, op) {
         if (op->is_dot_param) {
             printf(COLOR_YELLOW);
+        } else if (op_is_register(op->op) || ((_head_ + 1) != _tail_ && (*(_head_ + 1))->op == CC_EXT_SET)) {
+            printf(COLOR_MAGENTA);
         } else if (op_is_constant(op->op)) {
             printf(COLOR_CYAN);
         } else if (op_is_value(op->op)) {
             printf(COLOR_BLUE);
-        } else if (op_is_special(op->op)) {
-            printf(COLOR_MAGENTA);
         } else if (op_is_operator(op->op)) {
             printf(COLOR_GREEN);
         }
@@ -104,10 +103,18 @@ static inline Op *stack_pop(struct GrowingArray *stack) {
     return op;
 }
 
+static void stack_pop_all(struct GrowingArray *stack, struct GrowingArray *res) {
+    while (stack->count > 0) {
+        Op *op = stack_pop(stack);
+        op_push(res, op->op, op->is_dot_param, op->token);
+    }
+}
+
 static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray *ops, char *error_msg, size_t msg_len, const char *str) {
     struct GrowingArray *res   = growing_array_init(NULL, 16, malloc, free);
     struct GrowingArray *stack = growing_array_init(NULL, 16, malloc, free);
     bool ok = false;
+    uint32_t last_end = 0;
 
     // from right to left
     for (int i = ops->count - 1; i >= 0; --i) {
@@ -147,7 +154,7 @@ static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray 
                     gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
                 } else {
                     snprintf(error_msg, msg_len,
-                        "Missing right parenthesis `)`."
+                        "Missing right parenthesis `)`.\n"
                     );
                     gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                 }
@@ -171,6 +178,18 @@ static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray 
                 top = stack_pop(stack);
                 op_push(res, top->op, top->is_dot_param, top->token);
             }
+
+            // end operator
+            // pop everything, move popped ops and insert the end op at the beginning
+            if (op->op == CC_EXT_END) {
+                stack_pop_all(stack, res);
+                growing_array_move(res, last_end, 0, res->count - last_end);
+                op_push(res, op->op, false, op->token);
+                growing_array_move(res, res->count - 1, 0, 1);
+                last_end = res->count;
+                continue;
+            }
+
             stack_push(stack, op);
             continue;
         }
@@ -184,7 +203,7 @@ static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray 
             gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
         } else {
             snprintf(error_msg, msg_len,
-                "Invalid op 0x%02X.",
+                "Invalid op 0x%02X.\n",
                 op->op
             );
             gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
@@ -193,10 +212,8 @@ static struct GrowingArray *gfx_cc_ext_generate_postfix_ops(struct GrowingArray 
     }
 
     // pop remaining ops
-    while (stack->count > 0) {
-        Op *op = stack_pop(stack);
-        op_push(res, op->op, op->is_dot_param, op->token);
-    }
+    stack_pop_all(stack, res);
+    growing_array_move(res, last_end, 0, res->count - last_end);
     ok = true;
 
 cleanup:
@@ -215,6 +232,7 @@ cleanup:
 static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *constants, char *error_msg, size_t msg_len, const char *str) {
     static const Op sResultOp = { CC_EXT_RESULT, NULL };
     const Op *stack[CC_EXT_STACK_SIZE] = {0};
+    bool registers[CC_EXT_MAX_REGISTERS] = {0};
     size_t stack_size = 0;
 
     for (uint32_t i = 0; i < ops->count; ++i) {
@@ -222,6 +240,27 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
 
         // values
         if (op_is_value(op->op)) {
+
+            // check if register is enabled
+            if (op_is_register(op->op)) {
+                uint8_t reg_index = op->op - CC_EXT_REGISTER_FIRST;
+                if (!registers[reg_index]) {
+                    if (op->token) {
+                        snprintf(error_msg, msg_len,
+                            "VALIDATION FAILED: Register %u at position %llu is not enabled.\n",
+                            reg_index, op->token->pos
+                        );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
+                    } else {
+                        snprintf(error_msg, msg_len,
+                            "VALIDATION FAILED: Register %u is not enabled.\n",
+                            reg_index
+                        );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
+                    }
+                    return false;
+                }
+            }
 
             // check if constant is defined
             if (op_is_constant(op->op)) {
@@ -254,7 +293,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                     gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
                 } else {
                     snprintf(error_msg, msg_len,
-                        "VALIDATION FAILED: Stack is full, cannot push more values."
+                        "VALIDATION FAILED: Stack is full, cannot push more values.\n"
                     );
                     gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
                 }
@@ -348,8 +387,55 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
                 }
             }
 
-            stack_size -= args; // pop args
-            stack[stack_size++] = &sResultOp; // push result
+            // enable register
+            if (op->op == CC_EXT_SET) {
+                const Op *reg = stack[stack_size - 1];
+                float4 reg_constant;
+                if (!op_to_float4(reg->op, constants, reg_constant)) {
+                    if (op->token) {
+                        snprintf(error_msg, msg_len,
+                            "VALIDATION FAILED: Argument 1 of set operator `=` at position %llu is not a register: `%s`\n",
+                            op->token->pos, reg->token ? reg->token->str : op_to_string(reg, constants)
+                        );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, reg->token ? reg->token->pos : op->token->pos, reg->token ? reg->token->len : op->token->len, 0);
+                    } else {
+                        snprintf(error_msg, msg_len,
+                            "VALIDATION FAILED: Argument 1 of set operator `=` is not a register: `%s`\n",
+                            reg->token ? reg->token->str : op_to_string(reg, constants)
+                        );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
+                    }
+                    return false;
+                }
+
+                uint8_t reg_index = (uint8_t) reg_constant[0];
+                if (reg_index >= CC_EXT_MAX_REGISTERS) {
+                    if (op->token) {
+                        snprintf(error_msg, msg_len,
+                            "VALIDATION FAILED: Argument 1 of set operator `=` at position %llu is not a valid register: `%s`\n",
+                            op->token->pos, reg->token ? reg->token->str : op_to_string(reg, constants)
+                        );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, reg->token ? reg->token->pos : op->token->pos, reg->token ? reg->token->len : op->token->len, 0);
+                    } else {
+                        snprintf(error_msg, msg_len,
+                            "VALIDATION FAILED: Argument 1 of set operator `=` is not a valid register: `%s`\n",
+                            reg->token ? reg->token->str : op_to_string(reg, constants)
+                        );
+                        gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
+                    }
+                    return false;
+                }
+
+                registers[reg_index] = true;
+            }
+
+            // end operator clears the stack
+            if (op->op == CC_EXT_END) {
+                stack_size = 0;
+            } else {
+                stack_size -= args; // pop args
+                stack[stack_size++] = &sResultOp; // push result
+            }
             continue;
         }
 
@@ -362,7 +448,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
             gfx_cc_ext_print_error_location(error_msg, msg_len, str, op->token->pos, op->token->len, 0);
         } else {
             snprintf(error_msg, msg_len,
-                "VALIDATION FAILED: Invalid op 0x%02X.",
+                "VALIDATION FAILED: Invalid op 0x%02X.\n",
                 op->op
             );
             gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
@@ -373,7 +459,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
     // empty combiner
     if (stack_size == 0) {
         snprintf(error_msg, msg_len,
-            "VALIDATION FAILED: Combiner is empty, no result in stack."
+            "VALIDATION FAILED: Combiner is empty, no result in stack.\n"
         );
         gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
         return false;
@@ -382,7 +468,7 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
     // too much values in stack
     if (stack_size > 1) {
         snprintf(error_msg, msg_len,
-            "VALIDATION FAILED: Combiner is ill-formed, too much values (%llu) remain in stack after processing.",
+            "VALIDATION FAILED: Combiner is ill-formed, too much values (%llu) remain in stack after processing.\n",
             stack_size
         );
         gfx_cc_ext_print_error_location(error_msg, msg_len, str, 0, strlen(str), 0);
@@ -416,12 +502,32 @@ static size_t check_symbols(const char *str, size_t len, size_t offset) {
     return max_size;
 }
 
+// [A-Za-z_][A-Za-z0-9_]*
+static bool is_valid_register_name(const char *token) {
+    for (const char *c = token; *c; c++) {
+        if ((c == token && isdigit(*c)) || (!isalnum(*c) && *c != '_')) {
+            return false;
+        }
+    }
+    return true;
+}
+
+static int get_register_index(struct GrowingArray *registers, const char *token) {
+    for (uint32_t i = 0; i < registers->count; ++i) {
+        if (strcmp(registers->buffer[i], token) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCombiner *ec) {
     static char sErrorMsg[1024];
 
     struct GrowingArray *tokens    = growing_array_init(NULL, 16, malloc, token_free);
     struct GrowingArray *ops       = growing_array_init(NULL, 16, malloc, free);
     struct GrowingArray *constants = growing_array_init(NULL, 16, malloc, free);
+    struct GrowingArray *registers = growing_array_init(NULL, 16, malloc, free);
     struct GrowingArray *postfix   = NULL;
     bool ok = false;
 
@@ -509,7 +615,7 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
         uint8_t prev = (ops->count > 0 ? op_get(ops, ops->count - 1)->op : CC_EXT_COMMA);
 
         // manually checked symbols
-        // includes unary plus and minus, parentheses and comma ops
+        // includes unary plus and minus, end, set, parentheses and comma ops
 
         if (token_is("+")) {
             if (op_can_be_value(prev)) {
@@ -526,6 +632,68 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
             } else {
                 op_push(ops, CC_EXT_NEG, false, token);
             }
+            continue;
+        }
+
+        if (token_is(";")) {
+            if (!op_can_be_value(prev)) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Global separator `;` at position %llu must follow a value.\n",
+                    token->pos
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
+
+            // must be global scope
+            if (scope != NULL) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Global separator `;` at position %llu cannot be used outside the global scope.\n",
+                    token->pos
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
+
+            op_push(ops, CC_EXT_END, false, token);
+            continue;
+        }
+
+        if (token_is("=")) {
+
+            // previous op must be a register
+            if (!op_is_register(prev)) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Set operator `=` at position %llu must follow a register.\n",
+                    token->pos
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
+
+            // must be global scope
+            if (scope != NULL) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Set operator `=` at position %llu cannot be used outside the global scope.\n",
+                    token->pos
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
+
+            // replace the register op by its index
+            uint8_t reg_index = prev - CC_EXT_REGISTER_FIRST;
+            float4 constant = { reg_index, reg_index, reg_index, reg_index };
+            if (!op_push_constant(ops, constants, false, constant, op_get(ops, ops->count - 1)->token)) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Max number of constants reached: %u\n",
+                    CC_EXT_MAX_CONSTANTS
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
+            growing_array_swap_and_pop_index(ops, ops->count - 2);
+            op_push(ops, CC_EXT_SET, false, token);
             continue;
         }
 
@@ -696,6 +864,30 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
             continue;
         }
 
+        // register
+        if (is_valid_register_name(token->str)) {
+            int reg_index = get_register_index(registers, token->str);
+            if (reg_index >= 0) {
+                op_push(ops, CC_EXT_REGISTER_FIRST + reg_index, false, token);
+                continue;
+            }
+
+            if (registers->count == CC_EXT_MAX_REGISTERS) {
+                snprintf(sErrorMsg, sizeof(sErrorMsg),
+                    "Max number of registers reached: %u\n",
+                    CC_EXT_MAX_REGISTERS
+                );
+                gfx_cc_ext_print_error_location(sErrorMsg, sizeof(sErrorMsg), str, token->pos, token->len, 0);
+                goto cleanup;
+            }
+
+            char *reg = growing_array_alloc(registers, token->len + 1);
+            memcpy(reg, token->str, token->len);
+
+            op_push(ops, CC_EXT_REGISTER_FIRST + registers->count - 1, false, token);
+            continue;
+        }
+
         // invalid
         snprintf(sErrorMsg, sizeof(sErrorMsg),
             "Invalid token at position %llu: `%s`\n",
@@ -715,11 +907,21 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
         goto cleanup;
     }
 
+#if GFX_CC_EXT_PRINT_OPS_AFTER_PARSING
+    printf("Infix:\n%s\n", str);
+    gfx_cc_ext_print_ops(ops, constants);
+#endif
+
     // convert to postfix
     postfix = gfx_cc_ext_generate_postfix_ops(ops, sErrorMsg, sizeof(sErrorMsg), str);
     if (!postfix) {
         goto cleanup;
     }
+
+#if GFX_CC_EXT_PRINT_OPS_AFTER_PARSING
+    printf("Postfix:\n%s\n", str);
+    gfx_cc_ext_print_ops(postfix, constants);
+#endif
 
     // validate
     if (!gfx_cc_ext_validate(postfix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
@@ -734,11 +936,11 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     if (!gfx_cc_ext_validate(postfix, constants, sErrorMsg, sizeof(sErrorMsg), str)) {
         goto cleanup;
     }
-#endif
 
 #if GFX_CC_EXT_PRINT_OPS_AFTER_PARSING
-    printf("%s\n", str);
+    printf("Postfix after optimization:\n%s\n", str);
     gfx_cc_ext_print_ops(postfix, constants);
+#endif
 #endif
 
     // check sizes
@@ -775,6 +977,7 @@ cleanup:
     growing_array_free(&tokens);
     growing_array_free(&ops);
     growing_array_free(&constants);
+    growing_array_free(&registers);
     growing_array_free(&postfix);
     return ok ? NULL : sErrorMsg;
 }
@@ -826,4 +1029,28 @@ void gfx_cc_ext_clear_combiner_cache() {
     }
     hmap_data_destroy(sExtCombinerCache);
     sExtCombinerCache = NULL;
+}
+
+
+// TODO
+// Add lights color as uniforms
+// Add lights intensity as vertex attribs?
+
+
+
+__attribute__((constructor)) static void aaaa() {
+
+
+    // const char TEST[] = "texEnv = (TEXEL0 + lerp(ENV, 0.5, 0.7)); primShade = (PRIM + 2) * SHADE; texEnv % primShade";
+
+
+    // struct ExtendedCombiner ec;
+    // const char *err = gfx_cc_ext_parse_combiner(TEST, &ec);
+
+    // if (err) {
+    //     printf("%s\n", err);
+    // }
+
+
+    // exit(0);
 }
