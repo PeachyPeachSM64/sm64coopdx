@@ -4,6 +4,9 @@
 // and GLSL doesn't have enum types.
 //
 
+#define UNPACK(v, s, w) \
+    ((int(v) >> (s)) & ((1 << (w)) - 1))
+
 //
 // Color combiner structure
 //
@@ -21,7 +24,7 @@
 // Lights
 //
 
-#define MAX_LIGHTS      18  // must be a multiple of 4
+#define MAX_ACTIVE_LIGHTS   8  // must be a multiple of 4
 
 //
 // CC sources

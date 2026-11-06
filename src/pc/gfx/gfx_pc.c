@@ -62,9 +62,9 @@ struct RSP {
 
     bool lights_changed;
     uint8_t current_num_lights; // includes ambient light
-    Vec3f current_lights_coeffs[MAX_LIGHTS];
+    Vec3f current_lights_coeffs[MAX_ACTIVE_LIGHTS];
     Vec3f current_lookat_coeffs[2]; // lookat_x, lookat_y
-    Light_t current_lights[MAX_LIGHTS + 1];
+    Light_t current_lights[MAX_LIGHTS];
 
     struct GfxVertex loaded_vertices[MAX_VERTICES + 4];
 };
@@ -108,7 +108,7 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 
 static bool dropped_frame = false;
 
-static struct VertexAttribs buf_vbo[MAX_BUFFERED_TRIS * 3] = {0}; // 3 vertices in a triangle
+static struct VertexAttribs buf_vbo[MAX_BUFFERED_VERTS] = {0};
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -684,12 +684,13 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         bool affectAllVertexColored = (le_get_mode() == LE_MODE_AFFECT_ALL_SHADED_AND_COLORED && luaVertexColor);
 
         if (rsp.geometry_mode & G_LIGHTING) {
-            uint8_t ambient_index = rsp.current_num_lights - 1;
+            const uint8_t num_active_lights = rsp.current_num_lights - 1;
+            const uint8_t ambient_index = num_active_lights;
 
             // compute lights coeffs again
             if (rsp.lights_changed) {
                 bool applyLightingDir = !(rsp.geometry_mode & G_TEXTURE_GEN);
-                for (uint8_t i = 0; i < rsp.current_num_lights - 1; i++) {
+                for (uint8_t i = 0; i < num_active_lights; i++) {
                     calculate_normal_dir(&rsp.current_lights[i], rsp.current_lights_coeffs[i], applyLightingDir);
                 }
                 static const Light_t lookat_x = {{0, 0, 0}, 0, {0, 0, 0}, 0, {0, 127, 0}, 0};
@@ -750,8 +751,8 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
 
             // apply diffuse light based on vertex normal direction
             if (!gFullbright) {
-                d->num_lights = rsp.current_num_lights;
-                for (uint8_t i = 0; i < rsp.current_num_lights - 1; i++) {
+                d->num_lights = num_active_lights;
+                for (uint8_t i = 0; i < num_active_lights; i++) {
                     // uint8_t light_r = rsp.current_lights[i].col[0] * globalLightCached[0][0];
                     // uint8_t light_g = rsp.current_lights[i].col[1] * globalLightCached[0][1];
                     // uint8_t light_b = rsp.current_lights[i].col[2] * globalLightCached[0][2];
@@ -1263,7 +1264,7 @@ static void gfx_sp_movemem(uint8_t index, uint16_t offset, const void* data) {
 #ifdef F3DEX_GBI_2
         case G_MV_LIGHT: {
             const uint16_t lightidx = offset / 24 - 2;
-            if (lightidx <= MAX_LIGHTS) {
+            if (lightidx < MAX_LIGHTS) {
                 // NOTE: reads out of bounds if it is an ambient light
                 memcpy(rsp.current_lights + lightidx, data, sizeof(Light_t));
             }
@@ -1289,7 +1290,7 @@ static void gfx_sp_copymem(uint8_t idx, uint16_t dstofs, uint16_t srcofs, UNUSED
     if (idx == G_MV_LIGHT) {
         const uint16_t srcidx = srcofs / 24 - 2;
         const uint16_t dstidx = dstofs / 24 - 2;
-        if (srcidx <= MAX_LIGHTS && dstidx <= MAX_LIGHTS) {
+        if (srcidx < MAX_LIGHTS && dstidx < MAX_LIGHTS) {
             memcpy(rsp.current_lights + dstidx, rsp.current_lights + srcidx, sizeof(Light_t));
         }
     }
@@ -1299,7 +1300,7 @@ static void gfx_sp_copymem(uint8_t idx, uint16_t dstofs, uint16_t srcofs, UNUSED
 static void gfx_sp_moveword(uint8_t index, uint16_t offset, uint32_t data) {
     switch (index) {
         case G_MW_NUMLIGHT:
-            rsp.current_num_lights = data / 24 + 1; // add ambient light
+            rsp.current_num_lights = clamp((int) data / 24, 0, MAX_ACTIVE_LIGHTS - 1) + 1; // add ambient light
             rsp.lights_changed = 1;
             break;
         case G_MW_FOG:
@@ -1321,7 +1322,7 @@ static void gfx_sp_moveword(uint8_t index, uint16_t offset, uint32_t data) {
         case G_MW_LIGHTCOL: {
             const uint16_t light_num = offset / 24;
             // data = packed color
-            if (light_num <= MAX_LIGHTS) {
+            if (light_num < MAX_LIGHTS) {
                 rsp.current_lights[light_num].col[0] = (uint8_t)(data >> 24);
                 rsp.current_lights[light_num].col[1] = (uint8_t)(data >> 16);
                 rsp.current_lights[light_num].col[2] = (uint8_t)(data >> 8);

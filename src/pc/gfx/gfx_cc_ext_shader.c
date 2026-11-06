@@ -74,7 +74,7 @@ REPEAT(DEFINE_ARG, CC_EXT_MAX_ARGS)
 // #define CC_EXT_VALUE_LIGHT(n) \
 // "#define v_LIGHT" #n "        vec4(vLights[" #n "].rgb, 1.0)\n" \
 // "#define v_LIGHT" #n "I       vLights[" #n "].aaaa\n"
-// REPEAT_FROM_0(CC_EXT_VALUE_LIGHT, MAX_LIGHTS)
+// REPEAT_FROM_0(CC_EXT_VALUE_LIGHT, MAX_ACTIVE_LIGHTS)
 // #undef CC_EXT_VALUE_LIGHT
 
 // Textures

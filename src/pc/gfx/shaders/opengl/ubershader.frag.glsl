@@ -14,21 +14,22 @@
 // Output fragment color
 out vec4 oFragColor;
 
-// Vertex attributes
+// Fragment inputs
 in vec2 vTexCoords[MAX_TEXTURES];
 in vec4 vPrimitive;
 in vec4 vShade;
 in vec4 vEnvironment;
 in vec4 vLod;
+in vec4 vAmbient;
 in vec4 vFog;
 in vec2 vLightMap;
 
 // CC sources
 uniform ivec2 uCCS[CC_CYCLES];
-#define A ((ABCD >> 24) & 0xFF)
-#define B ((ABCD >> 16) & 0xFF)
-#define C ((ABCD >>  8) & 0xFF)
-#define D ((ABCD >>  0) & 0xFF)
+#define A UNPACK(ABCD, 24, 8)
+#define B UNPACK(ABCD, 16, 8)
+#define C UNPACK(ABCD,  8, 8)
+#define D UNPACK(ABCD,  0, 8)
 
 // CC features
 uniform int uCCF;
@@ -358,7 +359,7 @@ void main() {
     // Global shader effects
     if (CCF_HAS_FLAG(WORLD_GEOMETRY) && uShaderFlags != 0) {
         for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
-            if (((uShaderFlags >> i) & 1) != 0) {
+            if (UNPACK(uShaderFlags, i, 1) != 0) {
                 float value = uShaderFlagValues[i];
                 switch (i) {
                     case SHADER_FLAG_HUE:           texel.rgb = shader_effect_hue(texel.rgb, value); break;

@@ -22,8 +22,9 @@
 #define HALF_SCREEN_HEIGHT (SCREEN_HEIGHT / 2)
 
 #define MAX_BUFFERED_TRIS 256
+#define MAX_BUFFERED_VERTS (MAX_BUFFERED_TRIS * 3) // 3 vertices in a triangle
 #define MAX_MATRIX_STACK_SIZE 11
-#define MAX_LIGHT_SLOTS (2 * (1 + PLAYER_PART_MAX)) // (diffuse, ambient) for base and each player part
+#define MAX_LIGHTS (2 * (1 + PLAYER_PART_MAX)) // (diffuse, ambient) for base and each player part
 #define MAX_VERTICES 64
 #define MAX_TILES 8
 #define MAX_CACHED_TEXTURES 4096 // for preloading purposes
@@ -46,7 +47,7 @@ struct GfxVertex {
     float u, v;
     struct RGBA color;
     struct RGBA ambient;
-    struct RGBA lights[MAX_LIGHTS];
+    struct RGBA lights[MAX_ACTIVE_LIGHTS];
     uint8_t num_lights;
     uint8_t fog_z;
     uint8_t clip_rej;

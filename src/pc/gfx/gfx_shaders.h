@@ -8,18 +8,6 @@
 // Attibutes
 //
 
-enum VertexAttrib {
-    ATTRIBUTE_POS,
-    ATTRIBUTE_TEX_COORDS,
-    ATTRIBUTE_PRIMITIVE,
-    ATTRIBUTE_SHADE,
-    ATTRIBUTE_ENVIRONMENT,
-    ATTRIBUTE_LOD,
-    ATTRIBUTE_FOG,
-    ATTRIBUTE_LIGHT_MAP,
-    MAX_ATTRIBUTES,
-};
-
 enum VertexAttribType {
     ATTRIBUTE_TYPE_INT8,
     ATTRIBUTE_TYPE_UINT8,
@@ -32,7 +20,6 @@ enum VertexAttribType {
 
 struct VertexAttribProperties {
     const char *name;
-    bool normalized;
     enum VertexAttribType type;
     size_t offset;
     size_t count;
@@ -47,19 +34,17 @@ struct VertexAttribs {
         uint8_t primitive[4];
         uint8_t shade[4];
         uint8_t environment[4];
-        union {
-            struct {
-                uint8_t ambient[3];
-                uint8_t lod;
-            };
-            uint8_t ambient_lod[4];
-        };
+        uint8_t ambient[3];
+        uint8_t lod;
     } inputs;
     uint8_t fog[4];
     uint16_t light_map[2];
 };
 
-const struct VertexAttribProperties *gfx_shaders_get_attrib_properties(enum VertexAttrib attrib);
+const struct VertexAttribProperties *gfx_shaders_get_attrib_properties(size_t attrib);
+size_t gfx_shaders_get_num_attribs();
+void *gfx_shaders_get_attribs_data(const struct VertexAttribs *attribs, size_t count);
+size_t gfx_shaders_get_attribs_stride();
 
 //
 // Uniforms

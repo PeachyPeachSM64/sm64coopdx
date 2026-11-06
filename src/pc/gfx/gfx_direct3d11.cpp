@@ -25,7 +25,7 @@ extern "C" {
 #define DEBUG_D3D 0
 
 #define D3D11_VERTEX_RING_BUFFER_BATCHES 8
-#define D3D11_VERTEX_BUFFER_LENGTH (MAX_BUFFERED_TRIS * 3 * D3D11_VERTEX_RING_BUFFER_BATCHES)
+#define D3D11_VERTEX_BUFFER_LENGTH (MAX_BUFFERED_VERTS * D3D11_VERTEX_RING_BUFFER_BATCHES)
 
 using namespace Microsoft::WRL; // For ComPtr
 
@@ -142,10 +142,11 @@ static const DXGI_FORMAT D3D11_ATTRIB_TYPES[][4][2] = {
 
 static size_t gfx_d3d11_get_input_element_desc_size() {
     size_t size = 0;
-    for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
-        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
-        size += attrib->count;
-    }
+    // TODO
+    // for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
+    //     const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
+    //     size += attrib->count;
+    // }
     return size;
 }
 
@@ -154,20 +155,21 @@ static void gfx_d3d11_create_input_layout(D3D11ShaderProgram *prg, const void *v
     D3D11_INPUT_ELEMENT_DESC *ied = new D3D11_INPUT_ELEMENT_DESC[ied_size];
     ThrowIfFailed(ied != nullptr ? 0 : -1, gfx_window_dxgi_get_h_wnd(), "Failed to create input layout.");
 
-    for (int i = 0, k = 0; i < MAX_ATTRIBUTES; ++i) {
-        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
-        for (size_t j = 0; j < attrib->count; ++j) {
-            ied[k++] = {
-                .SemanticName = attrib->name,
-                .SemanticIndex = (UINT) j,
-                .Format = D3D11_ATTRIB_TYPES[attrib->type][attrib->components - 1][attrib->normalized],
-                .InputSlot = 0,
-                .AlignedByteOffset = (UINT) (attrib->offset + j * attrib->stride),
-                .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
-                .InstanceDataStepRate = 0,
-            };
-        }
-    }
+    // TODO
+    // for (int i = 0, k = 0; i < MAX_ATTRIBUTES; ++i) {
+    //     const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
+    //     for (size_t j = 0; j < attrib->count; ++j) {
+    //         ied[k++] = {
+    //             .SemanticName = attrib->name,
+    //             .SemanticIndex = (UINT) j,
+    //             .Format = D3D11_ATTRIB_TYPES[attrib->type][attrib->components - 1][attrib->normalized],
+    //             .InputSlot = 0,
+    //             .AlignedByteOffset = (UINT) (attrib->offset + j * attrib->stride),
+    //             .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+    //             .InstanceDataStepRate = 0,
+    //         };
+    //     }
+    // }
 
     ThrowIfFailed(d3d.device->CreateInputLayout(ied, ied_size, vs_ptr, vs_size, prg->input_layout.GetAddressOf()));
     delete[] ied;

@@ -27,8 +27,8 @@
 
 struct GLShaderProgram {
     GLuint program;
-    GLint attrib_locations[MAX_ATTRIBUTES];
-    GLint uniform_locations[MAX_UNIFORMS];
+    GLint *attrib_locations;
+    GLint *uniform_locations;
     struct ColorCombiner cc;
     const struct ExtendedCombiner *ec[2];
 };
@@ -81,7 +81,13 @@ static const GLenum GL_ATTRIB_TYPES[] = {
 };
 
 static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) {
-    for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
+    const size_t num_attribs = gfx_shaders_get_num_attribs();
+    prg->attrib_locations = malloc(sizeof(*prg->attrib_locations) * num_attribs);
+    if (!prg->attrib_locations) {
+        sys_fatal("Error occurred when trying to locate vertex attributes:\nCannot create attribute locations");
+    }
+
+    for (size_t i = 0; i < num_attribs; ++i) {
         const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
         prg->attrib_locations[i] = glGetAttribLocation(prg->program, attrib->name);
         if (prg->attrib_locations[i] == -1) {
@@ -91,13 +97,19 @@ static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) 
 }
 
 static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
-    const size_t stride = sizeof(struct VertexAttribs);
-    for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
+    const size_t num_attribs = gfx_shaders_get_num_attribs();
+    const size_t stride = gfx_shaders_get_attribs_stride();
+    for (size_t i = 0; i < num_attribs; ++i) {
         const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
         for (size_t j = 0; j < attrib->count; ++j) {
             int index = prg->attrib_locations[i] + j;
+            const GLenum type = GL_ATTRIB_TYPES[attrib->type];
             glEnableVertexAttribArray(index);
-            glVertexAttribPointer(index, attrib->components, GL_ATTRIB_TYPES[attrib->type], attrib->normalized, stride, (const void *) (attrib->offset + j * attrib->stride));
+            if (type == GL_FLOAT) {
+                glVertexAttribPointer(index, attrib->components, type, false, stride, (const void *) (attrib->offset + j * attrib->stride));
+            } else {
+                glVertexAttribIPointer(index, attrib->components, type, stride, (const void *) (attrib->offset + j * attrib->stride));
+            }
         }
     }
 }
@@ -107,6 +119,12 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
 //////////////
 
 static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
+
+    prg->uniform_locations = malloc(sizeof(*prg->uniform_locations) * MAX_UNIFORMS);
+    if (!prg->uniform_locations) {
+        sys_fatal("Error occurred when trying to locate shader uniforms:\nCannot create uniforms locations");
+    }
+
     for (int i = 0; i < MAX_UNIFORMS; ++i) {
         const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(i);
         prg->uniform_locations[i] = glGetUniformLocation(prg->program, uniform->name);
@@ -433,7 +451,11 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
 }
 
 static void gfx_opengl_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
-    glBufferData(GL_ARRAY_BUFFER, sizeof(struct VertexAttribs) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
+
+    void *data = gfx_shaders_get_attribs_data(buf_vbo, buf_vbo_len);
+    size_t stride = gfx_shaders_get_attribs_stride();
+
+    glBufferData(GL_ARRAY_BUFFER, stride * buf_vbo_len, data, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }
 
