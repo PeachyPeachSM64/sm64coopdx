@@ -45,6 +45,17 @@
 #define CCS_ENVA        14
 #define CCS_LOD         15
 
+// aliases
+#define CCS_TEXEL0_ALPHA        CCS_TEXEL0A
+#define CCS_TEXEL1_ALPHA        CCS_TEXEL1A
+#define CCS_COMBINED_ALPHA      CCS_COMBINEDA
+#define CCS_PRIMITIVE           CCS_PRIM
+#define CCS_PRIMITIVE_ALPHA     CCS_PRIMA
+#define CCS_SHADE_ALPHA         CCS_SHADEA
+#define CCS_ENVIRONMENT         CCS_ENV
+#define CCS_ENV_ALPHA           CCS_ENVA
+#define CCS_LOD_FRACTION        CCS_LOD
+
 //
 // CC features
 //

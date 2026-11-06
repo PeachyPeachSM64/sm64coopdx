@@ -62,7 +62,16 @@ struct ColorCombiner {
 extern "C" {
 #endif
 
-void gfx_cc_generate(struct ColorCombiner *cc, uint8_t cycle, bool alpha, uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+void gfx_cc_generate_from_combine_mode(struct ColorCombiner *cc,
+    uint8_t ccmux_a0, uint8_t ccmux_b0, uint8_t ccmux_c0, uint8_t ccmux_d0,
+    uint8_t acmux_a0, uint8_t acmux_b0, uint8_t acmux_c0, uint8_t acmux_d0,
+    uint8_t ccmux_a1, uint8_t ccmux_b1, uint8_t ccmux_c1, uint8_t ccmux_d1,
+    uint8_t acmux_a1, uint8_t acmux_b1, uint8_t acmux_c1, uint8_t acmux_d1
+);
+void gfx_cc_generate_from_sources(struct ColorCombiner *cc, bool alpha,
+    uint8_t ccs_a0, uint8_t ccs_b0, uint8_t ccs_c0, uint8_t ccs_d0,
+    uint8_t ccs_a1, uint8_t ccs_b1, uint8_t ccs_c1, uint8_t ccs_d1
+);
 void gfx_cc_load_extended_combiner(struct ColorCombiner *cc, bool alpha, const char *str);
 void gfx_cc_update_features(struct ColorCombiner *cc);
 

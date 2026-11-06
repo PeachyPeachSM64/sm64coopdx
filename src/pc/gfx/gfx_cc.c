@@ -154,10 +154,32 @@ static inline void color_comb(uint8_t *ccs, uint8_t cycle, bool alpha, uint8_t a
     ccs[3] = (d < 32) ? CC_COMPONENTS_TO_CCS[alpha][3][d][cycle] : CCS_0;
 }
 
-void gfx_cc_generate(struct ColorCombiner *cc, uint8_t cycle, bool alpha, uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
-    if (cycle >= CC_CYCLES) { return; }
-    memset(cc->ccs[cycle][alpha], 0, sizeof(cc->ccs[cycle][alpha]));
-    color_comb(cc->ccs[cycle][alpha], cycle, alpha, a, b, c, d);
+void gfx_cc_generate_from_combine_mode(struct ColorCombiner *cc,
+    uint8_t ccmux_a0, uint8_t ccmux_b0, uint8_t ccmux_c0, uint8_t ccmux_d0,
+    uint8_t acmux_a0, uint8_t acmux_b0, uint8_t acmux_c0, uint8_t acmux_d0,
+    uint8_t ccmux_a1, uint8_t ccmux_b1, uint8_t ccmux_c1, uint8_t ccmux_d1,
+    uint8_t acmux_a1, uint8_t acmux_b1, uint8_t acmux_c1, uint8_t acmux_d1
+) {
+    color_comb(cc->ccs[0][0], 0, 0, ccmux_a0, ccmux_b0, ccmux_c0, ccmux_d0);
+    color_comb(cc->ccs[0][1], 0, 1, acmux_a0, acmux_b0, acmux_c0, acmux_d0);
+    color_comb(cc->ccs[1][0], 1, 0, ccmux_a1, ccmux_b1, ccmux_c1, ccmux_d1);
+    color_comb(cc->ccs[1][1], 1, 1, acmux_a1, acmux_b1, acmux_c1, acmux_d1);
+    cc->ec[0] = NULL;
+    cc->ec[1] = NULL;
+}
+
+void gfx_cc_generate_from_sources(struct ColorCombiner *cc, bool alpha,
+    uint8_t ccs_a0, uint8_t ccs_b0, uint8_t ccs_c0, uint8_t ccs_d0,
+    uint8_t ccs_a1, uint8_t ccs_b1, uint8_t ccs_c1, uint8_t ccs_d1
+) {
+    cc->ccs[0][alpha][0] = ccs_a0;
+    cc->ccs[0][alpha][1] = ccs_b0;
+    cc->ccs[0][alpha][2] = ccs_c0;
+    cc->ccs[0][alpha][3] = ccs_d0;
+    cc->ccs[1][alpha][0] = ccs_a1;
+    cc->ccs[1][alpha][1] = ccs_b1;
+    cc->ccs[1][alpha][2] = ccs_c1;
+    cc->ccs[1][alpha][3] = ccs_d1;
     cc->ec[alpha] = NULL;
 }
 
