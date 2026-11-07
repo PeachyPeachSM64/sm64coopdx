@@ -43,7 +43,7 @@ struct D3D11ShaderProgram {
     ComPtr<ID3D11VertexShader> vertex_shader;
     ComPtr<ID3D11PixelShader> pixel_shader;
     ComPtr<ID3D11InputLayout> input_layout;
-    uint32_t uniform_locations[MAX_UNIFORMS];
+    uint32_t uniform_locations[4]; // TODO
     struct ColorCombiner cc;
 };
 
@@ -96,43 +96,43 @@ static struct {
 
 // Type, components, normalized
 static const DXGI_FORMAT D3D11_ATTRIB_TYPES[][4][2] = {
-    [ATTRIBUTE_TYPE_INT8] = {
+    [SHADER_DATA_TYPE_INT8] = {
         { DXGI_FORMAT_R8_SINT,       DXGI_FORMAT_R8_SNORM       },
         { DXGI_FORMAT_R8G8_SINT,     DXGI_FORMAT_R8G8_SNORM     },
         { DXGI_FORMAT_UNKNOWN,       DXGI_FORMAT_UNKNOWN        },
         { DXGI_FORMAT_R8G8B8A8_SINT, DXGI_FORMAT_R8G8B8A8_SNORM },
     },
-    [ATTRIBUTE_TYPE_UINT8] = {
+    [SHADER_DATA_TYPE_UINT8] = {
         { DXGI_FORMAT_R8_UINT,       DXGI_FORMAT_R8_UNORM       },
         { DXGI_FORMAT_R8G8_UINT,     DXGI_FORMAT_R8G8_UNORM     },
         { DXGI_FORMAT_UNKNOWN,       DXGI_FORMAT_UNKNOWN        },
         { DXGI_FORMAT_R8G8B8A8_UINT, DXGI_FORMAT_R8G8B8A8_UNORM },
     },
-    [ATTRIBUTE_TYPE_INT16] = {
+    [SHADER_DATA_TYPE_INT16] = {
         { DXGI_FORMAT_R16_SINT,          DXGI_FORMAT_R16_SNORM          },
         { DXGI_FORMAT_R16G16_SINT,       DXGI_FORMAT_R16G16_SNORM       },
         { DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN            },
         { DXGI_FORMAT_R16G16B16A16_SINT, DXGI_FORMAT_R16G16B16A16_SNORM },
     },
-    [ATTRIBUTE_TYPE_UINT16] = {
+    [SHADER_DATA_TYPE_UINT16] = {
         { DXGI_FORMAT_R16_UINT,          DXGI_FORMAT_R16_UNORM          },
         { DXGI_FORMAT_R16G16_UINT,       DXGI_FORMAT_R16G16_UNORM       },
         { DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN            },
         { DXGI_FORMAT_R16G16B16A16_UINT, DXGI_FORMAT_R16G16B16A16_UNORM },
     },
-    [ATTRIBUTE_TYPE_INT32] = {
+    [SHADER_DATA_TYPE_INT32] = {
         { DXGI_FORMAT_R32_SINT,          DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32_SINT,       DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32B32_SINT,    DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32B32A32_SINT, DXGI_FORMAT_UNKNOWN },
     },
-    [ATTRIBUTE_TYPE_UINT32] = {
+    [SHADER_DATA_TYPE_UINT32] = {
         { DXGI_FORMAT_R32_UINT,          DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32_UINT,       DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32B32_UINT,    DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32B32A32_UINT, DXGI_FORMAT_UNKNOWN },
     },
-    [ATTRIBUTE_TYPE_FLOAT] = {
+    [SHADER_DATA_TYPE_FLOAT] = {
         { DXGI_FORMAT_R32_FLOAT,          DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32_FLOAT,       DXGI_FORMAT_UNKNOWN },
         { DXGI_FORMAT_R32G32B32_FLOAT,    DXGI_FORMAT_UNKNOWN },
@@ -144,7 +144,7 @@ static size_t gfx_d3d11_get_input_element_desc_size() {
     size_t size = 0;
     // TODO
     // for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
-    //     const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
+    //     const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
     //     size += attrib->count;
     // }
     return size;
@@ -157,7 +157,7 @@ static void gfx_d3d11_create_input_layout(D3D11ShaderProgram *prg, const void *v
 
     // TODO
     // for (int i = 0, k = 0; i < MAX_ATTRIBUTES; ++i) {
-    //     const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
+    //     const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
     //     for (size_t j = 0; j < attrib->count; ++j) {
     //         ied[k++] = {
     //             .SemanticName = attrib->name,
@@ -201,19 +201,19 @@ static size_t gfx_d3d11_locate_uniforms(D3D11ShaderProgram *prg, ID3DBlob *ps) {
     size_t cb_size = buffer_desc.Size;
 
     // Get each uniform description and, more importantly, its offset in the constant buffer
-    for (int i = 0; i < MAX_UNIFORMS; ++i) {
-        const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
-        ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(uniform->name);
-        if (!variable) {
-            fprintf(stderr, "Uniform not found in pixel shader: %s\n", uniform->name);
-            ThrowIfFailed(-1);
-        }
+    // for (int i = 0; i < MAX_UNIFORMS; ++i) {
+    //     const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
+    //     ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(uniform->name);
+    //     if (!variable) {
+    //         fprintf(stderr, "Uniform not found in pixel shader: %s\n", uniform->name);
+    //         ThrowIfFailed(-1);
+    //     }
 
-        D3D11_SHADER_VARIABLE_DESC variable_desc;
-        ThrowIfFailed(variable->GetDesc(&variable_desc));
+    //     D3D11_SHADER_VARIABLE_DESC variable_desc;
+    //     ThrowIfFailed(variable->GetDesc(&variable_desc));
 
-        prg->uniform_locations[i] = variable_desc.StartOffset;
-    }
+    //     prg->uniform_locations[i] = variable_desc.StartOffset;
+    // }
 
     return cb_size;
 }
@@ -222,15 +222,15 @@ static void gfx_d3d11_set_shader_uniforms(D3D11ShaderProgram *prg) {
     struct ColorCombiner *cc = &prg->cc;
 
     // CC sources
-    for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
-    for (int i = 0; i < 2; ++i) {
-        d3d.cb_data.ccs[cycle][i] = (
-            (cc->ccs[cycle][i][0] << 24) |
-            (cc->ccs[cycle][i][1] << 16) |
-            (cc->ccs[cycle][i][2] <<  8) |
-            (cc->ccs[cycle][i][3] <<  0)
-        );
-    }
+    // for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
+    // for (int i = 0; i < 2; ++i) {
+    //     d3d.cb_data.ccs[cycle][i] = (
+    //         (cc->ccs[cycle][i][0] << 24) |
+    //         (cc->ccs[cycle][i][1] << 16) |
+    //         (cc->ccs[cycle][i][2] <<  8) |
+    //         (cc->ccs[cycle][i][3] <<  0)
+    //     );
+    // }
 
     // CC features
     d3d.cb_data.ccf = 0;
@@ -246,7 +246,7 @@ static void gfx_d3d11_set_shader_uniforms(D3D11ShaderProgram *prg) {
 
     // Frame counter for noise effect
     if ((cc->use_alpha && cc->use_dither) || cc->use_noise) {
-        d3d.cb_data.noise_frame_count = (float) d3d.frame_count;
+        d3d.cb_data.noise_random_seed = d3d.frame_count;
     }
 
     // Lightmap
@@ -274,9 +274,9 @@ static void gfx_d3d11_set_texture_uniforms(D3D11ShaderProgram *prg, int tile) {
         const D3D11Texture *texture_data = &d3d.textures[texture_id];
         d3d.context->PSSetShaderResources(tile, 1, texture_data->resource_view.GetAddressOf());
         d3d.context->PSSetSamplers(tile, 1, texture_data->sampler_state.GetAddressOf());
-        d3d.cb_data.tex_properties[tile][0] = (float) texture_data->width;
-        d3d.cb_data.tex_properties[tile][1] = (float) texture_data->height;
-        d3d.cb_data.tex_properties[tile][2] = (float) texture_data->filter;
+        d3d.cb_data.tex_properties[tile].width = texture_data->width;
+        d3d.cb_data.tex_properties[tile].height = texture_data->height;
+        d3d.cb_data.tex_properties[tile].filter = texture_data->filter;
         d3d.cb_dirty = true;
     }
 }
@@ -318,16 +318,16 @@ static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, ShaderUnif
     D3D11_MAPPED_SUBRESOURCE ms;
     ThrowIfFailed(d3d.context->Map(d3d.cb.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
 
-    for (int i = 0; i < MAX_UNIFORMS; ++i) {
-        const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
-        for (size_t j = 0; j < uniform->count; ++j) {
-            memcpy(
-                (void *) (uintptr_t(ms.pData) + (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)),
-                (void *) (uintptr_t(uniforms) + (uniform->offset           + j * uniform->stride)),
-                uniform->stride
-            );
-        }
-    }
+    // for (int i = 0; i < MAX_UNIFORMS; ++i) {
+    //     const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
+    //     for (size_t j = 0; j < uniform->count; ++j) {
+    //         memcpy(
+    //             (void *) (uintptr_t(ms.pData) + (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)),
+    //             (void *) (uintptr_t(uniforms) + (uniform->offset           + j * uniform->stride)),
+    //             uniform->stride
+    //         );
+    //     }
+    // }
 
     d3d.context->Unmap(d3d.cb.Get(), 0);
 }
@@ -684,7 +684,7 @@ static void gfx_d3d11_set_sampler_parameters(int tile, uint8_t filter, uint32_t 
 
     D3D11Texture *texture_data = &d3d.textures[d3d.current_texture_ids[tile]];
     texture_data->filter = filter;
-    d3d.cb_data.tex_properties[tile][2] = (float) filter;
+    d3d.cb_data.tex_properties[tile].filter = filter;
     d3d.cb_dirty = true;
 
     texture_data->sampler_state.Reset();

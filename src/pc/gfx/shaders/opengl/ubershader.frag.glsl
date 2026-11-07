@@ -24,27 +24,32 @@ in vec4 vAmbient;
 in vec4 vFog;
 in vec2 vLightMap;
 
+// Uniforms (packed)
+uniform ivec4 uCCS[CC_CYCLES / 2];
+uniform ivec4 uFeatures;
+uniform ivec4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
+uniform vec4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
+
 // CC sources
-uniform ivec2 uCCS[CC_CYCLES];
+#define CCS(cycle, alpha) uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
 #define A UNPACK(ABCD, 24, 8)
 #define B UNPACK(ABCD, 16, 8)
 #define C UNPACK(ABCD,  8, 8)
 #define D UNPACK(ABCD,  0, 8)
 
 // CC features
-uniform int uCCF;
+#define uCCF uFeatures[0]
 #define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
 #define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
 
 // Textures
 uniform sampler2D uTextures[MAX_TEXTURES];
-uniform vec3 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
 
-// Other uniforms
-uniform float uNoiseFrameCount;
-uniform vec3  uLightMapColor;
-uniform int   uShaderFlags;
-uniform float uShaderFlagValues[SHADER_FLAG_MAX];
+// Other features
+#define uNoiseRandomSeed uFeatures[1]
+#define uLightMapColor   uFeatures[2]
+#define uShaderFlags     uFeatures[3]
+#define uShaderFlagValue(flag)  uShaderFlagValues[(flag) / 4][(flag) % 4]
 
 // Extended combiners
 struct ExtendedCombiner {
@@ -270,8 +275,8 @@ vec3 shader_effect_scanlines(in vec3 texel, in float value) {
 
 #define TEX_OFFSET(off) texture2D(tex, texCoord - (off) / texSize)
 
-vec4 filter_3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {
-    vec2 offset = fract(texCoord * texSize - vec2(0.5));
+vec4 filter_3point(in sampler2D tex, in vec2 texCoord, in ivec2 texSize) {
+    vec2 offset = fract(texCoord * vec2(texSize.x, texSize.y) - vec2(0.5));
     offset -= step(1.0, offset.x + offset.y);
     vec4 c0 = TEX_OFFSET(offset);
     vec4 c1 = TEX_OFFSET(vec2(offset.x - sign(offset.x), offset.y));
@@ -279,7 +284,7 @@ vec4 filter_3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {
     return c0 + abs(offset.x) * (c1 - c0) + abs(offset.y) * (c2 - c0);
 }
 
-vec4 sample_tex(in sampler2D tex, in vec2 uv, in vec3 texProperties) {
+vec4 sample_tex(in sampler2D tex, in vec2 uv, in ivec3 texProperties) {
     if (texProperties.z == FILTER_THREE_POINT) {
         return filter_3point(tex, uv, texProperties.xy);
     }
@@ -304,18 +309,23 @@ void main() {
     for (int i = 0; i < MAX_TEXTURES; ++i) {
         if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
             if (i == 1 && CCF_HAS_FLAG(LIGHT_MAP)) {
-                texColors[1] = sample_tex(uTextures[1], vLightMap, uTexProperties[1]);
-                texColors[0].rgb *= uLightMapColor.rgb;
+                vec3 lightMapColor = vec3(
+                    float(UNPACK(uLightMapColor, 24, 8)) / 255.0,
+                    float(UNPACK(uLightMapColor, 16, 8)) / 255.0,
+                    float(UNPACK(uLightMapColor,  8, 8)) / 255.0
+                );
+                texColors[0].rgb *= lightMapColor;
+                texColors[1] = sample_tex(uTextures[1], vLightMap, uTexProperties[1].rgb);
                 texColors[1].rgb = clamp(texColors[1].rgb * texColors[1].rgb + texColors[1].rgb, 0.0, 1.0);
             } else {
-                texColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i]);
+                texColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i].rgb);
             }
         }
     }
 
     // Noise
     if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(NOISE)) {
-        noise = vec4(random(floor(vec3(gl_FragCoord.xy, uNoiseFrameCount))));
+        noise = vec4(random(floor(vec3(gl_FragCoord.xy, float(uNoiseRandomSeed)))));
     }
 
     // Extended combiners
@@ -329,8 +339,8 @@ void main() {
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = uCCS[cycle].x;
-        int ABCD_a   = uCCS[cycle].y;
+        int ABCD_rgb = CCS(cycle, 0);
+        int ABCD_a   = CCS(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
         // if (!CCF_HAS_FLAG(USE_EXT_COLOR) && !CCF_HAS_FLAG(USE_EXT_ALPHA) && (ABCD_rgb == ABCD_a || !CCF_HAS_FLAG(USE_ALPHA))) {
@@ -360,7 +370,7 @@ void main() {
     if (CCF_HAS_FLAG(WORLD_GEOMETRY) && uShaderFlags != 0) {
         for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
             if (UNPACK(uShaderFlags, i, 1) != 0) {
-                float value = uShaderFlagValues[i];
+                float value = uShaderFlagValue(i);
                 switch (i) {
                     case SHADER_FLAG_HUE:           texel.rgb = shader_effect_hue(texel.rgb, value); break;
                     case SHADER_FLAG_SATURATION:    texel.rgb = shader_effect_saturation(texel.rgb, value); break;

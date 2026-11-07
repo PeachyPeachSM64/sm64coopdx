@@ -4,28 +4,28 @@
 #include "gfx_cc.h"
 #include "gfx_pc.h"
 
-//
-// Attibutes
-//
-
-enum VertexAttribType {
-    ATTRIBUTE_TYPE_INT8,
-    ATTRIBUTE_TYPE_UINT8,
-    ATTRIBUTE_TYPE_INT16,
-    ATTRIBUTE_TYPE_UINT16,
-    ATTRIBUTE_TYPE_INT32,
-    ATTRIBUTE_TYPE_UINT32,
-    ATTRIBUTE_TYPE_FLOAT,
+enum ShaderDataType {
+    SHADER_DATA_TYPE_INT8,
+    SHADER_DATA_TYPE_UINT8,
+    SHADER_DATA_TYPE_INT16,
+    SHADER_DATA_TYPE_UINT16,
+    SHADER_DATA_TYPE_INT32,
+    SHADER_DATA_TYPE_UINT32,
+    SHADER_DATA_TYPE_FLOAT,
 };
 
-struct VertexAttribProperties {
+struct ShaderDataProperties {
     const char *name;
-    enum VertexAttribType type;
+    enum ShaderDataType type;
     size_t offset;
     size_t count;
     size_t components;
     size_t stride;
 };
+
+//
+// Attibutes
+//
 
 struct VertexAttribs {
     float pos[4];
@@ -41,7 +41,7 @@ struct VertexAttribs {
     uint16_t light_map[2];
 };
 
-const struct VertexAttribProperties *gfx_shaders_get_attrib_properties(size_t attrib);
+const struct ShaderDataProperties *gfx_shaders_get_attrib_properties(size_t attrib);
 size_t gfx_shaders_get_num_attribs();
 void *gfx_shaders_get_attribs_data(const struct VertexAttribs *attribs, size_t count);
 size_t gfx_shaders_get_attribs_stride();
@@ -50,35 +50,25 @@ size_t gfx_shaders_get_attribs_stride();
 // Uniforms
 //
 
-enum ShaderUniform {
-    UNIFORM_CCS,
-    UNIFORM_CCF,
-    UNIFORM_TEX_PROPERTIES,
-    UNIFORM_NOISE_FRAME_COUNT,
-    UNIFORM_LIGHT_MAP_COLOR,
-    UNIFORM_SHADER_FLAGS,
-    UNIFORM_SHADER_FLAG_VALUES,
-    MAX_UNIFORMS,
-};
-
-struct ShaderUniformProperties {
-    const char *name;
-    size_t offset;
-    size_t count;
-    size_t components;
-    size_t stride;
-};
-
 struct ShaderUniforms {
-    int ccs[CC_CYCLES][2];
-    int ccf;
-    float tex_properties[MAX_TEXTURES][3];
-    float noise_frame_count;
-    float light_map_color[3];
-    int shader_flags;
+    uint8_t ccs[CC_CYCLES][2][CC_COMPONENTS];
+    uint32_t ccf;
+    struct {
+        uint32_t width;
+        uint32_t height;
+        uint8_t filter;
+    } tex_properties[MAX_TEXTURES];
+    uint32_t noise_random_seed;
+    uint8_t light_map_color[3];
+    uint32_t shader_flags;
     float shader_flag_values[SHADER_FLAG_MAX];
+    bool dirty;
 };
 
-const struct ShaderUniformProperties *gfx_shaders_get_uniform_properties(enum ShaderUniform uniform);
+const struct ShaderDataProperties *gfx_shaders_get_uniform_properties(size_t uniform);
+size_t gfx_shaders_get_num_uniforms();
+void *gfx_shaders_get_uniforms_data(const struct ShaderUniforms *uniforms);
+size_t gfx_shaders_get_uniforms_stride();
+void gfx_shaders_update_uniforms(struct ShaderUniforms *uniforms, const struct ColorCombiner *cc, const struct TextureProperties *texture, uint8_t tile);
 
 #endif

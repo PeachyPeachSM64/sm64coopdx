@@ -187,4 +187,8 @@
 // Calls a macro with its arguments
 #define CALL_MACRO(MACRO, ...) MACRO(__VA_ARGS__)
 
+// Utilities for switch case with two u32 values
+#define switch2(a, b) switch ((((u64) (a)) << 32llu) | ((u64) (b)))
+#define case2(a, b)     case ((((u64) (a)) << 32llu) | ((u64) (b)))
+
 #endif // MACROS_H

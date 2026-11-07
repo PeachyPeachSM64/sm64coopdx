@@ -84,6 +84,12 @@ struct TextureTile {
     uint8_t palette;
 };
 
+struct TextureProperties {
+    uint32_t width;
+    uint32_t height;
+    uint8_t filter;
+};
+
 struct TextureHashmapNode {
     struct TextureHashmapNode *next;
     const void *texture_addr;

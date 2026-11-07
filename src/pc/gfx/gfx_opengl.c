@@ -35,8 +35,7 @@ struct GLShaderProgram {
 
 struct GLTexture {
     GLuint gltex;
-    GLfloat size[2];
-    uint8_t filter;
+    struct TextureProperties properties;
 };
 
 struct GLExtendedCombiner {
@@ -61,24 +60,23 @@ static int num_textures = 0;
 static struct GLTexture *tex_cache = NULL;
 
 static struct GLShaderProgram opengl_prg = {0};
+static struct ShaderUniforms opengl_uniforms = {0};
 static struct GLTexture *opengl_tex[MAX_TEXTURES];
 static int opengl_curtex = 0;
 
-static uint32_t frame_count;
+static const GLenum GL_TYPES[] = {
+    [SHADER_DATA_TYPE_INT8]   = GL_BYTE,
+    [SHADER_DATA_TYPE_UINT8]  = GL_UNSIGNED_BYTE,
+    [SHADER_DATA_TYPE_INT16]  = GL_SHORT,
+    [SHADER_DATA_TYPE_UINT16] = GL_UNSIGNED_SHORT,
+    [SHADER_DATA_TYPE_INT32]  = GL_INT,
+    [SHADER_DATA_TYPE_UINT32] = GL_UNSIGNED_INT,
+    [SHADER_DATA_TYPE_FLOAT]  = GL_FLOAT,
+};
 
   ////////////////
  // Attributes //
 ////////////////
-
-static const GLenum GL_ATTRIB_TYPES[] = {
-    [ATTRIBUTE_TYPE_INT8]   = GL_BYTE,
-    [ATTRIBUTE_TYPE_UINT8]  = GL_UNSIGNED_BYTE,
-    [ATTRIBUTE_TYPE_INT16]  = GL_SHORT,
-    [ATTRIBUTE_TYPE_UINT16] = GL_UNSIGNED_SHORT,
-    [ATTRIBUTE_TYPE_INT32]  = GL_INT,
-    [ATTRIBUTE_TYPE_UINT32] = GL_UNSIGNED_INT,
-    [ATTRIBUTE_TYPE_FLOAT]  = GL_FLOAT,
-};
 
 static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) {
     const size_t num_attribs = gfx_shaders_get_num_attribs();
@@ -88,7 +86,7 @@ static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) 
     }
 
     for (size_t i = 0; i < num_attribs; ++i) {
-        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
+        const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(i);
         prg->attrib_locations[i] = glGetAttribLocation(prg->program, attrib->name);
         if (prg->attrib_locations[i] == -1) {
             sys_fatal("Error occurred when trying to locate vertex attributes:\nCannot locate attribute \"%s\" in vertex shader", attrib->name);
@@ -100,10 +98,10 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
     const size_t num_attribs = gfx_shaders_get_num_attribs();
     const size_t stride = gfx_shaders_get_attribs_stride();
     for (size_t i = 0; i < num_attribs; ++i) {
-        const struct VertexAttribProperties *attrib = gfx_shaders_get_attrib_properties(i);
+        const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(i);
         for (size_t j = 0; j < attrib->count; ++j) {
             int index = prg->attrib_locations[i] + j;
-            const GLenum type = GL_ATTRIB_TYPES[attrib->type];
+            const GLenum type = GL_TYPES[attrib->type];
             glEnableVertexAttribArray(index);
             if (type == GL_FLOAT) {
                 glVertexAttribPointer(index, attrib->components, type, false, stride, (const void *) (attrib->offset + j * attrib->stride));
@@ -119,14 +117,14 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
 //////////////
 
 static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
-
-    prg->uniform_locations = malloc(sizeof(*prg->uniform_locations) * MAX_UNIFORMS);
+    const size_t num_uniforms = gfx_shaders_get_num_uniforms();
+    prg->uniform_locations = malloc(sizeof(*prg->uniform_locations) * num_uniforms);
     if (!prg->uniform_locations) {
-        sys_fatal("Error occurred when trying to locate shader uniforms:\nCannot create uniforms locations");
+        sys_fatal("Error occurred when trying to locate shader uniforms:\nCannot create uniform locations");
     }
 
-    for (int i = 0; i < MAX_UNIFORMS; ++i) {
-        const struct ShaderUniformProperties *uniform = gfx_shaders_get_uniform_properties(i);
+    for (size_t i = 0; i < num_uniforms; ++i) {
+        const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
         prg->uniform_locations[i] = glGetUniformLocation(prg->program, uniform->name);
     }
 
@@ -164,71 +162,31 @@ static void gfx_opengl_update_extended_combiner_uniform(struct GLShaderProgram *
     prg->ec[index] = ec;
 }
 
-static void gfx_opengl_set_shader_uniforms(struct GLShaderProgram *prg) {
-
-    // CC sources
-    int ccs[CC_CYCLES][2];
-    for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
-    for (int i = 0; i < 2; ++i) {
-        ccs[cycle][i] = (
-            (prg->cc.ccs[cycle][i][0] << 24) |
-            (prg->cc.ccs[cycle][i][1] << 16) |
-            (prg->cc.ccs[cycle][i][2] <<  8) |
-            (prg->cc.ccs[cycle][i][3] <<  0)
-        );
-    }
-    glUniform2iv(prg->uniform_locations[UNIFORM_CCS], CC_CYCLES, (const int *) ccs);
-
-    // CC features
-    int ccf = 0;
-    ccf |= (prg->cc.use_noise << CCF_NOISE);
-    ccf |= (prg->cc.use_alpha << CCF_USE_ALPHA);
-    ccf |= (prg->cc.use_fog << CCF_USE_FOG);
-    ccf |= (prg->cc.texture_edge << CCF_TEX_EDGE);
-    ccf |= (prg->cc.use_dither << CCF_USE_DITHER);
-    ccf |= (prg->cc.use_2cycle << CCF_USE_2CYCLE);
-    ccf |= (prg->cc.light_map << CCF_LIGHT_MAP);
-    ccf |= (prg->cc.world_geometry << CCF_WORLD_GEOMETRY);
-    ccf |= (prg->cc.use_ext_color << CCF_USE_EXT_COLOR);
-    ccf |= (prg->cc.use_ext_alpha << CCF_USE_EXT_ALPHA);
-    ccf |= (prg->cc.ext_color_alpha_same << CCF_EXT_COLOR_ALPHA_SAME);
-    ccf |= (prg->cc.used_textures << CCF_USED_TEXTURE);
-    glUniform1i(prg->uniform_locations[UNIFORM_CCF], ccf);
-
-    // Frame counter for noise effect
-    if ((prg->cc.use_alpha && prg->cc.use_dither) || prg->cc.use_noise) {
-        glUniform1f(prg->uniform_locations[UNIFORM_NOISE_FRAME_COUNT], (float) frame_count);
-    }
-
-    // Lightmap
-    if (prg->cc.light_map) {
-        glUniform3f(prg->uniform_locations[UNIFORM_LIGHT_MAP_COLOR], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
-    }
-
-    // Global shader effects
-    if (prg->cc.world_geometry) {
-        int shader_flags = 0;
-        for (int i = 0; i < SHADER_FLAG_MAX; ++i) { shader_flags |= (gShaderFlags[i] << i); }
-        glUniform1i(prg->uniform_locations[UNIFORM_SHADER_FLAGS], shader_flags);
-        glUniform1fv(prg->uniform_locations[UNIFORM_SHADER_FLAG_VALUES], SHADER_FLAG_MAX, gShaderFlagValues);
-    }
-
-    // Extended combiners
-    // if (prg->cc.use_ext_color) {
-    //     gfx_opengl_update_extended_combiner_uniform(prg, 0);
-    // }
-    // if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
-    //     gfx_opengl_update_extended_combiner_uniform(prg, 1);
-    // }
-}
-
 static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
     if ((prg->cc.used_textures & USED_TEXTURE(tile)) && opengl_tex[tile]) {
-        glUniform3f(prg->uniform_locations[UNIFORM_TEX_PROPERTIES],
-            opengl_tex[tile]->size[0],
-            opengl_tex[tile]->size[1],
-            opengl_tex[tile]->filter
-        );
+        gfx_shaders_update_uniforms(&opengl_uniforms, NULL, &opengl_tex[tile]->properties, tile);
+    }
+}
+
+static void gfx_opengl_upload_shader_uniforms(struct GLShaderProgram *prg, const struct ShaderUniforms *uniforms) {
+    void *data = gfx_shaders_get_uniforms_data(uniforms);
+    if (data) {
+        const size_t num_uniforms = gfx_shaders_get_num_uniforms();
+        for (size_t i = 0; i < num_uniforms; ++i) {
+            const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
+            GLint location = prg->uniform_locations[i];
+            switch2 (uniform->type, uniform->components) {
+                case2 (SHADER_DATA_TYPE_INT32, 1): glUniform1iv(location, uniform->count, (int *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_INT32, 2): glUniform2iv(location, uniform->count, (int *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_INT32, 3): glUniform3iv(location, uniform->count, (int *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_INT32, 4): glUniform4iv(location, uniform->count, (int *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_FLOAT, 1): glUniform1fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_FLOAT, 2): glUniform2fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_FLOAT, 3): glUniform3fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
+                case2 (SHADER_DATA_TYPE_FLOAT, 4): glUniform4fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
+                default: sys_fatal("not implemented");
+            }
+        }
     }
 }
 
@@ -358,10 +316,18 @@ static bool gfx_opengl_update_cc(struct ColorCombiner *cc) {
 }
 
 static void gfx_opengl_update_uniforms(void) {
-    gfx_opengl_set_shader_uniforms(&opengl_prg);
+    gfx_shaders_update_uniforms(&opengl_uniforms, &opengl_prg.cc, NULL, 0);
     for (int t = 0; t < MAX_TEXTURES; t++) {
         gfx_opengl_set_texture_uniforms(&opengl_prg, t);
     }
+
+    // Extended combiners
+    // if (prg->cc.use_ext_color) {
+    //     gfx_opengl_update_extended_combiner_uniform(prg, 0);
+    // }
+    // if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
+    //     gfx_opengl_update_extended_combiner_uniform(prg, 1);
+    // }
 }
 
 static GLuint gfx_opengl_new_texture(void) {
@@ -388,8 +354,8 @@ static void gfx_opengl_select_texture(int tile, GLuint texture_id) {
 static void gfx_opengl_upload_texture(const uint8_t *rgba32_buf, int width, int height) {
     if (width <= 0 || height <= 0) { sys_fatal("Texture dimensions are invalid!"); }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba32_buf);
-    opengl_tex[opengl_curtex]->size[0] = width;
-    opengl_tex[opengl_curtex]->size[1] = height;
+    opengl_tex[opengl_curtex]->properties.width = width;
+    opengl_tex[opengl_curtex]->properties.height = height;
 }
 
 static uint32_t gfx_cm_to_opengl(uint32_t val) {
@@ -407,7 +373,7 @@ static void gfx_opengl_set_sampler_parameters(int tile, uint8_t filter, uint32_t
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gfx_cm_to_opengl(cmt));
     opengl_curtex = tile;
     if (opengl_tex[tile]) {
-        opengl_tex[tile]->filter = filter;
+        opengl_tex[tile]->properties.filter = filter;
         gfx_opengl_set_texture_uniforms(&opengl_prg, tile);
     }
 }
@@ -452,11 +418,19 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
 
 static void gfx_opengl_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
 
-    void *data = gfx_shaders_get_attribs_data(buf_vbo, buf_vbo_len);
-    size_t stride = gfx_shaders_get_attribs_stride();
+    // upload uniforms if they changed since last draw
+    if (opengl_uniforms.dirty) {
+        gfx_opengl_upload_shader_uniforms(&opengl_prg, &opengl_uniforms);
+        opengl_uniforms.dirty = false;
+    }
 
-    glBufferData(GL_ARRAY_BUFFER, stride * buf_vbo_len, data, GL_STREAM_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
+    // set vertex buffer and draw triangles
+    void *data = gfx_shaders_get_attribs_data(buf_vbo, buf_vbo_len);
+    if (data) {
+        size_t stride = gfx_shaders_get_attribs_stride();
+        glBufferData(GL_ARRAY_BUFFER, stride * buf_vbo_len, data, GL_STREAM_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
+    }
 }
 
 static inline bool gl_version_is_supported(int major, int minor, bool is_es) {
@@ -550,8 +524,6 @@ static void gfx_opengl_on_resize(void) {
 }
 
 static void gfx_opengl_start_frame(void) {
-    frame_count++;
-
     // Reset color combiner to force a uniforms update on next update_cc
     memset(&opengl_prg.cc, 0, sizeof(opengl_prg.cc));
 
