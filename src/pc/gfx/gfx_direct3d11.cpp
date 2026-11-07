@@ -233,16 +233,16 @@ static void gfx_d3d11_set_shader_uniforms(D3D11ShaderProgram *prg) {
     // }
 
     // CC features
-    d3d.cb_data.ccf = 0;
-    d3d.cb_data.ccf |= (cc->use_noise << CCF_NOISE);
-    d3d.cb_data.ccf |= (cc->use_alpha << CCF_USE_ALPHA);
-    d3d.cb_data.ccf |= (cc->use_fog << CCF_USE_FOG);
-    d3d.cb_data.ccf |= (cc->texture_edge << CCF_TEX_EDGE);
-    d3d.cb_data.ccf |= (cc->use_dither << CCF_USE_DITHER);
-    d3d.cb_data.ccf |= (cc->use_2cycle << CCF_USE_2CYCLE);
-    d3d.cb_data.ccf |= (cc->light_map << CCF_LIGHT_MAP);
-    d3d.cb_data.ccf |= (cc->world_geometry << CCF_WORLD_GEOMETRY);
-    d3d.cb_data.ccf |= (cc->used_textures << CCF_USED_TEXTURE);
+    // d3d.cb_data.ccf = 0;
+    // d3d.cb_data.ccf |= (cc->use_noise << CCF_USE_NOISE);
+    // d3d.cb_data.ccf |= (cc->use_alpha << CCF_USE_ALPHA);
+    // d3d.cb_data.ccf |= (cc->use_fog << CCF_USE_FOG);
+    // d3d.cb_data.ccf |= (cc->texture_edge << CCF_TEX_EDGE);
+    // d3d.cb_data.ccf |= (cc->use_dither << CCF_USE_DITHER);
+    // d3d.cb_data.ccf |= (cc->use_2cycle << CCF_USE_2CYCLE);
+    // d3d.cb_data.ccf |= (cc->light_map << CCF_LIGHT_MAP);
+    // d3d.cb_data.ccf |= (cc->world_geometry << CCF_WORLD_GEOMETRY);
+    // d3d.cb_data.ccf |= (cc->used_textures << CCF_USED_TEXTURE);
 
     // Frame counter for noise effect
     if ((cc->use_alpha && cc->use_dither) || cc->use_noise) {
@@ -337,8 +337,6 @@ static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, ShaderUnif
 /////////////
 
 static const char D3D11_UBERSHADER[] = {
-#embed "gfx_cc.inl"
-,
 #embed "shaders/direct3d11/ubershader.vs.hlsl"
 ,
 #embed "shaders/direct3d11/ubershader.ps.hlsl"

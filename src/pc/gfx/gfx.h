@@ -4,7 +4,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include "gfx_cc.inl"
+#include "gfx_cc_sources.h"
 
 #define SUPPORT_CHECK(x) assert(x)
 

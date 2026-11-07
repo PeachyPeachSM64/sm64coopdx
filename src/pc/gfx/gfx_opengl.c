@@ -39,13 +39,12 @@ struct GLTexture {
 };
 
 struct GLExtendedCombiner {
-    int ops[CC_EXT_MAX_OPS / sizeof(int)];
-    int num_ops[4];
+    int ops[CC_EXT_MAX_OPS / 16][4];
     float constants[CC_EXT_MAX_CONSTANTS][4];
 };
 
 // Make sure data is aligned to 16 bytes boundaries
-static_assert(offsetof(struct GLExtendedCombiner, num_ops) % 16 == 0);
+static_assert(offsetof(struct GLExtendedCombiner, ops) % 16 == 0);
 static_assert(offsetof(struct GLExtendedCombiner, constants) % 16 == 0);
 static_assert(sizeof(struct GLExtendedCombiner) % 16 == 0);
 
@@ -142,22 +141,22 @@ static void gfx_opengl_update_extended_combiner_uniform(struct GLShaderProgram *
     }
 
     // Convert extended combiner to a GPU friendly struct
-    struct GLExtendedCombiner glec = {0};
-    glec.num_ops[0] = ec->num_ops;
-    // glec.num_constants[0] = ec->num_constants;
-    for (uint32_t i = 0; i < ec->num_ops; ++i) {
-        glec.ops[i / 4] |= (ec->ops[i] << (8 * (i % 4)));
-    }
-    memcpy(glec.constants, ec->constants, sizeof(*ec->constants) * ec->num_constants);
+    // struct GLExtendedCombiner glec = {0};
+    // glec.num_ops[0] = ec->num_ops;
+    // // glec.num_constants[0] = ec->num_constants;
+    // for (uint32_t i = 0; i < ec->num_ops; ++i) {
+    //     glec.ops[i / 4] |= (ec->ops[i] << (8 * (i % 4)));
+    // }
+    // memcpy(glec.constants, ec->constants, sizeof(*ec->constants) * ec->num_constants);
 
-    // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
-    // GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY); 
-    // memcpy(p, &glec, sizeof(glec));
-    // glUnmapBuffer(GL_UNIFORM_BUFFER);
+    // // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
+    // // GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY); 
+    // // memcpy(p, &glec, sizeof(glec));
+    // // glUnmapBuffer(GL_UNIFORM_BUFFER);
 
 
-    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
+    // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
+    // glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
 
     prg->ec[index] = ec;
 }
@@ -197,17 +196,11 @@ static void gfx_opengl_upload_shader_uniforms(struct GLShaderProgram *prg, const
 static const char GL_UBERSHADER_VERSION[] = "#version 330\n";
 
 static const char GL_UBERSHADER_VERT[] = {
-#embed "gfx_cc.inl"
-,
 #embed "shaders/opengl/ubershader.vert.glsl"
 ,0
 };
 
 static const char GL_UBERSHADER_FRAG[] = {
-#embed "gfx_cc.inl"
-,
-#embed "gfx_cc_ext.inl"
-,
 #embed "shaders/opengl/ubershader.frag.glsl"
 ,0
 };
@@ -215,14 +208,25 @@ static const char GL_UBERSHADER_FRAG[] = {
 static void gfx_opengl_load_ubershader(void) {
     GLint success;
 
+    const char *cc_shader_source = gfx_cc_get_shader_source();
+    size_t cc_shader_source_len = strlen(cc_shader_source);
+
     const GLchar *vertex_sources[] = {
         GL_UBERSHADER_VERSION,
+        cc_shader_source,
         GL_UBERSHADER_VERT,
     };
     const GLint vertex_lengths[] = {
         sizeof(GL_UBERSHADER_VERSION) - 1,
+        cc_shader_source_len,
         sizeof(GL_UBERSHADER_VERT) - 1,
     };
+
+
+    printf("%s\n", GL_UBERSHADER_VERSION);
+    printf("%s\n", cc_shader_source);
+    printf("%s\n", GL_UBERSHADER_VERT);
+
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, ARRAY_COUNT(vertex_sources), vertex_sources, vertex_lengths);
@@ -241,11 +245,13 @@ static void gfx_opengl_load_ubershader(void) {
     // const char *cc_ext_shader_source = gfx_cc_ext_get_shader_source();
     const GLchar *fragment_sources[] = {
         GL_UBERSHADER_VERSION,
+        cc_shader_source,
         // cc_ext_shader_source,
         GL_UBERSHADER_FRAG,
     };
     const GLint fragment_lengths[] = {
         sizeof(GL_UBERSHADER_VERSION) - 1,
+        cc_shader_source_len,
         // strlen(cc_ext_shader_source),
         sizeof(GL_UBERSHADER_FRAG) - 1,
     };
@@ -254,6 +260,10 @@ static void gfx_opengl_load_ubershader(void) {
     // printf("%s\n", cc_ext_shader_source);
     // exit(0);
 
+    printf("%s\n", GL_UBERSHADER_VERSION);
+    printf("%s\n", cc_shader_source);
+    printf("%s\n", GL_UBERSHADER_FRAG);
+    // exit(0);
 
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);

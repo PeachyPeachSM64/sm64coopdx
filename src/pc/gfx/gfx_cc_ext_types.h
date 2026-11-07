@@ -15,6 +15,17 @@
 #endif
 
 //
+// Dot params
+//
+
+#define CC_EXT_DOT_PARAM_0  0
+#define CC_EXT_DOT_PARAM_1  1
+#define CC_EXT_DOT_PARAM_R  2
+#define CC_EXT_DOT_PARAM_G  3
+#define CC_EXT_DOT_PARAM_B  4
+#define CC_EXT_DOT_PARAM_A  5
+
+//
 // Parsed token
 //
 

@@ -30,13 +30,12 @@ struct ShaderDataProperties {
 struct VertexAttribs {
     float pos[4];
     float tex_coords[MAX_TEXTURES][2];
-    struct {
-        uint8_t primitive[4];
-        uint8_t shade[4];
-        uint8_t environment[4];
-        uint8_t ambient[3];
-        uint8_t lod;
-    } inputs;
+    uint8_t primitive[4];
+    uint8_t shade[4];
+    uint8_t environment[4];
+    uint8_t ambient[3];
+    uint8_t lod;
+    uint8_t lights[MAX_ACTIVE_LIGHTS][4];
     uint8_t fog[4];
     uint16_t light_map[2];
 };

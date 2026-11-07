@@ -3,9 +3,12 @@
 
 #include <stdint.h>
 
-#include "gfx_cc.inl"
-#include "gfx_cc_ext.inl"
-#include "macros.h"
+#include "gfx_cc_sources.h"
+
+#define CC_EXT_MAX_OPS          128
+#define CC_EXT_MAX_CONSTANTS    64
+#define CC_EXT_MAX_REGISTERS    16
+#define CC_EXT_STACK_SIZE       64
 
 enum {
 
@@ -33,6 +36,9 @@ enum {
 // Constants
     CC_EXT_CONST_FIRST,
     CC_EXT_CONST_LAST = (CC_EXT_CONST_FIRST + CC_EXT_MAX_CONSTANTS - 1),
+
+// Terminator
+    CC_EXT_TERM = 0xFF, // TODO
 
 // Special ops for parsing
     CC_EXT_SPECIAL = 0xFD,

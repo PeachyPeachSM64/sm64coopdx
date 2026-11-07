@@ -753,9 +753,9 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
             if (!gFullbright) {
                 d->num_lights = num_active_lights;
                 for (uint8_t i = 0; i < num_active_lights; i++) {
-                    // uint8_t light_r = rsp.current_lights[i].col[0] * globalLightCached[0][0];
-                    // uint8_t light_g = rsp.current_lights[i].col[1] * globalLightCached[0][1];
-                    // uint8_t light_b = rsp.current_lights[i].col[2] * globalLightCached[0][2];
+                    uint8_t light_r = rsp.current_lights[i].col[0] * globalLightCached[0][0];
+                    uint8_t light_g = rsp.current_lights[i].col[1] * globalLightCached[0][1];
+                    uint8_t light_b = rsp.current_lights[i].col[2] * globalLightCached[0][2];
 
                     float intensity = 0;
                     intensity += nx * rsp.current_lights_coeffs[i][0];
@@ -764,15 +764,15 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
 
                     intensity /= 127.0f;
                     if (intensity > 0.0f) {
-                        r += intensity * rsp.current_lights[i].col[0] * globalLightCached[0][0];
-                        g += intensity * rsp.current_lights[i].col[1] * globalLightCached[0][1];
-                        b += intensity * rsp.current_lights[i].col[2] * globalLightCached[0][2];
+                        r += intensity * light_r;
+                        g += intensity * light_g;
+                        b += intensity * light_b;
                     }
 
-                    // d->lights[i].r = light_r;
-                    // d->lights[i].g = light_g;
-                    // d->lights[i].b = light_b;
-                    // d->lights[i].a = (uint8_t) (255.f * clamp(intensity, 0.f, 1.f));
+                    d->lights[i].r = light_r;
+                    d->lights[i].g = light_g;
+                    d->lights[i].b = light_b;
+                    d->lights[i].a = (uint8_t) (255.f * clamp(intensity, 0.f, 1.f));
                 }
             } else {
                 d->num_lights = 0;
@@ -1147,51 +1147,51 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
 
         // Primitive
         if (cc->shader_inputs & SHADER_INPUT_PRIMITIVE) {
-            attribs->inputs.primitive[0] = rdp.prim_color.r;
-            attribs->inputs.primitive[1] = rdp.prim_color.g;
-            attribs->inputs.primitive[2] = rdp.prim_color.b;
-            attribs->inputs.primitive[3] = rdp.prim_color.a;
+            attribs->primitive[0] = rdp.prim_color.r;
+            attribs->primitive[1] = rdp.prim_color.g;
+            attribs->primitive[2] = rdp.prim_color.b;
+            attribs->primitive[3] = rdp.prim_color.a;
         }
 
         // Shade
         if (cc->shader_inputs & SHADER_INPUT_SHADE) {
-            attribs->inputs.shade[0] = vtx->color.r;
-            attribs->inputs.shade[1] = vtx->color.g;
-            attribs->inputs.shade[2] = vtx->color.b;
-            attribs->inputs.shade[3] = vtx->color.a;
+            attribs->shade[0] = vtx->color.r;
+            attribs->shade[1] = vtx->color.g;
+            attribs->shade[2] = vtx->color.b;
+            attribs->shade[3] = vtx->color.a;
         }
 
         // Environment
         if (cc->shader_inputs & SHADER_INPUT_ENVIRONMENT) {
-            attribs->inputs.environment[0] = rdp.env_color.r;
-            attribs->inputs.environment[1] = rdp.env_color.g;
-            attribs->inputs.environment[2] = rdp.env_color.b;
-            attribs->inputs.environment[3] = rdp.env_color.a;
+            attribs->environment[0] = rdp.env_color.r;
+            attribs->environment[1] = rdp.env_color.g;
+            attribs->environment[2] = rdp.env_color.b;
+            attribs->environment[3] = rdp.env_color.a;
         }
 
         // LOD
         if (cc->shader_inputs & SHADER_INPUT_LOD) {
             float distance_frac = clamp((v1->w - 3000.0f) / 3000.0f, 0.0f, 1.0f);
             uint8_t lod_color = distance_frac * 255.0f;
-            attribs->inputs.lod = lod_color;
+            attribs->lod = lod_color;
         }
 
         // Ambient
         if (cc->shader_inputs & SHADER_INPUT_AMBIENT) {
-            attribs->inputs.ambient[0] = vtx->ambient.r;
-            attribs->inputs.ambient[1] = vtx->ambient.g;
-            attribs->inputs.ambient[2] = vtx->ambient.b;
+            attribs->ambient[0] = vtx->ambient.r;
+            attribs->ambient[1] = vtx->ambient.g;
+            attribs->ambient[2] = vtx->ambient.b;
         }
 
         // Lights
-        // if (cc->shader_inputs & SHADER_INPUT_LIGHTS) {
-        //     for (uint8_t i = 0; i < vtx->num_lights; ++i) {
-        //         attribs->lights[i][0] = vtx->lights[i].r;
-        //         attribs->lights[i][1] = vtx->lights[i].g;
-        //         attribs->lights[i][2] = vtx->lights[i].b;
-        //         attribs->lights[i][3] = vtx->lights[i].a;
-        //     }
-        // }
+        if (cc->shader_inputs & SHADER_INPUT_LIGHTS) {
+            for (uint8_t i = 0; i < vtx->num_lights; ++i) {
+                attribs->lights[i][0] = vtx->lights[i].r;
+                attribs->lights[i][1] = vtx->lights[i].g;
+                attribs->lights[i][2] = vtx->lights[i].b;
+                attribs->lights[i][3] = vtx->lights[i].a;
+            }
+        }
 
         // Fog
         if (cc->use_fog) {
@@ -1204,10 +1204,10 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             attribs->fog[3] = vtx->fog_z;
 
             // Fog has 100% shade alpha, all inputs for light map
-            attribs->inputs.shade[3] = 0xFF;
+            attribs->shade[3] = 0xFF;
             if (cc->light_map) {
-                attribs->inputs.primitive[3] = 0xFF;
-                attribs->inputs.environment[3] = 0xFF;
+                attribs->primitive[3] = 0xFF;
+                attribs->environment[3] = 0xFF;
             }
         }
 
@@ -2343,15 +2343,15 @@ static void gfx_dp_set_combine_ext(uint8_t type, uintptr_t w0, uintptr_t w1) {
     switch (type) {
         case G_SETCOMBINE_COLOR: {
             gfx_cc_generate_from_sources(&rdp.color_combiner, false,
-                _SHIFTR(w0, 15, 5), _SHIFTR(w0, 10, 5), _SHIFTR(w0, 5, 5), _SHIFTR(w0, 0, 5),
-                _SHIFTR(w1, 15, 5), _SHIFTR(w1, 10, 5), _SHIFTR(w1, 5, 5), _SHIFTR(w1, 0, 5)
+                _SHIFTR(w0, 12, 6), _SHIFTR(w0,  6, 6), _SHIFTR(w0, 0, 6), _SHIFTR(w1, 24, 6),
+                _SHIFTR(w1, 18, 6), _SHIFTR(w1, 12, 6), _SHIFTR(w1, 6, 6), _SHIFTR(w1,  0, 6)
             );
         } break;
 
         case G_SETCOMBINE_ALPHA: {
             gfx_cc_generate_from_sources(&rdp.color_combiner, true,
-                _SHIFTR(w0, 15, 5), _SHIFTR(w0, 10, 5), _SHIFTR(w0, 5, 5), _SHIFTR(w0, 0, 5),
-                _SHIFTR(w1, 15, 5), _SHIFTR(w1, 10, 5), _SHIFTR(w1, 5, 5), _SHIFTR(w1, 0, 5)
+                _SHIFTR(w0, 12, 6), _SHIFTR(w0,  6, 6), _SHIFTR(w0, 0, 6), _SHIFTR(w1, 24, 6),
+                _SHIFTR(w1, 18, 6), _SHIFTR(w1, 12, 6), _SHIFTR(w1, 6, 6), _SHIFTR(w1,  0, 6)
             );
         } break;
 

@@ -192,50 +192,50 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
     cc->features = 0;
 
     // Enable extended combiners
-    cc->use_ext_color = cc->ec[0] != NULL;
-    cc->use_ext_alpha = cc->ec[1] != NULL;
-    cc->ext_color_alpha_same = (cc->use_ext_color && cc->use_ext_alpha && memcmp(cc->ec[0], cc->ec[1], sizeof(struct ExtendedCombiner)) == 0);
-    for (int i = 0; i < (cc->ext_color_alpha_same ? 1 : 2); ++i) {
-        const struct ExtendedCombiner *ec = cc->ec[i];
-        if (ec != NULL) {
-            for (uint32_t j = 0; j < ec->num_ops; ++j) {
-                uint8_t op = ec->ops[j];
-                switch (op) {
-                    case CC_EXT_NOISE:
-                        cc->use_noise = TRUE;
-                        break;
-                    case CC_EXT_PRIM:
-                    case CC_EXT_PRIMA:
-                        cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
-                        break;
-                    case CC_EXT_SHADE:
-                    case CC_EXT_SHADEA:
-                        cc->shader_inputs |= SHADER_INPUT_SHADE;
-                        break;
-                    case CC_EXT_ENV:
-                    case CC_EXT_ENVA:
-                        cc->shader_inputs |= SHADER_INPUT_ENVIRONMENT;
-                        break;
-                    case CC_EXT_LOD:
-                        cc->shader_inputs |= SHADER_INPUT_LOD;
-                        break;
-                    case CC_EXT_AMBIENT:
-                        cc->shader_inputs |= SHADER_INPUT_AMBIENT;
-                        break;
-                    default:
-                        // if (op >= CC_EXT_LIGHT0 && op < CC_EXT_TEXEL0) {
-                        //     cc->shader_inputs |= SHADER_INPUT_LIGHTS;
-                        //     break;
-                        // }
-                        if (op >= CC_EXT_TEXEL0 && op < CC_EXT_VALUE_COUNT) {
-                            cc->used_textures |= USED_TEXTURE((op - CC_EXT_TEXEL0) / 2);
-                            break;
-                        }
-                        break;
-                }
-            }
-        }
-    }
+    // cc->use_ext_color = cc->ec[0] != NULL;
+    // cc->use_ext_alpha = cc->ec[1] != NULL;
+    // cc->ext_color_alpha_same = (cc->use_ext_color && cc->use_ext_alpha && memcmp(cc->ec[0], cc->ec[1], sizeof(struct ExtendedCombiner)) == 0);
+    // for (int i = 0; i < (cc->ext_color_alpha_same ? 1 : 2); ++i) {
+    //     const struct ExtendedCombiner *ec = cc->ec[i];
+    //     if (ec != NULL) {
+    //         for (uint32_t j = 0; j < ec->num_ops; ++j) {
+    //             uint8_t op = ec->ops[j];
+    //             switch (op) {
+    //                 case CC_EXT_NOISE:
+    //                     cc->use_noise = TRUE;
+    //                     break;
+    //                 case CC_EXT_PRIM:
+    //                 case CC_EXT_PRIMA:
+    //                     cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
+    //                     break;
+    //                 case CC_EXT_SHADE:
+    //                 case CC_EXT_SHADEA:
+    //                     cc->shader_inputs |= SHADER_INPUT_SHADE;
+    //                     break;
+    //                 case CC_EXT_ENV:
+    //                 case CC_EXT_ENVA:
+    //                     cc->shader_inputs |= SHADER_INPUT_ENVIRONMENT;
+    //                     break;
+    //                 case CC_EXT_LOD:
+    //                     cc->shader_inputs |= SHADER_INPUT_LOD;
+    //                     break;
+    //                 case CC_EXT_AMBIENT:
+    //                     cc->shader_inputs |= SHADER_INPUT_AMBIENT;
+    //                     break;
+    //                 default:
+    //                     // if (op >= CC_EXT_LIGHT0 && op < CC_EXT_TEXEL0) {
+    //                     //     cc->shader_inputs |= SHADER_INPUT_LIGHTS;
+    //                     //     break;
+    //                     // }
+    //                     if (op >= CC_EXT_TEXEL0 && op < CC_EXT_VALUE_COUNT) {
+    //                         cc->used_textures |= USED_TEXTURE((op - CC_EXT_TEXEL0) / 2);
+    //                         break;
+    //                     }
+    //                     break;
+    //             }
+    //         }
+    //     }
+    // }
 
     // Determine shader inputs and features
     for (int cycle = 0; cycle < (cc->use_2cycle ? 2 : 1); ++cycle)
@@ -244,17 +244,6 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
             for (int j = 0; j < CC_COMPONENTS; ++j) {
                 uint8_t ccs = cc->ccs[cycle][i][j];
                 switch (ccs) {
-                    case CCS_TEXEL0:
-                    case CCS_TEXEL0A:
-                        cc->used_textures |= USED_TEXTURE(0);
-                        break;
-                    case CCS_TEXEL1:
-                    case CCS_TEXEL1A:
-                        cc->used_textures |= USED_TEXTURE(1);
-                        break;
-                    case CCS_NOISE:
-                        cc->use_noise = TRUE;
-                        break;
                     case CCS_PRIM:
                     case CCS_PRIMA:
                         cc->shader_inputs |= SHADER_INPUT_PRIMITIVE;
@@ -269,6 +258,22 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
                         break;
                     case CCS_LOD:
                         cc->shader_inputs |= SHADER_INPUT_LOD;
+                        break;
+                    case CCS_NOISE:
+                        cc->use_noise = TRUE;
+                        break;
+                    case CCS_AMBIENT:
+                        cc->shader_inputs |= SHADER_INPUT_AMBIENT;
+                        break;
+                    default:
+                        if (ccs >= CCS_LIGHT0 && ccs < CCS_TEXEL0) {
+                            cc->shader_inputs |= SHADER_INPUT_LIGHTS;
+                            break;
+                        }
+                        if (ccs >= CCS_TEXEL0 && ccs < CCS_COUNT) {
+                            cc->used_textures |= USED_TEXTURE((ccs - CCS_TEXEL0) / 2);
+                            break;
+                        }
                         break;
                 }
             }

@@ -56,6 +56,7 @@ enum VertexAttrib {
     ATTRIBUTE_POS,
     ATTRIBUTE_TEX_COORDS,
     ATTRIBUTE_INPUTS,
+    ATTRIBUTE_LIGHTS,
     ATTRIBUTE_FEATURES,
     MAX_ATTRIBUTES,
 };
@@ -64,6 +65,7 @@ struct VertexAttribsData {
     float pos[4];
     float tex_coords[MAX_TEXTURES / 2][4];
     int inputs[4];
+    int lights[MAX_ACTIVE_LIGHTS / 4][4];
     int features[4];
 };
 
@@ -71,6 +73,7 @@ struct VertexAttribsData {
 static_assert(offsetof(struct VertexAttribsData, pos) % 16 == 0);
 static_assert(offsetof(struct VertexAttribsData, tex_coords) % 16 == 0);
 static_assert(offsetof(struct VertexAttribsData, inputs) % 16 == 0);
+static_assert(offsetof(struct VertexAttribsData, lights) % 16 == 0);
 static_assert(offsetof(struct VertexAttribsData, features) % 16 == 0);
 static_assert(sizeof(struct VertexAttribsData) % 16 == 0);
 
@@ -78,6 +81,7 @@ static const struct ShaderDataProperties VERTEX_ATTRIBS[] = {
     [ATTRIBUTE_POS]        = { "aVtxPos",    multi_comp(struct VertexAttribsData, pos)              },
     [ATTRIBUTE_TEX_COORDS] = { "aTexCoords", array_multi_comp(struct VertexAttribsData, tex_coords) },
     [ATTRIBUTE_INPUTS]     = { "aInputs",    multi_comp(struct VertexAttribsData, inputs)           },
+    [ATTRIBUTE_LIGHTS]     = { "aLights",    array_multi_comp(struct VertexAttribsData, lights)     },
     [ATTRIBUTE_FEATURES]   = { "aFeatures",  multi_comp(struct VertexAttribsData, features)         },
 };
 
@@ -107,29 +111,39 @@ static void gfx_shaders_pack_attribs(struct VertexAttribsData *data, const struc
 
     // Shader inputs
     data->inputs[0] = (
-        _SHIFTL(attribs->inputs.primitive[0], 24, 8) |
-        _SHIFTL(attribs->inputs.primitive[1], 16, 8) |
-        _SHIFTL(attribs->inputs.primitive[2],  8, 8) |
-        _SHIFTL(attribs->inputs.primitive[3],  0, 8)
+        _SHIFTL(attribs->primitive[0], 24, 8) |
+        _SHIFTL(attribs->primitive[1], 16, 8) |
+        _SHIFTL(attribs->primitive[2],  8, 8) |
+        _SHIFTL(attribs->primitive[3],  0, 8)
     );
     data->inputs[1] = (
-        _SHIFTL(attribs->inputs.shade[0], 24, 8) |
-        _SHIFTL(attribs->inputs.shade[1], 16, 8) |
-        _SHIFTL(attribs->inputs.shade[2],  8, 8) |
-        _SHIFTL(attribs->inputs.shade[3],  0, 8)
+        _SHIFTL(attribs->shade[0], 24, 8) |
+        _SHIFTL(attribs->shade[1], 16, 8) |
+        _SHIFTL(attribs->shade[2],  8, 8) |
+        _SHIFTL(attribs->shade[3],  0, 8)
     );
     data->inputs[2] = (
-        _SHIFTL(attribs->inputs.environment[0], 24, 8) |
-        _SHIFTL(attribs->inputs.environment[1], 16, 8) |
-        _SHIFTL(attribs->inputs.environment[2],  8, 8) |
-        _SHIFTL(attribs->inputs.environment[3],  0, 8)
+        _SHIFTL(attribs->environment[0], 24, 8) |
+        _SHIFTL(attribs->environment[1], 16, 8) |
+        _SHIFTL(attribs->environment[2],  8, 8) |
+        _SHIFTL(attribs->environment[3],  0, 8)
     );
     data->inputs[3] = (
-        _SHIFTL(attribs->inputs.ambient[0], 24, 8) |
-        _SHIFTL(attribs->inputs.ambient[1], 16, 8) |
-        _SHIFTL(attribs->inputs.ambient[2],  8, 8) |
-        _SHIFTL(attribs->inputs.lod,         0, 8)
+        _SHIFTL(attribs->ambient[0], 24, 8) |
+        _SHIFTL(attribs->ambient[1], 16, 8) |
+        _SHIFTL(attribs->ambient[2],  8, 8) |
+        _SHIFTL(attribs->lod,         0, 8)
     );
+
+    // Lights
+    for (int i = 0; i < MAX_ACTIVE_LIGHTS; ++i) {
+        data->lights[i / 4][i % 4] = (
+            _SHIFTL(attribs->lights[i][0], 24, 8) |
+            _SHIFTL(attribs->lights[i][1], 16, 8) |
+            _SHIFTL(attribs->lights[i][2],  8, 8) |
+            _SHIFTL(attribs->lights[i][3],  0, 8)
+        );
+    }
 
     // Features
     data->features[0] = (
@@ -263,7 +277,7 @@ void gfx_shaders_update_uniforms(struct ShaderUniforms *uniforms, const struct C
     // CC features
     if (cc) {
         uniforms->ccf = 0;
-        uniforms->ccf |= (cc->use_noise << CCF_NOISE);
+        uniforms->ccf |= (cc->use_noise << CCF_USE_NOISE);
         uniforms->ccf |= (cc->use_alpha << CCF_USE_ALPHA);
         uniforms->ccf |= (cc->use_fog << CCF_USE_FOG);
         uniforms->ccf |= (cc->texture_edge << CCF_TEX_EDGE);

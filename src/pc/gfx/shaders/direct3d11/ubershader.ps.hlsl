@@ -226,7 +226,7 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     }
 
     // Noise
-    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(NOISE)) {
+    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(USE_NOISE)) {
         float noise = random(floor(float3(ps.position.xy, uNoiseFrameCount)));
         cc.noise = float4(noise, noise, noise, noise);
     }

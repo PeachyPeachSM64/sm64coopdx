@@ -1,16 +1,3 @@
-// defined in gfx_pc.h
-#define SHADER_FLAG_HUE             0
-#define SHADER_FLAG_SATURATION      1
-#define SHADER_FLAG_BRIGHTNESS      2
-#define SHADER_FLAG_CONTRAST        3
-#define SHADER_FLAG_EXPOSURE        4
-#define SHADER_FLAG_DITHERING       5
-#define SHADER_FLAG_POSTERIZATION   6
-#define SHADER_FLAG_SCANLINES       7
-#define SHADER_FLAG_MAX             8
-
-#define FILTER_THREE_POINT          2
-
 // Output fragment color
 out vec4 oFragColor;
 
@@ -21,6 +8,7 @@ in vec4 vShade;
 in vec4 vEnvironment;
 in vec4 vLod;
 in vec4 vAmbient;
+in vec4 vLights[MAX_ACTIVE_LIGHTS];
 in vec4 vFog;
 in vec2 vLightMap;
 
@@ -47,8 +35,8 @@ uniform sampler2D uTextures[MAX_TEXTURES];
 
 // Extended combiners
 struct ExtendedCombiner {
-    ivec4 ops[CC_EXT_MAX_OPS / 16];
-    vec4 constants[CC_EXT_MAX_CONSTANTS];
+    ivec4 ops;//[CC_EXT_MAX_OPS / 16];
+    vec4 constants;//[CC_EXT_MAX_CONSTANTS];
 };
 layout(std140) uniform ExtendedCombinerBlock {
     ExtendedCombiner uExtCC[2];
@@ -58,20 +46,15 @@ layout(std140) uniform ExtendedCombinerBlock {
 // Color combiner
 //
 
-vec4 noise;
-vec4 texColors[MAX_TEXTURES];
+vec4 gNoise;
+vec4 gTexColors[MAX_TEXTURES];
 
 vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
     switch (ccs) {
         case CCS_0:         return vec4(0.0);
         case CCS_1:         return vec4(1.0);
-        case CCS_TEXEL0:    return texColors[0];
-        case CCS_TEXEL0A:   return texColors[0].aaaa;
-        case CCS_TEXEL1:    return texColors[1];
-        case CCS_TEXEL1A:   return texColors[1].aaaa;
         case CCS_COMBINED:  return texel;
         case CCS_COMBINEDA: return texel.aaaa;
-        case CCS_NOISE:     return noise;
         case CCS_PRIM:      return vPrimitive;
         case CCS_PRIMA:     return vPrimitive.aaaa;
         case CCS_SHADE:     return vShade;
@@ -79,6 +62,16 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
         case CCS_ENV:       return vEnvironment;
         case CCS_ENVA:      return vEnvironment.aaaa;
         case CCS_LOD:       return vLod.aaaa;
+        case CCS_NOISE:     return gNoise;
+        case CCS_AMBIENT:   return vAmbient;
+    }
+    if (ccs >= CCS_LIGHT0 && ccs < CCS_TEXEL0) {
+        int i = ccs - CCS_LIGHT0;
+        return i % 2 == 0 ? vLights[i / 2] : vLights[i / 2].aaaa;
+    }
+    if (ccs >= CCS_TEXEL0 && ccs < CCS_COUNT) {
+        int i = ccs - CCS_TEXEL0;
+        return i % 2 == 0 ? gTexColors[i / 2] : gTexColors[i / 2].aaaa;
     }
     return vec4(0);
 }
@@ -303,11 +296,6 @@ float random(in vec3 value) {
 void main() {
     vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
 
-    // Unpack uniforms
-
-
-
-
     // Tex colors
     for (int i = 0; i < MAX_TEXTURES; ++i) {
         if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
@@ -317,18 +305,18 @@ void main() {
                     float(UNPACK(uLightMapColor, 16, 8)) / 255.0,
                     float(UNPACK(uLightMapColor,  8, 8)) / 255.0
                 );
-                texColors[0].rgb *= lightMapColor;
-                texColors[1] = sample_tex(uTextures[1], vLightMap, uTexProperties[1].rgb);
-                texColors[1].rgb = clamp(texColors[1].rgb * texColors[1].rgb + texColors[1].rgb, 0.0, 1.0);
+                gTexColors[0].rgb *= lightMapColor;
+                gTexColors[1] = sample_tex(uTextures[1], vLightMap, uTexProperties[1].rgb);
+                gTexColors[1].rgb = clamp(gTexColors[1].rgb * gTexColors[1].rgb + gTexColors[1].rgb, 0.0, 1.0);
             } else {
-                texColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i].rgb);
+                gTexColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i].rgb);
             }
         }
     }
 
     // Noise
-    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(NOISE)) {
-        noise = vec4(random(floor(vec3(gl_FragCoord.xy, float(uNoiseRandomSeed)))));
+    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(USE_NOISE)) {
+        gNoise = vec4(random(floor(vec3(gl_FragCoord.xy, float(uNoiseRandomSeed)))));
     }
 
     // Extended combiners
@@ -399,7 +387,7 @@ void main() {
 
     // Dither
     if (CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) {
-        texel.a = noise.a < texel.a ? 1.0 : 0.0;
+        texel.a = gNoise.a < texel.a ? 1.0 : 0.0;
     }
 
     // Final color
