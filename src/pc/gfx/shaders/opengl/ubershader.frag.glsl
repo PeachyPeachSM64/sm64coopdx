@@ -30,31 +30,24 @@ uniform ivec4 uFeatures;
 uniform ivec4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
 uniform vec4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
 
-// CC sources
-#define CCS(cycle, alpha) uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
-#define A UNPACK(ABCD, 24, 8)
-#define B UNPACK(ABCD, 16, 8)
-#define C UNPACK(ABCD,  8, 8)
-#define D UNPACK(ABCD,  0, 8)
+// Uniforms (unpacked)
+#define uCCS(cycle, alpha)      uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
+#define uCCF                    uFeatures[0]
+#define uNoiseRandomSeed        uFeatures[1]
+#define uLightMapColor          uFeatures[2]
+#define uShaderFlags            uFeatures[3]
+#define uShaderFlagValue(flag)  uShaderFlagValues[(flag) / 4][(flag) % 4]
 
 // CC features
-#define uCCF uFeatures[0]
 #define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
 #define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
 
 // Textures
 uniform sampler2D uTextures[MAX_TEXTURES];
 
-// Other features
-#define uNoiseRandomSeed uFeatures[1]
-#define uLightMapColor   uFeatures[2]
-#define uShaderFlags     uFeatures[3]
-#define uShaderFlagValue(flag)  uShaderFlagValues[(flag) / 4][(flag) % 4]
-
 // Extended combiners
 struct ExtendedCombiner {
     ivec4 ops[CC_EXT_MAX_OPS / 16];
-    int num_ops;
     vec4 constants[CC_EXT_MAX_CONSTANTS];
 };
 layout(std140) uniform ExtendedCombinerBlock {
@@ -91,6 +84,10 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
 }
 
 vec4 combine_colors(in vec4 texel, in int ABCD) {
+    int A = UNPACK(ABCD, 24, 8);
+    int B = UNPACK(ABCD, 16, 8);
+    int C = UNPACK(ABCD,  8, 8);
+    int D = UNPACK(ABCD,  0, 8);
 
     // D
     if (C == CCS_0) {
@@ -302,8 +299,14 @@ float random(in vec3 value) {
 
 
 
+
 void main() {
     vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
+
+    // Unpack uniforms
+
+
+
 
     // Tex colors
     for (int i = 0; i < MAX_TEXTURES; ++i) {
@@ -339,8 +342,8 @@ void main() {
     // Color combiner
     int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = CCS(cycle, 0);
-        int ABCD_a   = CCS(cycle, 1);
+        int ABCD_rgb = uCCS(cycle, 0);
+        int ABCD_a   = uCCS(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
         // if (!CCF_HAS_FLAG(USE_EXT_COLOR) && !CCF_HAS_FLAG(USE_EXT_ALPHA) && (ABCD_rgb == ABCD_a || !CCF_HAS_FLAG(USE_ALPHA))) {

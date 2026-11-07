@@ -1,7 +1,7 @@
 // Vertex position
 in vec4 aVtxPos;
 
-// Vertex attributes
+// Vertex attributes (packed)
 in vec4 aTexCoords[MAX_TEXTURES / 2];
 in ivec4 aInputs;
 in ivec4 aFeatures;
