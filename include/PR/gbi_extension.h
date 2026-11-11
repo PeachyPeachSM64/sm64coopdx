@@ -279,7 +279,7 @@
 // G_SETCOMBINE_EXT //
 //////////////////////
 
-#include "src/pc/gfx/gfx_cc_sources.h"
+#include "src/pc/gfx/gfx_cc.inl"
 static_assert(CCS_COUNT <= (1 << 6));
 
 #define G_SETCOMBINE_EXT            0xc7

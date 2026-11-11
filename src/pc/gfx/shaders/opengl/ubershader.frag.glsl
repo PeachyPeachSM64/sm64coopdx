@@ -1,3 +1,16 @@
+// defined in gfx_pc.h
+#define SHADER_FLAG_HUE             0
+#define SHADER_FLAG_SATURATION      1
+#define SHADER_FLAG_BRIGHTNESS      2
+#define SHADER_FLAG_CONTRAST        3
+#define SHADER_FLAG_EXPOSURE        4
+#define SHADER_FLAG_DITHERING       5
+#define SHADER_FLAG_POSTERIZATION   6
+#define SHADER_FLAG_SCANLINES       7
+#define SHADER_FLAG_MAX             8
+
+#define FILTER_THREE_POINT          2
+
 // Output fragment color
 out vec4 oFragColor;
 
@@ -65,13 +78,17 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
         case CCS_NOISE:     return gNoise;
         case CCS_AMBIENT:   return vAmbient;
     }
-    if (ccs >= CCS_LIGHT0 && ccs < CCS_TEXEL0) {
-        int i = ccs - CCS_LIGHT0;
-        return i % 2 == 0 ? vLights[i / 2] : vLights[i / 2].aaaa;
+    if (ccs >= CCS_LIGHT_FIRST && ccs <= CCS_LIGHT_LAST) {
+        int i = ccs - CCS_LIGHT_FIRST;
+        return (i % 2 == 0 ?
+                vLights[i / 2] :
+                vLights[i / 2].aaaa);
     }
-    if (ccs >= CCS_TEXEL0 && ccs < CCS_COUNT) {
-        int i = ccs - CCS_TEXEL0;
-        return i % 2 == 0 ? gTexColors[i / 2] : gTexColors[i / 2].aaaa;
+    if (ccs >= CCS_TEXEL_FIRST && ccs <= CCS_TEXEL_LAST) {
+        int i = ccs - CCS_TEXEL_FIRST;
+        return (i % 2 == 0 ?
+                gTexColors[i / 2] :
+                gTexColors[i / 2].aaaa);
     }
     return vec4(0);
 }
@@ -292,7 +309,6 @@ float random(in vec3 value) {
 
 
 
-
 void main() {
     vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
 
@@ -334,20 +350,21 @@ void main() {
         int ABCD_a   = uCCS(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
-        // if (!CCF_HAS_FLAG(USE_EXT_COLOR) && !CCF_HAS_FLAG(USE_EXT_ALPHA) && (ABCD_rgb == ABCD_a || !CCF_HAS_FLAG(USE_ALPHA))) {
-        //     texel = combine_colors(texel, ABCD_rgb);
-        // }
+        if (!CCF_HAS_FLAG(USE_EXT_COLOR) && !CCF_HAS_FLAG(USE_EXT_ALPHA) && (ABCD_rgb == ABCD_a || !CCF_HAS_FLAG(USE_ALPHA))) {
+            texel = combine_colors(texel, ABCD_rgb);
+        }
 
-        // // Compute RGB and alpha separately
-        // else {
-            // if (!CCF_HAS_FLAG(USE_EXT_COLOR)) {
+        // Compute RGB and alpha separately
+        else {
+            if (!CCF_HAS_FLAG(USE_EXT_COLOR)) {
                 texel.rgb = combine_colors(texel, ABCD_rgb).rgb;
-            // }
-            // if (!CCF_HAS_FLAG(USE_EXT_ALPHA)) {
+            }
+            if (!CCF_HAS_FLAG(USE_EXT_ALPHA)) {
                 texel.a = combine_colors(texel, ABCD_a).a;
-            // }
-        // }
-        // texel = mod(texel + 0.5, 2.0) - 0.5;
+            }
+        }
+
+        texel = mod(texel + 0.5, 2.0) - 0.5;
     }
     texel = clamp(texel, 0.0, 1.0);
 

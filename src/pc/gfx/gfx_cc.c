@@ -266,12 +266,12 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
                         cc->shader_inputs |= SHADER_INPUT_AMBIENT;
                         break;
                     default:
-                        if (ccs >= CCS_LIGHT0 && ccs < CCS_TEXEL0) {
+                        if (ccs >= CCS_LIGHT_FIRST && ccs <= CCS_LIGHT_LAST) {
                             cc->shader_inputs |= SHADER_INPUT_LIGHTS;
                             break;
                         }
-                        if (ccs >= CCS_TEXEL0 && ccs < CCS_COUNT) {
-                            cc->used_textures |= USED_TEXTURE((ccs - CCS_TEXEL0) / 2);
+                        if (ccs >= CCS_TEXEL_FIRST && ccs <= CCS_TEXEL_LAST) {
+                            cc->used_textures |= USED_TEXTURE((ccs - CCS_TEXEL_FIRST) / 2);
                             break;
                         }
                         break;

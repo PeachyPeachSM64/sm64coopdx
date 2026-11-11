@@ -193,14 +193,21 @@ static void gfx_opengl_upload_shader_uniforms(struct GLShaderProgram *prg, const
  // Shaders //
 /////////////
 
-static const char GL_UBERSHADER_VERSION[] = "#version 330\n";
+static const char GL_UBERSHADER_VERSION[] = "\
+#version 330\n\
+#define SHADER_CODE 1\n\
+";
 
 static const char GL_UBERSHADER_VERT[] = {
+#embed "gfx_cc.inl"
+,
 #embed "shaders/opengl/ubershader.vert.glsl"
 ,0
 };
 
 static const char GL_UBERSHADER_FRAG[] = {
+#embed "gfx_cc.inl"
+,
 #embed "shaders/opengl/ubershader.frag.glsl"
 ,0
 };
@@ -208,23 +215,17 @@ static const char GL_UBERSHADER_FRAG[] = {
 static void gfx_opengl_load_ubershader(void) {
     GLint success;
 
-    const char *cc_shader_source = gfx_cc_get_shader_source();
-    size_t cc_shader_source_len = strlen(cc_shader_source);
-
     const GLchar *vertex_sources[] = {
         GL_UBERSHADER_VERSION,
-        cc_shader_source,
         GL_UBERSHADER_VERT,
     };
     const GLint vertex_lengths[] = {
         sizeof(GL_UBERSHADER_VERSION) - 1,
-        cc_shader_source_len,
         sizeof(GL_UBERSHADER_VERT) - 1,
     };
 
 
     printf("%s\n", GL_UBERSHADER_VERSION);
-    printf("%s\n", cc_shader_source);
     printf("%s\n", GL_UBERSHADER_VERT);
 
 
@@ -245,13 +246,11 @@ static void gfx_opengl_load_ubershader(void) {
     // const char *cc_ext_shader_source = gfx_cc_ext_get_shader_source();
     const GLchar *fragment_sources[] = {
         GL_UBERSHADER_VERSION,
-        cc_shader_source,
         // cc_ext_shader_source,
         GL_UBERSHADER_FRAG,
     };
     const GLint fragment_lengths[] = {
         sizeof(GL_UBERSHADER_VERSION) - 1,
-        cc_shader_source_len,
         // strlen(cc_ext_shader_source),
         sizeof(GL_UBERSHADER_FRAG) - 1,
     };
@@ -261,7 +260,6 @@ static void gfx_opengl_load_ubershader(void) {
     // exit(0);
 
     printf("%s\n", GL_UBERSHADER_VERSION);
-    printf("%s\n", cc_shader_source);
     printf("%s\n", GL_UBERSHADER_FRAG);
     // exit(0);
 

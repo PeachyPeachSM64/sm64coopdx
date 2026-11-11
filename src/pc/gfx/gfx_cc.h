@@ -73,7 +73,6 @@ void gfx_cc_generate_from_sources(struct ColorCombiner *cc, bool alpha,
 );
 void gfx_cc_load_extended_combiner(struct ColorCombiner *cc, bool alpha, const char *str);
 void gfx_cc_update_features(struct ColorCombiner *cc);
-const char *gfx_cc_get_shader_source();
 
 #ifdef __cplusplus
 }

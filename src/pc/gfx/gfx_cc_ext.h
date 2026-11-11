@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "gfx_cc_sources.h"
+#include "gfx_cc.inl"
 
 #define CC_EXT_MAX_OPS          128
 #define CC_EXT_MAX_CONSTANTS    64
