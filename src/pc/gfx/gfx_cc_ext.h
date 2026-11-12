@@ -5,40 +5,14 @@
 
 #include "gfx_cc.inl"
 
-#define CC_EXT_MAX_OPS          128
-#define CC_EXT_MAX_CONSTANTS    64
-#define CC_EXT_MAX_REGISTERS    16
-#define CC_EXT_STACK_SIZE       64
-
 enum {
+#define DEFINE_CC_EXT_CONSTANTS
+#include "gfx_cc_ext.inl"
+#undef DEFINE_CC_EXT_CONSTANTS
+    CC_EXT_COUNT,
 
-// Values
-#define CC_EXT_VALUE(name) CC_EXT_##name,
-#include "gfx_cc_ext_values.inl"
-#undef CC_EXT_VALUE
-    CC_EXT_VALUE_COUNT,
-    CC_EXT_VALUE_LAST = CC_EXT_VALUE_COUNT - 1,
-
-// Operators
-#define CC_EXT_OPERATOR(name, ...) CC_EXT_##name,
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
-
-// Functions
-#define CC_EXT_FUNCTION(name, ...) CC_EXT_##name,
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_FUNCTION
-
-// Registers
-    CC_EXT_REGISTER_FIRST,
-    CC_EXT_REGISTER_LAST = (CC_EXT_REGISTER_FIRST + CC_EXT_MAX_REGISTERS - 1),
-
-// Constants
-    CC_EXT_CONST_FIRST,
-    CC_EXT_CONST_LAST = (CC_EXT_CONST_FIRST + CC_EXT_MAX_CONSTANTS - 1),
-
-// Terminator
-    CC_EXT_TERM = 0xFF, // TODO
+// Terminator, end of expression
+    CC_EXT_TERM    = 0xFF,  
 
 // Special ops for parsing
     CC_EXT_SPECIAL = 0xFD,
@@ -47,7 +21,7 @@ enum {
     CC_EXT_COMMA   = (CC_EXT_SPECIAL + 2),
 
 // Special op for validating
-    CC_EXT_RESULT = 0xFF,
+    CC_EXT_RESULT  = 0xFF,
 };
 
 //
@@ -56,9 +30,7 @@ enum {
 
 struct ExtendedCombiner {
     uint8_t ops[CC_EXT_MAX_OPS];
-    uint32_t num_ops;
     float constants[CC_EXT_MAX_CONSTANTS][4];
-    uint32_t num_constants;
 };
 
 const char *gfx_cc_ext_get_shader_source();

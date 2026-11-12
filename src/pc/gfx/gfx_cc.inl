@@ -2,6 +2,7 @@
 // Keep everything in this file as C macros!
 // All constants here are also included in the ubershader,
 // and GLSL doesn't have enum types.
+// `SHADER_CODE` is defined only inside shaders.
 //
 
 #ifndef SHADER_CODE
@@ -15,7 +16,7 @@
 
 #define CC_COMPONENTS       4  // ABCD
 #define CC_CYCLES           2  // Cycles
-#define MAX_ACTIVE_LIGHTS   8  // must be a multiple of 4
+#define MAX_ACTIVE_LIGHTS   4  // must be a multiple of 4
 #define MAX_TEXTURES        2  // must be a multiple of 2
 
 //
@@ -45,11 +46,11 @@
 
 // defines CCS_LIGHT0, CCS_LIGHT0I, etc... (for gsDPSetCombine... only)
 #ifndef SHADER_CODE
-#define CCS_LIGHT_(n) \
-static const uint8_t CCS_LIGHT##n    = CCS_LIGHT_FIRST + 2 * n; \
-static const uint8_t CCS_LIGHT##n##I = CCS_LIGHT_FIRST + 2 * n + 1;
-REPEAT_FROM_0(CCS_LIGHT_, MAX_ACTIVE_LIGHTS)
-#undef CCS_LIGHT_
+#define CCS_LIGHT(n) \
+enum { CCS_LIGHT##n    = CCS_LIGHT_FIRST + 2 * n }; \
+enum { CCS_LIGHT##n##I = CCS_LIGHT_FIRST + 2 * n + 1 };
+REPEAT_FROM_0(CCS_LIGHT, MAX_ACTIVE_LIGHTS)
+#undef CCS_LIGHT
 #endif
 
 //
@@ -61,16 +62,17 @@ REPEAT_FROM_0(CCS_LIGHT_, MAX_ACTIVE_LIGHTS)
 
 // defines CCS_TEXEL0, CCS_TEXEL0A, etc... (for gsDPSetCombine... only)
 #ifndef SHADER_CODE
-#define CCS_TEXEL_(n) \
-static const uint8_t CCS_TEXEL##n    = CCS_TEXEL_FIRST + 2 * n; \
-static const uint8_t CCS_TEXEL##n##A = CCS_TEXEL_FIRST + 2 * n + 1;
-REPEAT_FROM_0(CCS_TEXEL_, MAX_TEXTURES)
-#undef CCS_TEXEL_
+#define CCS_TEXEL(n) \
+enum { CCS_TEXEL##n    = CCS_TEXEL_FIRST + 2 * n }; \
+enum { CCS_TEXEL##n##A = CCS_TEXEL_FIRST + 2 * n + 1 };
+REPEAT_FROM_0(CCS_TEXEL, MAX_TEXTURES)
+#undef CCS_TEXEL
 #endif
+
+#define _CCS_COUNT_ (CCS_TEXEL_LAST + 1)
 
 // aliases (for gsDPSetCombine... only)
 #ifndef SHADER_CODE
-#define CCS_COUNT               (CCS_TEXEL_LAST + 1)
 #define CCS_TEXEL0_ALPHA        CCS_TEXEL0A
 #define CCS_TEXEL1_ALPHA        CCS_TEXEL1A
 #define CCS_COMBINED_ALPHA      CCS_COMBINEDA
@@ -97,7 +99,9 @@ REPEAT_FROM_0(CCS_TEXEL_, MAX_TEXTURES)
 #define CCF_USE_EXT_COLOR           8
 #define CCF_USE_EXT_ALPHA           9
 #define CCF_EXT_COLOR_ALPHA_SAME    10
-#define CCF_USED_TEXTURE            11 // must be last
+#define CCF_SKIP_COMBINER_COLOR     11
+#define CCF_SKIP_COMBINER_ALPHA     12
+#define CCF_USED_TEXTURE            13 // must be last
 
 #define USED_TEXTURE(i)  (1 << (i))
 

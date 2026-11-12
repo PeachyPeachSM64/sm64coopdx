@@ -15,17 +15,6 @@
 #endif
 
 //
-// Dot params
-//
-
-#define CC_EXT_DOT_PARAM_0  0
-#define CC_EXT_DOT_PARAM_1  1
-#define CC_EXT_DOT_PARAM_R  2
-#define CC_EXT_DOT_PARAM_G  3
-#define CC_EXT_DOT_PARAM_B  4
-#define CC_EXT_DOT_PARAM_A  5
-
-//
 // Parsed token
 //
 
@@ -225,22 +214,10 @@ static struct {
     uint8_t precedence;
     uint8_t num_args;
 } OP_PROPERTIES[0x100] = {
-
-// Values
-#define CC_EXT_VALUE(name) [CC_EXT_##name] = { false, false, 0, 0 },
-#include "gfx_cc_ext_values.inl"
-#undef CC_EXT_VALUE
-
-// Operators
-#define CC_EXT_OPERATOR(name, args, precedence, ...) [CC_EXT_##name] = { true, false, precedence, args },
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
-
-// Functions
-#define CC_EXT_FUNCTION(name, args) [CC_EXT_##name] = { true, true, 0, args },
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_FUNCTION
-
+#define CC_EXT_VALUE(name)                               [CC_EXT_##name] = { false, false, 0, 0 },
+#define CC_EXT_OPERATOR(id, name, args, precedence, ...) [CC_EXT_##name] = { true, false, precedence, args },
+#define CC_EXT_FUNCTION(id, name, args)                  [CC_EXT_##name] = { true, true, 0, args },
+#include "gfx_cc_ext.inl"
 };
 
 static inline bool op_is_special(uint8_t op) {
@@ -362,15 +339,10 @@ static bool op_to_float4(uint8_t op, struct GrowingArray *constants, float4 outp
 
 static const char *op_to_string(const Op *op, struct GrowingArray *constants) {
     static char OP_TO_STR[0x100][32] = {
-#define CC_EXT_VALUE(name)         [CC_EXT_##name] = "v_" #name,
-#define CC_EXT_OPERATOR(name, ...) [CC_EXT_##name] = "o_" #name,
-#define CC_EXT_FUNCTION(name, ...) [CC_EXT_##name] = "f_" #name,
-#include "gfx_cc_ext_values.inl"
-#include "gfx_cc_ext_operators.inl"
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_VALUE
-#undef CC_EXT_OPERATOR
-#undef CC_EXT_FUNCTION
+#define CC_EXT_VALUE(name)             [CC_EXT_##name] = "v_" #name,
+#define CC_EXT_OPERATOR(id, name, ...) [CC_EXT_##name] = "o_" #name,
+#define CC_EXT_FUNCTION(id, name, ...) [CC_EXT_##name] = "f_" #name,
+#include "gfx_cc_ext.inl"
         [CC_EXT_OPEN]  = "(",
         [CC_EXT_CLOSE] = ")",
         [CC_EXT_COMMA] = ",",

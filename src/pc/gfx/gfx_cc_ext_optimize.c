@@ -1157,12 +1157,9 @@ static bool gfx_cc_ext_optimize_CEIL(struct GrowingArray *ops, struct GrowingArr
 }
 
 static bool (*OPERATIONS[0x100])(struct GrowingArray *, struct GrowingArray *, Op *, Result **, size_t) = {
-#define CC_EXT_OPERATOR(name, ...) [CC_EXT_##name] = gfx_cc_ext_optimize_##name,
-#define CC_EXT_FUNCTION(name, ...) [CC_EXT_##name] = gfx_cc_ext_optimize_##name,
-#include "gfx_cc_ext_operators.inl"
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_OPERATOR
-#undef CC_EXT_FUNCTION
+#define CC_EXT_OPERATOR(id, name, ...) [CC_EXT_##name] = gfx_cc_ext_optimize_##name,
+#define CC_EXT_FUNCTION(id, name, ...) [CC_EXT_##name] = gfx_cc_ext_optimize_##name,
+#include "gfx_cc_ext.inl"
 };
 
 //

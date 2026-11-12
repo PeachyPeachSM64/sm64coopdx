@@ -9,14 +9,11 @@
 
 static void *sExtCombinerCache = NULL;
 
-static_assert(CC_EXT_CONST_LAST < CC_EXT_SPECIAL);
+static_assert(CC_EXT_COUNT <= CC_EXT_SPECIAL);
 
-#define CC_EXT_OPERATOR(name, args, ...) static_assert(args <= CC_EXT_MAX_ARGS);
-#define CC_EXT_FUNCTION(name, args)      static_assert(args <= CC_EXT_MAX_ARGS);
-#include "gfx_cc_ext_operators.inl"
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_OPERATOR
-#undef CC_EXT_FUNCTION
+#define CC_EXT_OPERATOR(id, name, args, ...) static_assert(args <= CC_EXT_MAX_ARGS);
+#define CC_EXT_FUNCTION(id, name, args)      static_assert(args <= CC_EXT_MAX_ARGS);
+#include "gfx_cc_ext.inl"
 
 #define COLORED_PRINT 1
 
@@ -484,9 +481,8 @@ static bool gfx_cc_ext_validate(struct GrowingArray *ops, struct GrowingArray *c
 
 static size_t check_symbols(const char *str, size_t len, size_t offset) {
     static struct { const char *str; size_t len; } SYMBOLS[] = {
-#define CC_EXT_OPERATOR(name, args, precedence, symbol) { symbol, sizeof(symbol) - 1 },
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
+#define CC_EXT_OPERATOR(id, name, args, precedence, symbol) { symbol, sizeof(symbol) - 1 },
+#include "gfx_cc_ext.inl"
         { "(", 1 },
         { ")", 1 },
         { ",", 1 },
@@ -811,20 +807,11 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
             continue;
         }
 
-        // operators
-#define CC_EXT_OPERATOR(name, args, precedence, symbol) token_to_operator(symbol, CC_EXT_##name, precedence == 1);
-#include "gfx_cc_ext_operators.inl"
-#undef CC_EXT_OPERATOR
-
-        // functions
-#define CC_EXT_FUNCTION(name, args) token_to_function(#name, CC_EXT_##name);
-#include "gfx_cc_ext_functions.inl"
-#undef CC_EXT_FUNCTION
-
-        // values
-#define CC_EXT_VALUE(name) token_to_value(#name, CC_EXT_##name);
-#include "gfx_cc_ext_values.inl"
-#undef CC_EXT_VALUE
+        // built-in values, operators, functions
+#define CC_EXT_VALUE(name)                                  token_to_value(#name, CC_EXT_##name);
+#define CC_EXT_OPERATOR(id, name, args, precedence, symbol) token_to_operator(symbol, CC_EXT_##name, precedence == 1);
+#define CC_EXT_FUNCTION(id, name, args)                     token_to_function(#name, CC_EXT_##name);
+#include "gfx_cc_ext.inl"
 
         // other values
         token_to_value("0.0", CC_EXT_0);
@@ -943,6 +930,9 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
 #endif
 #endif
 
+    // add terminator
+    op_push(postfix, CC_EXT_TERM, false, NULL);
+
     // check sizes
     if (postfix->count > CC_EXT_MAX_OPS) {
         snprintf(sErrorMsg, sizeof(sErrorMsg),
@@ -962,12 +952,11 @@ static const char *gfx_cc_ext_parse_combiner(const char *str, struct ExtendedCom
     }
 
     // fill struct
-    memset(ec, 0, sizeof(*ec));
-    ec->num_ops = postfix->count;
+    memset(ec->ops, CC_EXT_TERM, sizeof(ec->ops));
     for (uint32_t i = 0; i < postfix->count; ++i) {
         ec->ops[i] = op_get(postfix, i)->op;
     }
-    ec->num_constants = constants->count;
+    memset(ec->constants, 0, sizeof(ec->constants));
     for (uint32_t i = 0; i < constants->count; ++i) {
         memcpy(ec->constants[i], constant_get(constants, i)->xyzw, sizeof(float4));
     }

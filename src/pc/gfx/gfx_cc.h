@@ -49,9 +49,11 @@ struct ColorCombiner {
             uint8_t use_ext_color        : 1;
             uint8_t use_ext_alpha        : 1;
             uint8_t ext_color_alpha_same : 1;
+            uint8_t skip_combiner_color  : 1;
+            uint8_t skip_combiner_alpha  : 1;
             uint8_t used_textures        : MAX_TEXTURES;
         };
-        uint8_t features;
+        uint16_t features;
     };
     const struct ExtendedCombiner *ec[2];
 };

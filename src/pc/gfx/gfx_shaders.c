@@ -288,6 +288,8 @@ void gfx_shaders_update_uniforms(struct ShaderUniforms *uniforms, const struct C
         uniforms->ccf |= (cc->use_ext_color << CCF_USE_EXT_COLOR);
         uniforms->ccf |= (cc->use_ext_alpha << CCF_USE_EXT_ALPHA);
         uniforms->ccf |= (cc->ext_color_alpha_same << CCF_EXT_COLOR_ALPHA_SAME);
+        uniforms->ccf |= (cc->skip_combiner_color << CCF_SKIP_COMBINER_COLOR);
+        uniforms->ccf |= (cc->skip_combiner_alpha << CCF_SKIP_COMBINER_ALPHA);
         uniforms->ccf |= (cc->used_textures << CCF_USED_TEXTURE);
     }
 

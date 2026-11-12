@@ -280,7 +280,7 @@
 //////////////////////
 
 #include "src/pc/gfx/gfx_cc.inl"
-static_assert(CCS_COUNT <= (1 << 6));
+static_assert(_CCS_COUNT_ <= (1 << 6));
 
 #define G_SETCOMBINE_EXT            0xc7
 #define G_SETCOMBINE_COLOR          1

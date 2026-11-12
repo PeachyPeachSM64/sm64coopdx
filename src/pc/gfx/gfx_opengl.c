@@ -52,8 +52,6 @@ static GLuint opengl_vbo;
 static GLuint opengl_vao;
 static GLuint opengl_ubo;
 
-static GLuint opengl_ubo_index;
-
 static int tex_cache_size = 0;
 static int num_textures = 0;
 static struct GLTexture *tex_cache = NULL;
@@ -141,22 +139,14 @@ static void gfx_opengl_update_extended_combiner_uniform(struct GLShaderProgram *
     }
 
     // Convert extended combiner to a GPU friendly struct
-    // struct GLExtendedCombiner glec = {0};
-    // glec.num_ops[0] = ec->num_ops;
-    // // glec.num_constants[0] = ec->num_constants;
-    // for (uint32_t i = 0; i < ec->num_ops; ++i) {
-    //     glec.ops[i / 4] |= (ec->ops[i] << (8 * (i % 4)));
-    // }
-    // memcpy(glec.constants, ec->constants, sizeof(*ec->constants) * ec->num_constants);
+    struct GLExtendedCombiner glec = {0};
+    memcpy(glec.constants, ec->constants, sizeof(glec.constants));
+    for (int i = 0; i < ARRAY_COUNT(ec->ops); ++i) {
+        glec.ops[i / 16][(i / 4) % 4] |= (ec->ops[i] << (8 * (i % 4)));
+    }
 
-    // // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
-    // // GLvoid *p = glMapBuffer(GL_UNIFORM_BUFFER, GL_WRITE_ONLY); 
-    // // memcpy(p, &glec, sizeof(glec));
-    // // glUnmapBuffer(GL_UNIFORM_BUFFER);
-
-
-    // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
-    // glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
+    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
+    glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
 
     prg->ec[index] = ec;
 }
@@ -195,21 +185,28 @@ static void gfx_opengl_upload_shader_uniforms(struct GLShaderProgram *prg, const
 
 static const char GL_UBERSHADER_VERSION[] = "\
 #version 330\n\
-#define SHADER_CODE 1\n\
+#define SHADER_CODE\n\
+#define static\n\
 ";
 
 static const char GL_UBERSHADER_VERT[] = {
+#ifndef VSCODE
 #embed "gfx_cc.inl"
 ,
 #embed "shaders/opengl/ubershader.vert.glsl"
 ,0
+#endif
 };
 
 static const char GL_UBERSHADER_FRAG[] = {
+#ifndef VSCODE
 #embed "gfx_cc.inl"
+,
+#embed "gfx_cc_ext.inl"
 ,
 #embed "shaders/opengl/ubershader.frag.glsl"
 ,0
+#endif
 };
 
 static void gfx_opengl_load_ubershader(void) {
@@ -223,11 +220,6 @@ static void gfx_opengl_load_ubershader(void) {
         sizeof(GL_UBERSHADER_VERSION) - 1,
         sizeof(GL_UBERSHADER_VERT) - 1,
     };
-
-
-    printf("%s\n", GL_UBERSHADER_VERSION);
-    printf("%s\n", GL_UBERSHADER_VERT);
-
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex_shader, ARRAY_COUNT(vertex_sources), vertex_sources, vertex_lengths);
@@ -243,26 +235,14 @@ static void gfx_opengl_load_ubershader(void) {
         sys_fatal("vertex shader compilation failed (see terminal)");
     }
 
-    // const char *cc_ext_shader_source = gfx_cc_ext_get_shader_source();
     const GLchar *fragment_sources[] = {
         GL_UBERSHADER_VERSION,
-        // cc_ext_shader_source,
         GL_UBERSHADER_FRAG,
     };
     const GLint fragment_lengths[] = {
         sizeof(GL_UBERSHADER_VERSION) - 1,
-        // strlen(cc_ext_shader_source),
         sizeof(GL_UBERSHADER_FRAG) - 1,
     };
-
-
-    // printf("%s\n", cc_ext_shader_source);
-    // exit(0);
-
-    printf("%s\n", GL_UBERSHADER_VERSION);
-    printf("%s\n", GL_UBERSHADER_FRAG);
-    // exit(0);
-
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, ARRAY_COUNT(fragment_sources), fragment_sources, fragment_lengths);
@@ -283,13 +263,6 @@ static void gfx_opengl_load_ubershader(void) {
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
     glUseProgram(shader_program);
-
-    GLint mvoc;
-    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &mvoc);
-    printf("%d\n", mvoc);
-    glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &mvoc);
-    printf("%d\n", mvoc);
-
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (!success) {
         GLint max_length = 0;
@@ -324,18 +297,20 @@ static bool gfx_opengl_update_cc(struct ColorCombiner *cc) {
 }
 
 static void gfx_opengl_update_uniforms(void) {
-    gfx_shaders_update_uniforms(&opengl_uniforms, &opengl_prg.cc, NULL, 0);
+    struct GLShaderProgram *prg = &opengl_prg;
+
+    gfx_shaders_update_uniforms(&opengl_uniforms, &prg->cc, NULL, 0);
     for (int t = 0; t < MAX_TEXTURES; t++) {
-        gfx_opengl_set_texture_uniforms(&opengl_prg, t);
+        gfx_opengl_set_texture_uniforms(prg, t);
     }
 
     // Extended combiners
-    // if (prg->cc.use_ext_color) {
-    //     gfx_opengl_update_extended_combiner_uniform(prg, 0);
-    // }
-    // if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
-    //     gfx_opengl_update_extended_combiner_uniform(prg, 1);
-    // }
+    if (prg->cc.use_ext_color) {
+        gfx_opengl_update_extended_combiner_uniform(prg, 0);
+    }
+    if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
+        gfx_opengl_update_extended_combiner_uniform(prg, 1);
+    }
 }
 
 static GLuint gfx_opengl_new_texture(void) {
@@ -488,33 +463,20 @@ static void gfx_opengl_init(void) {
         glBindVertexArray(opengl_vao);
     }
 
-    // glGenBuffers(1, &opengl_ubo);
-    // glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
-    // glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(opengl_prg.ec), NULL, GL_DYNAMIC_DRAW);
-
-    // opengl_ubo_index = glGetUniformBlockIndex(opengl_prg.program, "ExtendedCombinerBlock");
-    // glUniformBlockBinding(opengl_prg.program, opengl_ubo_index, opengl_ubo);
-
-    // Bind to binding point 0
-    // glBindBufferBase(GL_UNIFORM_BUFFER, 0, opengl_ubo);
-
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     gfx_opengl_load_ubershader();
-
-
 
     glGenBuffers(1, &opengl_ubo);
     glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
     glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(opengl_prg.ec), NULL, GL_DYNAMIC_DRAW); 
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-    opengl_ubo_index = glGetUniformBlockIndex(opengl_prg.program, "ExtendedCombinerBlock");
+    GLuint opengl_ubo_index = glGetUniformBlockIndex(opengl_prg.program, "ExtendedCombinerBlock");
     GLuint binding_point_index = 0;
     glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, opengl_ubo);
     glUniformBlockBinding(opengl_prg.program, opengl_ubo_index, binding_point_index);
-
 }
 
 bool gfx_opengl_check_compatibility(void) {

@@ -48,8 +48,8 @@ uniform sampler2D uTextures[MAX_TEXTURES];
 
 // Extended combiners
 struct ExtendedCombiner {
-    ivec4 ops;//[CC_EXT_MAX_OPS / 16];
-    vec4 constants;//[CC_EXT_MAX_CONSTANTS];
+    ivec4 ops[CC_EXT_MAX_OPS / 16];
+    vec4 constants[CC_EXT_MAX_CONSTANTS];
 };
 layout(std140) uniform ExtendedCombinerBlock {
     ExtendedCombiner uExtCC[2];
@@ -74,7 +74,7 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
         case CCS_SHADEA:    return vShade.aaaa;
         case CCS_ENV:       return vEnvironment;
         case CCS_ENVA:      return vEnvironment.aaaa;
-        case CCS_LOD:       return vLod.aaaa;
+        case CCS_LOD:       return vLod;
         case CCS_NOISE:     return gNoise;
         case CCS_AMBIENT:   return vAmbient;
     }
@@ -94,10 +94,10 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
 }
 
 vec4 combine_colors(in vec4 texel, in int ABCD) {
-    int A = UNPACK(ABCD, 24, 8);
-    int B = UNPACK(ABCD, 16, 8);
-    int C = UNPACK(ABCD,  8, 8);
-    int D = UNPACK(ABCD,  0, 8);
+    #define A UNPACK(ABCD, 24, 8)
+    #define B UNPACK(ABCD, 16, 8)
+    #define C UNPACK(ABCD,  8, 8)
+    #define D UNPACK(ABCD,  0, 8)
 
     // D
     if (C == CCS_0) {
@@ -127,83 +127,140 @@ vec4 combine_colors(in vec4 texel, in int ABCD) {
       + ccs_to_vec4(texel, D);
 }
 
-// //
-// // Extended combiner
-// //
+//
+// Extended combiner
+//
 
+// Note: declaring these as global helps reducing GPU register pressure
+vec4 sStack[CC_EXT_STACK_SIZE];
+vec4 sRegisters[CC_EXT_MAX_REGISTERS];
 
-// // Operators
-// #define o_END           vec4(0); top = 0; break;
-// #define o_DOT           cc_ext_dot(ARG1, ARG2)
-// #define o_NEG           (-ARG1)
-// #define o_NOT           vec4(equal(ARG1, vec4(0.0)))
-// #define o_POW           pow(ARG1, ARG2)
-// #define o_MUL           (ARG1 * ARG2)
-// #define o_DIV           (ARG1 / ARG2)
-// #define o_MOD           mod(ARG1, ARG2)
-// #define o_ADD           (ARG1 + ARG2)
-// #define o_SUB           (ARG1 - ARG2)
-// #define o_LT            vec4(lessThan(ARG1, ARG2))
-// #define o_LEQ           vec4(lessThanEqual(ARG1, ARG2))
-// #define o_GT            vec4(greaterThan(ARG1, ARG2))
-// #define o_GEQ           vec4(greaterThanEqual(ARG1, ARG2))
-// #define o_EQ            vec4(equal(ARG1, ARG2))
-// #define o_NEQ           vec4(notEqual(ARG1, ARG2))
-// #define o_AND           vec4(notEqual(ARG1, vec4(0)) && notEqual(ARG2, vec4(0)))
-// #define o_OR            vec4(notEqual(ARG1, vec4(0)) || notEqual(ARG2, vec4(0)))
-// #define o_SET           (registers[int(ARG1.x)] = ARG2)
+#define ARG(n) sStack[top - (n)]
+#define STACK_PUSH(args, operation) { \
+    vec4 res = (operation); \
+    sStack[top - (args)] = res; \
+    top -= ((args) - 1); \
+}
 
-// // Functions
-// #define f_VEC           vec4(ARG1.r, ARG2.g, ARG3.b, ARG4.a)
-// #define f_LERP          mix(ARG1, ARG2, ARG3)
-// #define f_INVLERP       ((ARG3 - ARG1) / (ARG2 - ARG1))
-// #define f_REMAP         mix(ARG3, ARG4, ((ARG5 - ARG1) / (ARG2 - ARG1)))
-// #define f_IF            mix(ARG3, ARG2, vec4(notEqual(ARG1, vec4(0))))
-// #define f_ABS           abs(ARG1)
-// #define f_MIN           min(ARG1, ARG2)
-// #define f_MAX           max(ARG1, ARG2)
-// #define f_CLAMP         clamp(ARG1, ARG2, ARG3)
-// #define f_SATURATE      clamp(ARG1, 0.0, 1.0)
-// #define f_COS           cos(ARG1)
-// #define f_SIN           sin(ARG1)
-// #define f_SQRT          sqrt(ARG1)
-// #define f_RSQRT         (1.0 / sqrt(ARG1))
-// #define f_ROUND         floor(ARG1 + 0.5)
-// #define f_FLOOR         floor(ARG1)
-// #define f_CEIL          ceil(ARG1)
+float cc_ext_dot_channel(in vec4 arg1, in int channel) {
+    switch (channel) {
+        case CC_EXT_DOT_PARAM_0: return 0.0;
+        case CC_EXT_DOT_PARAM_1: return 1.0;
+        case CC_EXT_DOT_PARAM_R: return arg1.r;
+        case CC_EXT_DOT_PARAM_G: return arg1.g;
+        case CC_EXT_DOT_PARAM_B: return arg1.b;
+        case CC_EXT_DOT_PARAM_A: return arg1.a;
+    }
+    return 0.0;
+}
 
-// float cc_ext_dot_channel(in vec4 arg1, in int channel) {
-//     switch (channel) {
-//         case CC_EXT_DOT_PARAM_0: return 0.0;
-//         case CC_EXT_DOT_PARAM_1: return 1.0;
-//         case CC_EXT_DOT_PARAM_R: return arg1.r;
-//         case CC_EXT_DOT_PARAM_G: return arg1.g;
-//         case CC_EXT_DOT_PARAM_B: return arg1.b;
-//         case CC_EXT_DOT_PARAM_A: return arg1.a;
-//     }
-//     return 0.0;
-// }
+vec4 cc_ext_dot(in vec4 arg1, in vec4 arg2) {
+    return vec4(
+        cc_ext_dot_channel(arg1, int(arg2.r)),
+        cc_ext_dot_channel(arg1, int(arg2.g)),
+        cc_ext_dot_channel(arg1, int(arg2.b)),
+        cc_ext_dot_channel(arg1, int(arg2.a))
+    );
+}
 
-// vec4 cc_ext_dot(in vec4 arg1, in vec4 arg2) {
-//     return vec4(
-//         cc_ext_dot_channel(arg1, int(arg2.r)),
-//         cc_ext_dot_channel(arg1, int(arg2.g)),
-//         cc_ext_dot_channel(arg1, int(arg2.b)),
-//         cc_ext_dot_channel(arg1, int(arg2.a))
-//     );
-// }
+vec4 combine_colors_ext(in vec4 texel, in int alpha) {
+    int top = 0;
+    for (int i = 0; i < CC_EXT_MAX_OPS; ++i) {
+        int op = (uExtCC[alpha].ops[i / 16][(i / 4) % 4] >> (8 * (i % 4))) & 0xFF;
+        switch (op) {
 
-vec4 combine_colors_ext(in int alpha) {
-    return vec4(1);
-    // vec4 stack[CC_EXT_STACK_SIZE];
-    // vec4 registers[CC_EXT_MAX_REGISTERS];
-    // int top = 0;
-    // for (int i = 0, n = uExtCC[alpha].num_ops; i < n; ++i) {
-    //     int packed_op = uExtCC[alpha].ops[i / 16][(i / 4) % 4];
-    //     int op = (packed_op >> (8 * (i % 4))) & 0xFF;
-    //     cc_ext_process_op(op);
-    // }
-    // return clamp(stack[0], 0.0, 1.0);
+            // Values
+            case CC_EXT_0:          STACK_PUSH(0, vec4(0)); break;
+            case CC_EXT_1:          STACK_PUSH(0, vec4(1)); break;
+            case CC_EXT_COMBINED:   STACK_PUSH(0, texel); break;
+            case CC_EXT_COMBINEDA:  STACK_PUSH(0, texel.aaaa); break;
+            case CC_EXT_PRIM:       STACK_PUSH(0, vPrimitive); break;
+            case CC_EXT_PRIMA:      STACK_PUSH(0, vPrimitive.aaaa); break;
+            case CC_EXT_SHADE:      STACK_PUSH(0, vShade); break;
+            case CC_EXT_SHADEA:     STACK_PUSH(0, vShade.aaaa); break;
+            case CC_EXT_ENV:        STACK_PUSH(0, vEnvironment); break;
+            case CC_EXT_ENVA:       STACK_PUSH(0, vEnvironment.aaaa); break;
+            case CC_EXT_LOD:        STACK_PUSH(0, vLod); break;
+            case CC_EXT_NOISE:      STACK_PUSH(0, gNoise); break;
+            case CC_EXT_AMBIENT:    STACK_PUSH(0, vAmbient); break;
+
+            // Operators
+            case CC_EXT_DOT:        STACK_PUSH(2, cc_ext_dot(ARG(1), ARG(2))); break;
+            case CC_EXT_NEG:        STACK_PUSH(1, -ARG(1)); break;
+            case CC_EXT_NOT:        STACK_PUSH(1, vec4(not(bvec4(ARG(1))))); break;
+            case CC_EXT_POW:        STACK_PUSH(2, pow(ARG(1), ARG(2))); break;
+            case CC_EXT_MUL:        STACK_PUSH(2, (ARG(1) * ARG(2))); break;
+            case CC_EXT_DIV:        STACK_PUSH(2, (ARG(1) / ARG(2))); break;
+            case CC_EXT_MOD:        STACK_PUSH(2, mod(ARG(1), ARG(2))); break;
+            case CC_EXT_ADD:        STACK_PUSH(2, (ARG(1) + ARG(2))); break;
+            case CC_EXT_SUB:        STACK_PUSH(2, (ARG(1) - ARG(2))); break;
+            case CC_EXT_LT:         STACK_PUSH(2, vec4(lessThan(ARG(1), ARG(2)))); break;
+            case CC_EXT_LEQ:        STACK_PUSH(2, vec4(lessThanEqual(ARG(1), ARG(2)))); break;
+            case CC_EXT_GT:         STACK_PUSH(2, vec4(greaterThan(ARG(1), ARG(2)))); break;
+            case CC_EXT_GEQ:        STACK_PUSH(2, vec4(greaterThanEqual(ARG(1), ARG(2)))); break;
+            case CC_EXT_EQ:         STACK_PUSH(2, vec4(equal(ARG(1), ARG(2)))); break;
+            case CC_EXT_NEQ:        STACK_PUSH(2, vec4(notEqual(ARG(1), ARG(2)))); break;
+            case CC_EXT_AND:        STACK_PUSH(2, vec4(bvec4(ARG(1)) && bvec4(ARG(2)))); break;
+            case CC_EXT_OR:         STACK_PUSH(2, vec4(bvec4(ARG(1)) || bvec4(ARG(2)))); break;
+            case CC_EXT_SET:        STACK_PUSH(2, sRegisters[int(ARG(1).x)] = ARG(2)); break;
+            case CC_EXT_END:        top = 0; break;
+
+            // Functions
+            case CC_EXT_VEC:        STACK_PUSH(4, vec4(ARG(1).r, ARG(2).g, ARG(3).b, ARG(4).a)); break;
+            case CC_EXT_LERP:       STACK_PUSH(3, mix(ARG(1), ARG(2), ARG(3))); break;
+            case CC_EXT_INVLERP:    STACK_PUSH(3, ((ARG(3) - ARG(1)) / (ARG(2) - ARG(1)))); break;
+            case CC_EXT_REMAP:      STACK_PUSH(5, mix(ARG(3), ARG(4), ((ARG(5) - ARG(1)) / (ARG(2) - ARG(1))))); break;
+            case CC_EXT_IF:         STACK_PUSH(3, mix(ARG(3), ARG(2), vec4(bvec4(ARG(1))))); break;
+            case CC_EXT_ABS:        STACK_PUSH(1, abs(ARG(1))); break;
+            case CC_EXT_MIN:        STACK_PUSH(2, min(ARG(1), ARG(2))); break;
+            case CC_EXT_MAX:        STACK_PUSH(2, max(ARG(1), ARG(2))); break;
+            case CC_EXT_CLAMP:      STACK_PUSH(3, clamp(ARG(1), ARG(2), ARG(3))); break;
+            case CC_EXT_SATURATE:   STACK_PUSH(1, clamp(ARG(1), 0.0, 1.0)); break;
+            case CC_EXT_COS:        STACK_PUSH(1, cos(ARG(1))); break;
+            case CC_EXT_SIN:        STACK_PUSH(1, sin(ARG(1))); break;
+            case CC_EXT_SQRT:       STACK_PUSH(1, sqrt(ARG(1))); break;
+            case CC_EXT_RSQRT:      STACK_PUSH(1, (1.0 / sqrt(ARG(1)))); break;
+            case CC_EXT_ROUND:      STACK_PUSH(1, floor(ARG(1) + 0.5)); break;
+            case CC_EXT_FLOOR:      STACK_PUSH(1, floor(ARG(1))); break;
+            case CC_EXT_CEIL:       STACK_PUSH(1, ceil(ARG(1))); break;
+
+            default:
+
+            // Lights
+            if (op >= CC_EXT_LIGHT_FIRST && op <= CC_EXT_LIGHT_LAST) {
+                int i = op - CC_EXT_LIGHT_FIRST;
+                STACK_PUSH(0, i % 2 == 0 ?
+                              vLights[i / 2] :
+                              vLights[i / 2].aaaa);
+                break;
+            }
+
+            // Textures
+            if (op >= CC_EXT_TEXEL_FIRST && op <= CC_EXT_TEXEL_LAST) {
+                int i = op - CC_EXT_TEXEL_FIRST;
+                STACK_PUSH(0, i % 2 == 0 ?
+                              gTexColors[i / 2] :
+                              gTexColors[i / 2].aaaa);
+                break;
+            }
+
+            // Registers
+            if (op >= CC_EXT_REGISTER_FIRST && op <= CC_EXT_REGISTER_LAST) {
+                STACK_PUSH(0, sRegisters[op - CC_EXT_REGISTER_FIRST]);
+                break;
+            }
+
+            // Constants
+            if (op >= CC_EXT_CONST_FIRST && op <= CC_EXT_CONST_LAST) {
+                STACK_PUSH(0, uExtCC[alpha].constants[op - CC_EXT_CONST_FIRST]);
+                break;
+            }
+
+            // Terminator
+            return clamp(sStack[0], 0.0, 1.0);
+        }
+    }
+    return vec4(0);    
 }
 
 //
@@ -312,54 +369,61 @@ float random(in vec3 value) {
 void main() {
     vec4 texel = vec4(0.0, 0.0, 0.0, 0.0);
 
+    // Flags
+    bool useAlpha          = CCF_HAS_FLAG(USE_ALPHA);
+    bool useFog            = CCF_HAS_FLAG(USE_FOG);
+    bool texEdge           = CCF_HAS_FLAG(TEX_EDGE);
+    bool useDither         = CCF_HAS_FLAG(USE_DITHER);
+    bool use2Cycle         = CCF_HAS_FLAG(USE_2CYCLE);
+    bool useLightMap       = CCF_HAS_FLAG(LIGHT_MAP);
+    bool worldGeometry     = CCF_HAS_FLAG(WORLD_GEOMETRY);
+    bool useNoise          = CCF_HAS_FLAG(USE_NOISE);
+    bool useExtColor       = CCF_HAS_FLAG(USE_EXT_COLOR);
+    bool useExtAlpha       = CCF_HAS_FLAG(USE_EXT_ALPHA);
+    bool extColorAlphaSame = CCF_HAS_FLAG(EXT_COLOR_ALPHA_SAME);
+    bool skipColor         = CCF_HAS_FLAG(SKIP_COMBINER_COLOR);
+    bool skipAlpha         = CCF_HAS_FLAG(SKIP_COMBINER_ALPHA);
+
     // Tex colors
     for (int i = 0; i < MAX_TEXTURES; ++i) {
         if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
-            if (i == 1 && CCF_HAS_FLAG(LIGHT_MAP)) {
+            if (i == 1 && useLightMap) {
                 vec3 lightMapColor = vec3(
                     float(UNPACK(uLightMapColor, 24, 8)) / 255.0,
                     float(UNPACK(uLightMapColor, 16, 8)) / 255.0,
                     float(UNPACK(uLightMapColor,  8, 8)) / 255.0
                 );
                 gTexColors[0].rgb *= lightMapColor;
-                gTexColors[1] = sample_tex(uTextures[1], vLightMap, uTexProperties[1].rgb);
+                gTexColors[1] = sample_tex(uTextures[1], vLightMap, uTexProperties[1].xyz);
                 gTexColors[1].rgb = clamp(gTexColors[1].rgb * gTexColors[1].rgb + gTexColors[1].rgb, 0.0, 1.0);
             } else {
-                gTexColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i].rgb);
+                gTexColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i].xyz);
             }
         }
     }
 
     // Noise
-    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(USE_NOISE)) {
+    if ((useAlpha && useDither) || useNoise) {
         gNoise = vec4(random(floor(vec3(gl_FragCoord.xy, float(uNoiseRandomSeed)))));
     }
 
-    // Extended combiners
-    // if (CCF_HAS_FLAG(USE_EXT_COLOR)) {
-    //     texel = combine_colors_ext(0);
-    // }
-    // if (CCF_HAS_FLAG(USE_EXT_ALPHA) && !CCF_HAS_FLAG(EXT_COLOR_ALPHA_SAME)) {
-    //     texel.a = combine_colors_ext(1).a;
-    // }
-
     // Color combiner
-    int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
+    int cycles = use2Cycle ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
         int ABCD_rgb = uCCS(cycle, 0);
         int ABCD_a   = uCCS(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
-        if (!CCF_HAS_FLAG(USE_EXT_COLOR) && !CCF_HAS_FLAG(USE_EXT_ALPHA) && (ABCD_rgb == ABCD_a || !CCF_HAS_FLAG(USE_ALPHA))) {
+        if ((ABCD_rgb == ABCD_a || !useAlpha) && !skipColor && !skipAlpha) {
             texel = combine_colors(texel, ABCD_rgb);
         }
 
         // Compute RGB and alpha separately
         else {
-            if (!CCF_HAS_FLAG(USE_EXT_COLOR)) {
+            if (!skipColor) {
                 texel.rgb = combine_colors(texel, ABCD_rgb).rgb;
             }
-            if (!CCF_HAS_FLAG(USE_EXT_ALPHA)) {
+            if (!skipAlpha) {
                 texel.a = combine_colors(texel, ABCD_a).a;
             }
         }
@@ -368,14 +432,26 @@ void main() {
     }
     texel = clamp(texel, 0.0, 1.0);
 
+    // Extended combiners
+    if (extColorAlphaSame) {
+        texel = combine_colors_ext(texel, 0);
+    } else {
+        if (useExtColor) {
+            texel.rgb = combine_colors_ext(texel, 0).rgb;
+        }
+        if (useExtAlpha) {
+            texel.a = combine_colors_ext(texel, 1).a;
+        }
+    }
+
     // Tex edge alpha
-    if (CCF_HAS_FLAG(TEX_EDGE) && CCF_HAS_FLAG(USE_ALPHA)) {
-        if (texel.a > 0.3) texel.a = 1.0;
+    if (texEdge && useAlpha) {
+        if (texel.a > 0.3) { texel.a = 1.0; }
         else discard;
     }
 
     // Global shader effects
-    if (CCF_HAS_FLAG(WORLD_GEOMETRY) && uShaderFlags != 0) {
+    if (worldGeometry && uShaderFlags != 0) {
         for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
             if (UNPACK(uShaderFlags, i, 1) != 0) {
                 float value = uShaderFlagValue(i);
@@ -394,8 +470,8 @@ void main() {
     }
 
     // Fog
-    if (CCF_HAS_FLAG(USE_FOG)) {
-        if (CCF_HAS_FLAG(USE_ALPHA)) {
+    if (useFog) {
+        if (useAlpha) {
             texel = vec4(mix(texel.rgb, vFog.rgb, vFog.a), texel.a);
         } else {
             texel = vec4(mix(texel.rgb, vFog.rgb, vFog.a), 1.0);
@@ -403,12 +479,12 @@ void main() {
     }
 
     // Dither
-    if (CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) {
+    if (useAlpha && useDither) {
         texel.a = gNoise.a < texel.a ? 1.0 : 0.0;
     }
 
     // Final color
-    if (CCF_HAS_FLAG(USE_ALPHA)) {
+    if (useAlpha) {
         oFragColor = texel;
     } else {
         oFragColor = vec4(texel.rgb, 1.0);
