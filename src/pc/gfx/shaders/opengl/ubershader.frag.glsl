@@ -399,6 +399,8 @@ void main() {
             } else {
                 gTexColors[i] = sample_tex(uTextures[i], vTexCoords[i], uTexProperties[i].xyz);
             }
+        } else {
+            gTexColors[i] = vec4(0);
         }
     }
 

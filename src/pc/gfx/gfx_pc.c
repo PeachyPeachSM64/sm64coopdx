@@ -76,6 +76,7 @@ struct RDP {
     struct TextureTile texture_tile[MAX_TILES];
     struct GfxTexture loaded_texture[MAX_TEXTURES];
     bool textures_changed[MAX_TEXTURES];
+    bool textures_enabled;
 
     uint32_t other_mode_l, other_mode_h;
     struct ColorCombiner color_combiner;
@@ -1049,6 +1050,13 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         cc->use_alpha = true;
     }
 
+    cc->used_textures = 0;
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
+        if (rdp.textures_enabled && rdp.loaded_texture[i].addr != NULL) {
+            cc->used_textures |= USED_TEXTURE(i);
+        }
+    }
+
     gfx_cc_update_features(cc);
 
     // hack: disable 2cycle if it uses a second texture that doesn't exist
@@ -1332,9 +1340,10 @@ static void gfx_sp_moveword(uint8_t index, uint16_t offset, uint32_t data) {
     }
 }
 
-static void gfx_sp_texture(uint16_t sc, uint16_t tc, UNUSED uint8_t level, UNUSED uint8_t tile, UNUSED uint8_t on) {
+static void gfx_sp_texture(uint16_t sc, uint16_t tc, UNUSED uint8_t level, UNUSED uint8_t tile, uint8_t on) {
     rsp.texture_scaling_factor.s = sc;
     rsp.texture_scaling_factor.t = tc;
+    rdp.textures_enabled = (on == G_ON);
 }
 
 static void gfx_dp_set_scissor(UNUSED uint32_t mode, uint32_t ulx, uint32_t uly, uint32_t lrx, uint32_t lry) {
@@ -1354,6 +1363,8 @@ static void gfx_dp_set_scissor(UNUSED uint32_t mode, uint32_t ulx, uint32_t uly,
 static void gfx_dp_set_texture_image(UNUSED uint32_t format, uint32_t size, UNUSED uint32_t width, const void* addr) {
     rdp.texture_to_load.addr = addr;
     rdp.texture_to_load.siz = size;
+    // Hack: enable this to make the HUD work properly
+    rdp.textures_enabled = (addr != NULL);
 }
 
 static void gfx_dp_set_tile(uint8_t fmt, uint32_t siz, uint32_t line, uint32_t tmem, uint8_t tile, uint32_t palette, uint32_t cmt, uint32_t maskt, uint32_t shiftt, uint32_t cms, uint32_t masks, uint32_t shifts) {
@@ -1933,6 +1944,7 @@ static void gfx_sp_reset(void) {
     rsp.modelview_matrix_stack_size = 1;
     rsp.current_num_lights = 2;
     rsp.lights_changed = true;
+    rdp.textures_enabled = false;
     num_gfx_states = 0;
 }
 
@@ -2244,6 +2256,7 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
         if (state & G_STATE_TEXTURES) {
             rsp.texture_scaling_factor = gfx_state->rsp.texture_scaling_factor;
             rdp.texture_to_load = gfx_state->rdp.texture_to_load;
+            rdp.textures_enabled = gfx_state->rdp.textures_enabled;
             memcpy(rdp.palette, gfx_state->rdp.palette, sizeof(rdp.palette));
             memcpy(rdp.texture_tile, gfx_state->rdp.texture_tile, sizeof(rdp.texture_tile));
             memcpy(rdp.loaded_texture, gfx_state->rdp.loaded_texture, sizeof(rdp.loaded_texture));
@@ -2315,6 +2328,7 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
         if (state & G_STATE_TEXTURES) {
             gfx_state->rsp.texture_scaling_factor = rsp.texture_scaling_factor;
             gfx_state->rdp.texture_to_load = rdp.texture_to_load;
+            gfx_state->rdp.textures_enabled = rdp.textures_enabled;
             memcpy(gfx_state->rdp.palette, rdp.palette, sizeof(rdp.palette));
             memcpy(gfx_state->rdp.texture_tile, rdp.texture_tile, sizeof(rdp.texture_tile));
             memcpy(gfx_state->rdp.loaded_texture, rdp.loaded_texture, sizeof(rdp.loaded_texture));

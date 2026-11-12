@@ -188,6 +188,7 @@ void gfx_cc_load_extended_combiner(struct ColorCombiner *cc, bool alpha, const c
 }
 
 void gfx_cc_update_features(struct ColorCombiner *cc) {
+    uint8_t valid_textures = cc->used_textures;
     cc->shader_inputs = 0;
     cc->features = 0;
 
@@ -285,4 +286,7 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
             }
         }
     }
+
+    // Disable textures that are not enabled or not valid
+    cc->used_textures &= valid_textures;
 }
