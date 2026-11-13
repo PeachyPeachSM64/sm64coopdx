@@ -39,13 +39,10 @@ Texture2D uTextures[MAX_TEXTURES] : register(t0);
 SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
 
 // Extended combiners
-// struct ExtendedCombiner {
-//     int4 ops[CC_EXT_MAX_OPS / 16];
-//     float4 constants[CC_EXT_MAX_CONSTANTS];
-// };
-// layout(std140) uniform ExtendedCombinerBlock {
-//     ExtendedCombiner uExtCC[2];
-// };
+cbuffer ExtendedCombiners : register(b1) {
+    int4   uExtCC_Ops[2 * (CC_EXT_MAX_OPS / 16)];
+    float4 uExtCC_Constants[2 * CC_EXT_MAX_CONSTANTS];
+};
 
 //
 // Color combiner
@@ -123,7 +120,139 @@ float4 combine_colors(in float4 texel, in int ABCD) {
 // Extended combiner
 //
 
-// TODO
+// Note: declaring these as global helps reducing GPU register pressure
+static float4 sStack[CC_EXT_STACK_SIZE];
+static float4 sRegisters[CC_EXT_MAX_REGISTERS];
+
+#define ARG(n) sStack[top - (n)]
+#define STACK_PUSH(args, operation) { \
+    float4 res = (operation); \
+    sStack[top - (args)] = res; \
+    top -= ((args) - 1); \
+}
+
+float cc_ext_dot_channel(in float4 arg1, in int channel) {
+    switch (channel) {
+        case CC_EXT_DOT_PARAM_0: return 0.0;
+        case CC_EXT_DOT_PARAM_1: return 1.0;
+        case CC_EXT_DOT_PARAM_R: return arg1.r;
+        case CC_EXT_DOT_PARAM_G: return arg1.g;
+        case CC_EXT_DOT_PARAM_B: return arg1.b;
+        case CC_EXT_DOT_PARAM_A: return arg1.a;
+    }
+    return 0.0;
+}
+
+float4 cc_ext_dot(in float4 arg1, in float4 arg2) {
+    return float4(
+        cc_ext_dot_channel(arg1, int(arg2.r)),
+        cc_ext_dot_channel(arg1, int(arg2.g)),
+        cc_ext_dot_channel(arg1, int(arg2.b)),
+        cc_ext_dot_channel(arg1, int(arg2.a))
+    );
+}
+
+float4 combine_colors_ext(in float4 texel, in int alpha) {
+    const int offsetOps = alpha * (CC_EXT_MAX_OPS / 16);
+    const int offsetConstants = alpha * (CC_EXT_MAX_CONSTANTS);
+    int top = 0;
+    for (int i = 0; i < CC_EXT_MAX_OPS; ++i) {
+        int op = (uExtCC_Ops[offsetOps + (i / 16)][(i / 4) % 4] >> (8 * (i % 4))) & 0xFF;
+        switch (op) {
+
+            // Values
+            case CC_EXT_0:          STACK_PUSH(0, float4(0.0, 0.0, 0.0, 0.0)); break;
+            case CC_EXT_1:          STACK_PUSH(0, float4(1.0, 1.0, 1.0, 1.0)); break;
+            case CC_EXT_COMBINED:   STACK_PUSH(0, texel); break;
+            case CC_EXT_COMBINEDA:  STACK_PUSH(0, texel.aaaa); break;
+            case CC_EXT_PRIM:       STACK_PUSH(0, vInputs.primitive); break;
+            case CC_EXT_PRIMA:      STACK_PUSH(0, vInputs.primitive.aaaa); break;
+            case CC_EXT_SHADE:      STACK_PUSH(0, vInputs.shade); break;
+            case CC_EXT_SHADEA:     STACK_PUSH(0, vInputs.shade.aaaa); break;
+            case CC_EXT_ENV:        STACK_PUSH(0, vInputs.environment); break;
+            case CC_EXT_ENVA:       STACK_PUSH(0, vInputs.environment.aaaa); break;
+            case CC_EXT_LOD:        STACK_PUSH(0, vInputs.lod); break;
+            case CC_EXT_NOISE:      STACK_PUSH(0, gNoise); break;
+            case CC_EXT_AMBIENT:    STACK_PUSH(0, vInputs.ambient); break;
+
+            // Operators
+            case CC_EXT_DOT:        STACK_PUSH(2, cc_ext_dot(ARG(1), ARG(2))); break;
+            case CC_EXT_NEG:        STACK_PUSH(1, -ARG(1)); break;
+            case CC_EXT_NOT:        STACK_PUSH(1, float4(!bool4(ARG(1)))); break;
+            case CC_EXT_POW:        STACK_PUSH(2, pow(ARG(1), ARG(2))); break;
+            case CC_EXT_MUL:        STACK_PUSH(2, (ARG(1) * ARG(2))); break;
+            case CC_EXT_DIV:        STACK_PUSH(2, (ARG(1) / ARG(2))); break;
+            case CC_EXT_MOD:        STACK_PUSH(2, fmod(ARG(1), ARG(2))); break;
+            case CC_EXT_ADD:        STACK_PUSH(2, (ARG(1) + ARG(2))); break;
+            case CC_EXT_SUB:        STACK_PUSH(2, (ARG(1) - ARG(2))); break;
+            case CC_EXT_LT:         STACK_PUSH(2, float4(ARG(1) < ARG(2))); break;
+            case CC_EXT_LEQ:        STACK_PUSH(2, float4(ARG(1) <= ARG(2))); break;
+            case CC_EXT_GT:         STACK_PUSH(2, float4(ARG(1) > ARG(2))); break;
+            case CC_EXT_GEQ:        STACK_PUSH(2, float4(ARG(1) >= ARG(2))); break;
+            case CC_EXT_EQ:         STACK_PUSH(2, float4(ARG(1) == ARG(2))); break;
+            case CC_EXT_NEQ:        STACK_PUSH(2, float4(ARG(1) != ARG(2))); break;
+            case CC_EXT_AND:        STACK_PUSH(2, float4(bool4(ARG(1)) && bool4(ARG(2)))); break;
+            case CC_EXT_OR:         STACK_PUSH(2, float4(bool4(ARG(1)) || bool4(ARG(2)))); break;
+            case CC_EXT_SET:        STACK_PUSH(2, sRegisters[int(ARG(1).x)] = ARG(2)); break;
+            case CC_EXT_END:        top = 0; break;
+
+            // Functions
+            case CC_EXT_VEC:        STACK_PUSH(4, float4(ARG(1).r, ARG(2).g, ARG(3).b, ARG(4).a)); break;
+            case CC_EXT_LERP:       STACK_PUSH(3, lerp(ARG(1), ARG(2), ARG(3))); break;
+            case CC_EXT_INVLERP:    STACK_PUSH(3, ((ARG(3) - ARG(1)) / (ARG(2) - ARG(1)))); break;
+            case CC_EXT_REMAP:      STACK_PUSH(5, lerp(ARG(3), ARG(4), ((ARG(5) - ARG(1)) / (ARG(2) - ARG(1))))); break;
+            case CC_EXT_IF:         STACK_PUSH(3, lerp(ARG(3), ARG(2), float4(bool4(ARG(1))))); break;
+            case CC_EXT_ABS:        STACK_PUSH(1, abs(ARG(1))); break;
+            case CC_EXT_MIN:        STACK_PUSH(2, min(ARG(1), ARG(2))); break;
+            case CC_EXT_MAX:        STACK_PUSH(2, max(ARG(1), ARG(2))); break;
+            case CC_EXT_CLAMP:      STACK_PUSH(3, clamp(ARG(1), ARG(2), ARG(3))); break;
+            case CC_EXT_SATURATE:   STACK_PUSH(1, clamp(ARG(1), 0.0, 1.0)); break;
+            case CC_EXT_COS:        STACK_PUSH(1, cos(ARG(1))); break;
+            case CC_EXT_SIN:        STACK_PUSH(1, sin(ARG(1))); break;
+            case CC_EXT_SQRT:       STACK_PUSH(1, sqrt(ARG(1))); break;
+            case CC_EXT_RSQRT:      STACK_PUSH(1, rsqrt(ARG(1))); break;
+            case CC_EXT_ROUND:      STACK_PUSH(1, round(ARG(1))); break;
+            case CC_EXT_FLOOR:      STACK_PUSH(1, floor(ARG(1))); break;
+            case CC_EXT_CEIL:       STACK_PUSH(1, ceil(ARG(1))); break;
+
+            default:
+
+            // Lights
+            if (op >= CC_EXT_LIGHT_FIRST && op <= CC_EXT_LIGHT_LAST) {
+                int index = op - CC_EXT_LIGHT_FIRST;
+                STACK_PUSH(0, index % 2 == 0 ?
+                              vInputs.lights[index / 2] :
+                              vInputs.lights[index / 2].aaaa);
+                break;
+            }
+
+            // Textures
+            if (op >= CC_EXT_TEXEL_FIRST && op <= CC_EXT_TEXEL_LAST) {
+                int index = op - CC_EXT_TEXEL_FIRST;
+                STACK_PUSH(0, index % 2 == 0 ?
+                              gTexColors[index / 2] :
+                              gTexColors[index / 2].aaaa);
+                break;
+            }
+
+            // Registers
+            if (op >= CC_EXT_REGISTER_FIRST && op <= CC_EXT_REGISTER_LAST) {
+                STACK_PUSH(0, sRegisters[op - CC_EXT_REGISTER_FIRST]);
+                break;
+            }
+
+            // Constants
+            if (op >= CC_EXT_CONST_FIRST && op <= CC_EXT_CONST_LAST) {
+                STACK_PUSH(0, uExtCC_Constants[offsetConstants + (op - CC_EXT_CONST_FIRST)]);
+                break;
+            }
+
+            // Terminator
+            return clamp(sStack[0], 0.0, 1.0);
+        }
+    }
+    return float4(0.0, 0.0, 0.0, 0.0);    
+}
 
 //
 // Global shader effects
@@ -300,17 +429,16 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     texel = clamp(texel, 0.0, 1.0);
 
     // Extended combiners
-    // TODO
-    // if (extColorAlphaSame) {
-    //     texel = combine_colors_ext(texel, 0);
-    // } else {
-    //     if (useExtColor) {
-    //         texel.rgb = combine_colors_ext(texel, 0).rgb;
-    //     }
-    //     if (useExtAlpha) {
-    //         texel.a = combine_colors_ext(texel, 1).a;
-    //     }
-    // }
+    if (extColorAlphaSame) {
+        texel = combine_colors_ext(texel, 0);
+    } else {
+        if (useExtColor) {
+            texel.rgb = combine_colors_ext(texel, 0).rgb;
+        }
+        if (useExtAlpha) {
+            texel.a = combine_colors_ext(texel, 1).a;
+        }
+    }
 
     // Tex edge alpha
     if (texEdge && useAlpha) {

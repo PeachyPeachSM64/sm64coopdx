@@ -228,19 +228,19 @@ vec4 combine_colors_ext(in vec4 texel, in int alpha) {
 
             // Lights
             if (op >= CC_EXT_LIGHT_FIRST && op <= CC_EXT_LIGHT_LAST) {
-                int i = op - CC_EXT_LIGHT_FIRST;
-                STACK_PUSH(0, i % 2 == 0 ?
-                              vLights[i / 2] :
-                              vLights[i / 2].aaaa);
+                int index = op - CC_EXT_LIGHT_FIRST;
+                STACK_PUSH(0, index % 2 == 0 ?
+                              vLights[index / 2] :
+                              vLights[index / 2].aaaa);
                 break;
             }
 
             // Textures
             if (op >= CC_EXT_TEXEL_FIRST && op <= CC_EXT_TEXEL_LAST) {
-                int i = op - CC_EXT_TEXEL_FIRST;
-                STACK_PUSH(0, i % 2 == 0 ?
-                              gTexColors[i / 2] :
-                              gTexColors[i / 2].aaaa);
+                int index = op - CC_EXT_TEXEL_FIRST;
+                STACK_PUSH(0, index % 2 == 0 ?
+                              gTexColors[index / 2] :
+                              gTexColors[index / 2].aaaa);
                 break;
             }
 
