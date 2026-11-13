@@ -428,6 +428,8 @@ static bool result_get_range(struct GrowingArray *ops, const Result *result, uin
     return result_get_range_internal(ops, result, from, to);
 }
 
+#if !GFX_CC_EXT_DISABLE_OPTIMIZATION
 void gfx_cc_ext_optimize(struct GrowingArray *ops, struct GrowingArray *constants);
+#endif
 
 #endif

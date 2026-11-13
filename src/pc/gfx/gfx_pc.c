@@ -73,8 +73,9 @@ static struct RSP rsp;
 struct RDP {
     const uint8_t *palette[2];
     struct UnloadedTex texture_to_load;
-    struct TextureTile texture_tile[MAX_TILES];
+    struct TextureTile texture_tile[MAX_TEXTURES];
     struct GfxTexture loaded_texture[MAX_TEXTURES];
+    uint8_t loadtile_index;
     bool textures_changed[MAX_TEXTURES];
     bool textures_enabled;
 
@@ -155,17 +156,22 @@ UNUSED static const uint8_t missing_texture[MISSING_W * MISSING_H * 4] = {
     0x00, 0x00, 0x00, 0xFF,  0x00, 0x00, 0x00, 0xFF,  0xFF, 0x00, 0xFF, 0xFF,  0xFF, 0x00, 0xFF, 0xFF,
 };
 
+static inline uint8_t gfx_get_texture_tile(uint8_t tile) {
+    if (tile == G_TX_LOADTILE) { return rdp.loadtile_index; }
+    if (tile == G_TX_LOADTILE_6_UNKNOWN) { return 1; }
+    return tile % MAX_TEXTURES;
+}
+
 static bool sOnlyTextureChangeOnAddrChange = false;
-static void gfx_update_loaded_texture(uint8_t tile_number, uint32_t size_bytes, const uint8_t* addr) {
-    if (tile_number >= MAX_TILES) { return; }
-    tile_number = rdp.texture_tile[tile_number].index;
+static void gfx_update_loaded_texture(uint8_t tile, uint32_t size_bytes, const uint8_t *addr) {
+    tile = gfx_get_texture_tile(tile);
     if (!sOnlyTextureChangeOnAddrChange) {
-        rdp.textures_changed[tile_number] = true;
-    } else if (!rdp.textures_changed[tile_number]) {
-        rdp.textures_changed[tile_number] = rdp.loaded_texture[tile_number].addr != addr;
+        rdp.textures_changed[tile] = true;
+    } else if (!rdp.textures_changed[tile]) {
+        rdp.textures_changed[tile] = rdp.loaded_texture[tile].addr != addr;
     }
-    rdp.loaded_texture[tile_number].size_bytes = size_bytes;
-    rdp.loaded_texture[tile_number].addr = addr;
+    rdp.loaded_texture[tile].size_bytes = size_bytes;
+    rdp.loaded_texture[tile].addr = addr;
 }
 
 //////////////////////////
@@ -228,7 +234,6 @@ static bool gfx_texture_cache_lookup(int tile, struct TextureHashmapNode **n, co
 }
 
 static void import_texture_rgba32(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     uint32_t width = rdp.texture_tile[tile].line_size_bytes / 2;
     uint32_t height = (rdp.loaded_texture[tile].size_bytes / 2) / rdp.texture_tile[tile].line_size_bytes;
@@ -236,7 +241,6 @@ static void import_texture_rgba32(int tile) {
 }
 
 static void import_texture_rgba16(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 2 > 0x2000) { return; }
     uint8_t rgba32_buf[0x2000];
@@ -260,7 +264,6 @@ static void import_texture_rgba16(int tile) {
 }
 
 static void import_texture_ia4(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 8 > 0x8000) { return; }
     uint8_t rgba32_buf[0x8000];
@@ -286,7 +289,6 @@ static void import_texture_ia4(int tile) {
 }
 
 static void import_texture_ia8(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 4 > 0x4000) { return; }
     uint8_t rgba32_buf[0x4000];
@@ -310,7 +312,6 @@ static void import_texture_ia8(int tile) {
 }
 
 static void import_texture_ia16(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 2 > 0x2000) { return; }
     uint8_t rgba32_buf[0x2000];
@@ -334,7 +335,6 @@ static void import_texture_ia16(int tile) {
 }
 
 static void import_texture_i4(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 8 > 0x8000) { return; }
     uint8_t rgba32_buf[0x8000];
@@ -355,7 +355,6 @@ static void import_texture_i4(int tile) {
 }
 
 static void import_texture_i8(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 4 > 0x4000) { return; }
     uint8_t rgba32_buf[0x4000];
@@ -375,7 +374,6 @@ static void import_texture_i8(int tile) {
 }
 
 static void import_texture_ci4(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 8 > 0x8000) { return; }
     uint8_t rgba32_buf[0x8000];
@@ -408,7 +406,6 @@ static void import_texture_ci4(int tile) {
 }
 
 static void import_texture_ci8(int tile) {
-    tile = tile % MAX_TILES;
     if (!rdp.loaded_texture[tile].addr) { return; }
     if (rdp.loaded_texture[tile].size_bytes * 4 > 0x4000) { return; }
     uint8_t rgba32_buf[0x4000];
@@ -434,7 +431,6 @@ static void import_texture_ci8(int tile) {
 }
 
 static void import_texture(int tile) {
-    tile = tile % MAX_TILES;
     extern s32 dynos_tex_import(void **output, void *ptr, s32 tile, void *grapi, void **hashmap, void *pool, s32 *poolpos, s32 poolsize);
     if (dynos_tex_import((void **) &rendering_state.textures[tile], (void *) rdp.loaded_texture[tile].addr, tile, gfx_rapi, (void **) gfx_texture_cache.hashmap, (void *) gfx_texture_cache.pool, (int *) &gfx_texture_cache.pool_pos, MAX_CACHED_TEXTURES)) { return; }
     uint8_t fmt = rdp.texture_tile[tile].fmt;
@@ -1077,22 +1073,22 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         rendering_state.alpha_blend = cc->use_alpha;
     }
 
-    for (int32_t i = 0; i < MAX_TEXTURES; i++) {
-        if (cc->used_textures & USED_TEXTURE(i)) {
-            if (rdp.textures_changed[i]) {
+    for (int32_t tile = 0; tile < MAX_TEXTURES; tile++) {
+        if (cc->used_textures & USED_TEXTURE(tile)) {
+            if (rdp.textures_changed[tile]) {
                 gfx_flush();
-                import_texture(i);
-                rdp.textures_changed[i] = false;
+                import_texture(tile);
+                rdp.textures_changed[tile] = false;
             }
             uint8_t filter = ((rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT) ? configFiltering : 0;
-            struct TextureHashmapNode* tex = rendering_state.textures[i];
+            struct TextureHashmapNode* tex = rendering_state.textures[tile];
             if (tex) {
-                if (filter != tex->filter || rdp.texture_tile[i].cms != tex->cms || rdp.texture_tile[i].cmt != rendering_state.textures[i]->cmt) {
+                if (filter != tex->filter || rdp.texture_tile[tile].cms != tex->cms || rdp.texture_tile[tile].cmt != rendering_state.textures[tile]->cmt) {
                     gfx_flush();
-                    gfx_rapi->set_sampler_parameters(i, filter, rdp.texture_tile[i].cms, rdp.texture_tile[i].cmt);
+                    gfx_rapi->set_sampler_parameters(tile, filter, rdp.texture_tile[tile].cms, rdp.texture_tile[tile].cmt);
                     tex->filter = filter;
-                    tex->cms = rdp.texture_tile[i].cms;
-                    tex->cmt = rdp.texture_tile[i].cmt;
+                    tex->cms = rdp.texture_tile[tile].cms;
+                    tex->cmt = rdp.texture_tile[tile].cmt;
                 }
             }
         }
@@ -1116,17 +1112,17 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         attribs->pos[3] = w;
 
         // Tex coords
-        for (int32_t j = 0; j < MAX_TEXTURES; j++) {
-            if (cc->used_textures & USED_TEXTURE(j)) {
-                uint32_t tex_width = (rdp.texture_tile[j].lrs - rdp.texture_tile[j].uls + 4) / 4;
-                uint32_t tex_height = (rdp.texture_tile[j].lrt - rdp.texture_tile[j].ult + 4) / 4;
-                float u = (vtx->u - rdp.texture_tile[j].uls * 8) / 32.0f;
-                float v = (vtx->v - rdp.texture_tile[j].ult * 8) / 32.0f;
+        for (int32_t tile = 0; tile < MAX_TEXTURES; tile++) {
+            if (cc->used_textures & USED_TEXTURE(tile)) {
+                uint32_t tex_width = (rdp.texture_tile[tile].lrs - rdp.texture_tile[tile].uls + 4) / 4;
+                uint32_t tex_height = (rdp.texture_tile[tile].lrt - rdp.texture_tile[tile].ult + 4) / 4;
+                float u = (vtx->u - rdp.texture_tile[tile].uls * 8) / 32.0f;
+                float v = (vtx->v - rdp.texture_tile[tile].ult * 8) / 32.0f;
 
-                int shifts = rdp.texture_tile[j].shifts;
-                int shiftt = rdp.texture_tile[j].shiftt;
-                UNUSED int masks = rdp.texture_tile[j].masks;
-                UNUSED int maskt = rdp.texture_tile[j].maskt;
+                int shifts = rdp.texture_tile[tile].shifts;
+                int shiftt = rdp.texture_tile[tile].shiftt;
+                UNUSED int masks = rdp.texture_tile[tile].masks;
+                UNUSED int maskt = rdp.texture_tile[tile].maskt;
                 if (shifts != 0) {
                     if (shifts <= 10) {
                         u /= 1 << shifts;
@@ -1148,8 +1144,8 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                     v += 0.5f;
                 }
 
-                attribs->tex_coords[j][0] = u / tex_width;
-                attribs->tex_coords[j][1] = v / tex_height;
+                attribs->tex_coords[tile][0] = u / tex_width;
+                attribs->tex_coords[tile][1] = v / tex_height;
             }
         }
 
@@ -1367,20 +1363,45 @@ static void gfx_dp_set_texture_image(UNUSED uint32_t format, uint32_t size, UNUS
     rdp.textures_enabled = (addr != NULL);
 }
 
+//
+// https://ultra64.ca/files/documentation/online-manuals/functions_reference_manual_2.0i/gdp/gDPSetTile.html
+//
+// Some notes about `DPSetTile`:
+// - `tile` is supposed to be a tile descriptor index, not a texture index. `tmem` translates to the texture index.
+// - `SPTexture` should enable or disable the right texture corresponding to the given tile descriptor.
+//
+// However, it doesn't work exactly like that in the PC port implementation:
+// - Textures are loaded during `DPLoadBlock` and `DPLoadTile`, using the tile descriptor given to these commands.
+// - The given tile descriptor is directly translated to the texture index, meaning tile descriptors above `MAX_TEXTURES` are never (and cannot be) used.
+//
+// To keep compatibility with the N64 behavior:
+// - `G_TX_LOADTILE` is used as the tile descriptor to set the texture index via `tmem`. One caveat: `tmem` is only 9 bits, meaning only texture 0 and 1 can be set this way.
+// - `G_TX_LOADTILE_6_UNKNOWN` appears in some display lists and seems to always map to texture 1.
+// - All other `tile` values directly translates to the corresponding texture index.
+//
 static void gfx_dp_set_tile(uint8_t fmt, uint32_t siz, uint32_t line, uint32_t tmem, uint8_t tile, uint32_t palette, uint32_t cmt, uint32_t maskt, uint32_t shiftt, uint32_t cms, uint32_t masks, uint32_t shifts) {
-    rdp.texture_tile[tile].fmt = fmt;
-    rdp.texture_tile[tile].siz = siz;
-    rdp.texture_tile[tile].cms = cms;
-    rdp.texture_tile[tile].cmt = cmt;
-    rdp.texture_tile[tile].shifts = shifts;
-    rdp.texture_tile[tile].shiftt = shiftt;
-    rdp.texture_tile[tile].masks = masks;
-    rdp.texture_tile[tile].maskt = maskt;
-    rdp.texture_tile[tile].line_size_bytes = line * 8;
-    rdp.texture_tile[tile].tmem = tmem;
-    rdp.texture_tile[tile].palette = palette;
-    // For some reason toad player's face breaks without this line, everything else is fine though
-    rdp.texture_tile[tile].index = (tile == G_TX_LOADTILE ? tmem/256 : (tile == G_TX_LOADTILE_6_UNKNOWN ? 1 : 0));
+    switch (tile) {
+        case G_TX_LOADTILE:
+            rdp.loadtile_index = (tmem / 256) % MAX_TEXTURES;
+            break;
+        case G_TX_LOADTILE_6_UNKNOWN:
+            // it seems to always map to texture tile 1
+            break;
+        default:
+            tile = tile % MAX_TEXTURES;
+            rdp.texture_tile[tile].fmt = fmt;
+            rdp.texture_tile[tile].siz = siz;
+            rdp.texture_tile[tile].cms = cms;
+            rdp.texture_tile[tile].cmt = cmt;
+            rdp.texture_tile[tile].shifts = shifts;
+            rdp.texture_tile[tile].shiftt = shiftt;
+            rdp.texture_tile[tile].masks = masks;
+            rdp.texture_tile[tile].maskt = maskt;
+            rdp.texture_tile[tile].line_size_bytes = line * 8;
+            rdp.texture_tile[tile].palette = palette;
+            break;
+    }
+
     if (!sOnlyTextureChangeOnAddrChange) {
         rdp.textures_changed[0] = true;
         rdp.textures_changed[1] = true;
@@ -1388,6 +1409,7 @@ static void gfx_dp_set_tile(uint8_t fmt, uint32_t siz, uint32_t line, uint32_t t
 }
 
 static void gfx_dp_set_tile_size(uint8_t tile, uint16_t uls, uint16_t ult, uint16_t lrs, uint16_t lrt) {
+    tile = gfx_get_texture_tile(tile);
     rdp.texture_tile[tile].uls = uls;
     rdp.texture_tile[tile].ult = ult;
     rdp.texture_tile[tile].lrs = lrs;
@@ -1400,7 +1422,7 @@ static void gfx_dp_set_tile_size(uint8_t tile, uint16_t uls, uint16_t ult, uint1
 
 static void gfx_dp_load_tlut(uint8_t tile, uint32_t high_index) {
     SUPPORT_CHECK(rdp.texture_to_load.siz == G_IM_SIZ_16b);
-    if (rdp.texture_tile[tile].tmem == 256) {
+    if (gfx_get_texture_tile(tile) == 1) {
         rdp.palette[0] = rdp.texture_to_load.addr;
         if (high_index == 255) {
             rdp.palette[1] = rdp.texture_to_load.addr + 256;
@@ -1411,7 +1433,6 @@ static void gfx_dp_load_tlut(uint8_t tile, uint32_t high_index) {
 }
 
 static void gfx_dp_load_block(uint8_t tile, uint32_t uls, uint32_t ult, uint32_t lrs, UNUSED uint32_t dxt) {
-    //if (tile == 1) return;
     SUPPORT_CHECK(uls == 0);
     SUPPORT_CHECK(ult == 0);
 
@@ -1431,6 +1452,7 @@ static void gfx_dp_load_block(uint8_t tile, uint32_t uls, uint32_t ult, uint32_t
             word_size_shift = 2;
             break;
     }
+
     uint32_t size_bytes = (lrs + 1) << word_size_shift;
     gfx_update_loaded_texture(tile, size_bytes, rdp.texture_to_load.addr);
 }
@@ -1457,10 +1479,6 @@ static void gfx_dp_load_tile(uint8_t tile, uint32_t uls, uint32_t ult, uint32_t 
 
     uint32_t size_bytes = (((lrs >> G_TEXTURE_IMAGE_FRAC) + 1) * ((lrt >> G_TEXTURE_IMAGE_FRAC) + 1)) << word_size_shift;
     gfx_update_loaded_texture(tile, size_bytes, rdp.texture_to_load.addr);
-    rdp.texture_tile[tile].uls = uls;
-    rdp.texture_tile[tile].ult = ult;
-    rdp.texture_tile[tile].lrs = lrs;
-    rdp.texture_tile[tile].lrt = lrt;
 }
 
 static void gfx_dp_set_combine_mode(
@@ -1945,6 +1963,7 @@ static void gfx_sp_reset(void) {
     rsp.current_num_lights = 2;
     rsp.lights_changed = true;
     rdp.textures_enabled = false;
+    rdp.loadtile_index = 0;
     num_gfx_states = 0;
 }
 
@@ -2014,6 +2033,7 @@ void gfx_start_frame(void) {
 
 void gfx_run(Gfx *commands) {
     gfx_sp_reset();
+    gfx_cc_ext_clear_combiner_cache(false);
 
     sHasInverseCameraMatrix = false;
 
@@ -2257,6 +2277,7 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
             rsp.texture_scaling_factor = gfx_state->rsp.texture_scaling_factor;
             rdp.texture_to_load = gfx_state->rdp.texture_to_load;
             rdp.textures_enabled = gfx_state->rdp.textures_enabled;
+            rdp.loadtile_index = gfx_state->rdp.loadtile_index;
             memcpy(rdp.palette, gfx_state->rdp.palette, sizeof(rdp.palette));
             memcpy(rdp.texture_tile, gfx_state->rdp.texture_tile, sizeof(rdp.texture_tile));
             memcpy(rdp.loaded_texture, gfx_state->rdp.loaded_texture, sizeof(rdp.loaded_texture));
@@ -2329,6 +2350,7 @@ static void gfx_sp_load_or_save_state(uint8_t cmd, uint32_t state) {
             gfx_state->rsp.texture_scaling_factor = rsp.texture_scaling_factor;
             gfx_state->rdp.texture_to_load = rdp.texture_to_load;
             gfx_state->rdp.textures_enabled = rdp.textures_enabled;
+            gfx_state->rdp.loadtile_index = rdp.loadtile_index;
             memcpy(gfx_state->rdp.palette, rdp.palette, sizeof(rdp.palette));
             memcpy(gfx_state->rdp.texture_tile, rdp.texture_tile, sizeof(rdp.texture_tile));
             memcpy(gfx_state->rdp.loaded_texture, rdp.loaded_texture, sizeof(rdp.loaded_texture));

@@ -16,8 +16,8 @@
 
 #define CC_COMPONENTS       4  // ABCD
 #define CC_CYCLES           2  // Cycles
-#define MAX_ACTIVE_LIGHTS   4  // must be a multiple of 4
-#define MAX_TEXTURES        2  // must be a multiple of 2
+#define MAX_ACTIVE_LIGHTS   8  // must be a multiple of 4
+#define MAX_TEXTURES        4  // must be a multiple of 2
 
 //
 // CC sources

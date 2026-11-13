@@ -7,9 +7,11 @@
 # define FOR_WINDOWS 0
 #endif
 
+#ifndef VSCODE
 #if FOR_WINDOWS || defined(OSX_BUILD)
 # define GLEW_STATIC
 # include <GL/glew.h>
+#endif
 #endif
 
 #define GL_GLEXT_PROTOTYPES 1
@@ -79,14 +81,14 @@ static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) 
     const size_t num_attribs = gfx_shaders_get_num_attribs();
     prg->attrib_locations = malloc(sizeof(*prg->attrib_locations) * num_attribs);
     if (!prg->attrib_locations) {
-        sys_fatal("Error occurred when trying to locate vertex attributes:\nCannot create attribute locations");
+        sys_fatal("Cannot create attribute locations");
     }
 
     for (size_t i = 0; i < num_attribs; ++i) {
         const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(i);
         prg->attrib_locations[i] = glGetAttribLocation(prg->program, attrib->name);
         if (prg->attrib_locations[i] == -1) {
-            sys_fatal("Error occurred when trying to locate vertex attributes:\nCannot locate attribute \"%s\" in vertex shader", attrib->name);
+            sys_fatal("Cannot locate attribute \"%s\" in vertex shader", attrib->name);
         }
     }
 }
@@ -117,38 +119,25 @@ static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
     const size_t num_uniforms = gfx_shaders_get_num_uniforms();
     prg->uniform_locations = malloc(sizeof(*prg->uniform_locations) * num_uniforms);
     if (!prg->uniform_locations) {
-        sys_fatal("Error occurred when trying to locate shader uniforms:\nCannot create uniform locations");
+        sys_fatal("Cannot create uniform locations");
     }
 
     for (size_t i = 0; i < num_uniforms; ++i) {
         const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
         prg->uniform_locations[i] = glGetUniformLocation(prg->program, uniform->name);
+        if (prg->uniform_locations[i] == -1) {
+            sys_fatal("Cannot locate uniform \"%s\" in fragment shader", uniform->name);
+        }
     }
 
     // Samplers
     GLint sampler_location = glGetUniformLocation(prg->program, "uTextures");
-    for (int i = 0; i < MAX_TEXTURES; ++i) { glUniform1i(sampler_location + i, i); }
-}
-
-static void gfx_opengl_update_extended_combiner_uniform(struct GLShaderProgram *prg, int index) {
-    const struct ExtendedCombiner *ec = prg->cc.ec[index];
-
-    // Update ubo only when necessary
-    if (prg->ec[index] == ec) {
-        return;
+    if (sampler_location == -1) {
+        sys_fatal("Cannot locate uniform \"uTextures\" in fragment shader");
     }
-
-    // Convert extended combiner to a GPU friendly struct
-    struct GLExtendedCombiner glec = {0};
-    memcpy(glec.constants, ec->constants, sizeof(glec.constants));
-    for (int i = 0; i < ARRAY_COUNT(ec->ops); ++i) {
-        glec.ops[i / 16][(i / 4) % 4] |= (ec->ops[i] << (8 * (i % 4)));
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
+        glUniform1i(sampler_location + i, i);
     }
-
-    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
-
-    prg->ec[index] = ec;
 }
 
 static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
@@ -173,10 +162,50 @@ static void gfx_opengl_upload_shader_uniforms(struct GLShaderProgram *prg, const
                 case2 (SHADER_DATA_TYPE_FLOAT, 2): glUniform2fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
                 case2 (SHADER_DATA_TYPE_FLOAT, 3): glUniform3fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
                 case2 (SHADER_DATA_TYPE_FLOAT, 4): glUniform4fv(location, uniform->count, (float *) ((uintptr_t) data + uniform->offset)); break;
-                default: sys_fatal("not implemented");
+                default: sys_fatal("Uniform type not implemented: %d, %d", uniform->type, uniform->components);
             }
         }
     }
+}
+
+  ////////////////////////
+ // Extended combiners //
+////////////////////////
+
+static void gfx_opengl_locate_extended_combiners(struct GLShaderProgram *prg) {
+    glGenBuffers(1, &opengl_ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(prg->ec), NULL, GL_DYNAMIC_DRAW); 
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+    GLuint ubo_index = glGetUniformBlockIndex(prg->program, "ExtendedCombinerBlock");
+    if (ubo_index == GL_INVALID_INDEX) {
+        sys_fatal("Cannot locate uniform block \"ExtendedCombinerBlock\" in fragment shader");
+    }
+    GLuint binding_point_index = 0;
+    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, opengl_ubo);
+    glUniformBlockBinding(prg->program, ubo_index, binding_point_index);
+}
+
+static void gfx_opengl_update_extended_combiner(struct GLShaderProgram *prg, int index) {
+    const struct ExtendedCombiner *ec = prg->cc.ec[index];
+
+    // Update ubo only when necessary
+    if (prg->ec[index] == ec) {
+        return;
+    }
+
+    // Convert extended combiner to a GPU friendly struct
+    struct GLExtendedCombiner glec = {0};
+    memcpy(glec.constants, ec->constants, sizeof(glec.constants));
+    for (int i = 0; i < ARRAY_COUNT(ec->ops); ++i) {
+        glec.ops[i / 16][(i / 4) % 4] |= (ec->ops[i] << (8 * (i % 4)));
+    }
+
+    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
+    glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
+
+    prg->ec[index] = ec;
 }
 
   /////////////
@@ -209,8 +238,22 @@ static const char GL_UBERSHADER_FRAG[] = {
 #endif
 };
 
+#define fatal_error(type, id, message) { \
+    GLint max_length = 0; \
+    glGet##type##iv(id, GL_INFO_LOG_LENGTH, &max_length); \
+    char error_log[4096]; \
+    fprintf(stderr, message "\n"); \
+    glGet##type##InfoLog(id, max_length, &max_length, error_log); \
+    fprintf(stderr, "%s\n", error_log); \
+    sys_fatal(message " (see terminal)"); \
+}
+
 static void gfx_opengl_load_ubershader(void) {
     GLint success;
+
+    //
+    // Create and build vertex shader
+    //
 
     const GLchar *vertex_sources[] = {
         GL_UBERSHADER_VERSION,
@@ -226,14 +269,12 @@ static void gfx_opengl_load_ubershader(void) {
     glCompileShader(vertex_shader);
     glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        GLint max_length = 0;
-        glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
-        char error_log[1024];
-        fprintf(stderr, "Vertex shader compilation failed\n");
-        glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
-        fprintf(stderr, "%s\n", &error_log[0]);
-        sys_fatal("vertex shader compilation failed (see terminal)");
+        fatal_error(Shader, vertex_shader, "Vertex shader compilation failed");
     }
+
+    //
+    // Create and build fragment shader
+    //
 
     const GLchar *fragment_sources[] = {
         GL_UBERSHADER_VERSION,
@@ -249,14 +290,12 @@ static void gfx_opengl_load_ubershader(void) {
     glCompileShader(fragment_shader);
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
     if (!success) {
-        GLint max_length = 0;
-        glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
-        char error_log[1024];
-        fprintf(stderr, "Fragment shader compilation failed\n");
-        glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
-        fprintf(stderr, "%s\n", &error_log[0]);
-        sys_fatal("fragment shader compilation failed (see terminal)");
+        fatal_error(Shader, fragment_shader, "Fragment shader compilation failed");
     }
+
+    //
+    // Create and link shader program
+    //
 
     GLuint shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
@@ -265,13 +304,7 @@ static void gfx_opengl_load_ubershader(void) {
     glUseProgram(shader_program);
     glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
     if (!success) {
-        GLint max_length = 0;
-        glGetProgramiv(shader_program, GL_INFO_LOG_LENGTH, &max_length);
-        char error_log[1024];
-        fprintf(stderr, "Program link failed\n");
-        glGetProgramInfoLog(shader_program, max_length, &max_length, &error_log[0]);
-        fprintf(stderr, "%s\n", &error_log[0]);
-        sys_fatal("program link failed (see terminal)");
+        fatal_error(Program, shader_program, "Program linkage failed");
     }
 
     opengl_prg.program = shader_program;
@@ -282,6 +315,9 @@ static void gfx_opengl_load_ubershader(void) {
 
     // Set up uniforms
     gfx_opengl_locate_uniforms(&opengl_prg);
+
+    // Set up extended combiners
+    gfx_opengl_locate_extended_combiners(&opengl_prg);
 }
 
 static bool gfx_opengl_z_is_from_0_to_1(void) {
@@ -306,10 +342,10 @@ static void gfx_opengl_update_uniforms(void) {
 
     // Extended combiners
     if (prg->cc.use_ext_color) {
-        gfx_opengl_update_extended_combiner_uniform(prg, 0);
+        gfx_opengl_update_extended_combiner(prg, 0);
     }
     if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
-        gfx_opengl_update_extended_combiner_uniform(prg, 1);
+        gfx_opengl_update_extended_combiner(prg, 1);
     }
 }
 
@@ -317,7 +353,7 @@ static GLuint gfx_opengl_new_texture(void) {
     if (num_textures >= tex_cache_size) {
         tex_cache_size += TEX_CACHE_STEP;
         tex_cache = realloc(tex_cache, sizeof(struct GLTexture) * tex_cache_size);
-        if (!tex_cache) sys_fatal("out of memory allocating texture cache");
+        if (!tex_cache) sys_fatal("Out of memory allocating texture cache");
         // invalidate these because they might be pointing to garbage now
         opengl_tex[0] = NULL;
         opengl_tex[1] = NULL;
@@ -440,12 +476,12 @@ static void gfx_opengl_init(void) {
 #if FOR_WINDOWS || defined(OSX_BUILD)
     GLenum err;
     if ((err = glewInit()) != GLEW_OK)
-        sys_fatal("could not init GLEW:\n%s", glewGetErrorString(err));
+        sys_fatal("Could not init GLEW:\n%s", glewGetErrorString(err));
 #endif
 
     tex_cache_size = TEX_CACHE_STEP;
     tex_cache = calloc(tex_cache_size, sizeof(struct GLTexture));
-    if (!tex_cache) sys_fatal("out of memory allocating texture cache");
+    if (!tex_cache) sys_fatal("Out of memory allocating texture cache");
 
     // check GL version
     int vmajor = 0;
@@ -467,16 +503,6 @@ static void gfx_opengl_init(void) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     gfx_opengl_load_ubershader();
-
-    glGenBuffers(1, &opengl_ubo);
-    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(opengl_prg.ec), NULL, GL_DYNAMIC_DRAW); 
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-    GLuint opengl_ubo_index = glGetUniformBlockIndex(opengl_prg.program, "ExtendedCombinerBlock");
-    GLuint binding_point_index = 0;
-    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, opengl_ubo);
-    glUniformBlockBinding(opengl_prg.program, opengl_ubo_index, binding_point_index);
 }
 
 bool gfx_opengl_check_compatibility(void) {

@@ -316,7 +316,7 @@ bool growing_array_pop_range(struct GrowingArray *array, u32 index, u32 count) {
     if (count == 1) {
         return growing_array_pop_index(array, index);
     }
-    if (!growing_array_move(array, index, array->count, count)) {
+    if (index + count != array->count && !growing_array_move(array, index, array->count, count)) {
         return false;
     }
     array->count -= count;

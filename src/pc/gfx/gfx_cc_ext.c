@@ -9,6 +9,8 @@
 
 static void *sExtCombinerCache = NULL;
 
+#define CC_EXT_CACHE_LIMIT (1llu << 20) // Purge cache if it ever reaches that threshold
+
 static_assert(CC_EXT_COUNT <= CC_EXT_SPECIAL);
 
 #define CC_EXT_OPERATOR(id, name, args, ...) static_assert(args <= CC_EXT_MAX_ARGS);
@@ -1010,36 +1012,14 @@ const struct ExtendedCombiner *gfx_cc_ext_get_combiner(const char *str, const ch
     return ec;
 }
 
-void gfx_cc_ext_clear_combiner_cache() {
-    void *ec = hmap_data_begin(sExtCombinerCache);
-    while (ec) {
-        free(ec);
-        ec = hmap_data_next(sExtCombinerCache);
+void gfx_cc_ext_clear_combiner_cache(bool force) {
+    if (force || hmap_data_len(sExtCombinerCache) >= CC_EXT_CACHE_LIMIT) {
+        void *ec = hmap_data_begin(sExtCombinerCache);
+        while (ec) {
+            free(ec);
+            ec = hmap_data_next(sExtCombinerCache);
+        }
+        hmap_data_destroy(sExtCombinerCache);
+        sExtCombinerCache = NULL;
     }
-    hmap_data_destroy(sExtCombinerCache);
-    sExtCombinerCache = NULL;
-}
-
-
-// TODO
-// Add lights color as uniforms
-// Add lights intensity as vertex attribs?
-
-
-
-__attribute__((constructor)) static void aaaa() {
-
-
-    // const char TEST[] = "texEnv = (TEXEL0 + lerp(ENV, 0.5, 0.7)); primShade = (PRIM + 2) * SHADE; texEnv % primShade";
-
-
-    // struct ExtendedCombiner ec;
-    // const char *err = gfx_cc_ext_parse_combiner(TEST, &ec);
-
-    // if (err) {
-    //     printf("%s\n", err);
-    // }
-
-
-    // exit(0);
 }

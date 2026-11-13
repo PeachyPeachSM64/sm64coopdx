@@ -702,6 +702,7 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     if (exiting) { return; }
 
     dynos_model_clear_pool(MODEL_POOL_SESSION);
+    gfx_cc_ext_clear_combiner_cache(true);
 
     // reset other stuff
     extern u8* gOverrideEeprom;

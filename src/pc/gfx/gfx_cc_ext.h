@@ -35,6 +35,6 @@ struct ExtendedCombiner {
 
 const char *gfx_cc_ext_get_shader_source();
 const struct ExtendedCombiner *gfx_cc_ext_get_combiner(const char *str, const char **error_msg);
-void gfx_cc_ext_clear_combiner_cache();
+void gfx_cc_ext_clear_combiner_cache(bool force);
 
 #endif

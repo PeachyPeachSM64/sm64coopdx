@@ -26,7 +26,6 @@
 #define MAX_MATRIX_STACK_SIZE 11
 #define MAX_LIGHTS (2 * (1 + PLAYER_PART_MAX)) // (diffuse, ambient) for base and each player part
 #define MAX_VERTICES 64
-#define MAX_TILES 8
 #define MAX_CACHED_TEXTURES 4096 // for preloading purposes
 #define MAX_GFX_STATES 8
 
@@ -75,8 +74,6 @@ struct UnloadedTex {
 struct TextureTile {
     uint8_t fmt;
     uint8_t siz;
-    uint16_t tmem;
-    uint8_t index;
     uint8_t cms, cmt;
     uint8_t masks, maskt, shifts, shiftt;
     uint16_t uls, ult, lrs, lrt; // U10.2
