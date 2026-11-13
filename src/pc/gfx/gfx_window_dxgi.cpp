@@ -112,7 +112,7 @@ static bool gfx_window_dxgi_start_frame(void) {
 }
 
 static void gfx_window_dxgi_swap_buffers_begin(void) {
-    UINT syncInterval = configWindow.vsync;
+    UINT syncInterval = 0;//configWindow.vsync; TODO: broken?
     UINT presentFlags = 0;
     if (!syncInterval && dxgi.allow_tearing) {
         presentFlags |= DXGI_PRESENT_ALLOW_TEARING;

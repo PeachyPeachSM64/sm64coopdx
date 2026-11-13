@@ -34,17 +34,22 @@ namespace {
 struct D3D11Texture {
     ComPtr<ID3D11ShaderResourceView> resource_view;
     ComPtr<ID3D11SamplerState> sampler_state;
-    uint32_t width;
-    uint32_t height;
-    uint8_t filter;
+    struct TextureProperties properties;
 };
 
 struct D3D11ShaderProgram {
     ComPtr<ID3D11VertexShader> vertex_shader;
     ComPtr<ID3D11PixelShader> pixel_shader;
     ComPtr<ID3D11InputLayout> input_layout;
-    uint32_t uniform_locations[4]; // TODO
+    uint32_t *uniform_locations;
     struct ColorCombiner cc;
+    const struct ExtendedCombiner *ec[2];
+};
+
+template <typename T>
+struct D3D11ConstantBuffer {
+    T data;
+    ComPtr<ID3D11Buffer> buffer;
 };
 
 static struct {
@@ -65,7 +70,6 @@ static struct {
     ComPtr<ID3D11RasterizerState> rasterizer_states[2];
     ComPtr<ID3D11BlendState> blend_states[2];
     ComPtr<ID3D11Buffer> vertex_buffer;
-    ComPtr<ID3D11Buffer> cb;
     size_t vertex_buffer_offset;
 
 #if DEBUG_D3D
@@ -74,9 +78,7 @@ static struct {
 
     DXGI_SAMPLE_DESC sample_description;
 
-    struct ShaderUniforms cb_data;
-    bool cb_dirty = true;
-    uint32_t frame_count;
+    D3D11ConstantBuffer<struct ShaderUniforms> uniforms;
 
     std::vector<D3D11Texture> textures;
     int current_tile;
@@ -94,59 +96,24 @@ static struct {
  // Attributes //
 ////////////////
 
-// Type, components, normalized
-static const DXGI_FORMAT D3D11_ATTRIB_TYPES[][4][2] = {
-    [SHADER_DATA_TYPE_INT8] = {
-        { DXGI_FORMAT_R8_SINT,       DXGI_FORMAT_R8_SNORM       },
-        { DXGI_FORMAT_R8G8_SINT,     DXGI_FORMAT_R8G8_SNORM     },
-        { DXGI_FORMAT_UNKNOWN,       DXGI_FORMAT_UNKNOWN        },
-        { DXGI_FORMAT_R8G8B8A8_SINT, DXGI_FORMAT_R8G8B8A8_SNORM },
-    },
-    [SHADER_DATA_TYPE_UINT8] = {
-        { DXGI_FORMAT_R8_UINT,       DXGI_FORMAT_R8_UNORM       },
-        { DXGI_FORMAT_R8G8_UINT,     DXGI_FORMAT_R8G8_UNORM     },
-        { DXGI_FORMAT_UNKNOWN,       DXGI_FORMAT_UNKNOWN        },
-        { DXGI_FORMAT_R8G8B8A8_UINT, DXGI_FORMAT_R8G8B8A8_UNORM },
-    },
-    [SHADER_DATA_TYPE_INT16] = {
-        { DXGI_FORMAT_R16_SINT,          DXGI_FORMAT_R16_SNORM          },
-        { DXGI_FORMAT_R16G16_SINT,       DXGI_FORMAT_R16G16_SNORM       },
-        { DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN            },
-        { DXGI_FORMAT_R16G16B16A16_SINT, DXGI_FORMAT_R16G16B16A16_SNORM },
-    },
-    [SHADER_DATA_TYPE_UINT16] = {
-        { DXGI_FORMAT_R16_UINT,          DXGI_FORMAT_R16_UNORM          },
-        { DXGI_FORMAT_R16G16_UINT,       DXGI_FORMAT_R16G16_UNORM       },
-        { DXGI_FORMAT_UNKNOWN,           DXGI_FORMAT_UNKNOWN            },
-        { DXGI_FORMAT_R16G16B16A16_UINT, DXGI_FORMAT_R16G16B16A16_UNORM },
-    },
-    [SHADER_DATA_TYPE_INT32] = {
-        { DXGI_FORMAT_R32_SINT,          DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32_SINT,       DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32B32_SINT,    DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32B32A32_SINT, DXGI_FORMAT_UNKNOWN },
-    },
-    [SHADER_DATA_TYPE_UINT32] = {
-        { DXGI_FORMAT_R32_UINT,          DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32_UINT,       DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32B32_UINT,    DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32B32A32_UINT, DXGI_FORMAT_UNKNOWN },
-    },
-    [SHADER_DATA_TYPE_FLOAT] = {
-        { DXGI_FORMAT_R32_FLOAT,          DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32_FLOAT,       DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32B32_FLOAT,    DXGI_FORMAT_UNKNOWN },
-        { DXGI_FORMAT_R32G32B32A32_FLOAT, DXGI_FORMAT_UNKNOWN },
-    },
+// Type, components
+static const DXGI_FORMAT D3D11_ATTRIB_TYPES[][4] = {
+    [SHADER_DATA_TYPE_INT8]   = { DXGI_FORMAT_R8_SINT,   DXGI_FORMAT_R8G8_SINT,    DXGI_FORMAT_UNKNOWN,         DXGI_FORMAT_R8G8B8A8_SINT      },
+    [SHADER_DATA_TYPE_UINT8]  = { DXGI_FORMAT_R8_UINT,   DXGI_FORMAT_R8G8_UINT,    DXGI_FORMAT_UNKNOWN,         DXGI_FORMAT_R8G8B8A8_UINT      },
+    [SHADER_DATA_TYPE_INT16]  = { DXGI_FORMAT_R16_SINT,  DXGI_FORMAT_R16G16_SINT,  DXGI_FORMAT_UNKNOWN,         DXGI_FORMAT_R16G16B16A16_SINT  },
+    [SHADER_DATA_TYPE_UINT16] = { DXGI_FORMAT_R16_UINT,  DXGI_FORMAT_R16G16_UINT,  DXGI_FORMAT_UNKNOWN,         DXGI_FORMAT_R16G16B16A16_UINT  },
+    [SHADER_DATA_TYPE_INT32]  = { DXGI_FORMAT_R32_SINT,  DXGI_FORMAT_R32G32_SINT,  DXGI_FORMAT_R32G32B32_SINT,  DXGI_FORMAT_R32G32B32A32_SINT  },
+    [SHADER_DATA_TYPE_UINT32] = { DXGI_FORMAT_R32_UINT,  DXGI_FORMAT_R32G32_UINT,  DXGI_FORMAT_R32G32B32_UINT,  DXGI_FORMAT_R32G32B32A32_UINT  },
+    [SHADER_DATA_TYPE_FLOAT]  = { DXGI_FORMAT_R32_FLOAT, DXGI_FORMAT_R32G32_FLOAT, DXGI_FORMAT_R32G32B32_FLOAT, DXGI_FORMAT_R32G32B32A32_FLOAT },
 };
 
 static size_t gfx_d3d11_get_input_element_desc_size() {
     size_t size = 0;
-    // TODO
-    // for (int i = 0; i < MAX_ATTRIBUTES; ++i) {
-    //     const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
-    //     size += attrib->count;
-    // }
+    const size_t num_attribs = gfx_shaders_get_num_attribs();
+    for (size_t i = 0; i < num_attribs; ++i) {
+        const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(i);
+        size += attrib->count;
+    }
     return size;
 }
 
@@ -155,21 +122,21 @@ static void gfx_d3d11_create_input_layout(D3D11ShaderProgram *prg, const void *v
     D3D11_INPUT_ELEMENT_DESC *ied = new D3D11_INPUT_ELEMENT_DESC[ied_size];
     ThrowIfFailed(ied != nullptr ? 0 : -1, gfx_window_dxgi_get_h_wnd(), "Failed to create input layout.");
 
-    // TODO
-    // for (int i = 0, k = 0; i < MAX_ATTRIBUTES; ++i) {
-    //     const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(VertexAttrib(i));
-    //     for (size_t j = 0; j < attrib->count; ++j) {
-    //         ied[k++] = {
-    //             .SemanticName = attrib->name,
-    //             .SemanticIndex = (UINT) j,
-    //             .Format = D3D11_ATTRIB_TYPES[attrib->type][attrib->components - 1][attrib->normalized],
-    //             .InputSlot = 0,
-    //             .AlignedByteOffset = (UINT) (attrib->offset + j * attrib->stride),
-    //             .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
-    //             .InstanceDataStepRate = 0,
-    //         };
-    //     }
-    // }
+    const size_t num_attribs = gfx_shaders_get_num_attribs();
+    for (size_t i = 0, k = 0; i < num_attribs; ++i) {
+        const struct ShaderDataProperties *attrib = gfx_shaders_get_attrib_properties(i);
+        for (size_t j = 0; j < attrib->count; ++j) {
+            ied[k++] = {
+                .SemanticName = attrib->name,
+                .SemanticIndex = (UINT) j,
+                .Format = D3D11_ATTRIB_TYPES[attrib->type][attrib->components - 1],
+                .InputSlot = 0,
+                .AlignedByteOffset = (UINT) (attrib->offset + j * attrib->stride),
+                .InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+                .InstanceDataStepRate = 0,
+            };
+        }
+    }
 
     ThrowIfFailed(d3d.device->CreateInputLayout(ied, ied_size, vs_ptr, vs_size, prg->input_layout.GetAddressOf()));
     delete[] ied;
@@ -201,71 +168,28 @@ static size_t gfx_d3d11_locate_uniforms(D3D11ShaderProgram *prg, ID3DBlob *ps) {
     size_t cb_size = buffer_desc.Size;
 
     // Get each uniform description and, more importantly, its offset in the constant buffer
-    // for (int i = 0; i < MAX_UNIFORMS; ++i) {
-    //     const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
-    //     ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(uniform->name);
-    //     if (!variable) {
-    //         fprintf(stderr, "Uniform not found in pixel shader: %s\n", uniform->name);
-    //         ThrowIfFailed(-1);
-    //     }
+    const size_t num_uniforms = gfx_shaders_get_num_uniforms();
+    prg->uniform_locations = (uint32_t *) malloc(sizeof(*prg->uniform_locations) * num_uniforms);
+    if (!prg->uniform_locations) {
+        fprintf(stderr, "Cannot create uniform locations");
+        ThrowIfFailed(-1);
+    }
 
-    //     D3D11_SHADER_VARIABLE_DESC variable_desc;
-    //     ThrowIfFailed(variable->GetDesc(&variable_desc));
+    for (size_t i = 0; i < num_uniforms; ++i) {
+        const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
+        ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(uniform->name);
+        if (!variable) {
+            fprintf(stderr, "Uniform not found in pixel shader: %s\n", uniform->name);
+            ThrowIfFailed(-1);
+        }
 
-    //     prg->uniform_locations[i] = variable_desc.StartOffset;
-    // }
+        D3D11_SHADER_VARIABLE_DESC variable_desc;
+        ThrowIfFailed(variable->GetDesc(&variable_desc));
+
+        prg->uniform_locations[i] = variable_desc.StartOffset;
+    }
 
     return cb_size;
-}
-
-static void gfx_d3d11_set_shader_uniforms(D3D11ShaderProgram *prg) {
-    struct ColorCombiner *cc = &prg->cc;
-
-    // CC sources
-    // for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
-    // for (int i = 0; i < 2; ++i) {
-    //     d3d.cb_data.ccs[cycle][i] = (
-    //         (cc->ccs[cycle][i][0] << 24) |
-    //         (cc->ccs[cycle][i][1] << 16) |
-    //         (cc->ccs[cycle][i][2] <<  8) |
-    //         (cc->ccs[cycle][i][3] <<  0)
-    //     );
-    // }
-
-    // CC features
-    // d3d.cb_data.ccf = 0;
-    // d3d.cb_data.ccf |= (cc->use_noise << CCF_USE_NOISE);
-    // d3d.cb_data.ccf |= (cc->use_alpha << CCF_USE_ALPHA);
-    // d3d.cb_data.ccf |= (cc->use_fog << CCF_USE_FOG);
-    // d3d.cb_data.ccf |= (cc->texture_edge << CCF_TEX_EDGE);
-    // d3d.cb_data.ccf |= (cc->use_dither << CCF_USE_DITHER);
-    // d3d.cb_data.ccf |= (cc->use_2cycle << CCF_USE_2CYCLE);
-    // d3d.cb_data.ccf |= (cc->light_map << CCF_LIGHT_MAP);
-    // d3d.cb_data.ccf |= (cc->world_geometry << CCF_WORLD_GEOMETRY);
-    // d3d.cb_data.ccf |= (cc->used_textures << CCF_USED_TEXTURE);
-
-    // Frame counter for noise effect
-    if ((cc->use_alpha && cc->use_dither) || cc->use_noise) {
-        d3d.cb_data.noise_random_seed = d3d.frame_count;
-    }
-
-    // Lightmap
-    if (cc->light_map) {
-        d3d.cb_data.light_map_color[0] = gVertexColor[0] / 255.0f;
-        d3d.cb_data.light_map_color[1] = gVertexColor[1] / 255.0f;
-        d3d.cb_data.light_map_color[2] = gVertexColor[2] / 255.0f;
-    }
-
-    // Global shader effects
-    if (cc->world_geometry) {
-        d3d.cb_data.shader_flags = 0;
-        for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
-            d3d.cb_data.shader_flags |= (gShaderFlags[i] << i);
-            d3d.cb_data.shader_flag_values[i] = gShaderFlagValues[i];
-        }
-    }
-
-    d3d.cb_dirty = true;
 }
 
 static void gfx_d3d11_set_texture_uniforms(D3D11ShaderProgram *prg, int tile) {
@@ -274,14 +198,11 @@ static void gfx_d3d11_set_texture_uniforms(D3D11ShaderProgram *prg, int tile) {
         const D3D11Texture *texture_data = &d3d.textures[texture_id];
         d3d.context->PSSetShaderResources(tile, 1, texture_data->resource_view.GetAddressOf());
         d3d.context->PSSetSamplers(tile, 1, texture_data->sampler_state.GetAddressOf());
-        d3d.cb_data.tex_properties[tile].width = texture_data->width;
-        d3d.cb_data.tex_properties[tile].height = texture_data->height;
-        d3d.cb_data.tex_properties[tile].filter = texture_data->filter;
-        d3d.cb_dirty = true;
+        gfx_shaders_update_uniforms(&d3d.uniforms.data, NULL, &texture_data->properties, tile);
     }
 }
 
-static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, ShaderUniforms *uniforms) {
+static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, D3D11ConstantBuffer<struct ShaderUniforms> *uniforms) {
 
     //
     // Hi fellow developer!
@@ -315,21 +236,25 @@ static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, ShaderUnif
     //
     static const size_t SHADER_ALIGN_BYTES = 16;
 
-    D3D11_MAPPED_SUBRESOURCE ms;
-    ThrowIfFailed(d3d.context->Map(d3d.cb.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
+    void *data = gfx_shaders_get_uniforms_data(&uniforms->data);
+    if (data) {
+        D3D11_MAPPED_SUBRESOURCE ms;
+        ThrowIfFailed(d3d.context->Map(uniforms->buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
 
-    // for (int i = 0; i < MAX_UNIFORMS; ++i) {
-    //     const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(ShaderUniform(i));
-    //     for (size_t j = 0; j < uniform->count; ++j) {
-    //         memcpy(
-    //             (void *) (uintptr_t(ms.pData) + (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)),
-    //             (void *) (uintptr_t(uniforms) + (uniform->offset           + j * uniform->stride)),
-    //             uniform->stride
-    //         );
-    //     }
-    // }
+        const size_t num_uniforms = gfx_shaders_get_num_uniforms();
+        for (size_t i = 0; i < num_uniforms; ++i) {
+            const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
+            for (size_t j = 0; j < uniform->count; ++j) {
+                memcpy(
+                    (void *) (uintptr_t(ms.pData) + (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)),
+                    (void *) (uintptr_t(data)     + (uniform->offset           + j * uniform->stride)),
+                    uniform->stride
+                );
+            }
+        }
 
-    d3d.context->Unmap(d3d.cb.Get(), 0);
+        d3d.context->Unmap(uniforms->buffer.Get(), 0);
+    }
 }
 
   /////////////
@@ -337,10 +262,18 @@ static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, ShaderUnif
 /////////////
 
 static const char D3D11_UBERSHADER[] = {
+#ifndef VSCODE
+'#','d','e','f','i','n','e',' ','S','H','A','D','E','R','_','C','O','D','E','\n'
+,
+#embed "gfx_cc.inl"
+,
+#embed "gfx_cc_ext.inl"
+,
 #embed "shaders/direct3d11/ubershader.vs.hlsl"
 ,
 #embed "shaders/direct3d11/ubershader.ps.hlsl"
 ,0
+#endif
 };
 
 static void gfx_d3d11_load_ubershader(void) {
@@ -349,20 +282,24 @@ static void gfx_d3d11_load_ubershader(void) {
     ComPtr<ID3DBlob> vs, ps;
     ComPtr<ID3DBlob> error_blob;
 
+
+    printf("%s\n", D3D11_UBERSHADER);
+
+
 #if DEBUG_D3D
     UINT compile_flags = D3DCOMPILE_DEBUG;
 #else
     UINT compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
 #endif
 
-    HRESULT hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "VSMain", "vs_4_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
+    HRESULT hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "VSMain", "vs_5_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
     if (FAILED(hr)) {
         fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
         MessageBox(gfx_window_dxgi_get_h_wnd(), (const char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
         throw hr;
     }
 
-    hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "PSMain", "ps_4_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
+    hr = d3d.D3DCompile(buf, len, nullptr, nullptr, nullptr, "PSMain", "ps_5_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
     if (FAILED(hr)) {
         fprintf(stderr, "Error: 0x%08X\n%s", hr, (const char *) error_blob->GetBufferPointer());
         MessageBox(gfx_window_dxgi_get_h_wnd(), (const char *) error_blob->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);
@@ -376,9 +313,10 @@ static void gfx_d3d11_load_ubershader(void) {
     d3d.context->IASetInputLayout(prg->input_layout.Get());
 
     // Create main vertex buffer
+    size_t stride = gfx_shaders_get_attribs_stride();
     D3D11_BUFFER_DESC vertex_buffer_desc = {};
     vertex_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-    vertex_buffer_desc.ByteWidth = sizeof(VertexAttribs) * D3D11_VERTEX_BUFFER_LENGTH;
+    vertex_buffer_desc.ByteWidth = stride * D3D11_VERTEX_BUFFER_LENGTH;
     vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertex_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     vertex_buffer_desc.MiscFlags = 0;
@@ -398,10 +336,10 @@ static void gfx_d3d11_load_ubershader(void) {
     constant_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     constant_buffer_desc.MiscFlags = 0;
 
-    ThrowIfFailed(d3d.device->CreateBuffer(&constant_buffer_desc, nullptr, d3d.cb.GetAddressOf()),
+    ThrowIfFailed(d3d.device->CreateBuffer(&constant_buffer_desc, nullptr, d3d.uniforms.buffer.GetAddressOf()),
                   gfx_window_dxgi_get_h_wnd(), "Failed to create shader constant buffer.");
 
-    d3d.context->PSSetConstantBuffers(0, 1, d3d.cb.GetAddressOf());
+    d3d.context->PSSetConstantBuffers(0, 1, d3d.uniforms.buffer.GetAddressOf());
 
     // Create shaders
     ThrowIfFailed(d3d.device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, prg->vertex_shader.GetAddressOf()));
@@ -605,10 +543,20 @@ static bool gfx_d3d11_update_cc(struct ColorCombiner *cc) {
 }
 
 static void gfx_d3d11_update_uniforms(void) {
-    gfx_d3d11_set_shader_uniforms(&d3d.shader_program);
-    for (int i = 0; i < MAX_TEXTURES; ++i) {
-        gfx_d3d11_set_texture_uniforms(&d3d.shader_program, i);
+    D3D11ShaderProgram *prg = &d3d.shader_program;
+
+    gfx_shaders_update_uniforms(&d3d.uniforms.data, &prg->cc, NULL, 0);
+    for (int t = 0; t < MAX_TEXTURES; t++) {
+        gfx_d3d11_set_texture_uniforms(prg, t);
     }
+
+    // Extended combiners
+    // if (prg->cc.use_ext_color) {
+    //     gfx_opengl_update_extended_combiner(prg, 0);
+    // }
+    // if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
+    //     gfx_opengl_update_extended_combiner(prg, 1);
+    // }
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {
@@ -660,8 +608,8 @@ static void gfx_d3d11_upload_texture(const uint8_t *rgba32_buf, int width, int h
     resource_view_desc.Texture2D.MipLevels = 1;
 
     D3D11Texture *texture_data = &d3d.textures[d3d.current_texture_ids[d3d.current_tile]];
-    texture_data->width = width;
-    texture_data->height = height;
+    texture_data->properties.width = width;
+    texture_data->properties.height = height;
 
     if (texture_data->resource_view.Get() != nullptr) {
         // Free the previous texture in this slot
@@ -681,9 +629,9 @@ static void gfx_d3d11_set_sampler_parameters(int tile, uint8_t filter, uint32_t 
     sampler_desc.MaxLOD = D3D11_FLOAT32_MAX;
 
     D3D11Texture *texture_data = &d3d.textures[d3d.current_texture_ids[tile]];
-    texture_data->filter = filter;
-    d3d.cb_data.tex_properties[tile].filter = filter;
-    d3d.cb_dirty = true;
+    texture_data->properties.filter = filter;
+    // d3d.uniforms.data.tex_properties[tile].filter = filter;
+    // d3d.uniforms.data.dirty = true;
 
     texture_data->sampler_state.Reset();
     ThrowIfFailed(d3d.device->CreateSamplerState(&sampler_desc, texture_data->sampler_state.GetAddressOf()));
@@ -744,28 +692,34 @@ static void gfx_d3d11_set_use_alpha(bool use_alpha) {
 static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
 
     // Set vertex buffer data
-    D3D11_MAPPED_SUBRESOURCE ms;
-    if (d3d.vertex_buffer_offset + buf_vbo_len > D3D11_VERTEX_BUFFER_LENGTH) {
-        d3d.vertex_buffer_offset = 0;
-    }
-    ThrowIfFailed(d3d.context->Map(d3d.vertex_buffer.Get(), 0, d3d.vertex_buffer_offset == 0 ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &ms));
-    memcpy(((struct VertexAttribs *) ms.pData) + d3d.vertex_buffer_offset, buf_vbo, buf_vbo_len * sizeof(struct VertexAttribs));
-    d3d.context->Unmap(d3d.vertex_buffer.Get(), 0);
+    void *data = gfx_shaders_get_attribs_data(buf_vbo, buf_vbo_len);
+    if (data) {
+        D3D11_MAPPED_SUBRESOURCE ms;
+        if (d3d.vertex_buffer_offset + buf_vbo_len > D3D11_VERTEX_BUFFER_LENGTH) {
+            d3d.vertex_buffer_offset = 0;
+        }
 
-    uint32_t stride = sizeof(VertexAttribs);
-    uint32_t offset = d3d.vertex_buffer_offset * sizeof(VertexAttribs);
-    d3d.context->IASetVertexBuffers(0, 1, d3d.vertex_buffer.GetAddressOf(), &stride, &offset);
-    d3d.vertex_buffer_offset += buf_vbo_len;
+        uint32_t stride = gfx_shaders_get_attribs_stride();
+        ThrowIfFailed(d3d.context->Map(d3d.vertex_buffer.Get(), 0, d3d.vertex_buffer_offset == 0 ? D3D11_MAP_WRITE_DISCARD : D3D11_MAP_WRITE_NO_OVERWRITE, 0, &ms));
+        memcpy((void *) ((uintptr_t) ms.pData + d3d.vertex_buffer_offset * stride), data, buf_vbo_len * stride);
+        d3d.context->Unmap(d3d.vertex_buffer.Get(), 0);
+
+        uint32_t offset = d3d.vertex_buffer_offset * stride;
+        d3d.context->IASetVertexBuffers(0, 1, d3d.vertex_buffer.GetAddressOf(), &stride, &offset);
+        d3d.vertex_buffer_offset += buf_vbo_len;
+    }
 
     // Upload uniforms if they changed since the last draw
-    if (d3d.cb_dirty) {
-        gfx_d3d11_upload_shader_uniforms(&d3d.shader_program, &d3d.cb_data);
-        d3d.cb_dirty = false;
+    if (d3d.uniforms.data.dirty) {
+        gfx_d3d11_upload_shader_uniforms(&d3d.shader_program, &d3d.uniforms);
+        d3d.uniforms.data.dirty = false;
     }
 
     // Draw triangles
-    d3d.context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    d3d.context->Draw(buf_vbo_num_tris * 3, 0);
+    if (data) {
+        d3d.context->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+        d3d.context->Draw(buf_vbo_num_tris * 3, 0);
+    }
 }
 
 static void gfx_d3d11_on_resize(void) {
@@ -773,7 +727,8 @@ static void gfx_d3d11_on_resize(void) {
 }
 
 static void gfx_d3d11_start_frame(void) {
-    d3d.frame_count++;
+    // Reset color combiner to force a uniforms update on next update_cc
+    memset(&d3d.shader_program.cc, 0, sizeof(d3d.shader_program.cc));
 
     // Set render targets
     d3d.context->OMSetRenderTargets(1, d3d.backbuffer_view.GetAddressOf(), d3d.depth_stencil_view.Get());

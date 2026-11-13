@@ -212,7 +212,7 @@ static void gfx_opengl_update_extended_combiner(struct GLShaderProgram *prg, int
  // Shaders //
 /////////////
 
-static const char GL_UBERSHADER_VERSION[] = "\
+static const char GL_UBERSHADER_HEADER[] = "\
 #version 330\n\
 #define SHADER_CODE\n\
 #define static\n\
@@ -256,11 +256,11 @@ static void gfx_opengl_load_ubershader(void) {
     //
 
     const GLchar *vertex_sources[] = {
-        GL_UBERSHADER_VERSION,
+        GL_UBERSHADER_HEADER,
         GL_UBERSHADER_VERT,
     };
     const GLint vertex_lengths[] = {
-        sizeof(GL_UBERSHADER_VERSION) - 1,
+        sizeof(GL_UBERSHADER_HEADER) - 1,
         sizeof(GL_UBERSHADER_VERT) - 1,
     };
 
@@ -277,11 +277,11 @@ static void gfx_opengl_load_ubershader(void) {
     //
 
     const GLchar *fragment_sources[] = {
-        GL_UBERSHADER_VERSION,
+        GL_UBERSHADER_HEADER,
         GL_UBERSHADER_FRAG,
     };
     const GLint fragment_lengths[] = {
-        sizeof(GL_UBERSHADER_VERSION) - 1,
+        sizeof(GL_UBERSHADER_HEADER) - 1,
         sizeof(GL_UBERSHADER_FRAG) - 1,
     };
 

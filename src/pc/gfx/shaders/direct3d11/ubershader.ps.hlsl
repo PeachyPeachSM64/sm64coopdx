@@ -11,93 +11,119 @@
 
 #define FILTER_THREE_POINT          2
 
-// CC sources
-#define A ((ABCD >> 24) & 0xFF)
-#define B ((ABCD >> 16) & 0xFF)
-#define C ((ABCD >>  8) & 0xFF)
-#define D ((ABCD >>  0) & 0xFF)
+// Fragment inputs
+static PSInput vInputs;
+
+// Uniforms (packed)
+cbuffer ShaderUniforms : register(b0) {
+    int4 uCCS[CC_CYCLES / 2];
+    int4 uFeatures;
+    int4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
+    float4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
+};
+
+// Uniforms (unpacked)
+#define uCCS_(cycle, alpha)     uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
+#define uCCF                    uFeatures[0]
+#define uNoiseRandomSeed        uFeatures[1]
+#define uLightMapColor          uFeatures[2]
+#define uShaderFlags            uFeatures[3]
+#define uShaderFlagValue(flag)  uShaderFlagValues[(flag) / 4][(flag) % 4]
 
 // CC features
 #define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
 #define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
 
-cbuffer ShaderUniforms : register(b0) {
-    int2 uCCS[CC_CYCLES];
-    int uCCF;
-    float3 uTexProperties[MAX_TEXTURES];
-    float uNoiseFrameCount;
-    float3 uLightMapColor;
-    int uShaderFlags;
-    float uShaderFlagValues[SHADER_FLAG_MAX];
-};
-
+// Textures
 Texture2D uTextures[MAX_TEXTURES] : register(t0);
 SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
+
+// Extended combiners
+// struct ExtendedCombiner {
+//     int4 ops[CC_EXT_MAX_OPS / 16];
+//     float4 constants[CC_EXT_MAX_CONSTANTS];
+// };
+// layout(std140) uniform ExtendedCombinerBlock {
+//     ExtendedCombiner uExtCC[2];
+// };
 
 //
 // Color combiner
 //
 
-struct CCInputs {
-    float4 texColors[MAX_TEXTURES];
-    float4 noise;
-    float4 primitive;
-    float4 shade;
-    float4 environment;
-    float4 lod;
-};
+static float4 gNoise;
+static float4 gTexColors[MAX_TEXTURES];
 
-float4 ccs_to_vec4(in CCInputs cc, in float4 texel, in int ccs) {
+float4 ccs_to_vec4(in float4 texel, in int ccs) {
     switch (ccs) {
         case CCS_0:         return float4(0.0, 0.0, 0.0, 0.0);
         case CCS_1:         return float4(1.0, 1.0, 1.0, 1.0);
-        case CCS_TEXEL0:    return cc.texColors[0];
-        case CCS_TEXEL0A:   return cc.texColors[0].aaaa;
-        case CCS_TEXEL1:    return cc.texColors[1];
-        case CCS_TEXEL1A:   return cc.texColors[1].aaaa;
         case CCS_COMBINED:  return texel;
         case CCS_COMBINEDA: return texel.aaaa;
-        case CCS_NOISE:     return cc.noise;
-        case CCS_PRIM:      return cc.primitive;
-        case CCS_PRIMA:     return cc.primitive.aaaa;
-        case CCS_SHADE:     return cc.shade;
-        case CCS_SHADEA:    return cc.shade.aaaa;
-        case CCS_ENV:       return cc.environment;
-        case CCS_ENVA:      return cc.environment.aaaa;
-        case CCS_LOD:       return cc.lod;
+        case CCS_PRIM:      return vInputs.primitive;
+        case CCS_PRIMA:     return vInputs.primitive.aaaa;
+        case CCS_SHADE:     return vInputs.shade;
+        case CCS_SHADEA:    return vInputs.shade.aaaa;
+        case CCS_ENV:       return vInputs.environment;
+        case CCS_ENVA:      return vInputs.environment.aaaa;
+        case CCS_LOD:       return vInputs.lod;
+        case CCS_NOISE:     return gNoise;
+        case CCS_AMBIENT:   return vInputs.ambient;
+    }
+    if (ccs >= CCS_LIGHT_FIRST && ccs <= CCS_LIGHT_LAST) {
+        int i = ccs - CCS_LIGHT_FIRST;
+        return (i % 2 == 0 ?
+                vInputs.lights[i / 2] :
+                vInputs.lights[i / 2].aaaa);
+    }
+    if (ccs >= CCS_TEXEL_FIRST && ccs <= CCS_TEXEL_LAST) {
+        int i = ccs - CCS_TEXEL_FIRST;
+        return (i % 2 == 0 ?
+                gTexColors[i / 2] :
+                gTexColors[i / 2].aaaa);
     }
     return float4(0.0, 0.0, 0.0, 0.0);
 }
 
-float4 combine_colors(in CCInputs cc, in float4 texel, in int ABCD) {
+float4 combine_colors(in float4 texel, in int ABCD) {
+    #define A UNPACK(ABCD, 24, 8)
+    #define B UNPACK(ABCD, 16, 8)
+    #define C UNPACK(ABCD,  8, 8)
+    #define D UNPACK(ABCD,  0, 8)
 
     // D
     if (C == CCS_0) {
-        return ccs_to_vec4(cc, texel, D);
+        return ccs_to_vec4(texel, D);
     }
 
     // A * C
     if (B == CCS_0 && D == CCS_0) {
-        return ccs_to_vec4(cc, texel, A) *
-               ccs_to_vec4(cc, texel, C);
+        return ccs_to_vec4(texel, A) *
+               ccs_to_vec4(texel, C);
     }
 
     // (A - B) * C + B = lerp(C, B, A)
     if (B == D) {
         return lerp(
-            ccs_to_vec4(cc, texel, B),
-            ccs_to_vec4(cc, texel, A),
-            ccs_to_vec4(cc, texel, C)
+            ccs_to_vec4(texel, B),
+            ccs_to_vec4(texel, A),
+            ccs_to_vec4(texel, C)
         );
     }
 
     // (A - B) * C + D
     return (
-        ccs_to_vec4(cc, texel, A) -
-        ccs_to_vec4(cc, texel, B)
-    ) * ccs_to_vec4(cc, texel, C)
-      + ccs_to_vec4(cc, texel, D);
+        ccs_to_vec4(texel, A) -
+        ccs_to_vec4(texel, B)
+    ) * ccs_to_vec4(texel, C)
+      + ccs_to_vec4(texel, D);
 }
+
+//
+// Extended combiner
+//
+
+// TODO
 
 //
 // Global shader effects
@@ -154,8 +180,8 @@ float3 shader_effect_exposure(in float3 texel, in float value) {
     return texel + (value - 2.0) * texel + texel;
 }
 
-float3 shader_effect_dithering(in float3 texel, in float2 value) {
-    return texel * dither4x4(value, dot(texel, float3(0.299, 0.587, 0.114)));
+float3 shader_effect_dithering(in float3 texel, in float value) {
+    return texel * dither4x4(vInputs.position.xy, dot(texel, float3(0.299, 0.587, 0.114)));
 }
 
 float3 shader_effect_posterization(in float3 texel, in float value) {
@@ -163,9 +189,9 @@ float3 shader_effect_posterization(in float3 texel, in float value) {
     return floor(texel * levels) / levels;
 }
 
-float3 shader_effect_scanlines(in float3 texel, in float2 value) {
-    float scan = sin(value.y * 1.5) * 0.04;
-    return texel - scan * value.x;
+float3 shader_effect_scanlines(in float3 texel, in float value) {
+    float scan = sin(vInputs.position.y * 1.5) * 0.04;
+    return texel - scan * value;
 }
 
 //
@@ -205,90 +231,128 @@ float random(in float3 value) {
 
 float4 PSMain(PSInput ps) : SV_TARGET {
     float4 texel = float4(0.0, 0.0, 0.0, 0.0);
+    vInputs = ps;
 
-    CCInputs cc;
-    cc.primitive = ps.primitive;
-    cc.shade = ps.shade;
-    cc.environment = ps.environment;
-    cc.lod = ps.lod;
+    // Flags
+    bool useAlpha          = CCF_HAS_FLAG(USE_ALPHA);
+    bool useFog            = CCF_HAS_FLAG(USE_FOG);
+    bool texEdge           = CCF_HAS_FLAG(TEX_EDGE);
+    bool useDither         = CCF_HAS_FLAG(USE_DITHER);
+    bool use2Cycle         = CCF_HAS_FLAG(USE_2CYCLE);
+    bool useLightMap       = CCF_HAS_FLAG(LIGHT_MAP);
+    bool worldGeometry     = CCF_HAS_FLAG(WORLD_GEOMETRY);
+    bool useNoise          = CCF_HAS_FLAG(USE_NOISE);
+    bool useExtColor       = CCF_HAS_FLAG(USE_EXT_COLOR);
+    bool useExtAlpha       = CCF_HAS_FLAG(USE_EXT_ALPHA);
+    bool extColorAlphaSame = CCF_HAS_FLAG(EXT_COLOR_ALPHA_SAME);
+    bool skipColor         = CCF_HAS_FLAG(SKIP_COMBINER_COLOR);
+    bool skipAlpha         = CCF_HAS_FLAG(SKIP_COMBINER_ALPHA);
 
     // Tex colors
     for (int i = 0; i < MAX_TEXTURES; ++i) {
         if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
-            if (i == 1 && CCF_HAS_FLAG(LIGHT_MAP)) {
-                cc.texColors[1] = sample_tex(uTextures[1], uTextureSamplers[1], ps.lightMap, uTexProperties[1]);
-                cc.texColors[0].rgb *= uLightMapColor.rgb;
-                cc.texColors[1].rgb = clamp(cc.texColors[1].rgb * cc.texColors[1].rgb + cc.texColors[1].rgb, 0.0, 1.0);
+            if (i == 1 && useLightMap) {
+                float3 lightMapColor = float3(
+                    float(UNPACK(uLightMapColor, 24, 8)) / 255.0,
+                    float(UNPACK(uLightMapColor, 16, 8)) / 255.0,
+                    float(UNPACK(uLightMapColor,  8, 8)) / 255.0
+                );
+                gTexColors[0].rgb *= lightMapColor;
+                gTexColors[1] = sample_tex(uTextures[1], uTextureSamplers[1], vInputs.lightMap, uTexProperties[1].xyz);
+                gTexColors[1].rgb = clamp(gTexColors[1].rgb * gTexColors[1].rgb + gTexColors[1].rgb, 0.0, 1.0);
             } else {
-                cc.texColors[i] = sample_tex(uTextures[i], uTextureSamplers[i], ps.texCoords[i], uTexProperties[i]);
+                gTexColors[i] = sample_tex(uTextures[i], uTextureSamplers[i], vInputs.texCoords[i], uTexProperties[i].xyz);
             }
+        } else {
+            gTexColors[i] = float4(0.0, 0.0, 0.0, 0.0);
         }
     }
 
     // Noise
-    if ((CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) || CCF_HAS_FLAG(USE_NOISE)) {
-        float noise = random(floor(float3(ps.position.xy, uNoiseFrameCount)));
-        cc.noise = float4(noise, noise, noise, noise);
+    if ((useAlpha && useDither) || useNoise) {
+        float noise = random(floor(float3(vInputs.position.xy, float(uNoiseRandomSeed))));
+        gNoise = float4(noise, noise, noise, noise);
     }
 
     // Color combiner
-    int cycles = CCF_HAS_FLAG(USE_2CYCLE) ? 2 : 1;
+    int cycles = use2Cycle ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = uCCS[cycle].x;
-        int ABCD_a   = uCCS[cycle].y;
-        if (ABCD_rgb != ABCD_a && CCF_HAS_FLAG(USE_ALPHA)) {
-            texel = float4(
-                combine_colors(cc, texel, ABCD_rgb).rgb,
-                combine_colors(cc, texel, ABCD_a).a
-            );
-        } else {
-            texel = combine_colors(cc, texel, ABCD_rgb);
+        int ABCD_rgb = uCCS_(cycle, 0);
+        int ABCD_a   = uCCS_(cycle, 1);
+
+        // Same combiner, compute once for both RGB and alpha
+        if ((ABCD_rgb == ABCD_a || !useAlpha) && !skipColor && !skipAlpha) {
+            texel = combine_colors(texel, ABCD_rgb);
         }
+
+        // Compute RGB and alpha separately
+        else {
+            if (!skipColor) {
+                texel.rgb = combine_colors(texel, ABCD_rgb).rgb;
+            }
+            if (!skipAlpha) {
+                texel.a = combine_colors(texel, ABCD_a).a;
+            }
+        }
+
         texel = fmod(texel + 0.5, 2.0) - 0.5;
     }
     texel = clamp(texel, 0.0, 1.0);
 
+    // Extended combiners
+    // TODO
+    // if (extColorAlphaSame) {
+    //     texel = combine_colors_ext(texel, 0);
+    // } else {
+    //     if (useExtColor) {
+    //         texel.rgb = combine_colors_ext(texel, 0).rgb;
+    //     }
+    //     if (useExtAlpha) {
+    //         texel.a = combine_colors_ext(texel, 1).a;
+    //     }
+    // }
+
     // Tex edge alpha
-    if (CCF_HAS_FLAG(TEX_EDGE) && CCF_HAS_FLAG(USE_ALPHA)) {
-        if (texel.a > 0.3) texel.a = 1.0;
+    if (texEdge && useAlpha) {
+        if (texel.a > 0.3) { texel.a = 1.0; }
         else discard;
     }
 
     // Global shader effects
-    if (CCF_HAS_FLAG(WORLD_GEOMETRY) && uShaderFlags != 0) {
+    if (worldGeometry && uShaderFlags != 0) {
         for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
-            if (((uShaderFlags >> i) & 1) != 0) {
-                float value = uShaderFlagValues[i];
+            if (UNPACK(uShaderFlags, i, 1) != 0) {
+                float value = uShaderFlagValue(i);
                 switch (i) {
                     case SHADER_FLAG_HUE:           texel.rgb = shader_effect_hue(texel.rgb, value); break;
                     case SHADER_FLAG_SATURATION:    texel.rgb = shader_effect_saturation(texel.rgb, value); break;
                     case SHADER_FLAG_BRIGHTNESS:    texel.rgb = shader_effect_brightness(texel.rgb, value); break;
                     case SHADER_FLAG_CONTRAST:      texel.rgb = shader_effect_contrast(texel.rgb, value); break;
                     case SHADER_FLAG_EXPOSURE:      texel.rgb = shader_effect_exposure(texel.rgb, value); break;
-                    case SHADER_FLAG_DITHERING:     texel.rgb = shader_effect_dithering(texel.rgb, ps.position.xy); break;
+                    case SHADER_FLAG_DITHERING:     texel.rgb = shader_effect_dithering(texel.rgb, value); break;
                     case SHADER_FLAG_POSTERIZATION: texel.rgb = shader_effect_posterization(texel.rgb, value); break;
-                    case SHADER_FLAG_SCANLINES:     texel.rgb = shader_effect_scanlines(texel.rgb, float2(value, ps.position.y)); break;
+                    case SHADER_FLAG_SCANLINES:     texel.rgb = shader_effect_scanlines(texel.rgb, value); break;
                 }
             }
         }
     }
 
     // Fog
-    if (CCF_HAS_FLAG(USE_FOG)) {
-        if (CCF_HAS_FLAG(USE_ALPHA)) {
-            texel = float4(lerp(texel.rgb, ps.fog.rgb, ps.fog.a), texel.a);
+    if (useFog) {
+        if (useAlpha) {
+            texel = float4(lerp(texel.rgb, vInputs.fog.rgb, vInputs.fog.a), texel.a);
         } else {
-            texel = float4(lerp(texel.rgb, ps.fog.rgb, ps.fog.a), 1.0);
+            texel = float4(lerp(texel.rgb, vInputs.fog.rgb, vInputs.fog.a), 1.0);
         }
     }
 
     // Dither
-    if (CCF_HAS_FLAG(USE_ALPHA) && CCF_HAS_FLAG(USE_DITHER)) {
-        texel.a = cc.noise.a < texel.a ? 1.0 : 0.0;
+    if (useAlpha && useDither) {
+        texel.a = gNoise.a < texel.a ? 1.0 : 0.0;
     }
 
     // Final color
-    if (CCF_HAS_FLAG(USE_ALPHA)) {
+    if (useAlpha) {
         return texel;
     }
     return float4(texel.rgb, 1.0);
