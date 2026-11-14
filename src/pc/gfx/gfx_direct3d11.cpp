@@ -42,9 +42,21 @@ struct D3D11ShaderProgram {
     ComPtr<ID3D11PixelShader> pixel_shader;
     ComPtr<ID3D11InputLayout> input_layout;
     uint32_t *uniform_locations;
+    uint32_t *ec_locations;
     struct ColorCombiner cc;
     const struct ExtendedCombiner *ec[2];
 };
+
+struct D3D11ExtendedCombiners {
+    int ops[2 * (CC_EXT_MAX_OPS / 16)][4];
+    float constants[2 * CC_EXT_MAX_CONSTANTS][4];
+    bool dirty;
+};
+
+// Make sure data is aligned to 16 bytes boundaries
+static_assert(offsetof(D3D11ExtendedCombiners, ops) % 16 == 0);
+static_assert(offsetof(D3D11ExtendedCombiners, constants) % 16 == 0);
+static_assert(offsetof(D3D11ExtendedCombiners, dirty) % 16 == 0);
 
 template <typename T>
 struct D3D11ConstantBuffer {
@@ -79,6 +91,7 @@ static struct {
     DXGI_SAMPLE_DESC sample_description;
 
     D3D11ConstantBuffer<struct ShaderUniforms> uniforms;
+    D3D11ConstantBuffer<D3D11ExtendedCombiners> ec;
 
     std::vector<D3D11Texture> textures;
     int current_tile;
@@ -142,11 +155,11 @@ static void gfx_d3d11_create_input_layout(D3D11ShaderProgram *prg, const void *v
     delete[] ied;
 }
 
-  //////////////
- // Uniforms //
-//////////////
+  //////////////////////
+ // Constant buffers //
+//////////////////////
 
-static size_t gfx_d3d11_locate_uniforms(D3D11ShaderProgram *prg, ID3DBlob *ps) {
+static size_t gfx_d3d11_locate_constant_buffer(ID3DBlob *ps, const char *buffer_name, const char **var_names, size_t count, uint32_t **locations) {
     ComPtr<ID3D11ShaderReflection> reflection;
     ThrowIfFailed(D3DReflect(
         ps->GetBufferPointer(),
@@ -156,53 +169,43 @@ static size_t gfx_d3d11_locate_uniforms(D3D11ShaderProgram *prg, ID3DBlob *ps) {
     ));
 
     // Get the constant buffer
-    ID3D11ShaderReflectionConstantBuffer *buffer = reflection->GetConstantBufferByName("ShaderUniforms");
+    ID3D11ShaderReflectionConstantBuffer *buffer = reflection->GetConstantBufferByName(buffer_name);
     if (!buffer) {
-        fprintf(stderr, "Constant buffer not found in pixel shader: %s\n", "ShaderUniforms");
+        fprintf(stderr, "Constant buffer not found in pixel shader: %s\n", buffer_name);
         ThrowIfFailed(-1);
     }
 
     // Get its description and save its size for later
     D3D11_SHADER_BUFFER_DESC buffer_desc;
     ThrowIfFailed(buffer->GetDesc(&buffer_desc));
-    size_t cb_size = buffer_desc.Size;
+    size_t buffer_size = buffer_desc.Size;
 
-    // Get each uniform description and, more importantly, its offset in the constant buffer
-    const size_t num_uniforms = gfx_shaders_get_num_uniforms();
-    prg->uniform_locations = (uint32_t *) malloc(sizeof(*prg->uniform_locations) * num_uniforms);
-    if (!prg->uniform_locations) {
-        fprintf(stderr, "Cannot create uniform locations");
+    // Get each variable description and, more importantly, its offset in the constant buffer
+    *locations = (uint32_t *) malloc(sizeof(uint32_t) * count);
+    if (!*locations) {
+        fprintf(stderr, "Cannot create locations for constant buffer: %s\n", buffer_name);
         ThrowIfFailed(-1);
     }
 
-    for (size_t i = 0; i < num_uniforms; ++i) {
-        const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
-        ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(uniform->name);
+    for (size_t i = 0; i < count; ++i) {
+        const char *var_name = var_names[i];
+        ID3D11ShaderReflectionVariable *variable = buffer->GetVariableByName(var_name);
         if (!variable) {
-            fprintf(stderr, "Uniform not found in pixel shader: %s\n", uniform->name);
+            fprintf(stderr, "Variable `%s` not found for constant buffer: %s\n", var_name, buffer_name);
             ThrowIfFailed(-1);
         }
 
         D3D11_SHADER_VARIABLE_DESC variable_desc;
         ThrowIfFailed(variable->GetDesc(&variable_desc));
 
-        prg->uniform_locations[i] = variable_desc.StartOffset;
+        (*locations)[i] = variable_desc.StartOffset;
     }
 
-    return cb_size;
+    return buffer_size;
 }
 
-static void gfx_d3d11_set_texture_uniforms(D3D11ShaderProgram *prg, int tile) {
-    uint32_t texture_id = d3d.current_texture_ids[tile];
-    if ((prg->cc.used_textures & USED_TEXTURE(tile)) && texture_id < d3d.textures.size()) {
-        const D3D11Texture *texture_data = &d3d.textures[texture_id];
-        d3d.context->PSSetShaderResources(tile, 1, texture_data->resource_view.GetAddressOf());
-        d3d.context->PSSetSamplers(tile, 1, texture_data->sampler_state.GetAddressOf());
-        gfx_shaders_update_uniforms(&d3d.uniforms.data, NULL, &texture_data->properties, tile);
-    }
-}
-
-static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, D3D11ConstantBuffer<struct ShaderUniforms> *uniforms) {
+template <typename UpdateFunc>
+static void gfx_d3d11_update_constant_buffer(ComPtr<ID3D11Buffer> &buffer, UpdateFunc update) {
 
     //
     // Hi fellow developer!
@@ -236,25 +239,100 @@ static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, D3D11Const
     //
     static const size_t SHADER_ALIGN_BYTES = 16;
 
+    D3D11_MAPPED_SUBRESOURCE ms;
+    ThrowIfFailed(d3d.context->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
+
+    update([&ms](void *data, uint32_t location, size_t index, size_t offset, size_t stride) {
+        memcpy(
+            (void *) (uintptr_t(ms.pData) + (location + index * SHADER_ALIGN_BYTES)),
+            (void *) (uintptr_t(data)     + (offset   + index * stride)),
+            stride
+        );
+    });
+
+    d3d.context->Unmap(buffer.Get(), 0);
+}
+
+  //////////////
+ // Uniforms //
+//////////////
+
+static size_t gfx_d3d11_locate_uniforms(D3D11ShaderProgram *prg, ID3DBlob *ps) {
+    const size_t num_uniforms = gfx_shaders_get_num_uniforms();
+    const char **uniforms = (const char **) malloc(sizeof(const char *) * num_uniforms);
+    for (size_t i = 0; i < num_uniforms; ++i) {
+        const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
+        uniforms[i] = uniform->name;
+    }
+    size_t uniforms_size = gfx_d3d11_locate_constant_buffer(ps, "ShaderUniforms", uniforms, num_uniforms, &prg->uniform_locations);
+    free(uniforms);
+    return uniforms_size;
+}
+
+static void gfx_d3d11_set_texture_uniforms(D3D11ShaderProgram *prg, int tile) {
+    uint32_t texture_id = d3d.current_texture_ids[tile];
+    if ((prg->cc.used_textures & USED_TEXTURE(tile)) && texture_id < d3d.textures.size()) {
+        const D3D11Texture *texture_data = &d3d.textures[texture_id];
+        d3d.context->PSSetShaderResources(tile, 1, texture_data->resource_view.GetAddressOf());
+        d3d.context->PSSetSamplers(tile, 1, texture_data->sampler_state.GetAddressOf());
+        gfx_shaders_update_uniforms(&d3d.uniforms.data, NULL, &texture_data->properties, tile);
+    }
+}
+
+static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, D3D11ConstantBuffer<struct ShaderUniforms> *uniforms) {
     void *data = gfx_shaders_get_uniforms_data(&uniforms->data);
     if (data) {
-        D3D11_MAPPED_SUBRESOURCE ms;
-        ThrowIfFailed(d3d.context->Map(uniforms->buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
+        gfx_d3d11_update_constant_buffer(uniforms->buffer, [&data, &prg](auto upload) {
+            const size_t num_uniforms = gfx_shaders_get_num_uniforms();
+            for (size_t i = 0; i < num_uniforms; ++i) {
+                const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
+                for (size_t j = 0; j < uniform->count; ++j) {
+                    upload(data, prg->uniform_locations[i], j, uniform->offset, uniform->stride);
+                }
+            }
+        });
+    }
+}
 
-        const size_t num_uniforms = gfx_shaders_get_num_uniforms();
-        for (size_t i = 0; i < num_uniforms; ++i) {
-            const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
-            for (size_t j = 0; j < uniform->count; ++j) {
-                memcpy(
-                    (void *) (uintptr_t(ms.pData) + (prg->uniform_locations[i] + j * SHADER_ALIGN_BYTES)),
-                    (void *) (uintptr_t(data)     + (uniform->offset           + j * uniform->stride)),
-                    uniform->stride
-                );
+  ////////////////////////
+ // Extended combiners //
+////////////////////////
+
+static size_t gfx_d3d11_locate_extended_combiners(D3D11ShaderProgram *prg, ID3DBlob *ps) {
+    const char *var_names[] = { "uExtCC_Ops", "uExtCC_Constants" };
+    return gfx_d3d11_locate_constant_buffer(ps, "ExtendedCombiners", var_names, ARRAY_COUNT(var_names), &prg->ec_locations);
+}
+
+static void gfx_d3d11_update_extended_combiners(D3D11ShaderProgram *prg, D3D11ExtendedCombiners *ecs, bool update_color, bool update_alpha) {
+
+    // Update buffer only when necessary
+    if ((!update_color || prg->ec[0] == prg->cc.ec[0]) &&
+        (!update_alpha || prg->ec[1] == prg->cc.ec[1])) {
+        return;
+    }
+
+    // Convert extended combiners to a GPU friendly struct
+    memset(ecs, 0, sizeof(*ecs));
+    for (size_t i = 0; i < 2; ++i) {
+        const struct ExtendedCombiner *ec = prg->cc.ec[i];
+        if (ec != NULL) {
+            memcpy((void *) (uintptr_t(ecs->constants) + i * sizeof(ec->constants)), ec->constants, sizeof(ec->constants));
+            size_t ops_offset = i * sizeof(ec->ops);
+            for (int k = 0; k < ARRAY_COUNT(ec->ops); ++k) {
+                ecs->ops[ops_offset + (k / 16)][(k / 4) % 4] |= (ec->ops[k] << (8 * (k % 4)));
             }
         }
-
-        d3d.context->Unmap(uniforms->buffer.Get(), 0);
+        prg->ec[i] = prg->cc.ec[i];
     }
+
+    ecs->dirty = true;
+}
+
+static void gfx_d3d11_upload_extended_combiners(D3D11ShaderProgram *prg, D3D11ConstantBuffer<D3D11ExtendedCombiners> *ec) {
+    gfx_d3d11_update_constant_buffer(ec->buffer, [&ec, &prg](auto upload) {
+        upload((void *) ec->data.ops,       prg->ec_locations[0], 0, 0, sizeof(ec->data.ops));
+        upload((void *) ec->data.constants, prg->ec_locations[1], 0, 0, sizeof(ec->data.constants));
+    });
 }
 
   /////////////
@@ -326,20 +404,36 @@ static void gfx_d3d11_load_ubershader(void) {
     d3d.vertex_buffer_offset = 0;
 
     // Set up uniforms
-    size_t cb_size = gfx_d3d11_locate_uniforms(prg, ps.Get());
+    size_t uniforms_size = gfx_d3d11_locate_uniforms(prg, ps.Get());
 
     // Create shader uniforms constant buffer
-    D3D11_BUFFER_DESC constant_buffer_desc = {};
-    constant_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-    constant_buffer_desc.ByteWidth = cb_size;
-    constant_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constant_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    constant_buffer_desc.MiscFlags = 0;
+    D3D11_BUFFER_DESC uniforms_buffer_desc = {};
+    uniforms_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
+    uniforms_buffer_desc.ByteWidth = uniforms_size;
+    uniforms_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    uniforms_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    uniforms_buffer_desc.MiscFlags = 0;
 
-    ThrowIfFailed(d3d.device->CreateBuffer(&constant_buffer_desc, nullptr, d3d.uniforms.buffer.GetAddressOf()),
-                  gfx_window_dxgi_get_h_wnd(), "Failed to create shader constant buffer.");
+    ThrowIfFailed(d3d.device->CreateBuffer(&uniforms_buffer_desc, nullptr, d3d.uniforms.buffer.GetAddressOf()),
+                  gfx_window_dxgi_get_h_wnd(), "Failed to create uniforms constant buffer.");
 
     d3d.context->PSSetConstantBuffers(0, 1, d3d.uniforms.buffer.GetAddressOf());
+
+    // Set up extended combiners
+    size_t ec_size = gfx_d3d11_locate_extended_combiners(prg, ps.Get());
+
+    // Create extended combiners constant buffer
+    D3D11_BUFFER_DESC ec_buffer_desc = {};
+    ec_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
+    ec_buffer_desc.ByteWidth = ec_size;
+    ec_buffer_desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    ec_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    ec_buffer_desc.MiscFlags = 0;
+
+    ThrowIfFailed(d3d.device->CreateBuffer(&ec_buffer_desc, nullptr, d3d.ec.buffer.GetAddressOf()),
+                  gfx_window_dxgi_get_h_wnd(), "Failed to create extended combiners constant buffer.");
+
+    d3d.context->PSSetConstantBuffers(1, 1, d3d.ec.buffer.GetAddressOf());
 
     // Create shaders
     ThrowIfFailed(d3d.device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, prg->vertex_shader.GetAddressOf()));
@@ -551,12 +645,7 @@ static void gfx_d3d11_update_uniforms(void) {
     }
 
     // Extended combiners
-    // if (prg->cc.use_ext_color) {
-    //     gfx_opengl_update_extended_combiner(prg, 0);
-    // }
-    // if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
-    //     gfx_opengl_update_extended_combiner(prg, 1);
-    // }
+    gfx_d3d11_update_extended_combiners(prg, &d3d.ec.data, prg->cc.use_ext_color, prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same);
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {
@@ -713,6 +802,12 @@ static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_v
     if (d3d.uniforms.data.dirty) {
         gfx_d3d11_upload_shader_uniforms(&d3d.shader_program, &d3d.uniforms);
         d3d.uniforms.data.dirty = false;
+    }
+
+    // Upload extended combiners if they changed since the last draw
+    if (d3d.ec.data.dirty) {
+        gfx_d3d11_upload_extended_combiners(&d3d.shader_program, &d3d.ec);
+        d3d.ec.data.dirty = false;
     }
 
     // Draw triangles

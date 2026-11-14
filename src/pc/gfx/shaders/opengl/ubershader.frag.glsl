@@ -32,7 +32,7 @@ uniform ivec4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is fil
 uniform vec4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
 
 // Uniforms (unpacked)
-#define uCCS(cycle, alpha)      uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
+#define uCCS_(cycle, alpha)     uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
 #define uCCF                    uFeatures[0]
 #define uNoiseRandomSeed        uFeatures[1]
 #define uLightMapColor          uFeatures[2]
@@ -412,8 +412,8 @@ void main() {
     // Color combiner
     int cycles = use2Cycle ? 2 : 1;
     for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = uCCS(cycle, 0);
-        int ABCD_a   = uCCS(cycle, 1);
+        int ABCD_rgb = uCCS_(cycle, 0);
+        int ABCD_a   = uCCS_(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
         if ((ABCD_rgb == ABCD_a || !useAlpha) && !skipColor && !skipAlpha) {
