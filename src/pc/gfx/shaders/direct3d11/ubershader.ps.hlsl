@@ -16,9 +16,9 @@ static PSInput vInputs;
 
 // Uniforms (packed)
 cbuffer ShaderUniforms : register(b0) {
-    int4 uCCS[CC_CYCLES / 2];
-    int4 uFeatures;
-    int4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
+    uint4 uCCS[CC_CYCLES / 2];
+    uint4 uFeatures;
+    uint4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
     float4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
 };
 
@@ -40,7 +40,7 @@ SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
 
 // Extended combiners
 cbuffer ExtendedCombiners : register(b1) {
-    int4   uExtCC_Ops[2 * (CC_EXT_MAX_OPS / 16)];
+    uint4  uExtCC_Ops[2 * (CC_EXT_MAX_OPS / 16)];
     float4 uExtCC_Constants[2 * CC_EXT_MAX_CONSTANTS];
 };
 
@@ -51,7 +51,7 @@ cbuffer ExtendedCombiners : register(b1) {
 static float4 gNoise;
 static float4 gTexColors[MAX_TEXTURES];
 
-float4 ccs_to_vec4(in float4 texel, in int ccs) {
+float4 ccs_to_vec4(in float4 texel, in uint ccs) {
     switch (ccs) {
         case CCS_0:         return float4(0.0, 0.0, 0.0, 0.0);
         case CCS_1:         return float4(1.0, 1.0, 1.0, 1.0);
@@ -68,13 +68,13 @@ float4 ccs_to_vec4(in float4 texel, in int ccs) {
         case CCS_AMBIENT:   return vInputs.ambient;
     }
     if (ccs >= CCS_LIGHT_FIRST && ccs <= CCS_LIGHT_LAST) {
-        int i = ccs - CCS_LIGHT_FIRST;
+        uint i = ccs - CCS_LIGHT_FIRST;
         return (i % 2 == 0 ?
                 vInputs.lights[i / 2] :
                 vInputs.lights[i / 2].aaaa);
     }
     if (ccs >= CCS_TEXEL_FIRST && ccs <= CCS_TEXEL_LAST) {
-        int i = ccs - CCS_TEXEL_FIRST;
+        uint i = ccs - CCS_TEXEL_FIRST;
         return (i % 2 == 0 ?
                 gTexColors[i / 2] :
                 gTexColors[i / 2].aaaa);
@@ -82,7 +82,7 @@ float4 ccs_to_vec4(in float4 texel, in int ccs) {
     return float4(0.0, 0.0, 0.0, 0.0);
 }
 
-float4 combine_colors(in float4 texel, in int ABCD) {
+float4 combine_colors(in float4 texel, in uint ABCD) {
     #define A UNPACK(ABCD, 24, 8)
     #define B UNPACK(ABCD, 16, 8)
     #define C UNPACK(ABCD,  8, 8)
@@ -120,18 +120,14 @@ float4 combine_colors(in float4 texel, in int ABCD) {
 // Extended combiner
 //
 
-// Note: declaring these as global helps reducing GPU register pressure
-static float4 sStack[CC_EXT_STACK_SIZE];
-static float4 sRegisters[CC_EXT_MAX_REGISTERS];
-
-#define ARG(n) sStack[top - (n)]
+#define ARG(n) stack[top - (n)]
 #define STACK_PUSH(args, operation) { \
     float4 res = (operation); \
-    sStack[top - (args)] = res; \
+    stack[top - (args)] = res; \
     top -= ((args) - 1); \
 }
 
-float cc_ext_dot_channel(in float4 arg1, in int channel) {
+float cc_ext_dot_channel(in float4 arg1, in uint channel) {
     switch (channel) {
         case CC_EXT_DOT_PARAM_0: return 0.0;
         case CC_EXT_DOT_PARAM_1: return 1.0;
@@ -145,19 +141,23 @@ float cc_ext_dot_channel(in float4 arg1, in int channel) {
 
 float4 cc_ext_dot(in float4 arg1, in float4 arg2) {
     return float4(
-        cc_ext_dot_channel(arg1, int(arg2.r)),
-        cc_ext_dot_channel(arg1, int(arg2.g)),
-        cc_ext_dot_channel(arg1, int(arg2.b)),
-        cc_ext_dot_channel(arg1, int(arg2.a))
+        cc_ext_dot_channel(arg1, uint(arg2.r)),
+        cc_ext_dot_channel(arg1, uint(arg2.g)),
+        cc_ext_dot_channel(arg1, uint(arg2.b)),
+        cc_ext_dot_channel(arg1, uint(arg2.a))
     );
 }
 
-float4 combine_colors_ext(in float4 texel, in int alpha) {
-    const int offsetOps = alpha * (CC_EXT_MAX_OPS / 16);
-    const int offsetConstants = alpha * (CC_EXT_MAX_CONSTANTS);
-    int top = 0;
-    for (int i = 0; i < CC_EXT_MAX_OPS; ++i) {
-        int op = (uExtCC_Ops[offsetOps + (i / 16)][(i / 4) % 4] >> (8 * (i % 4))) & 0xFF;
+float4 combine_colors_ext(in float4 texel, in uint alpha) {
+    const uint offsetOps = alpha * (CC_EXT_MAX_OPS / 16);
+    const uint offsetConstants = alpha * (CC_EXT_MAX_CONSTANTS);
+
+    float4 stack[CC_EXT_STACK_SIZE];
+    float4 registers[CC_EXT_MAX_REGISTERS];
+    uint top = 0;
+
+    for (uint i = 0; i < CC_EXT_MAX_OPS; ++i) {
+        uint op = (uExtCC_Ops[offsetOps + (i / 16)][(i / 4) % 4] >> (8 * (i % 4))) & 0xFF;
         switch (op) {
 
             // Values
@@ -193,7 +193,7 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
             case CC_EXT_NEQ:        STACK_PUSH(2, float4(ARG(1) != ARG(2))); break;
             case CC_EXT_AND:        STACK_PUSH(2, float4(bool4(ARG(1)) && bool4(ARG(2)))); break;
             case CC_EXT_OR:         STACK_PUSH(2, float4(bool4(ARG(1)) || bool4(ARG(2)))); break;
-            case CC_EXT_SET:        STACK_PUSH(2, sRegisters[int(ARG(1).x)] = ARG(2)); break;
+            case CC_EXT_SET:        STACK_PUSH(2, registers[uint(ARG(1).x)] = ARG(2)); break;
             case CC_EXT_END:        top = 0; break;
 
             // Functions
@@ -219,7 +219,7 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
 
             // Lights
             if (op >= CC_EXT_LIGHT_FIRST && op <= CC_EXT_LIGHT_LAST) {
-                int index = op - CC_EXT_LIGHT_FIRST;
+                uint index = op - CC_EXT_LIGHT_FIRST;
                 STACK_PUSH(0, index % 2 == 0 ?
                               vInputs.lights[index / 2] :
                               vInputs.lights[index / 2].aaaa);
@@ -228,7 +228,7 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
 
             // Textures
             if (op >= CC_EXT_TEXEL_FIRST && op <= CC_EXT_TEXEL_LAST) {
-                int index = op - CC_EXT_TEXEL_FIRST;
+                uint index = op - CC_EXT_TEXEL_FIRST;
                 STACK_PUSH(0, index % 2 == 0 ?
                               gTexColors[index / 2] :
                               gTexColors[index / 2].aaaa);
@@ -237,7 +237,7 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
 
             // Registers
             if (op >= CC_EXT_REGISTER_FIRST && op <= CC_EXT_REGISTER_LAST) {
-                STACK_PUSH(0, sRegisters[op - CC_EXT_REGISTER_FIRST]);
+                STACK_PUSH(0, registers[op - CC_EXT_REGISTER_FIRST]);
                 break;
             }
 
@@ -248,7 +248,7 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
             }
 
             // Terminator
-            return clamp(sStack[0], 0.0, 1.0);
+            return clamp(stack[0], 0.0, 1.0);
         }
     }
     return float4(0.0, 0.0, 0.0, 0.0);    
@@ -259,9 +259,9 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
 //
 
 float dither4x4(in float2 position, in float brightness) {
-    int x = int(fmod(position.x, 4.0));
-    int y = int(fmod(position.y, 4.0));
-    int index = x + y * 4;
+    uint x = uint(fmod(position.x, 4.0));
+    uint y = uint(fmod(position.y, 4.0));
+    uint index = x + y * 4;
     float limit = float((((0x6E4CA280 - 0x10CD10CD * (index / 8)) >> ((index % 8) * 4)) & 0xF) + 1) / 16.0;
     return brightness < limit ? 0.0 : 1.0;
 }
@@ -314,7 +314,7 @@ float3 shader_effect_dithering(in float3 texel, in float value) {
 }
 
 float3 shader_effect_posterization(in float3 texel, in float value) {
-    int levels = int(max(1.0, value));
+    uint levels = uint(max(1.0, value));
     return floor(texel * levels) / levels;
 }
 
@@ -378,7 +378,8 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     bool skipAlpha         = CCF_HAS_FLAG(SKIP_COMBINER_ALPHA);
 
     // Tex colors
-    for (int i = 0; i < MAX_TEXTURES; ++i) {
+    [unroll]
+    for (uint i = 0; i < MAX_TEXTURES; ++i) {
         if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
             if (i == 1 && useLightMap) {
                 float3 lightMapColor = float3(
@@ -404,10 +405,10 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     }
 
     // Color combiner
-    int cycles = use2Cycle ? 2 : 1;
-    for (int cycle = 0; cycle < cycles; cycle++) {
-        int ABCD_rgb = uCCS_(cycle, 0);
-        int ABCD_a   = uCCS_(cycle, 1);
+    uint cycles = use2Cycle ? 2 : 1;
+    for (uint cycle = 0; cycle < cycles; cycle++) {
+        uint ABCD_rgb = uCCS_(cycle, 0);
+        uint ABCD_a   = uCCS_(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
         if ((ABCD_rgb == ABCD_a || !useAlpha) && !skipColor && !skipAlpha) {
@@ -448,7 +449,7 @@ float4 PSMain(PSInput ps) : SV_TARGET {
 
     // Global shader effects
     if (worldGeometry && uShaderFlags != 0) {
-        for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
+        for (uint i = 0; i < SHADER_FLAG_MAX; ++i) {
             if (UNPACK(uShaderFlags, i, 1) != 0) {
                 float value = uShaderFlagValue(i);
                 switch (i) {

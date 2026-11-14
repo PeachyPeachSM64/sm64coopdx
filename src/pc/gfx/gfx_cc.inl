@@ -106,4 +106,4 @@ REPEAT_FROM_0(CCS_TEXEL, MAX_TEXTURES)
 #define USED_TEXTURE(i)  (1 << (i))
 
 #define UNPACK(v, s, w) \
-    ((int(v) >> (s)) & ((1 << (w)) - 1))
+    ((uint(v) >> (s)) & ((1 << (w)) - 1))

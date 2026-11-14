@@ -48,7 +48,7 @@ struct D3D11ShaderProgram {
 };
 
 struct D3D11ExtendedCombiners {
-    int ops[2 * (CC_EXT_MAX_OPS / 16)][4];
+    uint32_t ops[2 * (CC_EXT_MAX_OPS / 16)][4];
     float constants[2 * CC_EXT_MAX_CONSTANTS][4];
     bool dirty;
 };
@@ -360,10 +360,6 @@ static void gfx_d3d11_load_ubershader(void) {
     ComPtr<ID3DBlob> vs, ps;
     ComPtr<ID3DBlob> error_blob;
 
-
-    printf("%s\n", D3D11_UBERSHADER);
-
-
 #if DEBUG_D3D
     UINT compile_flags = D3DCOMPILE_DEBUG;
 #else
@@ -640,7 +636,7 @@ static void gfx_d3d11_update_uniforms(void) {
     D3D11ShaderProgram *prg = &d3d.shader_program;
 
     gfx_shaders_update_uniforms(&d3d.uniforms.data, &prg->cc, NULL, 0);
-    for (int t = 0; t < MAX_TEXTURES; t++) {
+    for (uint32_t t = 0; t < MAX_TEXTURES; t++) {
         gfx_d3d11_set_texture_uniforms(prg, t);
     }
 

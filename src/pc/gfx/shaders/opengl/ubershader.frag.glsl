@@ -131,7 +131,7 @@ vec4 combine_colors(in vec4 texel, in int ABCD) {
 // Extended combiner
 //
 
-// Note: declaring these as global helps reducing GPU register pressure
+// Note: in GLSL, declaring these as global helps reducing GPU register pressure
 vec4 sStack[CC_EXT_STACK_SIZE];
 vec4 sRegisters[CC_EXT_MAX_REGISTERS];
 

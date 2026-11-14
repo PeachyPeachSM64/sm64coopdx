@@ -8,9 +8,9 @@
 struct VSInput {
     float4 position                     : aVtxPos;
     float4 texCoords[MAX_TEXTURES / 2]  : aTexCoords0;
-    int4 inputs                         : aInputs;
-    int4 lights[MAX_ACTIVE_LIGHTS / 4]  : aLights0;
-    int4 features                       : aFeatures;
+    uint4 inputs                        : aInputs;
+    uint4 lights[MAX_ACTIVE_LIGHTS / 4] : aLights0;
+    uint4 features                      : aFeatures;
 };
 
 // Fragment inputs
@@ -27,7 +27,7 @@ struct PSInput {
     float2 lightMap                     : vLightMap;
 };
 
-float4 unpack_color(in int rgba) {
+float4 unpack_color(in uint rgba) {
     return float4(
         float(UNPACK(rgba, 24, 8)) / 255.0,
         float(UNPACK(rgba, 16, 8)) / 255.0,
@@ -36,7 +36,7 @@ float4 unpack_color(in int rgba) {
     );
 }
 
-float2 unpack_light_map(in int uv) {
+float2 unpack_light_map(in uint uv) {
     return float2(
         float(UNPACK(uv, 16, 16)) / 65535.0,
         float(UNPACK(uv,  0, 16)) / 65535.0
@@ -47,13 +47,13 @@ PSInput VSMain(VSInput vs) {
     PSInput ps;
 
     [unroll]
-    for (int t = 0; t < MAX_TEXTURES; t += 2) {
+    for (uint t = 0; t < MAX_TEXTURES; t += 2) {
         ps.texCoords[t + 0] = vs.texCoords[t / 2].xy;
         ps.texCoords[t + 1] = vs.texCoords[t / 2].zw;
     }
 
     [unroll]
-    for (int i = 0; i < MAX_ACTIVE_LIGHTS; i++) {
+    for (uint i = 0; i < MAX_ACTIVE_LIGHTS; i++) {
         ps.lights[i] = unpack_color(vs.lights[i / 4][i % 4]);
     }
 

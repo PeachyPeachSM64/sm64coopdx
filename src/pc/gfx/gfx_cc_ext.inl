@@ -29,7 +29,7 @@
 //
 
 #if defined(SHADER_CODE)
-#define CC_EXT_VALUE(name) static const int CC_EXT_##name = CCS_##name;
+#define CC_EXT_VALUE(name) static const uint CC_EXT_##name = CCS_##name;
 #elif defined(DEFINE_CC_EXT_CONSTANTS)
 #define CC_EXT_VALUE(name) CC_EXT_##name = CCS_##name,
 #elif !defined(CC_EXT_VALUE)
@@ -110,7 +110,7 @@ REPEAT_FROM_0(CC_EXT_VALUE_TEXEL, MAX_TEXTURES)
 //
 
 #if defined(SHADER_CODE)
-#define CC_EXT_OPERATOR(id, name, args, precedence, symbol) static const int CC_EXT_##name = CC_EXT_CONST_LAST + 1 + (id);
+#define CC_EXT_OPERATOR(id, name, args, precedence, symbol) static const uint CC_EXT_##name = CC_EXT_CONST_LAST + 1 + (id);
 #elif defined(DEFINE_CC_EXT_CONSTANTS)
 #define CC_EXT_OPERATOR(id, name, args, precedence, symbol) CC_EXT_##name = CC_EXT_CONST_LAST + 1 + (id),
 #elif !defined(CC_EXT_OPERATOR)
@@ -145,7 +145,7 @@ CC_EXT_OPERATOR(18, END, 0, 0, ";") // must be last
 //
 
 #if defined(SHADER_CODE)
-#define CC_EXT_FUNCTION(id, name, args) static const int CC_EXT_##name = CC_EXT_END + 1 + (id);
+#define CC_EXT_FUNCTION(id, name, args) static const uint CC_EXT_##name = CC_EXT_END + 1 + (id);
 #elif defined(DEFINE_CC_EXT_CONSTANTS)
 #define CC_EXT_FUNCTION(id, name, args) CC_EXT_##name = CC_EXT_END + 1 + (id),
 #elif !defined(CC_EXT_FUNCTION)

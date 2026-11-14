@@ -64,9 +64,9 @@ enum VertexAttrib {
 struct VertexAttribsData {
     float pos[4];
     float tex_coords[MAX_TEXTURES / 2][4];
-    int inputs[4];
-    int lights[MAX_ACTIVE_LIGHTS / 4][4];
-    int features[4];
+    uint32_t inputs[4];
+    uint32_t lights[MAX_ACTIVE_LIGHTS / 4][4];
+    uint32_t features[4];
 };
 
 // Everything must stay aligned to 16-byte boundaries
@@ -104,7 +104,7 @@ static void gfx_shaders_pack_attribs(struct VertexAttribsData *data, const struc
     data->pos[3] = attribs->pos[3];
 
     // Tex coords
-    for (int i = 0; i < MAX_TEXTURES; ++i) {
+    for (uint32_t i = 0; i < MAX_TEXTURES; ++i) {
         data->tex_coords[i / 2][2 * (i % 2) + 0] = attribs->tex_coords[i][0];
         data->tex_coords[i / 2][2 * (i % 2) + 1] = attribs->tex_coords[i][1];
     }
@@ -136,7 +136,7 @@ static void gfx_shaders_pack_attribs(struct VertexAttribsData *data, const struc
     );
 
     // Lights
-    for (int i = 0; i < MAX_ACTIVE_LIGHTS; ++i) {
+    for (uint32_t i = 0; i < MAX_ACTIVE_LIGHTS; ++i) {
         data->lights[i / 4][i % 4] = (
             _SHIFTL(attribs->lights[i][0], 24, 8) |
             _SHIFTL(attribs->lights[i][1], 16, 8) |
@@ -186,9 +186,9 @@ enum ShaderUniform {
 };
 
 struct ShaderUniformsData {
-    int ccs[CC_CYCLES / 2][4];
-    int tex_properties[MAX_TEXTURES][4]; // width, height, filter
-    int features[4]; // ccf, noise_random_seed, light_map_color, shader_flags
+    uint32_t ccs[CC_CYCLES / 2][4];
+    uint32_t tex_properties[MAX_TEXTURES][4]; // width, height, filter
+    uint32_t features[4]; // ccf, noise_random_seed, light_map_color, shader_flags
     float shader_flag_values[(SHADER_FLAG_MAX + 3) / 4][4];
 };
 
@@ -219,8 +219,8 @@ static void gfx_shaders_pack_uniforms(struct ShaderUniformsData *data, const str
     memset(data, 0, sizeof(*data));
 
     // CC sources
-    for (int cycle = 0; cycle < CC_CYCLES; ++cycle)
-    for (int i = 0; i < 2; ++i) {
+    for (uint32_t cycle = 0; cycle < CC_CYCLES; ++cycle)
+    for (uint32_t i = 0; i < 2; ++i) {
         data->ccs[cycle / 2][2 * (cycle % 2) + i] = (
             _SHIFTL(uniforms->ccs[cycle][i][0], 24, 8) |
             _SHIFTL(uniforms->ccs[cycle][i][1], 16, 8) |
@@ -230,7 +230,7 @@ static void gfx_shaders_pack_uniforms(struct ShaderUniformsData *data, const str
     }
 
     // Tex properties
-    for (int i = 0; i < MAX_TEXTURES; ++i) {
+    for (uint32_t i = 0; i < MAX_TEXTURES; ++i) {
         data->tex_properties[i][0] = uniforms->tex_properties[i].width;
         data->tex_properties[i][1] = uniforms->tex_properties[i].height;
         data->tex_properties[i][2] = uniforms->tex_properties[i].filter;
@@ -248,7 +248,7 @@ static void gfx_shaders_pack_uniforms(struct ShaderUniformsData *data, const str
     data->features[3] = uniforms->shader_flags;
 
     // Shader flag values
-    for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
+    for (uint32_t i = 0; i < SHADER_FLAG_MAX; ++i) {
         data->shader_flag_values[i / 4][i % 4] = uniforms->shader_flag_values[i];
     }
 }
@@ -315,7 +315,7 @@ void gfx_shaders_update_uniforms(struct ShaderUniforms *uniforms, const struct C
     // Global shader effects
     if (cc && cc->world_geometry) {
         uniforms->shader_flags = 0;
-        for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
+        for (uint32_t i = 0; i < SHADER_FLAG_MAX; ++i) {
             uniforms->shader_flags |= (gShaderFlags[i] << i);
             uniforms->shader_flag_values[i] = gShaderFlagValues[i];
         }
