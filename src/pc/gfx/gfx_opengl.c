@@ -24,8 +24,13 @@
 #endif
 
 #include "gfx_rendering_api.h"
+#include "game/memory.h"
 
-#define TEX_CACHE_STEP 512
+#define VERTEX_RING_BUFFER 0
+#if VERTEX_RING_BUFFER
+#define VERTEX_RING_BUFFER_BATCHES 8
+#define VERTEX_BUFFER_LENGTH (MAX_BUFFERED_VERTS * VERTEX_RING_BUFFER_BATCHES)
+#endif
 
 struct GLShaderProgram {
     GLuint program;
@@ -40,28 +45,22 @@ struct GLTexture {
     struct TextureProperties properties;
 };
 
-struct GLExtendedCombiner {
-    int ops[CC_EXT_MAX_OPS / 16][4];
-    float constants[CC_EXT_MAX_CONSTANTS][4];
-};
+static struct {
+    GLuint vbo;
+    GLuint vao;
+    GLuint ubo;
+#if VERTEX_RING_BUFFER
+    size_t vbo_offset;
+#endif
 
-// Make sure data is aligned to 16 bytes boundaries
-static_assert(offsetof(struct GLExtendedCombiner, ops) % 16 == 0);
-static_assert(offsetof(struct GLExtendedCombiner, constants) % 16 == 0);
-static_assert(sizeof(struct GLExtendedCombiner) % 16 == 0);
+    struct GLShaderProgram shader_program;
+    struct ShaderUniforms uniforms;
+    struct ExtendedCombiners combiners;
 
-static GLuint opengl_vbo;
-static GLuint opengl_vao;
-static GLuint opengl_ubo;
-
-static int tex_cache_size = 0;
-static int num_textures = 0;
-static struct GLTexture *tex_cache = NULL;
-
-static struct GLShaderProgram opengl_prg = {0};
-static struct ShaderUniforms opengl_uniforms = {0};
-static struct GLTexture *opengl_tex[MAX_TEXTURES];
-static int opengl_curtex = 0;
+    struct GLTexture *textures[MAX_TEXTURES];
+    struct GrowingArray *texture_cache;
+    int current_tile;
+} gl;
 
 static const GLenum GL_TYPES[] = {
     [SHADER_DATA_TYPE_INT8]   = GL_BYTE,
@@ -93,7 +92,7 @@ static void gfx_opengl_vertex_array_locate_attribs(struct GLShaderProgram *prg) 
     }
 }
 
-static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
+static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg, size_t buffer_offset) {
     const size_t num_attribs = gfx_shaders_get_num_attribs();
     const size_t stride = gfx_shaders_get_attribs_stride();
     for (size_t i = 0; i < num_attribs; ++i) {
@@ -103,9 +102,9 @@ static void gfx_opengl_vertex_array_set_attribs(struct GLShaderProgram *prg) {
             const GLenum type = GL_TYPES[attrib->type];
             glEnableVertexAttribArray(index);
             if (type == GL_FLOAT) {
-                glVertexAttribPointer(index, attrib->components, type, false, stride, (const void *) (attrib->offset + j * attrib->stride));
+                glVertexAttribPointer(index, attrib->components, type, false, stride, (const void *) (buffer_offset + attrib->offset + j * attrib->stride));
             } else {
-                glVertexAttribIPointer(index, attrib->components, type, stride, (const void *) (attrib->offset + j * attrib->stride));
+                glVertexAttribIPointer(index, attrib->components, type, stride, (const void *) (buffer_offset + attrib->offset + j * attrib->stride));
             }
         }
     }
@@ -141,8 +140,8 @@ static void gfx_opengl_locate_uniforms(struct GLShaderProgram *prg) {
 }
 
 static void gfx_opengl_set_texture_uniforms(struct GLShaderProgram *prg, const int tile) {
-    if ((prg->cc.used_textures & USED_TEXTURE(tile)) && opengl_tex[tile]) {
-        gfx_shaders_update_uniforms(&opengl_uniforms, NULL, &opengl_tex[tile]->properties, tile);
+    if ((prg->cc.used_textures & USED_TEXTURE(tile)) && gl.textures[tile]) {
+        gfx_shaders_update_uniforms(&gl.uniforms, NULL, &gl.textures[tile]->properties, tile);
     }
 }
 
@@ -173,39 +172,42 @@ static void gfx_opengl_upload_shader_uniforms(struct GLShaderProgram *prg, const
 ////////////////////////
 
 static void gfx_opengl_locate_extended_combiners(struct GLShaderProgram *prg) {
-    glGenBuffers(1, &opengl_ubo);
-    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo); 
-    glBufferData(GL_UNIFORM_BUFFER, sizeof(struct GLExtendedCombiner) * ARRAY_COUNT(prg->ec), NULL, GL_DYNAMIC_DRAW); 
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
     GLuint ubo_index = glGetUniformBlockIndex(prg->program, "ExtendedCombinerBlock");
     if (ubo_index == GL_INVALID_INDEX) {
         sys_fatal("Cannot locate uniform block \"ExtendedCombinerBlock\" in fragment shader");
     }
+
+    const size_t ops_stride = gfx_shaders_get_extended_combiners_ops_stride();
+    const size_t constants_stride = gfx_shaders_get_extended_combiners_constants_stride();
+    glGenBuffers(1, &gl.ubo);
+    glBindBuffer(GL_UNIFORM_BUFFER, gl.ubo);
+    glBufferData(GL_UNIFORM_BUFFER, (ops_stride + constants_stride) * 2, NULL, GL_STREAM_DRAW);
+
     GLuint binding_point_index = 0;
-    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, opengl_ubo);
+    glBindBufferBase(GL_UNIFORM_BUFFER, binding_point_index, gl.ubo);
     glUniformBlockBinding(prg->program, ubo_index, binding_point_index);
 }
 
-static void gfx_opengl_update_extended_combiner(struct GLShaderProgram *prg, int index) {
-    const struct ExtendedCombiner *ec = prg->cc.ec[index];
+static inline void gfx_opengl_upload_extended_combiner(void *ops, void *constants, bool alpha) {
+    const size_t ops_stride = gfx_shaders_get_extended_combiners_ops_stride();
+    const size_t constants_stride = gfx_shaders_get_extended_combiners_constants_stride();
+    const size_t ops_offset = alpha * ops_stride;
+    const size_t constants_offset = alpha * constants_stride;
+    glBufferSubData(GL_UNIFORM_BUFFER, ops_offset + constants_offset, ops_stride, (void *) ((uintptr_t) ops + ops_offset));
+    glBufferSubData(GL_UNIFORM_BUFFER, ops_offset + constants_offset + ops_stride, constants_stride, (void *) ((uintptr_t) constants + constants_offset));
+}
 
-    // Update ubo only when necessary
-    if (prg->ec[index] == ec) {
-        return;
+static void gfx_opengl_upload_extended_combiners(struct GLShaderProgram *prg, const struct ExtendedCombiners *combiners) {
+    void *ops = gfx_shaders_get_extended_combiners_ops_data(combiners);
+    void *constants = gfx_shaders_get_extended_combiners_constants_data(combiners);
+    if (ops && constants) {
+        if (combiners->color) {
+            gfx_opengl_upload_extended_combiner(ops, constants, false);
+        }
+        if (combiners->alpha) {
+            gfx_opengl_upload_extended_combiner(ops, constants, true);
+        }
     }
-
-    // Convert extended combiner to a GPU friendly struct
-    struct GLExtendedCombiner glec = {0};
-    memcpy(glec.constants, ec->constants, sizeof(glec.constants));
-    for (int i = 0; i < ARRAY_COUNT(ec->ops); ++i) {
-        PACKED_SET_16(glec.ops, i, ec->ops[i]);
-    }
-
-    glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
-    glBufferSubData(GL_UNIFORM_BUFFER, index * sizeof(glec), sizeof(glec), &glec);
-
-    prg->ec[index] = ec;
 }
 
   /////////////
@@ -311,17 +313,17 @@ static void gfx_opengl_load_ubershader(void) {
         fatal_error(Program, shader_program, "Program linkage failed");
     }
 
-    opengl_prg.program = shader_program;
+    gl.shader_program.program = shader_program;
 
     // Set up attributes
-    gfx_opengl_vertex_array_locate_attribs(&opengl_prg);
-    gfx_opengl_vertex_array_set_attribs(&opengl_prg);
+    gfx_opengl_vertex_array_locate_attribs(&gl.shader_program);
+    gfx_opengl_vertex_array_set_attribs(&gl.shader_program, 0);
 
     // Set up uniforms
-    gfx_opengl_locate_uniforms(&opengl_prg);
+    gfx_opengl_locate_uniforms(&gl.shader_program);
 
     // Set up extended combiners
-    gfx_opengl_locate_extended_combiners(&opengl_prg);
+    gfx_opengl_locate_extended_combiners(&gl.shader_program);
 }
 
 static bool gfx_opengl_z_is_from_0_to_1(void) {
@@ -329,56 +331,49 @@ static bool gfx_opengl_z_is_from_0_to_1(void) {
 }
 
 static bool gfx_opengl_update_cc(struct ColorCombiner *cc) {
-    if (memcmp(&opengl_prg.cc, cc, sizeof(*cc)) != 0) {
-        opengl_prg.cc = *cc;
+    if (memcmp(&gl.shader_program.cc, cc, sizeof(*cc)) != 0) {
+        gl.shader_program.cc = *cc;
         return true;
     }
     return false;
 }
 
 static void gfx_opengl_update_uniforms(void) {
-    struct GLShaderProgram *prg = &opengl_prg;
+    struct GLShaderProgram *prg = &gl.shader_program;
 
-    gfx_shaders_update_uniforms(&opengl_uniforms, &prg->cc, NULL, 0);
+    gfx_shaders_update_uniforms(&gl.uniforms, &prg->cc, NULL, 0);
     for (int t = 0; t < MAX_TEXTURES; t++) {
         gfx_opengl_set_texture_uniforms(prg, t);
     }
 
-    // Extended combiners
-    if (prg->cc.use_ext_color) {
-        gfx_opengl_update_extended_combiner(prg, 0);
-    }
-    if (prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same) {
-        gfx_opengl_update_extended_combiner(prg, 1);
-    }
+    gfx_shaders_update_extended_combiners(&gl.combiners, &prg->cc);
 }
 
 static GLuint gfx_opengl_new_texture(void) {
-    if (num_textures >= tex_cache_size) {
-        tex_cache_size += TEX_CACHE_STEP;
-        tex_cache = realloc(tex_cache, sizeof(struct GLTexture) * tex_cache_size);
-        if (!tex_cache) sys_fatal("Out of memory allocating texture cache");
-        // invalidate these because they might be pointing to garbage now
-        opengl_tex[0] = NULL;
-        opengl_tex[1] = NULL;
+    if (!gl.texture_cache) {
+        gl.texture_cache = growing_array_init(NULL, 256, malloc, free);
     }
-    glGenTextures(1, &tex_cache[num_textures].gltex);
-    return num_textures++;
+    struct GLTexture *tex = growing_array_alloc(gl.texture_cache, sizeof(struct GLTexture));
+    if (!tex) {
+        sys_fatal("Ran out of memory when creating texture!");
+    }
+    glGenTextures(1, &tex->gltex);
+    return gl.texture_cache->count - 1;
 }
 
 static void gfx_opengl_select_texture(int tile, GLuint texture_id) {
-    opengl_tex[tile] = tex_cache + texture_id;
-    opengl_curtex = tile;
+    gl.textures[tile] = (struct GLTexture *) gl.texture_cache->buffer[texture_id];
+    gl.current_tile = tile;
     glActiveTexture(GL_TEXTURE0 + tile);
-    glBindTexture(GL_TEXTURE_2D, opengl_tex[tile]->gltex);
-    gfx_opengl_set_texture_uniforms(&opengl_prg, tile);
+    glBindTexture(GL_TEXTURE_2D, gl.textures[tile]->gltex);
+    gfx_opengl_set_texture_uniforms(&gl.shader_program, tile);
 }
 
 static void gfx_opengl_upload_texture(const uint8_t *rgba32_buf, int width, int height) {
     if (width <= 0 || height <= 0) { sys_fatal("Texture dimensions are invalid!"); }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgba32_buf);
-    opengl_tex[opengl_curtex]->properties.width = width;
-    opengl_tex[opengl_curtex]->properties.height = height;
+    gl.textures[gl.current_tile]->properties.width = width;
+    gl.textures[gl.current_tile]->properties.height = height;
 }
 
 static uint32_t gfx_cm_to_opengl(uint32_t val) {
@@ -394,10 +389,10 @@ static void gfx_opengl_set_sampler_parameters(int tile, uint8_t filter, uint32_t
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gfx_cm_to_opengl(cms));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gfx_cm_to_opengl(cmt));
-    opengl_curtex = tile;
-    if (opengl_tex[tile]) {
-        opengl_tex[tile]->properties.filter = filter;
-        gfx_opengl_set_texture_uniforms(&opengl_prg, tile);
+    gl.current_tile = tile;
+    if (gl.textures[tile]) {
+        gl.textures[tile]->properties.filter = filter;
+        gfx_opengl_set_texture_uniforms(&gl.shader_program, tile);
     }
 }
 
@@ -441,17 +436,40 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
 
 static void gfx_opengl_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_vbo_len, size_t buf_vbo_num_tris) {
 
-    // upload uniforms if they changed since last draw
-    if (opengl_uniforms.dirty) {
-        gfx_opengl_upload_shader_uniforms(&opengl_prg, &opengl_uniforms);
-        opengl_uniforms.dirty = false;
-    }
-
-    // set vertex buffer and draw triangles
+    // Set vertex buffer
     void *data = gfx_shaders_get_attribs_data(buf_vbo, buf_vbo_len);
     if (data) {
-        size_t stride = gfx_shaders_get_attribs_stride();
+        const size_t stride = gfx_shaders_get_attribs_stride();
+#if VERTEX_RING_BUFFER
+        if (gl.vbo_offset + buf_vbo_len > VERTEX_BUFFER_LENGTH) {
+            gl.vbo_offset = 0;
+        }
+        if (gl.vbo_offset == 0) {
+            glBufferData(GL_ARRAY_BUFFER, VERTEX_BUFFER_LENGTH * stride, NULL, GL_STREAM_DRAW);
+        }
+        size_t buffer_offset = gl.vbo_offset * stride;
+        gfx_opengl_vertex_array_set_attribs(&gl.shader_program, buffer_offset);
+        glBufferSubData(GL_ARRAY_BUFFER, buffer_offset, buf_vbo_len * stride, data);
+        gl.vbo_offset += buf_vbo_len;
+#else
         glBufferData(GL_ARRAY_BUFFER, stride * buf_vbo_len, data, GL_STREAM_DRAW);
+#endif
+    }
+
+    // Upload uniforms if they changed since last draw
+    if (gl.uniforms.dirty) {
+        gfx_opengl_upload_shader_uniforms(&gl.shader_program, &gl.uniforms);
+        gl.uniforms.dirty = false;
+    }
+
+    // Upload extended combiners if they changed since the last draw
+    if (gl.combiners.dirty) {
+        gfx_opengl_upload_extended_combiners(&gl.shader_program, &gl.combiners);
+        gl.combiners.dirty = false;
+    }
+
+    // Draw triangles
+    if (data) {
         glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
     }
 }
@@ -483,10 +501,6 @@ static void gfx_opengl_init(void) {
         sys_fatal("Could not init GLEW:\n%s", glewGetErrorString(err));
 #endif
 
-    tex_cache_size = TEX_CACHE_STEP;
-    tex_cache = calloc(tex_cache_size, sizeof(struct GLTexture));
-    if (!tex_cache) sys_fatal("Out of memory allocating texture cache");
-
     // check GL version
     int vmajor = 0;
     int vminor = 0;
@@ -495,12 +509,15 @@ static void gfx_opengl_init(void) {
         sys_fatal("OpenGL 2.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
     }
 
-    glGenBuffers(1, &opengl_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, opengl_vbo);
+    glGenBuffers(1, &gl.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl.vbo);
+#if VERTEX_RING_BUFFER
+    gl.vbo_offset = 0;
+#endif
 
     if (vmajor >= 3 && !is_es) {
-        glGenVertexArrays(1, &opengl_vao);
-        glBindVertexArray(opengl_vao);
+        glGenVertexArrays(1, &gl.vao);
+        glBindVertexArray(gl.vao);
     }
 
     glDepthFunc(GL_LEQUAL);
@@ -525,7 +542,7 @@ static void gfx_opengl_on_resize(void) {
 
 static void gfx_opengl_start_frame(void) {
     // Reset color combiner to force a uniforms update on next update_cc
-    memset(&opengl_prg.cc, 0, sizeof(opengl_prg.cc));
+    memset(&gl.shader_program.cc, 0, sizeof(gl.shader_program.cc));
 
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
@@ -545,6 +562,7 @@ static const char *gfx_opengl_get_name(void) {
 }
 
 static void gfx_opengl_shutdown(void) {
+    growing_array_free(&gl.texture_cache);
 }
 
 struct GfxRenderingAPI gfx_opengl_api = {

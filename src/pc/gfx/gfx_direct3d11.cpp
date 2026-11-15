@@ -24,8 +24,8 @@ extern "C" {
 
 #define DEBUG_D3D 0
 
-#define D3D11_VERTEX_RING_BUFFER_BATCHES 8
-#define D3D11_VERTEX_BUFFER_LENGTH (MAX_BUFFERED_VERTS * D3D11_VERTEX_RING_BUFFER_BATCHES)
+#define VERTEX_RING_BUFFER_BATCHES 8
+#define VERTEX_BUFFER_LENGTH (MAX_BUFFERED_VERTS * VERTEX_RING_BUFFER_BATCHES)
 
 using namespace Microsoft::WRL; // For ComPtr
 
@@ -44,19 +44,7 @@ struct D3D11ShaderProgram {
     uint32_t *uniform_locations;
     uint32_t *ec_locations;
     struct ColorCombiner cc;
-    const struct ExtendedCombiner *ec[2];
 };
-
-struct D3D11ExtendedCombiners {
-    uint32_t ops[2 * PACKED_16(CC_EXT_MAX_OPS)][4];
-    float constants[2 * CC_EXT_MAX_CONSTANTS][4];
-    bool dirty;
-};
-
-// Make sure data is aligned to 16 bytes boundaries
-static_assert(offsetof(D3D11ExtendedCombiners, ops) % 16 == 0);
-static_assert(offsetof(D3D11ExtendedCombiners, constants) % 16 == 0);
-static_assert(offsetof(D3D11ExtendedCombiners, dirty) % 16 == 0);
 
 template <typename T>
 struct D3D11ConstantBuffer {
@@ -91,7 +79,7 @@ static struct {
     DXGI_SAMPLE_DESC sample_description;
 
     D3D11ConstantBuffer<struct ShaderUniforms> uniforms;
-    D3D11ConstantBuffer<D3D11ExtendedCombiners> ec;
+    D3D11ConstantBuffer<struct ExtendedCombiners> combiners;
 
     std::vector<D3D11Texture> textures;
     int current_tile;
@@ -215,7 +203,7 @@ static void gfx_d3d11_update_constant_buffer(ComPtr<ID3D11Buffer> &buffer, Updat
     // Because shader constant buffers have special memory alignment rules:
     // - Array elements must always start at a 16-byte boundary, no matter the element size
     // - Single elements that fit into the remaining space of a 16-byte block will fit
-    // - You could guess the uniforms location, but luckily D3D11 has an API for it! (see: gfx_d3d11_locate_uniforms)
+    // - You could guess the uniforms location, but luckily D3D11 has an API for it! (see: gfx_d3d11_locate_constant_buffer)
     //
     // For example, the following constant buffer:
     // ```hlsl
@@ -242,11 +230,12 @@ static void gfx_d3d11_update_constant_buffer(ComPtr<ID3D11Buffer> &buffer, Updat
     D3D11_MAPPED_SUBRESOURCE ms;
     ThrowIfFailed(d3d.context->Map(buffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms));
 
-    update([&ms](void *data, uint32_t location, size_t index, size_t offset, size_t stride) {
+    update([&ms](uint32_t buffer_location, size_t buffer_index, size_t data_offset, size_t data_index, size_t data_stride, void *data) {
+        const size_t buffer_stride = ((data_stride + SHADER_ALIGN_BYTES - 1) / SHADER_ALIGN_BYTES) * SHADER_ALIGN_BYTES;
         memcpy(
-            (void *) (uintptr_t(ms.pData) + (location + index * SHADER_ALIGN_BYTES)),
-            (void *) (uintptr_t(data)     + (offset   + index * stride)),
-            stride
+            (void *) (uintptr_t(ms.pData) + (buffer_location + buffer_index * buffer_stride)),
+            (void *) (uintptr_t(data)     + (data_offset     + data_index   * data_stride)),
+            data_stride
         );
     });
 
@@ -287,7 +276,7 @@ static void gfx_d3d11_upload_shader_uniforms(D3D11ShaderProgram *prg, D3D11Const
             for (size_t i = 0; i < num_uniforms; ++i) {
                 const struct ShaderDataProperties *uniform = gfx_shaders_get_uniform_properties(i);
                 for (size_t j = 0; j < uniform->count; ++j) {
-                    upload(data, prg->uniform_locations[i], j, uniform->offset, uniform->stride);
+                    upload(prg->uniform_locations[i], j, uniform->offset, j, uniform->stride, data);
                 }
             }
         });
@@ -303,36 +292,17 @@ static size_t gfx_d3d11_locate_extended_combiners(D3D11ShaderProgram *prg, ID3DB
     return gfx_d3d11_locate_constant_buffer(ps, "ExtendedCombiners", var_names, ARRAY_COUNT(var_names), &prg->ec_locations);
 }
 
-static void gfx_d3d11_update_extended_combiners(D3D11ShaderProgram *prg, D3D11ExtendedCombiners *ecs, bool update_color, bool update_alpha) {
-
-    // Update buffer only when necessary
-    if ((!update_color || prg->ec[0] == prg->cc.ec[0]) &&
-        (!update_alpha || prg->ec[1] == prg->cc.ec[1])) {
-        return;
+static void gfx_d3d11_upload_extended_combiners(D3D11ShaderProgram *prg, D3D11ConstantBuffer<struct ExtendedCombiners> *combiners) {
+    void *ops = gfx_shaders_get_extended_combiners_ops_data(&combiners->data);
+    void *constants = gfx_shaders_get_extended_combiners_constants_data(&combiners->data);
+    if (ops && constants) {
+        gfx_d3d11_update_constant_buffer(combiners->buffer, [&ops, &constants, &prg](auto upload) {
+            const size_t ops_stride = gfx_shaders_get_extended_combiners_ops_stride();
+            const size_t constants_stride = gfx_shaders_get_extended_combiners_constants_stride();
+            upload(prg->ec_locations[0], 0, 0, 0, 2 * ops_stride, ops);
+            upload(prg->ec_locations[1], 0, 0, 0, 2 * constants_stride, constants);
+        });
     }
-
-    // Convert extended combiners to a GPU friendly struct
-    memset(ecs, 0, sizeof(*ecs));
-    for (size_t i = 0; i < 2; ++i) {
-        const struct ExtendedCombiner *ec = prg->cc.ec[i];
-        if (ec != NULL) {
-            memcpy((void *) (uintptr_t(ecs->constants) + i * sizeof(ec->constants)), ec->constants, sizeof(ec->constants));
-            size_t k0 = i * ARRAY_COUNT(ec->ops);
-            for (int k = 0; k < ARRAY_COUNT(ec->ops); ++k) {
-                PACKED_SET_16(ecs->ops, k0 + k, ec->ops[k]);
-            }
-        }
-        prg->ec[i] = prg->cc.ec[i];
-    }
-
-    ecs->dirty = true;
-}
-
-static void gfx_d3d11_upload_extended_combiners(D3D11ShaderProgram *prg, D3D11ConstantBuffer<D3D11ExtendedCombiners> *ec) {
-    gfx_d3d11_update_constant_buffer(ec->buffer, [&ec, &prg](auto upload) {
-        upload((void *) ec->data.ops,       prg->ec_locations[0], 0, 0, sizeof(ec->data.ops));
-        upload((void *) ec->data.constants, prg->ec_locations[1], 0, 0, sizeof(ec->data.constants));
-    });
 }
 
   /////////////
@@ -389,10 +359,10 @@ static void gfx_d3d11_load_ubershader(void) {
     d3d.context->IASetInputLayout(prg->input_layout.Get());
 
     // Create main vertex buffer
-    size_t stride = gfx_shaders_get_attribs_stride();
+    const size_t stride = gfx_shaders_get_attribs_stride();
     D3D11_BUFFER_DESC vertex_buffer_desc = {};
     vertex_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-    vertex_buffer_desc.ByteWidth = stride * D3D11_VERTEX_BUFFER_LENGTH;
+    vertex_buffer_desc.ByteWidth = stride * VERTEX_BUFFER_LENGTH;
     vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertex_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     vertex_buffer_desc.MiscFlags = 0;
@@ -428,10 +398,10 @@ static void gfx_d3d11_load_ubershader(void) {
     ec_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     ec_buffer_desc.MiscFlags = 0;
 
-    ThrowIfFailed(d3d.device->CreateBuffer(&ec_buffer_desc, nullptr, d3d.ec.buffer.GetAddressOf()),
+    ThrowIfFailed(d3d.device->CreateBuffer(&ec_buffer_desc, nullptr, d3d.combiners.buffer.GetAddressOf()),
                   gfx_window_dxgi_get_h_wnd(), "Failed to create extended combiners constant buffer.");
 
-    d3d.context->PSSetConstantBuffers(1, 1, d3d.ec.buffer.GetAddressOf());
+    d3d.context->PSSetConstantBuffers(1, 1, d3d.combiners.buffer.GetAddressOf());
 
     // Create shaders
     ThrowIfFailed(d3d.device->CreateVertexShader(vs->GetBufferPointer(), vs->GetBufferSize(), nullptr, prg->vertex_shader.GetAddressOf()));
@@ -642,8 +612,7 @@ static void gfx_d3d11_update_uniforms(void) {
         gfx_d3d11_set_texture_uniforms(prg, t);
     }
 
-    // Extended combiners
-    gfx_d3d11_update_extended_combiners(prg, &d3d.ec.data, prg->cc.use_ext_color, prg->cc.use_ext_alpha && !prg->cc.ext_color_alpha_same);
+    gfx_shaders_update_extended_combiners(&d3d.combiners.data, &prg->cc);
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {
@@ -782,7 +751,7 @@ static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_v
     void *data = gfx_shaders_get_attribs_data(buf_vbo, buf_vbo_len);
     if (data) {
         D3D11_MAPPED_SUBRESOURCE ms;
-        if (d3d.vertex_buffer_offset + buf_vbo_len > D3D11_VERTEX_BUFFER_LENGTH) {
+        if (d3d.vertex_buffer_offset + buf_vbo_len > VERTEX_BUFFER_LENGTH) {
             d3d.vertex_buffer_offset = 0;
         }
 
@@ -803,9 +772,9 @@ static void gfx_d3d11_draw_triangles(struct VertexAttribs *buf_vbo, size_t buf_v
     }
 
     // Upload extended combiners if they changed since the last draw
-    if (d3d.ec.data.dirty) {
-        gfx_d3d11_upload_extended_combiners(&d3d.shader_program, &d3d.ec);
-        d3d.ec.data.dirty = false;
+    if (d3d.combiners.data.dirty) {
+        gfx_d3d11_upload_extended_combiners(&d3d.shader_program, &d3d.combiners);
+        d3d.combiners.data.dirty = false;
     }
 
     // Draw triangles

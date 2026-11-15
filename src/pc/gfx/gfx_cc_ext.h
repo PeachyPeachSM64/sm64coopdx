@@ -33,8 +33,11 @@ struct ExtendedCombiner {
     float constants[CC_EXT_MAX_CONSTANTS][4];
 };
 
+struct ColorCombiner;
+
 const char *gfx_cc_ext_get_shader_source();
 const struct ExtendedCombiner *gfx_cc_ext_get_combiner(const char *str, const char **error_msg);
+const struct ExtendedCombiner *gfx_cc_ext_get_combiner_from_cc(const struct ColorCombiner *cc, bool alpha);
 void gfx_cc_ext_clear_combiner_cache(bool force);
 
 #endif

@@ -323,3 +323,75 @@ void gfx_shaders_update_uniforms(struct ShaderUniforms *uniforms, const struct C
 
     uniforms->dirty = true;
 }
+
+//
+// Extended combiners
+//
+
+typedef uint32_t ExtendedCombinerOpsData[PACKED_16(CC_EXT_MAX_OPS)][4];
+typedef float ExtendedCombinerConstantsData[CC_EXT_MAX_CONSTANTS][4];
+
+// Everything must stay aligned to 16-byte boundaries
+static_assert(sizeof(ExtendedCombinerOpsData) % 16 == 0);
+static_assert(sizeof(ExtendedCombinerConstantsData) % 16 == 0);
+
+static void gfx_shaders_pack_extended_combiner_ops(ExtendedCombinerOpsData data, const struct ExtendedCombiner *ec) {
+    if (!ec) {
+        memset(data, 0xFF, sizeof(ExtendedCombinerOpsData));
+        return;
+    }
+    for (int i = 0; i < ARRAY_COUNT(ec->ops); ++i) {
+        PACKED_SET_16(data, i, ec->ops[i]);
+    }
+}
+
+static void gfx_shaders_pack_extended_combiner_constants(ExtendedCombinerConstantsData data, const struct ExtendedCombiner *ec) {
+    if (!ec) {
+        memset(data, 0, sizeof(ExtendedCombinerConstantsData));
+        return;
+    }
+    memcpy(data, ec->constants, sizeof(ExtendedCombinerConstantsData));
+}
+
+void *gfx_shaders_get_extended_combiners_ops_data(const struct ExtendedCombiners *ecs) {
+    static ExtendedCombinerOpsData sExtendedCombinerOpsData[2];
+    if (!ecs) { return NULL; }
+
+    gfx_shaders_pack_extended_combiner_ops(sExtendedCombinerOpsData[0], ecs->color);
+    gfx_shaders_pack_extended_combiner_ops(sExtendedCombinerOpsData[1], ecs->alpha);
+
+    return sExtendedCombinerOpsData;
+}
+
+size_t gfx_shaders_get_extended_combiners_ops_stride() {
+    return sizeof(ExtendedCombinerOpsData);
+}
+
+void *gfx_shaders_get_extended_combiners_constants_data(const struct ExtendedCombiners *ecs) {
+    static ExtendedCombinerConstantsData sExtendedCombinerConstantsData[2];
+    if (!ecs) { return NULL; }
+
+    gfx_shaders_pack_extended_combiner_constants(sExtendedCombinerConstantsData[0], ecs->color);
+    gfx_shaders_pack_extended_combiner_constants(sExtendedCombinerConstantsData[1], ecs->alpha);
+
+    return sExtendedCombinerConstantsData;
+}
+
+size_t gfx_shaders_get_extended_combiners_constants_stride() {
+    return sizeof(ExtendedCombinerConstantsData);
+}
+
+void gfx_shaders_update_extended_combiners(struct ExtendedCombiners *ecs, const struct ColorCombiner *cc) {
+    bool update_color = cc->use_ext_color;
+    bool update_alpha = cc->use_ext_alpha && !cc->ext_color_alpha_same;
+
+    // Update buffer only when necessary
+    if ((!update_color || ecs->color == cc->ec[0]) &&
+        (!update_alpha || ecs->alpha == cc->ec[1])) {
+        return;
+    }
+
+    ecs->color = cc->ec[0];
+    ecs->alpha = cc->ec[1];
+    ecs->dirty = true;
+}

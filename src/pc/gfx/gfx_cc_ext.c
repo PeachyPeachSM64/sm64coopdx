@@ -4,6 +4,7 @@
 
 #include "gfx_cc_ext.h"
 #include "gfx_cc_ext_types.h"
+#include "gfx_cc.h"
 
 #include "data/dynos_cmap.cpp.h"
 
@@ -1010,6 +1011,63 @@ const struct ExtendedCombiner *gfx_cc_ext_get_combiner(const char *str, const ch
 
     hmap_data_put(sExtCombinerCache, str, len, ec);
     return ec;
+}
+
+static const char *gfx_cc_ext_ccs_to_string(uint8_t ccs, bool *is_2cycle) {
+    switch (ccs) {
+        case CCS_0:           return "0";
+        case CCS_1:           return "1";
+        case CCS_COMBINED:    *is_2cycle = true; return "output";
+        case CCS_COMBINEDA:   *is_2cycle = true; return "output.a";
+        case CCS_PRIM:        return "PRIM";
+        case CCS_PRIMA:       return "PRIMA";
+        case CCS_SHADE:       return "SHADE";
+        case CCS_SHADEA:      return "SHADEA";
+        case CCS_ENV:         return "ENV";
+        case CCS_ENVA:        return "ENVA";
+        case CCS_LOD:         return "LOD";
+        case CCS_NOISE:       return "NOISE";
+        case CCS_AMBIENT:     return "AMBIENT";
+#define CCS_LIGHT(n) \
+        case CCS_LIGHT##n:    return "LIGHT" #n; \
+        case CCS_LIGHT##n##I: return "LIGHT" #n "I";
+REPEAT_FROM_0(CCS_LIGHT, MAX_ACTIVE_LIGHTS)
+#undef CCS_LIGHT
+#define CCS_TEXEL(n) \
+        case CCS_TEXEL##n:    return "TEXEL" #n; \
+        case CCS_TEXEL##n##A: return "TEXEL" #n "A";
+REPEAT_FROM_0(CCS_TEXEL, MAX_TEXTURES)
+#undef CCS_TEXEL
+    }
+    return "0";
+}
+
+const struct ExtendedCombiner *gfx_cc_ext_get_combiner_from_cc(const struct ColorCombiner *cc, bool alpha) {
+    bool is_2cycle = false;
+
+    // Cycle 1
+    char cycle1[64] = "";
+    snprintf(cycle1, sizeof(cycle1), "output = (%s - %s) * %s + %s; ",
+        gfx_cc_ext_ccs_to_string(cc->ccs[0][alpha][0], &is_2cycle),
+        gfx_cc_ext_ccs_to_string(cc->ccs[0][alpha][1], &is_2cycle),
+        gfx_cc_ext_ccs_to_string(cc->ccs[0][alpha][2], &is_2cycle),
+        gfx_cc_ext_ccs_to_string(cc->ccs[0][alpha][3], &is_2cycle)
+    );
+
+    // Cycle 2
+    char cycle2[64] = "";
+    snprintf(cycle2, sizeof(cycle2), "output = (%s - %s) * %s + %s; ",
+        gfx_cc_ext_ccs_to_string(cc->ccs[1][alpha][0], &is_2cycle),
+        gfx_cc_ext_ccs_to_string(cc->ccs[1][alpha][1], &is_2cycle),
+        gfx_cc_ext_ccs_to_string(cc->ccs[1][alpha][2], &is_2cycle),
+        gfx_cc_ext_ccs_to_string(cc->ccs[1][alpha][3], &is_2cycle)
+    );
+
+    // Combined output
+    char combined[sizeof(cycle1) + sizeof(cycle2) + 8] = "";
+    snprintf(combined, sizeof(combined), "%s%soutput", cycle1, is_2cycle ? cycle2 : "");
+
+    return gfx_cc_ext_get_combiner(combined, NULL);
 }
 
 void gfx_cc_ext_clear_combiner_cache(bool force) {

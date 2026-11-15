@@ -72,4 +72,20 @@ void *gfx_shaders_get_uniforms_data(const struct ShaderUniforms *uniforms);
 size_t gfx_shaders_get_uniforms_stride();
 void gfx_shaders_update_uniforms(struct ShaderUniforms *uniforms, const struct ColorCombiner *cc, const struct TextureProperties *texture, uint8_t tile);
 
+//
+// Extended combiners
+//
+
+struct ExtendedCombiners {
+    const struct ExtendedCombiner *color;
+    const struct ExtendedCombiner *alpha;
+    bool dirty;
+};
+
+void *gfx_shaders_get_extended_combiners_ops_data(const struct ExtendedCombiners *ecs);
+size_t gfx_shaders_get_extended_combiners_ops_stride();
+void *gfx_shaders_get_extended_combiners_constants_data(const struct ExtendedCombiners *ecs);
+size_t gfx_shaders_get_extended_combiners_constants_stride();
+void gfx_shaders_update_extended_combiners(struct ExtendedCombiners *ecs, const struct ColorCombiner *cc);
+
 #endif

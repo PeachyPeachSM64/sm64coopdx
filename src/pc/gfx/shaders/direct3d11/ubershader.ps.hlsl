@@ -40,8 +40,8 @@ SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
 
 // Extended combiners
 cbuffer ExtendedCombiners : register(b1) {
-    int4   uExtCC_Ops[2 * PACKED_16(CC_EXT_MAX_OPS)];
-    float4 uExtCC_Constants[2 * CC_EXT_MAX_CONSTANTS];
+    int4   uExtCC_Ops[2][PACKED_16(CC_EXT_MAX_OPS)];
+    float4 uExtCC_Constants[2][CC_EXT_MAX_CONSTANTS];
 };
 
 //
@@ -149,15 +149,12 @@ float4 cc_ext_dot(in float4 arg1, in float4 arg2) {
 }
 
 float4 combine_colors_ext(in float4 texel, in int alpha) {
-    const int offsetOps = alpha * CC_EXT_MAX_OPS;
-    const int offsetConstants = alpha * CC_EXT_MAX_CONSTANTS;
-
     float4 stack[CC_EXT_STACK_SIZE];
     float4 registers[CC_EXT_MAX_REGISTERS];
     int top = 0;
 
     for (int i = 0; i < CC_EXT_MAX_OPS; ++i) {
-        int op = PACKED_GET_16(uExtCC_Ops, offsetOps + i);
+        int op = PACKED_GET_16(uExtCC_Ops[alpha], i);
         switch (op) {
 
             // Values
@@ -243,7 +240,7 @@ float4 combine_colors_ext(in float4 texel, in int alpha) {
 
             // Constants
             if (op >= CC_EXT_CONST_FIRST && op <= CC_EXT_CONST_LAST) {
-                STACK_PUSH(0, uExtCC_Constants[offsetConstants + (op - CC_EXT_CONST_FIRST)]);
+                STACK_PUSH(0, uExtCC_Constants[alpha][op - CC_EXT_CONST_FIRST]);
                 break;
             }
 

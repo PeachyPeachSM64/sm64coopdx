@@ -5,7 +5,7 @@
 // From https://ultra64.ca/files/documentation/online-manuals/man/pro-man/pro12/index12.6.html
 // "Extended" entries are coopdx specific, allowing for more combiners with existing sources
 // Table indices are, in this order: RGB/A, ABCD, G_MUX, cycle
-static const uint8_t CC_COMPONENTS_TO_CCS[2][CC_COMPONENTS][32][CC_CYCLES] = {
+static const uint8_t CC_COMPONENTS_TO_CCS[2][4][32][2] = {
 
 /////////
 // RGB //
@@ -248,7 +248,7 @@ void gfx_cc_update_features(struct ColorCombiner *cc) {
     for (int i = 0; i < 2; ++i) {
         if ((i == 0 && !cc->skip_combiner_color) ||
             (i == 1 && !cc->skip_combiner_alpha)) {
-            for (int j = 0; j < CC_COMPONENTS; ++j) {
+            for (int j = 0; j < 4; ++j) {
                 uint8_t ccs = cc->ccs[cycle][i][j];
                 switch (ccs) {
                     case CCS_PRIM:
