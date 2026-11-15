@@ -2,9 +2,9 @@
 in vec4 aVtxPos;
 
 // Vertex attributes (packed)
-in vec4 aTexCoords[MAX_TEXTURES / 2];
+in vec4 aTexCoords[PACKED_2(MAX_TEXTURES)];
 in ivec4 aInputs;
-in ivec4 aLights[MAX_ACTIVE_LIGHTS / 4];
+in ivec4 aLights[PACKED_4(MAX_ACTIVE_LIGHTS)];
 in ivec4 aFeatures;
 
 // Fragment inputs
@@ -35,13 +35,13 @@ vec2 unpack_light_map(in int uv) {
 }
 
 void main() {
-    for (int i = 0; i < MAX_TEXTURES; i += 2) {
-        vTexCoords[i + 0] = aTexCoords[i / 2].xy;
-        vTexCoords[i + 1] = aTexCoords[i / 2].zw;
+    for (int t = 0; t < MAX_TEXTURES; t++) {
+        vTexCoords[t].x = PACKED_GET_2(aTexCoords, t, 0);
+        vTexCoords[t].y = PACKED_GET_2(aTexCoords, t, 1);
     }
 
     for (int i = 0; i < MAX_ACTIVE_LIGHTS; i++) {
-        vLights[i] = unpack_color(aLights[i / 4][i % 4]);
+        vLights[i] = unpack_color(PACKED_GET_4(aLights, i));
     }
 
     vPrimitive   = unpack_color(aInputs[0]);

@@ -4,6 +4,8 @@
 #include "gfx_cc.h"
 #include "gfx_pc.h"
 
+#include "gfx_shaders.inl"
+
 enum ShaderDataType {
     SHADER_DATA_TYPE_INT8,
     SHADER_DATA_TYPE_UINT8,
@@ -50,7 +52,7 @@ size_t gfx_shaders_get_attribs_stride();
 //
 
 struct ShaderUniforms {
-    uint8_t ccs[CC_CYCLES][2][CC_COMPONENTS];
+    ColorCombinerSources ccs;
     uint32_t ccf;
     struct {
         uint32_t width;

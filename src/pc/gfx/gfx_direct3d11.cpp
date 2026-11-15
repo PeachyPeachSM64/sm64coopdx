@@ -48,7 +48,7 @@ struct D3D11ShaderProgram {
 };
 
 struct D3D11ExtendedCombiners {
-    uint32_t ops[2 * (CC_EXT_MAX_OPS / 16)][4];
+    uint32_t ops[2 * PACKED_16(CC_EXT_MAX_OPS)][4];
     float constants[2 * CC_EXT_MAX_CONSTANTS][4];
     bool dirty;
 };
@@ -317,9 +317,9 @@ static void gfx_d3d11_update_extended_combiners(D3D11ShaderProgram *prg, D3D11Ex
         const struct ExtendedCombiner *ec = prg->cc.ec[i];
         if (ec != NULL) {
             memcpy((void *) (uintptr_t(ecs->constants) + i * sizeof(ec->constants)), ec->constants, sizeof(ec->constants));
-            size_t ops_offset = i * sizeof(ec->ops);
+            size_t k0 = i * ARRAY_COUNT(ec->ops);
             for (int k = 0; k < ARRAY_COUNT(ec->ops); ++k) {
-                ecs->ops[ops_offset + (k / 16)][(k / 4) % 4] |= (ec->ops[k] << (8 * (k % 4)));
+                PACKED_SET_16(ecs->ops, k0 + k, ec->ops[k]);
             }
         }
         prg->ec[i] = prg->cc.ec[i];
@@ -346,6 +346,8 @@ static const char D3D11_UBERSHADER[] = {
 #embed "gfx_cc.inl"
 ,
 #embed "gfx_cc_ext.inl"
+,
+#embed "gfx_shaders.inl"
 ,
 #embed "shaders/direct3d11/ubershader.vs.hlsl"
 ,

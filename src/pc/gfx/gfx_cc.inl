@@ -11,15 +11,6 @@
 #endif
 
 //
-// Color combiner structure
-//
-
-#define CC_COMPONENTS       4  // ABCD
-#define CC_CYCLES           2  // Cycles
-#define MAX_ACTIVE_LIGHTS   8  // must be a multiple of 4
-#define MAX_TEXTURES        4  // must be a multiple of 2
-
-//
 // CC sources
 //
 
@@ -41,6 +32,8 @@
 // Lights
 //
 
+#define MAX_ACTIVE_LIGHTS   8  // must be a multiple of 4
+
 #define CCS_LIGHT_FIRST     (CCS_AMBIENT + 1)
 #define CCS_LIGHT_LAST      (CCS_LIGHT_FIRST + 2 * MAX_ACTIVE_LIGHTS - 1)
 
@@ -56,6 +49,8 @@ REPEAT_FROM_0(CCS_LIGHT, MAX_ACTIVE_LIGHTS)
 //
 // Textures
 //
+
+#define MAX_TEXTURES        4  // must be a multiple of 2
 
 #define CCS_TEXEL_FIRST     (CCS_LIGHT_LAST + 1)
 #define CCS_TEXEL_LAST      (CCS_TEXEL_FIRST + 2 * MAX_TEXTURES - 1)
@@ -104,6 +99,3 @@ REPEAT_FROM_0(CCS_TEXEL, MAX_TEXTURES)
 #define CCF_USED_TEXTURE            13 // must be last
 
 #define USED_TEXTURE(i)  (1 << (i))
-
-#define UNPACK(v, s, w) \
-    ((uint(v) >> (s)) & ((1 << (w)) - 1))

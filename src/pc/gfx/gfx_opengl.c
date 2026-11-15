@@ -199,7 +199,7 @@ static void gfx_opengl_update_extended_combiner(struct GLShaderProgram *prg, int
     struct GLExtendedCombiner glec = {0};
     memcpy(glec.constants, ec->constants, sizeof(glec.constants));
     for (int i = 0; i < ARRAY_COUNT(ec->ops); ++i) {
-        glec.ops[i / 16][(i / 4) % 4] |= (ec->ops[i] << (8 * (i % 4)));
+        PACKED_SET_16(glec.ops, i, ec->ops[i]);
     }
 
     glBindBuffer(GL_UNIFORM_BUFFER, opengl_ubo);
@@ -222,6 +222,8 @@ static const char GL_UBERSHADER_VERT[] = {
 #ifndef VSCODE
 #embed "gfx_cc.inl"
 ,
+#embed "gfx_shaders.inl"
+,
 #embed "shaders/opengl/ubershader.vert.glsl"
 ,0
 #endif
@@ -233,6 +235,8 @@ static const char GL_UBERSHADER_FRAG[] = {
 ,
 #embed "gfx_cc_ext.inl"
 ,
+#embed "gfx_shaders.inl"
+,
 #embed "shaders/opengl/ubershader.frag.glsl"
 ,0
 #endif
@@ -241,7 +245,7 @@ static const char GL_UBERSHADER_FRAG[] = {
 #define fatal_error(type, id, message) { \
     GLint max_length = 0; \
     glGet##type##iv(id, GL_INFO_LOG_LENGTH, &max_length); \
-    char error_log[4096]; \
+    char *error_log = (char *) malloc(max_length); \
     fprintf(stderr, message "\n"); \
     glGet##type##InfoLog(id, max_length, &max_length, error_log); \
     fprintf(stderr, "%s\n", error_log); \

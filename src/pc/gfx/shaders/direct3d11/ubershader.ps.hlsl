@@ -16,23 +16,23 @@ static PSInput vInputs;
 
 // Uniforms (packed)
 cbuffer ShaderUniforms : register(b0) {
-    uint4 uCCS[CC_CYCLES / 2];
-    uint4 uFeatures;
-    uint4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
-    float4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
+    int4 uCCS;
+    int4 uFeatures;
+    int4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
+    float4 uShaderFlagValues[PACKED_4(SHADER_FLAG_MAX)];
 };
 
 // Uniforms (unpacked)
-#define uCCS_(cycle, alpha)     uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
+#define uCCS_(cycle, alpha)     uCCS[2 * (cycle) + (alpha)]
 #define uCCF                    uFeatures[0]
 #define uNoiseRandomSeed        uFeatures[1]
 #define uLightMapColor          uFeatures[2]
 #define uShaderFlags            uFeatures[3]
-#define uShaderFlagValue(flag)  uShaderFlagValues[(flag) / 4][(flag) % 4]
+#define uShaderFlagValue(flag)  PACKED_GET_4(uShaderFlagValues, flag)
 
 // CC features
-#define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
-#define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
+#define CCF_GET(_flag_)         (uCCF >> CCF_##_flag_)
+#define CCF_HAS_FLAG(_flag_)    ((CCF_GET(_flag_) & 1) != 0)
 
 // Textures
 Texture2D uTextures[MAX_TEXTURES] : register(t0);
@@ -40,7 +40,7 @@ SamplerState uTextureSamplers[MAX_TEXTURES] : register(s0);
 
 // Extended combiners
 cbuffer ExtendedCombiners : register(b1) {
-    uint4  uExtCC_Ops[2 * (CC_EXT_MAX_OPS / 16)];
+    int4   uExtCC_Ops[2 * PACKED_16(CC_EXT_MAX_OPS)];
     float4 uExtCC_Constants[2 * CC_EXT_MAX_CONSTANTS];
 };
 
@@ -51,7 +51,7 @@ cbuffer ExtendedCombiners : register(b1) {
 static float4 gNoise;
 static float4 gTexColors[MAX_TEXTURES];
 
-float4 ccs_to_vec4(in float4 texel, in uint ccs) {
+float4 ccs_to_vec4(in float4 texel, in int ccs) {
     switch (ccs) {
         case CCS_0:         return float4(0.0, 0.0, 0.0, 0.0);
         case CCS_1:         return float4(1.0, 1.0, 1.0, 1.0);
@@ -68,21 +68,21 @@ float4 ccs_to_vec4(in float4 texel, in uint ccs) {
         case CCS_AMBIENT:   return vInputs.ambient;
     }
     if (ccs >= CCS_LIGHT_FIRST && ccs <= CCS_LIGHT_LAST) {
-        uint i = ccs - CCS_LIGHT_FIRST;
-        return (i % 2 == 0 ?
-                vInputs.lights[i / 2] :
-                vInputs.lights[i / 2].aaaa);
+        int i = ccs - CCS_LIGHT_FIRST;
+        return ((i & 1) == 0 ?
+                vInputs.lights[i >> 1] :
+                vInputs.lights[i >> 1].aaaa);
     }
     if (ccs >= CCS_TEXEL_FIRST && ccs <= CCS_TEXEL_LAST) {
-        uint i = ccs - CCS_TEXEL_FIRST;
-        return (i % 2 == 0 ?
-                gTexColors[i / 2] :
-                gTexColors[i / 2].aaaa);
+        int i = ccs - CCS_TEXEL_FIRST;
+        return ((i & 1) == 0 ?
+                gTexColors[i >> 1] :
+                gTexColors[i >> 1].aaaa);
     }
     return float4(0.0, 0.0, 0.0, 0.0);
 }
 
-float4 combine_colors(in float4 texel, in uint ABCD) {
+float4 combine_colors(in float4 texel, in int ABCD) {
     #define A UNPACK(ABCD, 24, 8)
     #define B UNPACK(ABCD, 16, 8)
     #define C UNPACK(ABCD,  8, 8)
@@ -95,11 +95,11 @@ float4 combine_colors(in float4 texel, in uint ABCD) {
 
     // A * C
     if (B == CCS_0 && D == CCS_0) {
-        return ccs_to_vec4(texel, A) *
-               ccs_to_vec4(texel, C);
+        return ccs_to_vec4(texel, A)
+             * ccs_to_vec4(texel, C);
     }
 
-    // (A - B) * C + B = lerp(C, B, A)
+    // (A - B) * C + B = lerp(B, A, C)
     if (B == D) {
         return lerp(
             ccs_to_vec4(texel, B),
@@ -110,8 +110,8 @@ float4 combine_colors(in float4 texel, in uint ABCD) {
 
     // (A - B) * C + D
     return (
-        ccs_to_vec4(texel, A) -
-        ccs_to_vec4(texel, B)
+        ccs_to_vec4(texel, A)
+      - ccs_to_vec4(texel, B)
     ) * ccs_to_vec4(texel, C)
       + ccs_to_vec4(texel, D);
 }
@@ -127,7 +127,7 @@ float4 combine_colors(in float4 texel, in uint ABCD) {
     top -= ((args) - 1); \
 }
 
-float cc_ext_dot_channel(in float4 arg1, in uint channel) {
+float cc_ext_dot_channel(in float4 arg1, in int channel) {
     switch (channel) {
         case CC_EXT_DOT_PARAM_0: return 0.0;
         case CC_EXT_DOT_PARAM_1: return 1.0;
@@ -141,23 +141,23 @@ float cc_ext_dot_channel(in float4 arg1, in uint channel) {
 
 float4 cc_ext_dot(in float4 arg1, in float4 arg2) {
     return float4(
-        cc_ext_dot_channel(arg1, uint(arg2.r)),
-        cc_ext_dot_channel(arg1, uint(arg2.g)),
-        cc_ext_dot_channel(arg1, uint(arg2.b)),
-        cc_ext_dot_channel(arg1, uint(arg2.a))
+        cc_ext_dot_channel(arg1, int(arg2.r)),
+        cc_ext_dot_channel(arg1, int(arg2.g)),
+        cc_ext_dot_channel(arg1, int(arg2.b)),
+        cc_ext_dot_channel(arg1, int(arg2.a))
     );
 }
 
-float4 combine_colors_ext(in float4 texel, in uint alpha) {
-    const uint offsetOps = alpha * (CC_EXT_MAX_OPS / 16);
-    const uint offsetConstants = alpha * (CC_EXT_MAX_CONSTANTS);
+float4 combine_colors_ext(in float4 texel, in int alpha) {
+    const int offsetOps = alpha * CC_EXT_MAX_OPS;
+    const int offsetConstants = alpha * CC_EXT_MAX_CONSTANTS;
 
     float4 stack[CC_EXT_STACK_SIZE];
     float4 registers[CC_EXT_MAX_REGISTERS];
-    uint top = 0;
+    int top = 0;
 
-    for (uint i = 0; i < CC_EXT_MAX_OPS; ++i) {
-        uint op = (uExtCC_Ops[offsetOps + (i / 16)][(i / 4) % 4] >> (8 * (i % 4))) & 0xFF;
+    for (int i = 0; i < CC_EXT_MAX_OPS; ++i) {
+        int op = PACKED_GET_16(uExtCC_Ops, offsetOps + i);
         switch (op) {
 
             // Values
@@ -193,7 +193,7 @@ float4 combine_colors_ext(in float4 texel, in uint alpha) {
             case CC_EXT_NEQ:        STACK_PUSH(2, float4(ARG(1) != ARG(2))); break;
             case CC_EXT_AND:        STACK_PUSH(2, float4(bool4(ARG(1)) && bool4(ARG(2)))); break;
             case CC_EXT_OR:         STACK_PUSH(2, float4(bool4(ARG(1)) || bool4(ARG(2)))); break;
-            case CC_EXT_SET:        STACK_PUSH(2, registers[uint(ARG(1).x)] = ARG(2)); break;
+            case CC_EXT_SET:        STACK_PUSH(2, registers[int(ARG(1).x)] = ARG(2)); break;
             case CC_EXT_END:        top = 0; break;
 
             // Functions
@@ -219,19 +219,19 @@ float4 combine_colors_ext(in float4 texel, in uint alpha) {
 
             // Lights
             if (op >= CC_EXT_LIGHT_FIRST && op <= CC_EXT_LIGHT_LAST) {
-                uint index = op - CC_EXT_LIGHT_FIRST;
-                STACK_PUSH(0, index % 2 == 0 ?
-                              vInputs.lights[index / 2] :
-                              vInputs.lights[index / 2].aaaa);
+                int index = op - CC_EXT_LIGHT_FIRST;
+                STACK_PUSH(0, (index & 1) == 0 ?
+                              vInputs.lights[index >> 1] :
+                              vInputs.lights[index >> 1].aaaa);
                 break;
             }
 
             // Textures
             if (op >= CC_EXT_TEXEL_FIRST && op <= CC_EXT_TEXEL_LAST) {
-                uint index = op - CC_EXT_TEXEL_FIRST;
-                STACK_PUSH(0, index % 2 == 0 ?
-                              gTexColors[index / 2] :
-                              gTexColors[index / 2].aaaa);
+                int index = op - CC_EXT_TEXEL_FIRST;
+                STACK_PUSH(0, (index & 1) == 0 ?
+                              gTexColors[index >> 1] :
+                              gTexColors[index >> 1].aaaa);
                 break;
             }
 
@@ -259,9 +259,9 @@ float4 combine_colors_ext(in float4 texel, in uint alpha) {
 //
 
 float dither4x4(in float2 position, in float brightness) {
-    uint x = uint(fmod(position.x, 4.0));
-    uint y = uint(fmod(position.y, 4.0));
-    uint index = x + y * 4;
+    int x = int(fmod(position.x, 4.0));
+    int y = int(fmod(position.y, 4.0));
+    int index = x + y * 4;
     float limit = float((((0x6E4CA280 - 0x10CD10CD * (index / 8)) >> ((index % 8) * 4)) & 0xF) + 1) / 16.0;
     return brightness < limit ? 0.0 : 1.0;
 }
@@ -314,7 +314,7 @@ float3 shader_effect_dithering(in float3 texel, in float value) {
 }
 
 float3 shader_effect_posterization(in float3 texel, in float value) {
-    uint levels = uint(max(1.0, value));
+    int levels = int(max(1.0, value));
     return floor(texel * levels) / levels;
 }
 
@@ -379,7 +379,7 @@ float4 PSMain(PSInput ps) : SV_TARGET {
 
     // Tex colors
     [unroll]
-    for (uint i = 0; i < MAX_TEXTURES; ++i) {
+    for (int i = 0; i < MAX_TEXTURES; ++i) {
         if ((CCF_GET(USED_TEXTURE) & USED_TEXTURE(i)) != 0) {
             if (i == 1 && useLightMap) {
                 float3 lightMapColor = float3(
@@ -405,10 +405,10 @@ float4 PSMain(PSInput ps) : SV_TARGET {
     }
 
     // Color combiner
-    uint cycles = use2Cycle ? 2 : 1;
-    for (uint cycle = 0; cycle < cycles; cycle++) {
-        uint ABCD_rgb = uCCS_(cycle, 0);
-        uint ABCD_a   = uCCS_(cycle, 1);
+    int cycles = use2Cycle ? 2 : 1;
+    for (int cycle = 0; cycle < cycles; cycle++) {
+        int ABCD_rgb = uCCS_(cycle, 0);
+        int ABCD_a   = uCCS_(cycle, 1);
 
         // Same combiner, compute once for both RGB and alpha
         if ((ABCD_rgb == ABCD_a || !useAlpha) && !skipColor && !skipAlpha) {
@@ -449,7 +449,7 @@ float4 PSMain(PSInput ps) : SV_TARGET {
 
     // Global shader effects
     if (worldGeometry && uShaderFlags != 0) {
-        for (uint i = 0; i < SHADER_FLAG_MAX; ++i) {
+        for (int i = 0; i < SHADER_FLAG_MAX; ++i) {
             if (UNPACK(uShaderFlags, i, 1) != 0) {
                 float value = uShaderFlagValue(i);
                 switch (i) {

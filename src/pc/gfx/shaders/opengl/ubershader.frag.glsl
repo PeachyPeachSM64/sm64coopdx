@@ -26,29 +26,29 @@ in vec4 vFog;
 in vec2 vLightMap;
 
 // Uniforms (packed)
-uniform ivec4 uCCS[CC_CYCLES / 2];
+uniform ivec4 uCCS;
 uniform ivec4 uFeatures;
 uniform ivec4 uTexProperties[MAX_TEXTURES]; // x is width, y is height, z is filter
-uniform vec4 uShaderFlagValues[(SHADER_FLAG_MAX + 3) / 4];
+uniform vec4 uShaderFlagValues[PACKED_4(SHADER_FLAG_MAX)];
 
 // Uniforms (unpacked)
-#define uCCS_(cycle, alpha)     uCCS[(cycle) / 2][2 * ((cycle) % 2) + (alpha)]
+#define uCCS_(cycle, alpha)     uCCS[2 * (cycle) + (alpha)]
 #define uCCF                    uFeatures[0]
 #define uNoiseRandomSeed        uFeatures[1]
 #define uLightMapColor          uFeatures[2]
 #define uShaderFlags            uFeatures[3]
-#define uShaderFlagValue(flag)  uShaderFlagValues[(flag) / 4][(flag) % 4]
+#define uShaderFlagValue(flag)  PACKED_GET_4(uShaderFlagValues, flag)
 
 // CC features
-#define CCF_GET(_flag_)       (uCCF >> CCF_##_flag_)
-#define CCF_HAS_FLAG(_flag_)  ((CCF_GET(_flag_) & 1) != 0)
+#define CCF_GET(_flag_)         (uCCF >> CCF_##_flag_)
+#define CCF_HAS_FLAG(_flag_)    ((CCF_GET(_flag_) & 1) != 0)
 
 // Textures
 uniform sampler2D uTextures[MAX_TEXTURES];
 
 // Extended combiners
 struct ExtendedCombiner {
-    ivec4 ops[CC_EXT_MAX_OPS / 16];
+    ivec4 ops[PACKED_16(CC_EXT_MAX_OPS)];
     vec4 constants[CC_EXT_MAX_CONSTANTS];
 };
 layout(std140) uniform ExtendedCombinerBlock {
@@ -80,15 +80,15 @@ vec4 ccs_to_vec4(in vec4 texel, in int ccs) {
     }
     if (ccs >= CCS_LIGHT_FIRST && ccs <= CCS_LIGHT_LAST) {
         int i = ccs - CCS_LIGHT_FIRST;
-        return (i % 2 == 0 ?
-                vLights[i / 2] :
-                vLights[i / 2].aaaa);
+        return ((i & 1) == 0 ?
+                vLights[i >> 1] :
+                vLights[i >> 1].aaaa);
     }
     if (ccs >= CCS_TEXEL_FIRST && ccs <= CCS_TEXEL_LAST) {
         int i = ccs - CCS_TEXEL_FIRST;
-        return (i % 2 == 0 ?
-                gTexColors[i / 2] :
-                gTexColors[i / 2].aaaa);
+        return ((i & 1) == 0 ?
+                gTexColors[i >> 1] :
+                gTexColors[i >> 1].aaaa);
     }
     return vec4(0);
 }
@@ -106,11 +106,11 @@ vec4 combine_colors(in vec4 texel, in int ABCD) {
 
     // A * C
     if (B == CCS_0 && D == CCS_0) {
-        return ccs_to_vec4(texel, A) *
-               ccs_to_vec4(texel, C);
+        return ccs_to_vec4(texel, A)
+             * ccs_to_vec4(texel, C);
     }
 
-    // (A - B) * C + B = lerp(C, B, A)
+    // (A - B) * C + B = lerp(B, A, C)
     if (B == D) {
         return mix(
             ccs_to_vec4(texel, B),
@@ -121,8 +121,8 @@ vec4 combine_colors(in vec4 texel, in int ABCD) {
 
     // (A - B) * C + D
     return (
-        ccs_to_vec4(texel, A) -
-        ccs_to_vec4(texel, B)
+        ccs_to_vec4(texel, A)
+      - ccs_to_vec4(texel, B)
     ) * ccs_to_vec4(texel, C)
       + ccs_to_vec4(texel, D);
 }
@@ -166,7 +166,7 @@ vec4 cc_ext_dot(in vec4 arg1, in vec4 arg2) {
 vec4 combine_colors_ext(in vec4 texel, in int alpha) {
     int top = 0;
     for (int i = 0; i < CC_EXT_MAX_OPS; ++i) {
-        int op = (uExtCC[alpha].ops[i / 16][(i / 4) % 4] >> (8 * (i % 4))) & 0xFF;
+        int op = PACKED_GET_16(uExtCC[alpha].ops, i);
         switch (op) {
 
             // Values
@@ -229,18 +229,18 @@ vec4 combine_colors_ext(in vec4 texel, in int alpha) {
             // Lights
             if (op >= CC_EXT_LIGHT_FIRST && op <= CC_EXT_LIGHT_LAST) {
                 int index = op - CC_EXT_LIGHT_FIRST;
-                STACK_PUSH(0, index % 2 == 0 ?
-                              vLights[index / 2] :
-                              vLights[index / 2].aaaa);
+                STACK_PUSH(0, (index & 1) == 0 ?
+                              vLights[index >> 1] :
+                              vLights[index >> 1].aaaa);
                 break;
             }
 
             // Textures
             if (op >= CC_EXT_TEXEL_FIRST && op <= CC_EXT_TEXEL_LAST) {
                 int index = op - CC_EXT_TEXEL_FIRST;
-                STACK_PUSH(0, index % 2 == 0 ?
-                              gTexColors[index / 2] :
-                              gTexColors[index / 2].aaaa);
+                STACK_PUSH(0, (index & 1) == 0 ?
+                              gTexColors[index >> 1] :
+                              gTexColors[index >> 1].aaaa);
                 break;
             }
 

@@ -27,9 +27,13 @@
 typedef uint8_t shader_inputs_t;
 static_assert((1llu << (8 * sizeof(shader_inputs_t))) > SHADER_INPUT_BITS, "Type for shader_inputs is not large enough to hold all shader inputs (SHADER_INPUT_BITS)");
 
+// cycle, color/alpha, ABCD
+typedef uint8_t ColorCombinerSources[2][2][4];
+static_assert(sizeof(ColorCombinerSources) == sizeof(uint32_t[4]));
+
 #pragma pack(1)
 struct ColorCombiner {
-    uint8_t ccs[CC_CYCLES][2][CC_COMPONENTS];
+    ColorCombinerSources ccs;
     shader_inputs_t shader_inputs;
     union {
         struct {
